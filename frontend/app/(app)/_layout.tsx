@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router';
 
-const AppLayout = () =>
-{
+const AppLayout = () => {
     return (
         <Stack
             screenOptions={{
@@ -9,7 +8,14 @@ const AppLayout = () =>
                 animation: "slide_from_right",
             }}
         >
-            <Stack.Screen name="temp-home" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen 
+                name="mock-interview" 
+                options={{
+                    presentation: 'modal',
+                    animation: 'slide_from_bottom'
+                }}
+            />
         </Stack>
     )
 }
