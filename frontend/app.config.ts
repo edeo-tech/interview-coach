@@ -1,11 +1,11 @@
 module.exports = {
     expo: {
-        name: "Flight Catcher",
-        slug: "whats-that-in-the-sky",
+        name: "Interview Coach",
+        slug: "interview-coach",
         version: "1.0.0",
         orientation: "portrait",
         icon: "./assets/images/icon.png",
-        scheme: "flightcatcher",
+        scheme: "interviewcoach",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
         splash: {
@@ -15,12 +15,13 @@ module.exports = {
         },
         ios: {
             supportsTablet: true,
-            bundleIdentifier: "com.whats-in-they-sky.app",
+            bundleIdentifier: "com.interview-coach.app",
             usesAppleSignIn: true,
             entitlements: {
                 "aps-environment": "production",
             },
             infoPlist: {
+                NSMicrophoneUsageDescription: "This app uses the microphone to record audio.",
                 NSPhotoLibraryUsageDescription: "This app accesses your photo library to let you pick a profile picture and submit plane captures.",
                 ITSAppUsesNonExemptEncryption: false,
                 LSMinimumSystemVersion: "13.0"
@@ -31,7 +32,7 @@ module.exports = {
                 image: "./assets/images/splash-icon.png",
                 backgroundColor: "#000000",
             },
-            package: "com.whats-in-they-sky.app",
+            package: "com.interviewcoach.app",
             // googleServicesFile: "./google-services.json",
             versionCode: 1
         },
@@ -43,6 +44,8 @@ module.exports = {
             "expo-router",
           "expo-secure-store",
           "expo-localization",  
+          "@livekit/react-native-expo-plugin",
+          "@config-plugins/react-native-webrtc",
           [
               "expo-updates",
               {
@@ -52,7 +55,7 @@ module.exports = {
         ],
         extra: {
             eas: {
-                projectId: "777197d0-632d-4500-93d8-5aee799550f8",
+                projectId: "75d5c908-4f3b-477a-bf82-4d8149ad48ca",
             },
         },
         owner: "oide",
@@ -60,7 +63,7 @@ module.exports = {
             policy: "appVersion",
         },
         updates: {
-            url: "https://u.expo.dev/777197d0-632d-4500-93d8-5aee799550f8",
+            url: "https://u.expo.dev/75d5c908-4f3b-477a-bf82-4d8149ad48ca",
         },
         experiments: {
             typedRoutes: true,
