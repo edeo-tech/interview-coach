@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from decouple import config
 from utils.discord.errors import prepare_and_send_error_message
-from utils.__errors__custom_exception import CustomException
+from utils.__errors__.custom_exception import CustomException
 
 ENVIRONMENT = config('ENVIRONMENT', cast=str)
 

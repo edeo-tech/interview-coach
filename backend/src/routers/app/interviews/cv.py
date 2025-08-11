@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 from authentication import Authorization
-from utils.__errors__error_decorator_routes import error_decorator
+from utils.__errors__.error_decorator_routes import error_decorator
 from crud.interviews.cv_profiles import create_cv_profile, get_user_cv, update_cv_profile
 
 router = APIRouter()
