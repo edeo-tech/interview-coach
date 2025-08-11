@@ -12,11 +12,22 @@ export default function InterviewDetails() {
 
   const handleStartInterview = async () => {
     try {
-      const result = await startAttempt.mutateAsync(id);
-      // This is where the call screen should be navigated to
-      Alert.alert('Interview Started', `Attempt ID: ${result.data.attempt_id}`);
+      // Navigate directly to mock interview with interview data
+      // No backend call needed for frontend-only implementation
+      router.push({
+        pathname: '/mock-interview',
+        params: {
+          companyName: interview.company,
+          role: interview.role_title,
+          difficulty: interview.difficulty || 'Medium',
+          topics: JSON.stringify(interview.focus_areas || ['General Interview Skills']),
+          interviewId: id,
+          location: interview.location || 'Remote',
+          callState: 'incoming' // Start in incoming call state
+        }
+      });
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to start interview');
+      Alert.alert('Error', 'Failed to start interview');
     }
   };
 
