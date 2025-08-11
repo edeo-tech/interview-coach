@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 from authentication import Authorization
-from utils.errors.error_decorator_routes import error_decorator
+from utils.__errors__error_decorator_routes import error_decorator
 
 router = APIRouter()
 auth = Authorization()

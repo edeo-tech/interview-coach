@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from models._base import MongoBaseModel
 
-from utils.errors.custom_exception import CustomException
+from utils.__errors__custom_exception import CustomException
 from utils.mongo_helpers import exclude_created_at
 error_path = "crud/_generic"
 

@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from typing import List
 
 from authentication import Authorization
-from utils.errors.error_decorator_routes import error_decorator
+from utils.__errors__error_decorator_routes import error_decorator
 from crud.interviews.attempts import get_attempt_feedback, get_user_feedback_history
 from crud.interviews.interviews import get_interview
 

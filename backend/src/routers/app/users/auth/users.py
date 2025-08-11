@@ -11,7 +11,7 @@ from crud.users.auth.users import (
 )
 from crud._generic import _db_actions
 from models.users.authenticated_user import AuthenticatedUser
-from utils.errors.error_decorator_routes import error_decorator
+from utils.__errors__error_decorator_routes import error_decorator
 from authentication import Authorization
 
 router = APIRouter()

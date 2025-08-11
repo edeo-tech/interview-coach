@@ -6,7 +6,7 @@ from typing import List, Optional
 from datetime import datetime
 
 from authentication import Authorization
-from utils.errors.error_decorator_routes import error_decorator
+from utils.__errors__error_decorator_routes import error_decorator
 from crud.interviews.interviews import (
     create_interview_from_url as create_interview_from_url_crud,
     create_interview_from_file as create_interview_from_file_crud,
