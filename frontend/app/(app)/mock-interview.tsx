@@ -24,10 +24,16 @@ export default function MockInterview() {
         },
         onMessage: (message) => {
             console.log('AI Message:', message);
-            if (message.type === 'transcript' && message.role === 'assistant') {
-                setInterviewNotes(prev => [...prev, `AI: ${message.message}`]);
-            } else if (message.type === 'transcript' && message.role === 'user') {
-                setInterviewNotes(prev => [...prev, `You: ${message.message}`]);
+            // Handle different message types based on ElevenLabs SDK structure
+            if (message.message && typeof message.message === 'object') {
+                const msg = message.message as any;
+                if (msg.type === 'transcript') {
+                    if (message.source === 'ai') {
+                        setInterviewNotes(prev => [...prev, `AI: ${msg.text || msg.message || ''}`]);
+                    } else if (message.source === 'user') {
+                        setInterviewNotes(prev => [...prev, `You: ${msg.text || msg.message || ''}`]);
+                    }
+                }
             }
         },
         onError: (error) => console.error('Interview AI Error:', error),
@@ -72,11 +78,14 @@ export default function MockInterview() {
             await conversation.startSession({
                 agentId: process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID || 'your-agent-id-here',
                 overrides: {
-                    voice: {
-                        stability: 0.8,
-                        similarity_boost: 0.75,
+                    agent: {
+                        prompt: {
+                            prompt: interviewContext.instructions
+                        }
                     },
-                    context: interviewContext,
+                    tts: {
+                        voiceId: process.env.EXPO_PUBLIC_ELEVENLABS_VOICE_ID
+                    }
                 },
             });
         } catch (error) {
@@ -90,13 +99,17 @@ export default function MockInterview() {
     }, [conversation]);
 
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: ReturnType<typeof setInterval>;
         if (interviewStarted) {
             interval = setInterval(() => {
                 setDuration(prev => prev + 1);
             }, 1000);
         }
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
     }, [interviewStarted]);
 
     const formatDuration = (seconds: number) => {

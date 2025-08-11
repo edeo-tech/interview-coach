@@ -9,6 +9,7 @@ const AppLayout = () => {
             }}
         >
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="interviews" />
             <Stack.Screen 
                 name="mock-interview" 
                 options={{

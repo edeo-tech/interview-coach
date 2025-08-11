@@ -19,9 +19,9 @@ cloudinary.config(
 
 async def get_base_url_path() -> str:
     if ENVIRONMENT == 'development':
-        return 'dev/flight-catcher'
+        return 'dev/interview-coach'
     else:
-        return 'prod/flight-catcher'
+        return 'prod/interview-coach'
 
 async def upload_uploaded_image_to_cloudinary(
     uploaded_image_file:UploadFile,
