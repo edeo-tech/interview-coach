@@ -53,6 +53,7 @@ export default function CreateInterview() {
           interview_type: interviewType,
         });
         
+        console.log('Interview created from URL:', result.data);
         Alert.alert('Success', 'Interview created successfully!', [
           { text: 'OK', onPress: () => router.push(`/interviews/${result.data._id}/details` as any) }
         ]);
@@ -76,6 +77,7 @@ export default function CreateInterview() {
 
         const result = await createFromFile.mutateAsync(formData);
         
+        console.log('Interview created from file:', result.data);
         Alert.alert('Success', 'Interview created successfully!', [
           { text: 'OK', onPress: () => router.push(`/interviews/${result.data._id}/details` as any) }
         ]);

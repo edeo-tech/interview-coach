@@ -142,8 +142,8 @@ export default function Home() {
           ) : (
             interviews.map((interview) => (
               <TouchableOpacity
-                key={interview._id}
-                onPress={() => handleInterviewPress(interview._id)}
+                key={interview.id}
+                onPress={() => handleInterviewPress(interview.id)}
                 style={styles.interviewCard}
               >
                 <View style={styles.interviewCardContent}>

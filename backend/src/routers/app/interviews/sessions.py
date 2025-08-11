@@ -55,9 +55,13 @@ async def create_interview_from_url(
         interview_type=request.interview_type
     )
     
+    # Ensure the _id is included in the response
+    interview_dict = interview.model_dump()
+    interview_dict['_id'] = str(interview.id)
+    
     return JSONResponse(
         status_code=201,
-        content=jsonable_encoder(interview.model_dump())
+        content=jsonable_encoder(interview_dict)
     )
 
 @router.post("/create/file")
@@ -92,9 +96,13 @@ async def create_interview_from_file(
         interview_type=interview_type
     )
     
+    # Ensure the _id is included in the response
+    interview_dict = interview.model_dump()
+    interview_dict['_id'] = str(interview.id)
+    
     return JSONResponse(
         status_code=201,
-        content=jsonable_encoder(interview.model_dump())
+        content=jsonable_encoder(interview_dict)
     )
 
 @router.get("/")
@@ -107,9 +115,16 @@ async def list_user_interviews(
     """Get all interviews for the current user"""
     interviews = await get_user_interviews(req, user_id, limit)
     
+    # Ensure _id is included in the response for each interview
+    interviews_data = []
+    for interview in interviews:
+        interview_dict = interview.model_dump()
+        interview_dict['_id'] = str(interview.id)
+        interviews_data.append(interview_dict)
+    
     return JSONResponse(
         status_code=200,
-        content=jsonable_encoder([interview.model_dump() for interview in interviews])
+        content=jsonable_encoder(interviews_data)
     )
 
 @router.get("/{interview_id}")
@@ -131,11 +146,21 @@ async def get_interview_details(
     # Get all attempts for this interview
     attempts = await get_interview_attempts(req, interview_id)
     
+    # Ensure _id is included in the response
+    interview_dict = interview.model_dump()
+    interview_dict['_id'] = str(interview.id)
+    
+    attempts_data = []
+    for attempt in attempts:
+        attempt_dict = attempt.model_dump()
+        attempt_dict['_id'] = str(attempt.id)
+        attempts_data.append(attempt_dict)
+    
     return JSONResponse(
         status_code=200,
         content=jsonable_encoder({
-            "interview": interview.model_dump(),
-            "attempts": [attempt.model_dump() for attempt in attempts]
+            "interview": interview_dict,
+            "attempts": attempts_data
         })
     )
 

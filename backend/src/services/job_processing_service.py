@@ -129,13 +129,33 @@ class JobProcessingService:
             )
     
     async def _process_job_url_with_openai(self, url: str) -> Dict[str, Any]:
-        """Use OpenAI to fetch and extract job data from URL"""
+        """Fetch URL content and use OpenAI to extract job data"""
         
+        # First, scrape the website content
+        try:
+            web_content = await self._scrape_url_content(url)
+        except Exception as e:
+            logger.error(f"Failed to scrape URL {url}: {str(e)}")
+            raise HTTPException(
+                status_code=400,
+                detail="Failed to access the job posting URL. Please ensure the URL is correct and publicly accessible."
+            )
+        
+        if not web_content.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="No content found at the provided URL. The page might be empty or require authentication."
+            )
+        
+        # Use OpenAI to parse the scraped content
         prompt = f"""
-Visit the following job posting URL and extract structured information:
-URL: {url}
+Extract structured job posting information from the following webpage content:
 
-Return a JSON object with this structure:
+URL: {url}
+Content:
+{web_content[:8000]}  
+
+Return ONLY a JSON object with this exact structure:
 {{
   "company": "Company name",
   "role_title": "Job title/position",
@@ -165,12 +185,11 @@ Return a JSON object with this structure:
 }}
 
 Instructions:
-1. Visit the URL and extract all relevant job information
-2. If the page requires JavaScript rendering, note this in extraction_notes
-3. Categorize experience level based on years required and seniority keywords
-4. Extract technical skills and tools mentioned throughout the posting
-5. Provide confidence score based on extraction quality
-6. Return ONLY the JSON object, no additional text
+1. Extract information from the provided webpage content
+2. Categorize experience level based on years required and seniority keywords
+3. Extract ALL technical skills and tools mentioned
+4. Use empty strings for missing information
+5. Return ONLY the JSON object
 """
         
         messages = [{"role": "user", "content": prompt}]
@@ -178,7 +197,7 @@ Instructions:
         response = await self.client.post(
             "/chat/completions",
             json={
-                "model": "gpt-4o",
+                "model": "gpt-4o-mini",  # More cost-effective for text processing
                 "messages": messages,
                 "response_format": {"type": "json_object"},
                 "temperature": 0.1,
@@ -196,6 +215,55 @@ Instructions:
             return json.loads(content)
         except json.JSONDecodeError as e:
             raise Exception(f"Failed to parse OpenAI response as JSON: {str(e)}")
+    
+    async def _scrape_url_content(self, url: str) -> str:
+        """Scrape content from URL using HTTP requests"""
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+        }
+        
+        try:
+            # Create a separate HTTP client for web scraping
+            async with httpx.AsyncClient(
+                timeout=30.0,
+                headers=headers,
+                follow_redirects=True
+            ) as scraping_client:
+                response = await scraping_client.get(url)
+                response.raise_for_status()
+                
+                # Parse HTML content
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # Remove unwanted elements
+                for element in soup(["script", "style", "nav", "header", "footer", "aside"]):
+                    element.decompose()
+                
+                # Extract text content
+                text_content = soup.get_text()
+                
+                # Clean up whitespace
+                lines = [line.strip() for line in text_content.splitlines() if line.strip()]
+                cleaned_content = '\n'.join(lines)
+                
+                return cleaned_content
+                
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403:
+                raise Exception("Access forbidden - the website may be blocking automated requests")
+            elif e.response.status_code == 404:
+                raise Exception("Job posting not found - the URL may be incorrect or expired")
+            else:
+                raise Exception(f"HTTP error {e.response.status_code}: {e.response.text}")
+        except httpx.TimeoutException:
+            raise Exception("Request timeout - the website took too long to respond")
+        except Exception as e:
+            raise Exception(f"Failed to scrape URL content: {str(e)}")
     
     async def _extract_pdf_content(self, content: bytes) -> tuple[str, List[str]]:
         """Extract both text and images from PDF"""

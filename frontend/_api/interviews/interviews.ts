@@ -11,7 +11,7 @@ export interface CreateInterviewFromFileRequest {
 }
 
 export interface Interview {
-  _id: string;
+  id: string;
   user_id: string;
   company: string;
   role_title: string;
@@ -31,7 +31,7 @@ export interface Interview {
 }
 
 export interface InterviewAttempt {
-  _id: string;
+  id: string;
   interview_id: string;
   status: 'active' | 'completed' | 'graded';
   agent_id?: string;
