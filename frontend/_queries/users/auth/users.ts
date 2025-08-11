@@ -23,8 +23,7 @@ import {
 const post_login_logic = async (
     response: LoginResponse,
     queryClient: QueryClient,
-    router: Router,
-    posthog: any
+    router: Router
 ) =>
 {
     // Set tokens in secure storage
@@ -37,24 +36,18 @@ const post_login_logic = async (
         // Purchases.logIn(response.user.id);
         // Purchases.setEmail(response.user.email);
         
-        posthog.identify(response.user.id, {
-            username: response.user.username,
-            os: Platform.OS,
-        });
+        // posthog.identify(response.user.id, {
+        //     name: response.user.name,
+        //     email: response.user.email,
+        //     os: Platform.OS,
+        // });
     }
 
     // Update auth cache with the new user data
     queryClient.setQueryData(['auth'], response.user);
 
-    // if (response.user.accepted_terms)
-    // {
-    //     router.push('/(app)/(navtabs)/home');
-    // }
-    // else
-    // {
-    //     router.replace('/accept-terms');
-    // }
-    // router.replace('/(app)/(navtabs)/home');
+    // Navigate to home screen after successful login
+    router.replace('/(app)/(tabs)/home');
 }
 
 
@@ -72,7 +65,7 @@ export const useRegister = () =>
 }
 
 // login query
-export const useLogin = ({posthog}: {posthog: any}) =>
+export const useLogin = () =>
 {
     const queryClient = useQueryClient();
 
@@ -80,7 +73,7 @@ export const useLogin = ({posthog}: {posthog: any}) =>
         mutationFn: async (body: LoginUser) => (await usersAuthApi.login(body)).data,
         onSuccess: async (response: LoginResponse) => {
             try {
-                await post_login_logic(response, queryClient, router, posthog);
+                await post_login_logic(response, queryClient, router);
             } catch (error) {
                 console.error('Error in post_login_logic:', error);
                 throw error; // This will cause the mutation to be marked as failed

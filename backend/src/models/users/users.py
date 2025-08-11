@@ -1,19 +1,17 @@
-from pydantic import Field, BaseModel, field_validator
+from pydantic import Field, BaseModel, field_validator, EmailStr
 import re
 from datetime import datetime, timezone
 
 from models._base import MongoBaseModel
 
-E164_REGEX = re.compile(r'^\+[1-9]\d{1,14}$')
-
 class User(MongoBaseModel):
-    username:str = Field(
+    name:str = Field(
         ...,
-        description='The username of the user'
+        description='The full name of the user'
     )
-    phone_number:str = Field(
+    email:EmailStr = Field(
         ...,
-        description='The phone number of the user'
+        description='The email address of the user'
     )
     password:str = Field(
         ...,
@@ -23,10 +21,6 @@ class User(MongoBaseModel):
         default='',
         description='The profile picture of the user URL'
     )
-    xp_earned:int = Field(
-        default=0,
-        description='The amount of XP the user has earned'
-    )
     profile_qrcode:str = Field(
         default='',
         description='The profile QR code of the user URL'
@@ -35,20 +29,8 @@ class User(MongoBaseModel):
         default='',
         description='The Expo notification token of the user'
     )
-    radius:int = Field(
-        default=1,
-        description='The radius within which the user will be notified of new airplanes. Default is one mile.'
-    )
-    last_lat:float = Field(
-        ...,
-        description='The latitude of the user'
-    )
-    last_long:float = Field(
-        ...,
-        description='The longitude of the user'
-    )
     device_os:str = Field(
-        ...,
+        default='',
         description='The operating system of the user'
     )
     last_login:datetime = Field(
@@ -60,18 +42,10 @@ class User(MongoBaseModel):
         description='Whether the user is banned'
     )
 
-    @field_validator('phone_number')
-    def must_be_e164(cls, v):
-        if not E164_REGEX.fullmatch(v):
-            raise ValueError(
-                'phone_number must be in E.164 format, e.g. "+447911123456"'
-            )
-        return v
-
 class LoginUser(BaseModel):
-    username:str = Field(
+    email:EmailStr = Field(
         ...,
-        description='The username of the user'
+        description='The email address of the user'
     )
     password:str = Field(
         ...,

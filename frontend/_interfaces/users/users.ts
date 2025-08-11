@@ -1,18 +1,13 @@
 export interface RegisterUser
 {
-    username: string;
-    phone_number: string;
+    name: string;
+    email: string;
     password: string;
-    profile_picture: string;
-    expo_notification_token: string;
-    last_lat: string;
-    last_long: string;
-    device_os: string;
 }
 
 export interface LoginUser
 {
-    username: string;
+    email: string;
     password: string;
 }
 
@@ -28,11 +23,10 @@ export interface LoginResponse
 export interface AuthenticatedUser
 {
     id: string;
-    username: string;
+    name: string;
+    email: string;
     profile_picture?: string;
-    xp_earned: number;
     profile_qrcode?: string;
-    radius: number;
     is_banned: boolean;
     last_login?: string;
 }

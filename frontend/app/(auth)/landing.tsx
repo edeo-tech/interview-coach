@@ -1,11 +1,14 @@
-import { View, Text } from 'react-native';
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
 
 const Landing = () =>
 {
-    return (
-        <View>
-            <Text>landing</Text>
-        </View>
-    )
+    const router = useRouter();
+
+    useEffect(() => {
+        router.replace('/(auth)/login');
+    }, []);
+
+    return null;
 }
 export default Landing;

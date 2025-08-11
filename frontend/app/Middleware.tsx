@@ -1,5 +1,6 @@
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ElevenLabsProvider } from '@elevenlabs/react-native';
 
 import { AuthProvider } from '@/context/authentication/AuthContext';
 import { CustomerInfoProvider } from '@/context/purchases/CustomerInfo';
@@ -14,9 +15,11 @@ const Middleware: React.FC<MiddlewareProps> = ({ children }) => {
         <AuthProvider>
             {/* <CustomerInfoProvider> */}
                 <GestureHandlerRootView style={{ flex: 1 }}>
-                    <ModalPortalProvider>
+                    <ElevenLabsProvider>
+                        <ModalPortalProvider>
                             {children}
-                    </ModalPortalProvider>
+                        </ModalPortalProvider>
+                    </ElevenLabsProvider>
                 </GestureHandlerRootView>
             {/* </CustomerInfoProvider> */}
         </AuthProvider>

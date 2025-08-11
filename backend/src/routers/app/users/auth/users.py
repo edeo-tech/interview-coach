@@ -31,14 +31,14 @@ async def login(req:Request, login_user:LoginUser):
         req=req,
         collection_name='users',
         BaseModel=User,
-        username=login_user.username
+        email=login_user.email
     )
 
     if user is None:
-        raise HTTPException(status_code=401, detail='Invalid username or password')
+        raise HTTPException(status_code=401, detail='Invalid email or password')
 
     if not auth.verify_password(login_user.password, user.password):
-        raise HTTPException(status_code=401, detail='Invalid username or password')
+        raise HTTPException(status_code=401, detail='Invalid email or password')
 
     authenticated_user_and_tokens = await handle_login(req, user)
 
@@ -72,15 +72,20 @@ async def checkAuth(
     
     await update_user_last_active_at(req, user_id)
 
-
-    current_user = AuthenticatedUser(**jsonable_encoder(
-        user
-    )).model_dump(exclude_none=True)
-    current_user['id'] = user_id
+    print(f"USER: {user}")
+    # Convert the User model to dict, excluding sensitive fields
+    user_dict = user.model_dump(
+        exclude={'password', 'expo_notification_token', 'device_os'},
+        exclude_none=True
+    )
+    
+    # Create AuthenticatedUser from the user data
+    authenticated_user = AuthenticatedUser(**user_dict)
+    current_user_dict = authenticated_user.model_dump(exclude_none=True)
 
     return JSONResponse(
         status_code=200,
-        content=jsonable_encoder(current_user)
+        content=jsonable_encoder(current_user_dict)
     )
 
 @router.post('/logout', response_description='Logout a user')

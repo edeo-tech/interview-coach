@@ -26,6 +26,7 @@ import Middleware from './Middleware';
 import { setBackgroundColorAsync } from 'expo-navigation-bar';
 import { SplashScreenProvider, useSplashScreen } from '@/context/splash/SplashScreenContext';
 import Main from './Main';
+import { ToastProvider } from '@/components/Toast';
 
 export function ErrorBoundary(props: any) {
   const isDevelopment = process.env.EXPO_PUBLIC_MODE === 'development';
@@ -151,8 +152,10 @@ function RootLayout() {
     }
 
     return (
-        <Middleware>
-            <Main />
-        </Middleware>
+        <ToastProvider>
+            <Middleware>
+                <Main />
+            </Middleware>
+        </ToastProvider>
     );
 }

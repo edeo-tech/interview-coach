@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/context/authentication/AuthContext';
+import { useRouter } from 'expo-router';
 
 const StatCard = ({ icon, label, value, color = '#3B82F6' }: any) => (
     <View style={styles.statCard}>
@@ -19,15 +21,43 @@ const MenuItem = ({ icon, label, onPress }: any) => (
 );
 
 export default function Profile() {
+    const { auth, logout, logoutLoading } = useAuth();
+    const router = useRouter();
+
     const user = {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        avatar: 'https://i.pravatar.cc/300',
+        name: auth?.name || 'User',
+        email: auth?.email || 'user@example.com',
+        avatar: auth?.profile_picture || 'https://i.pravatar.cc/300',
         joinedDate: 'January 2025',
         totalInterviews: 15,
         averageScore: 83,
         streak: 7,
         rank: 'Advanced',
+    };
+
+    const handleLogout = () => {
+        Alert.alert(
+            'Log Out',
+            'Are you sure you want to log out?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Log Out',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await logout();
+                            router.replace('/(auth)/login');
+                        } catch (error) {
+                            console.error('Logout error:', error);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     return (
@@ -91,9 +121,13 @@ export default function Profile() {
                 </View>
             </View>
 
-            <Pressable style={styles.logoutButton}>
+            <Pressable 
+                style={[styles.logoutButton, logoutLoading && styles.logoutButtonDisabled]} 
+                onPress={handleLogout} 
+                disabled={logoutLoading}
+            >
                 <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-                <Text style={styles.logoutText}>Log Out</Text>
+                <Text style={styles.logoutText}>{logoutLoading ? 'Logging Out...' : 'Log Out'}</Text>
             </Pressable>
 
             <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
@@ -218,6 +252,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#EF4444',
         gap: 8,
+    },
+    logoutButtonDisabled: {
+        opacity: 0.6,
     },
     logoutText: {
         fontSize: 16,

@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSegments, useRouter } from "expo-router";
-import { usePostHog } from 'posthog-react-native';
 import { Platform } from 'react-native';
 
 // cookies
@@ -19,7 +18,7 @@ import { useCheckAuth, useLogin, useLogout } from '@/_queries/users/auth/users';
 import Purchases from 'react-native-purchases';
 
 // hooks
-import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
+// import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
 
 
 type AuthContextType = {
@@ -40,11 +39,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
 {
     const segments = useSegments();
     const router = useRouter();
-    const posthog = usePostHog();
-    const { posthogCapture } = usePosthogSafely();
+    // const { posthogCapture } = usePosthogSafely();
     
     const { data: auth, isLoading: authLoading, error: authError } = useCheckAuth();
-    const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess } = useLogin({posthog});
+    const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess } = useLogin();
     const { mutate: logout, isPending: logoutLoading, error: logoutError } = useLogout();
 
     const [loginErrorMessage, setLoginErrorMessage] = useState('');
@@ -82,15 +80,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
             if(Platform.OS !== 'web')
             {
                 // Purchases.logIn(auth?.id);
-                // Purchases.setEmail(auth?.email);
+                Purchases.setEmail(auth?.email);
                 
-                posthog.identify(auth?.id, {
-                    username: auth?.username,
-                    os: Platform.OS,
-                });
+                // posthog.identify(auth?.id, {
+                //     name: auth?.name,
+                //     email: auth?.email,
+                //     os: Platform.OS,
+                // });
             }
 
-            posthogCapture('sign_in', { type: 'token' });
+            // posthogCapture('sign_in', { type: 'token' });
         }
     }, [auth]);
 
