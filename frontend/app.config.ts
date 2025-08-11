@@ -1,15 +1,15 @@
 module.exports = {
     expo: {
-        name: "Interview Coach",
+        name: "Interview Guide AI",
         slug: "interview-coach",
         version: "1.0.0",
         orientation: "portrait",
-        icon: "./assets/images/icon.png",
+        icon: "./assets/images/InterviewGuideAI_app_icon.png",
         scheme: "interviewcoach",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
         splash: {
-            image: "./assets/images/splash-icon.png",
+            image: "./assets/images/InterviewGuideAI_app_icon.png",
             resizeMode: "contain",
             backgroundColor: "#000000",
         },
@@ -23,13 +23,14 @@ module.exports = {
             infoPlist: {
                 NSMicrophoneUsageDescription: "This app uses the microphone to record audio.",
                 NSPhotoLibraryUsageDescription: "This app accesses your photo library to let you pick a profile picture and submit plane captures.",
+                NSSpeechRecognitionUsageDescription: "This app uses speech recognition to transcribe your voice.",
                 ITSAppUsesNonExemptEncryption: false,
                 LSMinimumSystemVersion: "13.0"
             },
         },
         android: {
             splash: {
-                image: "./assets/images/splash-icon.png",
+                image: "./assets/images/InterviewGuideAI_app_icon.png",
                 backgroundColor: "#000000",
             },
             package: "com.interviewcoach.app",
@@ -37,7 +38,7 @@ module.exports = {
             versionCode: 1
         },
         web: {
-            favicon: "./assets/images/favicon.png",
+            favicon: "./assets/images/InterviewGuideAI_app_icon.png",
             output: "server",
         },
         plugins: [
