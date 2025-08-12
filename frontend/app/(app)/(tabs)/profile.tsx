@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Image, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useRouter } from 'expo-router';
@@ -61,6 +62,12 @@ export default function Profile() {
     };
 
     return (
+        <LinearGradient
+            colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.gradient}
+        >
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
                 <Image source={{ uri: user.avatar }} style={styles.avatar} />
@@ -132,13 +139,17 @@ export default function Profile() {
 
             <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
         </ScrollView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
+    gradient: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: 'transparent',
     },
     header: {
         alignItems: 'center',
@@ -189,11 +200,11 @@ const styles = StyleSheet.create({
     },
     statCard: {
         alignItems: 'center',
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'rgba(255,255,255,0.06)',
         padding: 16,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: 'rgba(255,255,255,0.08)',
         flex: 1,
         marginHorizontal: 6,
     },
@@ -220,10 +231,10 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     menuContainer: {
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'rgba(255,255,255,0.06)',
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: 'rgba(255,255,255,0.08)',
         overflow: 'hidden',
     },
     menuItem: {
@@ -231,7 +242,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#333',
+        borderBottomColor: 'rgba(255,255,255,0.08)',
     },
     menuLabel: {
         flex: 1,
@@ -244,13 +255,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'rgba(255,255,255,0.06)',
         marginHorizontal: 20,
         marginBottom: 16,
         padding: 16,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#EF4444',
+        borderColor: 'rgba(239,68,68,0.45)',
         gap: 8,
     },
     logoutButtonDisabled: {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useInterviews } from '../../../_queries/interviews/interviews';
@@ -9,6 +10,7 @@ import { useCV } from '../../../_queries/interviews/cv';
 export default function Home() {
   const { data: interviews, isLoading: interviewsLoading } = useInterviews();
   const { data: cv } = useCV();
+  const insets = useSafeAreaInsets();
 
   const handleCreateNewInterview = () => {
     if (!cv) {
@@ -58,12 +60,27 @@ export default function Home() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <LinearGradient
+      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.gradient}
+    >
+      <View style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardDismissMode="on-drag"
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: insets.bottom + 100,
+          gap: 16,
+        }}
+      >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Interviews</Text>
+            <Text style={styles.headerTitle}>Your interviews</Text>
             <Text style={styles.headerSubtitle}>
               Practice with AI-powered mock interviews
             </Text>
@@ -76,6 +93,16 @@ export default function Home() {
             <Ionicons name="document-text" size={20} color="white" />
           </TouchableOpacity>
         </View>
+
+        {/* Quick Action: Create New Interview (card style) */}
+        <TouchableOpacity onPress={handleCreateNewInterview} style={styles.createCard}>
+          <View style={styles.createCardLeft}>
+            <Ionicons name="add" size={24} color="#ffffff" />
+          </View>
+          <View style={styles.createCardRight}>
+            <Text style={styles.createCardTitle}>Create new interview</Text>
+          </View>
+        </TouchableOpacity>
 
         {/* CV Status */}
         {!cv && (
@@ -108,17 +135,6 @@ export default function Home() {
           </View>
         )}
 
-        {/* New Interview Button */}
-        <TouchableOpacity
-          onPress={handleCreateNewInterview}
-          style={styles.newInterviewButton}
-        >
-          <Ionicons name="add-circle" size={24} color="white" />
-          <Text style={styles.newInterviewText}>
-            Create New Interview
-          </Text>
-        </TouchableOpacity>
-
         {/* Recent Interviews */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -147,121 +163,161 @@ export default function Home() {
                 style={styles.interviewCard}
               >
                 <View style={styles.interviewCardContent}>
+                  <View style={styles.cardLeftAccent}>
+                    <Ionicons 
+                      name={getInterviewTypeIcon(interview.interview_type) as any}
+                      size={14} 
+                      color="#ffffff" 
+                    />
+                  </View>
+                  
                   <View style={styles.interviewCardLeft}>
                     <View style={styles.interviewCardHeader}>
-                      <Ionicons 
-                        name={getInterviewTypeIcon(interview.interview_type) as any}
-                        size={16} 
-                        color="#9ca3af" 
-                      />
-                      <Text style={styles.interviewTitle}>
+                      <Text style={styles.interviewTitle} numberOfLines={1}>
                         {interview.role_title}
                       </Text>
-                    </View>
-                    
-                    <Text style={styles.interviewCompany}>
-                      {interview.company}
-                    </Text>
-                    
-                    <View style={styles.interviewLocation}>
-                      <Ionicons name="location-outline" size={12} color="#6b7280" />
-                      <Text style={styles.locationText}>
-                        {interview.location || 'Remote'}
+                      <Text style={styles.interviewCompany} numberOfLines={1}>
+                        {" • "}{interview.company}
                       </Text>
                     </View>
                     
                     <View style={styles.interviewMeta}>
-                      <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) }]}>
-                        {interview.experience_level || interview.difficulty}
-                      </Text>
+                      <View style={styles.interviewLocation}>
+                        <Ionicons name="location-outline" size={12} color="#6b7280" style={{flexShrink: 0}} />
+                        <Text style={styles.locationText} numberOfLines={1}>
+                          {interview.location || 'Remote'}
+                        </Text>
+                      </View>
                       <Text style={styles.metaSeparator}>•</Text>
-                      <Text style={styles.interviewType}>
-                        {interview.employment_type || 'Full-time'}
+                      <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) }]} numberOfLines={1}>
+                        {interview.experience_level || interview.difficulty}
                       </Text>
                     </View>
                   </View>
                   
-                  <View style={styles.interviewCardRight}>
-                    <Text style={styles.interviewDate}>
-                      {formatDate(interview.created_at)}
-                    </Text>
-                    <Ionicons name="chevron-forward" size={16} color="#6b7280" />
-                  </View>
+                  <Text style={styles.interviewDate}>
+                    {formatDate(interview.created_at)}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+
+    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: 'transparent',
   },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
+  scrollView: {},
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 20,
+    alignItems: 'flex-start',
+    paddingTop: 20,
+    paddingBottom: 24,
   },
   headerText: {
     flex: 1,
+    marginRight: 16,
   },
   headerTitle: {
     color: '#ffffff',
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
+    letterSpacing: -0.5,
+    marginBottom: 6,
   },
   headerSubtitle: {
     color: '#9ca3af',
-    fontSize: 14,
-    marginTop: 4,
+    fontSize: 15,
+    lineHeight: 20,
   },
   headerButton: {
-    backgroundColor: '#374151',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     padding: 12,
     borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   statusCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 24,
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  createCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)'
+  },
+  createCardLeft: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)'
+  },
+  createCardRight: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  createCardTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   warningCard: {
-    backgroundColor: 'rgba(146, 64, 14, 0.2)',
-    borderColor: 'rgba(217, 119, 6, 0.3)',
+    backgroundColor: 'rgba(146, 64, 14, 0.15)',
+    borderColor: 'rgba(217, 119, 6, 0.25)',
   },
   successCard: {
-    backgroundColor: 'rgba(5, 46, 22, 0.2)',
-    borderColor: 'rgba(34, 197, 94, 0.3)',
+    backgroundColor: 'rgba(5, 46, 22, 0.15)',
+    borderColor: 'rgba(34, 197, 94, 0.25)',
   },
   statusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 2,
   },
   warningTitle: {
     color: '#fbbf24',
     fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 16,
+    marginLeft: 10,
   },
   successTitle: {
     color: '#10b981',
     fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 16,
+    marginLeft: 10,
   },
   statusDescription: {
     color: '#d1d5db',
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: 15,
+    lineHeight: 20,
+    marginTop: 12,
+    marginBottom: 4,
   },
   statusAction: {
     marginTop: 12,
@@ -270,21 +326,7 @@ const styles = StyleSheet.create({
     color: '#fbbf24',
     fontWeight: '600',
   },
-  newInterviewButton: {
-    backgroundColor: '#2563eb',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  newInterviewText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    marginLeft: 8,
-    fontSize: 18,
-  },
+
   section: {
     marginBottom: 24,
   },
@@ -295,88 +337,131 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyState: {
-    backgroundColor: '#374151',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 12,
-    padding: 24,
+    padding: 20,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    marginTop: 4,
   },
   emptyStateText: {
     color: '#9ca3af',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    maxWidth: '80%',
   },
   emptyStateTitle: {
-    color: '#9ca3af',
-    fontSize: 18,
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: '600',
-    marginTop: 16,
+    marginTop: 12,
+    marginBottom: 4,
+    textAlign: 'center',
   },
   emptyStateSubtitle: {
-    color: '#6b7280',
+    color: '#9ca3af',
+    fontSize: 13,
+    lineHeight: 18,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: 4,
+    paddingHorizontal: 12,
   },
   interviewCard: {
-    backgroundColor: '#374151',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 8,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   interviewCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    minHeight: 44,
+    gap: 8,
+  },
+  cardLeftAccent: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)'
   },
   interviewCardLeft: {
     flex: 1,
+    minWidth: 0, // Ensures text truncation works properly
   },
   interviewCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   interviewTitle: {
     color: '#ffffff',
+    fontSize: 13,
     fontWeight: '600',
-    marginLeft: 8,
+    lineHeight: 18,
+    flexShrink: 1,
   },
   interviewCompany: {
     color: '#d1d5db',
-    marginBottom: 4,
-  },
-  interviewLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  locationText: {
-    color: '#6b7280',
-    fontSize: 12,
-    marginLeft: 4,
+    fontSize: 13,
+    lineHeight: 18,
+    flexShrink: 1,
   },
   interviewMeta: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'nowrap',
+  },
+  interviewLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  locationText: {
+    color: '#9ca3af',
+    fontSize: 12,
+    lineHeight: 16,
+    marginLeft: 2,
+    flexShrink: 1,
   },
   difficultyText: {
     fontSize: 12,
-    fontWeight: '600',
+    lineHeight: 16,
+    fontWeight: '500',
     textTransform: 'capitalize',
+    flexShrink: 0,
   },
   metaSeparator: {
     color: '#6b7280',
     fontSize: 12,
-    marginHorizontal: 8,
+    marginHorizontal: 4,
+    lineHeight: 16,
+    flexShrink: 0,
   },
   interviewType: {
-    color: '#6b7280',
+    color: '#9ca3af',
     fontSize: 12,
+    lineHeight: 16,
     textTransform: 'capitalize',
+    flexShrink: 1,
   },
   interviewCardRight: {
-    alignItems: 'flex-end',
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+    marginTop: 2,
   },
   interviewDate: {
-    color: '#6b7280',
-    fontSize: 12,
+    color: '#9ca3af',
+    fontSize: 11,
+    lineHeight: 16,
   },
+
 });
 

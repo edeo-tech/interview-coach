@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useInterview, useStartAttempt } from '../../../../_queries/interviews/interviews';
@@ -59,7 +60,13 @@ export default function InterviewDetails() {
   const { interview, attempts } = interviewData;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.gradient}
+    >
+      <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
@@ -110,13 +117,17 @@ export default function InterviewDetails() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,
@@ -166,10 +177,12 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   jobCard: {
-    backgroundColor: '#1f2937',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)'
   },
   roleTitle: {
     color: '#ffffff',
@@ -187,13 +200,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   startButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#F43F5E',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   startButtonText: {
     color: '#ffffff',
@@ -216,10 +234,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   attemptCard: {
-    backgroundColor: '#1f2937',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)'
   },
   attemptDate: {
     color: '#ffffff',
