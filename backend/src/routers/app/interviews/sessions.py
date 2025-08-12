@@ -29,7 +29,6 @@ class CreateInterviewFromFileRequest(BaseModel):
 
 class StartAttemptResponse(BaseModel):
     attempt_id: str
-    agent_id: str
 
 class TranscriptTurn(BaseModel):
     speaker: str  # user or agent
@@ -172,28 +171,30 @@ async def start_interview_attempt(
     user_id: str = Depends(auth.auth_wrapper)
 ) -> StartAttemptResponse:
     """Start a new interview attempt"""
+    print(f"\n▶️  [API] Received start interview request:")
+    print(f"   - Interview ID: {interview_id}")
+    print(f"   - User ID: {user_id}")
+    
     # Verify interview exists and belongs to user
     interview = await get_interview(req, interview_id)
     
     if not interview:
+        print(f"   ❌ ERROR: Interview {interview_id} not found")
         raise HTTPException(status_code=404, detail="Interview not found")
     
     if interview.user_id != user_id:
+        print(f"   ❌ ERROR: Access denied - interview belongs to {interview.user_id}, not {user_id}")
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # Create attempt record
+    print(f"   - Interview details: {interview.role_title} at {interview.company}")
+    
+    # Create attempt record (frontend handles ElevenLabs entirely)
     attempt = await create_attempt(req, interview_id)
-    
-    # Initialize ElevenLabs agent
-    from services.elevenlabs_service import create_interview_agent
-    agent_id = await create_interview_agent(interview_id, user_id)
-    
-    # Update attempt with agent_id
-    await update_attempt(req, attempt.id, agent_id=agent_id)
-    
+
+    print(f"   ✅ SUCCESS: Started attempt with ID: {attempt.id}")
     return JSONResponse(
         status_code=200,
-        content={"attempt_id": attempt.id, "agent_id": agent_id}
+        content={"attempt_id": attempt.id}
     )
 
 @router.post("/{interview_id}/transcript")
@@ -205,16 +206,25 @@ async def add_transcript(
     user_id: str = Depends(auth.auth_wrapper)
 ):
     """Add a turn to the interview transcript"""
+    print(f"\n📡 [API] Received transcript turn request:")
+    print(f"   - Interview ID: {interview_id}")
+    print(f"   - Speaker: {turn.speaker}")
+    print(f"   - Text preview: {turn.text[:100]}..." if len(turn.text) > 100 else f"   - Text: {turn.text}")
+    
     # Get the active attempt for this interview
     attempts = await get_interview_attempts(req, interview_id)
     active_attempt = next((a for a in attempts if a.status == "active"), None)
     
     if not active_attempt:
+        print(f"   ❌ ERROR: No active attempt found for interview {interview_id}")
         raise HTTPException(status_code=400, detail="No active attempt found")
+    
+    print(f"   - Active attempt ID: {active_attempt.id}")
     
     # Verify ownership through interview
     interview = await get_interview(req, interview_id)
     if not interview or interview.user_id != user_id:
+        print(f"   ❌ ERROR: Access denied for user {user_id}")
         raise HTTPException(status_code=403, detail="Access denied")
     
     updated_attempt = await add_transcript_turn(
@@ -222,8 +232,10 @@ async def add_transcript(
     )
     
     if not updated_attempt:
+        print(f"   ❌ ERROR: Failed to add transcript turn")
         raise HTTPException(status_code=400, detail="Failed to add transcript turn")
     
+    print(f"   ✅ SUCCESS: Transcript turn added successfully")
     return JSONResponse(
         status_code=200,
         content={"message": "Transcript updated successfully"}
@@ -238,32 +250,43 @@ async def finish_interview_attempt(
     user_id: str = Depends(auth.auth_wrapper)
 ):
     """Finish an interview attempt and trigger grading"""
+    print(f"\n🔚 [API] Received finish interview request:")
+    print(f"   - Interview ID: {interview_id}")
+    print(f"   - Attempt ID: {finish_request.attempt_id}")
+    print(f"   - Duration: {finish_request.duration_seconds} seconds")
+    
     # Verify ownership
     interview = await get_interview(req, interview_id)
     if not interview or interview.user_id != user_id:
+        print(f"   ❌ ERROR: Access denied for user {user_id}")
         raise HTTPException(status_code=403, detail="Access denied")
     
     # Verify attempt exists and is active
     attempt = await get_attempt(req, finish_request.attempt_id)
     if not attempt or attempt.interview_id != interview_id:
+        print(f"   ❌ ERROR: Invalid attempt")
         raise HTTPException(status_code=400, detail="Invalid attempt")
     
     if attempt.status != "active":
+        print(f"   ❌ ERROR: Attempt status is {attempt.status}, not active")
         raise HTTPException(status_code=400, detail="Attempt is not active")
+    
+    print(f"   - Current transcript length: {len(attempt.transcript)}")
     
     # Mark attempt complete
     completed_attempt = await finish_attempt(
         req, finish_request.attempt_id, finish_request.duration_seconds
     )
     
-    # Trigger grading (async task)
+    # Trigger grading (async task). No server-side ElevenLabs agent to clean up.
+    print(f"   - Triggering grading service...")
     from services.grading_service import trigger_interview_grading
-    await trigger_interview_grading(finish_request.attempt_id)
+    grading_result = await trigger_interview_grading(req, finish_request.attempt_id)
     
-    # Cleanup ElevenLabs agent
-    if attempt.agent_id:
-        from services.elevenlabs_service import cleanup_agent
-        await cleanup_agent(attempt.agent_id)
+    if grading_result:
+        print(f"   ✅ SUCCESS: Interview finished and grading triggered successfully")
+    else:
+        print(f"   ⚠️  WARNING: Interview finished but grading may have failed")
     
     return JSONResponse(
         status_code=200,

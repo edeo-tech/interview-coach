@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { feedbackApi, InterviewFeedback, InterviewStats } from '../../_api/interviews/feedback';
 
 // Query keys
@@ -11,7 +11,10 @@ export const feedbackKeys = {
 };
 
 // Hooks
-export const useAttemptFeedback = (attemptId: string) => {
+export const useAttemptFeedback = (
+  attemptId: string,
+  options?: Partial<UseQueryOptions<InterviewFeedback>>
+) => {
   return useQuery({
     queryKey: feedbackKeys.attempt(attemptId),
     queryFn: async () => {
@@ -19,6 +22,17 @@ export const useAttemptFeedback = (attemptId: string) => {
       return response.data;
     },
     enabled: !!attemptId,
+    // Poll every 2 seconds while grading is in progress
+    refetchInterval: (data) => {
+      // If we have data, stop polling
+      if (data) return false;
+      // Otherwise, keep polling every 2 seconds
+      return 2000;
+    },
+    // Retry more times for feedback since grading can take time
+    retry: 10,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    ...(options || {}),
   });
 };
 

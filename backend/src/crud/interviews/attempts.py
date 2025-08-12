@@ -7,6 +7,9 @@ from models.interviews.attempts import InterviewAttempt, InterviewFeedback
 
 async def create_attempt(req: Request, interview_id: str) -> InterviewAttempt:
     """Create a new interview attempt"""
+    print(f"\n🚀 [ATTEMPT] Creating new interview attempt:")
+    print(f"   - Interview ID: {interview_id}")
+    
     attempt_data = InterviewAttempt(
         interview_id=interview_id,
         status="active",
@@ -15,7 +18,14 @@ async def create_attempt(req: Request, interview_id: str) -> InterviewAttempt:
         started_at=datetime.now(timezone.utc)
     )
     
-    return await createDocument(req, "interview_attempts", InterviewAttempt, attempt_data)
+    result = await createDocument(req, "interview_attempts", InterviewAttempt, attempt_data)
+    
+    if result:
+        print(f"   ✅ SUCCESS: Created attempt with ID: {result.id}")
+    else:
+        print(f"   ❌ ERROR: Failed to create attempt!")
+    
+    return result
 
 async def get_attempt(req: Request, attempt_id: str) -> Optional[InterviewAttempt]:
     """Get a specific attempt by ID"""
@@ -44,10 +54,19 @@ async def add_transcript_turn(
     if timestamp is None:
         timestamp = datetime.now(timezone.utc)
     
+    print(f"\n🎤 [TRANSCRIPT] Adding transcript segment:")
+    print(f"   - Attempt ID: {attempt_id}")
+    print(f"   - Speaker: {speaker}")
+    print(f"   - Text preview: {text[:100]}..." if len(text) > 100 else f"   - Text: {text}")
+    print(f"   - Timestamp: {timestamp.isoformat()}")
+    
     # Get current attempt
     attempt = await get_attempt(req, attempt_id)
     if not attempt:
+        print(f"   ❌ ERROR: Attempt {attempt_id} not found!")
         return None
+    
+    print(f"   - Current transcript length: {len(attempt.transcript)}")
     
     # Add new turn
     new_turn = {
@@ -58,7 +77,14 @@ async def add_transcript_turn(
     
     updated_transcript = attempt.transcript + [new_turn]
     
-    return await update_attempt(req, attempt_id, transcript=updated_transcript)
+    result = await update_attempt(req, attempt_id, transcript=updated_transcript)
+    
+    if result:
+        print(f"   ✅ SUCCESS: Transcript updated! New length: {len(updated_transcript)}")
+    else:
+        print(f"   ❌ ERROR: Failed to update transcript!")
+    
+    return result
 
 async def finish_attempt(
     req: Request, 
@@ -66,6 +92,10 @@ async def finish_attempt(
     final_duration: int = None
 ) -> Optional[InterviewAttempt]:
     """Mark an attempt as completed"""
+    print(f"\n🏁 [ATTEMPT] Finishing interview attempt:")
+    print(f"   - Attempt ID: {attempt_id}")
+    print(f"   - Duration: {final_duration} seconds" if final_duration else "   - Duration: Not specified")
+    
     update_data = {
         "status": "completed",
         "ended_at": datetime.now(timezone.utc)
@@ -74,7 +104,15 @@ async def finish_attempt(
     if final_duration:
         update_data["duration_seconds"] = final_duration
     
-    return await update_attempt(req, attempt_id, **update_data)
+    result = await update_attempt(req, attempt_id, **update_data)
+    
+    if result:
+        print(f"   ✅ SUCCESS: Attempt marked as completed!")
+        print(f"   - Final transcript length: {len(result.transcript)}")
+    else:
+        print(f"   ❌ ERROR: Failed to finish attempt!")
+    
+    return result
 
 # Feedback operations
 async def create_feedback(
@@ -87,6 +125,13 @@ async def create_feedback(
     rubric_scores: Dict[str, int]
 ) -> InterviewFeedback:
     """Create feedback for an interview attempt"""
+    print(f"\n📝 [FEEDBACK] Creating interview feedback:")
+    print(f"   - Attempt ID: {attempt_id}")
+    print(f"   - Overall Score: {overall_score}/100")
+    print(f"   - Strengths: {len(strengths)} items")
+    print(f"   - Improvement Areas: {len(improvement_areas)} items")
+    print(f"   - Rubric Categories: {list(rubric_scores.keys())}")
+    
     feedback_data = InterviewFeedback(
         attempt_id=attempt_id,
         overall_score=overall_score,
@@ -96,7 +141,14 @@ async def create_feedback(
         rubric_scores=rubric_scores
     )
     
-    return await createDocument(req, "interview_feedback", InterviewFeedback, feedback_data)
+    result = await createDocument(req, "interview_feedback", InterviewFeedback, feedback_data)
+    
+    if result:
+        print(f"   ✅ SUCCESS: Created feedback with ID: {result.id}")
+    else:
+        print(f"   ❌ ERROR: Failed to create feedback!")
+    
+    return result
 
 async def get_attempt_feedback(req: Request, attempt_id: str) -> Optional[InterviewFeedback]:
     """Get feedback for a specific attempt"""

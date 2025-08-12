@@ -11,11 +11,7 @@ const AppLayout = () => {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="interviews" />
             <Stack.Screen 
-                name="mock-interview" 
-                options={{
-                    presentation: 'modal',
-                    animation: 'slide_from_bottom'
-                }}
+                name="mock-interview"
             />
         </Stack>
     )

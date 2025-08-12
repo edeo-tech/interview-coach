@@ -37,10 +37,7 @@ async def get_interview_feedback(
     if not interview or interview.user_id != user_id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    return JSONResponse(
-        status_code=200,
-        content=jsonable_encoder(feedback.model_dump())
-    )
+    return JSONResponse(status_code=200, content=jsonable_encoder(feedback.model_dump()))
 
 @router.get("/")
 @error_decorator
