@@ -57,11 +57,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
         console.log('auth', auth);
         console.log('segments', segments);
         console.log('authLoading', authLoading);
-        // Only prevent unauthenticated users from accessing protected routes
-        if(!auth?.id && segments[0] === '(app)')
+        console.log('authError', authError);
+        
+        // If there's an auth error or no auth, redirect to login from protected routes
+        if((!auth?.id || authError) && segments[0] === '(app)')
         {
             const userId = await getUserId();
-            if(userId) router.replace(`/(auth)/welcome-back?userId=${userId}`);
+            if(userId && !authError) router.replace(`/(auth)/welcome-back?userId=${userId}`);
             else router.replace('/(auth)/landing');
         }
     }
@@ -71,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
         // Skip navigation logic if we're still loading auth
         if (authLoading) return;
         navigate();
-    }, [auth, authLoading, segments]);
+    }, [auth, authLoading, authError, segments]);
 
     useEffect(() =>
     {

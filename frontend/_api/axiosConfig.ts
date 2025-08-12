@@ -115,6 +115,17 @@ protectedApi.interceptors.response.use(
         {
             processQueue(refreshError as AxiosError);
             clearAllCookies();
+            
+            // Import router at the top of the file if needed
+            if (typeof window !== 'undefined') {
+                // Web environment
+                window.location.href = '/login';
+            } else {
+                // Native environment - we need to import router
+                const { router } = require('expo-router');
+                router.replace('/(auth)/landing');
+            }
+            
             return Promise.reject(refreshError);
         }
         finally

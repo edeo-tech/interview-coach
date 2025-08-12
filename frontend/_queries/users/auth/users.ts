@@ -93,7 +93,12 @@ export const useCheckAuth = () =>
         queryKey: ['auth'],
         queryFn: async () => (await usersAuthApi.checkAuth()).data,
         staleTime: Infinity,
-        retry: false
+        retry: false,
+        onError: (error: any) => {
+            // If auth check fails, clear cookies and redirect to login
+            clearAllCookies();
+            router.replace('/(auth)/landing');
+        }
     });
 }
 
