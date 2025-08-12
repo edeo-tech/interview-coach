@@ -6,7 +6,9 @@
       "Bash(rm:*)",
       "Bash(mkdir:*)",
       "Bash(pip install:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

@@ -2,9 +2,9 @@ import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useConversation } from '@elevenlabs/react-native';
 import { useCV } from '../../_queries/interviews/cv';
 import { useAuth } from '../../context/authentication/AuthContext';
+import MockInterviewConversation from '../../components/MockInterviewConversation';
 
 export default function MockInterview() {
     const params = useLocalSearchParams();
@@ -124,9 +124,7 @@ export default function MockInterview() {
                 return "Answer evaluated!";
             },
         },
-    }), []);
-
-    const conversation = useConversation(conversationConfig);
+    }), [interviewNotes.length]);
 
     const buildInterviewPrompt = useCallback(() => {
         const userName = auth?.name || 'Candidate';
@@ -162,7 +160,7 @@ INTERVIEW GUIDELINES:
 Remember: This is a practice interview to help ${userName} improve their interview skills. Be supportive while maintaining interview realism.`;
     }, [auth, cvProfile, interviewer, params, topics]);
 
-    const acceptCall = useCallback(async () => {
+    const acceptCall = useCallback(async (conversation: any) => {
         setCallState('connecting');
         
         const agentId = process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID;
@@ -218,14 +216,14 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
             setCallState('incoming'); // Reset to incoming state on error
         }
-    }, [conversation, buildInterviewPrompt, auth, params]);
+    }, [buildInterviewPrompt, auth, params]);
 
     const declineCall = useCallback(() => {
         setCallState('ended');
         router.back();
     }, [router]);
 
-    const endInterview = useCallback(async () => {
+    const endInterview = useCallback(async (conversation: any) => {
         console.log('🛑 Ending interview session...');
         try {
             await conversation.endSession();
@@ -235,7 +233,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             console.error('❌ Error ending interview session:', error);
             setCallState('ended'); // Force end even if there's an error
         }
-    }, [conversation]);
+    }, []);
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
@@ -251,8 +249,6 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         };
     }, [callState]);
 
-
-
     const formatDuration = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -260,196 +256,200 @@ Remember: This is a practice interview to help ${userName} improve their intervi
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Pressable style={styles.backButton} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="#fff" />
-                </Pressable>
-                <View style={styles.headerInfo}>
-                    <Text style={styles.companyName}>{params.companyName}</Text>
-                    <Text style={styles.role}>{params.role}</Text>
-                </View>
-                {callState === 'active' && (
-                    <View style={styles.timer}>
-                        <Ionicons name="time-outline" size={16} color="#3B82F6" />
-                        <Text style={styles.timerText}>{formatDuration(duration)}</Text>
-                    </View>
-                )}
-                {callState === 'incoming' && (
-                    <View style={styles.incomingIndicator}>
-                        <Ionicons name="call" size={16} color="#10B981" />
-                        <Text style={styles.incomingText}>Incoming</Text>
-                    </View>
-                )}
-                {callState === 'connecting' && (
-                    <View style={styles.connectingIndicator}>
-                        <Ionicons name="time-outline" size={16} color="#F59E0B" />
-                        <Text style={styles.connectingText}>Connecting...</Text>
-                    </View>
-                )}
-            </View>
-
-            <ScrollView 
-                style={styles.content}
-                contentContainerStyle={styles.contentContainer}
-                showsVerticalScrollIndicator={false}
-            >
-                {callState === 'incoming' && (
-                    <View style={styles.incomingCallContainer}>
-                        <View style={styles.interviewerProfile}>
-                            <Text style={styles.interviewerAvatar}>{interviewer.avatar}</Text>
-                            <Text style={styles.interviewerName}>{interviewer.name}</Text>
-                            <Text style={styles.interviewerRole}>{interviewer.role}</Text>
-                            <Text style={styles.interviewerCompany}>@ {params.companyName}</Text>
-                        </View>
-                        
-                        <Text style={styles.incomingCallTitle}>Incoming Interview Call</Text>
-                        <Text style={styles.incomingCallSubtitle}>
-                            {interviewer.name} is calling to start your {params.difficulty} level interview
-                        </Text>
-                        
-                        <View style={styles.topicsContainer}>
-                            {topics.map((topic: string, index: number) => (
-                                <View key={index} style={styles.topicBadge}>
-                                    <Text style={styles.topicText}>{topic}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    </View>
-                )}
-
-                {callState === 'connecting' && (
-                    <View style={styles.connectingContainer}>
-                        <View style={styles.interviewerProfileSmall}>
-                            <Text style={styles.interviewerAvatarSmall}>{interviewer.avatar}</Text>
-                            <View style={styles.interviewerInfoSmall}>
-                                <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
-                                <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
-                            </View>
-                        </View>
-                        
-                        <View style={styles.connectingStatus}>
-                            <View style={styles.spinner} />
-                            <Text style={styles.connectingText}>Connecting to {interviewer.name}...</Text>
-                        </View>
-                    </View>
-                )}
-
-                {callState === 'active' && (
-                    <View style={styles.interviewContainer}>
-                        {/* Call Screen Header */}
-                        <View style={styles.callHeader}>
-                            <View style={styles.interviewerProfileSmall}>
-                                <Text style={styles.interviewerAvatarSmall}>{interviewer.avatar}</Text>
-                                <View style={styles.interviewerInfoSmall}>
-                                    <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
-                                    <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
-                                </View>
-                            </View>
-                            <View style={styles.callStatus}>
-                                <View style={styles.recordingIndicator} />
-                                <Text style={styles.callStatusText}>Recording</Text>
-                            </View>
-                        </View>
-
-                        {/* Transcript/Notes */}
-                        <View style={styles.notesContainer}>
-                            {interviewNotes.map((note, index) => (
-                                <View key={index} style={[
-                                    styles.noteItem,
-                                    note.startsWith('You:') ? styles.userNote : styles.aiNote
-                                ]}>
-                                    <Text style={styles.noteText}>{note}</Text>
-                                </View>
-                            ))}
-                            {interviewNotes.length === 0 && (
-                                <View style={styles.emptyNotes}>
-                                    <Text style={styles.emptyNotesText}>
-                                        Interview will start momentarily...
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    </View>
-                )}
-
-                {callState === 'ended' && (
-                    <View style={styles.endedContainer}>
-                        <Ionicons name="checkmark-circle" size={64} color="#10B981" />
-                        <Text style={styles.endedTitle}>Interview Complete</Text>
-                        <Text style={styles.endedSubtitle}>
-                            Thank you for completing your interview with {interviewer.name}
-                        </Text>
-                    </View>
-                )}
-            </ScrollView>
-
-            <View style={styles.footer}>
-                {callState === 'incoming' && (
-                    <View style={styles.incomingCallButtons}>
-                        <Pressable
-                            style={[styles.callActionButton, styles.declineButton]}
-                            onPress={declineCall}
-                        >
-                            <Ionicons name="call" size={28} color="#fff" />
+        <MockInterviewConversation config={conversationConfig}>
+            {(conversation) => (
+                <View style={styles.container}>
+                    <View style={styles.header}>
+                        <Pressable style={styles.backButton} onPress={() => router.back()}>
+                            <Ionicons name="arrow-back" size={24} color="#fff" />
                         </Pressable>
-                        
-                        <Pressable
-                            style={[styles.callActionButton, styles.acceptButton]}
-                            onPress={acceptCall}
-                        >
-                            <Ionicons name="call" size={28} color="#fff" />
-                        </Pressable>
-                    </View>
-                )}
-
-                {callState === 'connecting' && (
-                    <View style={styles.connectingFooter}>
-                        <Text style={styles.statusText}>Connecting...</Text>
-                    </View>
-                )}
-
-                {callState === 'active' && (
-                    <>
-                        <View style={styles.callControls}>
-                            <Pressable
-                                style={[styles.callControlButton, styles.muteButton]}
-                                onPress={() => {/* Handle mute */}}
-                            >
-                                <Ionicons name="mic-off" size={24} color="#fff" />
-                            </Pressable>
-                            
-                            <Pressable
-                                style={[styles.callControlButton, styles.endCallButton]}
-                                onPress={endInterview}
-                            >
-                                <Ionicons name="call" size={28} color="#fff" />
-                            </Pressable>
-                            
-                            <Pressable
-                                style={[styles.callControlButton, styles.speakerButton]}
-                                onPress={() => {/* Handle speaker */}}
-                            >
-                                <Ionicons name="volume-high" size={24} color="#fff" />
-                            </Pressable>
+                        <View style={styles.headerInfo}>
+                            <Text style={styles.companyName}>{params.companyName}</Text>
+                            <Text style={styles.role}>{params.role}</Text>
                         </View>
-                        
-                        <Text style={styles.statusText}>
-                            Tap the red button to end the interview
-                        </Text>
-                    </>
-                )}
+                        {callState === 'active' && (
+                            <View style={styles.timer}>
+                                <Ionicons name="time-outline" size={16} color="#3B82F6" />
+                                <Text style={styles.timerText}>{formatDuration(duration)}</Text>
+                            </View>
+                        )}
+                        {callState === 'incoming' && (
+                            <View style={styles.incomingIndicator}>
+                                <Ionicons name="call" size={16} color="#10B981" />
+                                <Text style={styles.incomingText}>Incoming</Text>
+                            </View>
+                        )}
+                        {callState === 'connecting' && (
+                            <View style={styles.connectingIndicator}>
+                                <Ionicons name="time-outline" size={16} color="#F59E0B" />
+                                <Text style={styles.connectingText}>Connecting...</Text>
+                            </View>
+                        )}
+                    </View>
 
-                {callState === 'ended' && (
-                    <Pressable
-                        style={styles.backToMenuButton}
-                        onPress={() => router.back()}
+                    <ScrollView 
+                        style={styles.content}
+                        contentContainerStyle={styles.contentContainer}
+                        showsVerticalScrollIndicator={false}
                     >
-                        <Text style={styles.backToMenuText}>Back to Interview Details</Text>
-                    </Pressable>
-                )}
-            </View>
-        </View>
+                        {callState === 'incoming' && (
+                            <View style={styles.incomingCallContainer}>
+                                <View style={styles.interviewerProfile}>
+                                    <Text style={styles.interviewerAvatar}>{interviewer.avatar}</Text>
+                                    <Text style={styles.interviewerName}>{interviewer.name}</Text>
+                                    <Text style={styles.interviewerRole}>{interviewer.role}</Text>
+                                    <Text style={styles.interviewerCompany}>@ {params.companyName}</Text>
+                                </View>
+                                
+                                <Text style={styles.incomingCallTitle}>Incoming Interview Call</Text>
+                                <Text style={styles.incomingCallSubtitle}>
+                                    {interviewer.name} is calling to start your {params.difficulty} level interview
+                                </Text>
+                                
+                                <View style={styles.topicsContainer}>
+                                    {topics.map((topic: string, index: number) => (
+                                        <View key={index} style={styles.topicBadge}>
+                                            <Text style={styles.topicText}>{topic}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
+
+                        {callState === 'connecting' && (
+                            <View style={styles.connectingContainer}>
+                                <View style={styles.interviewerProfileSmall}>
+                                    <Text style={styles.interviewerAvatarSmall}>{interviewer.avatar}</Text>
+                                    <View style={styles.interviewerInfoSmall}>
+                                        <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
+                                        <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
+                                    </View>
+                                </View>
+                                
+                                <View style={styles.connectingStatus}>
+                                    <View style={styles.spinner} />
+                                    <Text style={styles.connectingText}>Connecting to {interviewer.name}...</Text>
+                                </View>
+                            </View>
+                        )}
+
+                        {callState === 'active' && (
+                            <View style={styles.interviewContainer}>
+                                {/* Call Screen Header */}
+                                <View style={styles.callHeader}>
+                                    <View style={styles.interviewerProfileSmall}>
+                                        <Text style={styles.interviewerAvatarSmall}>{interviewer.avatar}</Text>
+                                        <View style={styles.interviewerInfoSmall}>
+                                            <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
+                                            <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.callStatus}>
+                                        <View style={styles.recordingIndicator} />
+                                        <Text style={styles.callStatusText}>Recording</Text>
+                                    </View>
+                                </View>
+
+                                {/* Transcript/Notes */}
+                                <View style={styles.notesContainer}>
+                                    {interviewNotes.map((note, index) => (
+                                        <View key={index} style={[
+                                            styles.noteItem,
+                                            note.startsWith('You:') ? styles.userNote : styles.aiNote
+                                        ]}>
+                                            <Text style={styles.noteText}>{note}</Text>
+                                        </View>
+                                    ))}
+                                    {interviewNotes.length === 0 && (
+                                        <View style={styles.emptyNotes}>
+                                            <Text style={styles.emptyNotesText}>
+                                                Interview will start momentarily...
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+
+                        {callState === 'ended' && (
+                            <View style={styles.endedContainer}>
+                                <Ionicons name="checkmark-circle" size={64} color="#10B981" />
+                                <Text style={styles.endedTitle}>Interview Complete</Text>
+                                <Text style={styles.endedSubtitle}>
+                                    Thank you for completing your interview with {interviewer.name}
+                                </Text>
+                            </View>
+                        )}
+                    </ScrollView>
+
+                    <View style={styles.footer}>
+                        {callState === 'incoming' && (
+                            <View style={styles.incomingCallButtons}>
+                                <Pressable
+                                    style={[styles.callActionButton, styles.declineButton]}
+                                    onPress={declineCall}
+                                >
+                                    <Ionicons name="call" size={28} color="#fff" />
+                                </Pressable>
+                                
+                                <Pressable
+                                    style={[styles.callActionButton, styles.acceptButton]}
+                                    onPress={() => acceptCall(conversation)}
+                                >
+                                    <Ionicons name="call" size={28} color="#fff" />
+                                </Pressable>
+                            </View>
+                        )}
+
+                        {callState === 'connecting' && (
+                            <View style={styles.connectingFooter}>
+                                <Text style={styles.statusText}>Connecting...</Text>
+                            </View>
+                        )}
+
+                        {callState === 'active' && (
+                            <>
+                                <View style={styles.callControls}>
+                                    <Pressable
+                                        style={[styles.callControlButton, styles.muteButton]}
+                                        onPress={() => {/* Handle mute */}}
+                                    >
+                                        <Ionicons name="mic-off" size={24} color="#fff" />
+                                    </Pressable>
+                                    
+                                    <Pressable
+                                        style={[styles.callControlButton, styles.endCallButton]}
+                                        onPress={() => endInterview(conversation)}
+                                    >
+                                        <Ionicons name="call" size={28} color="#fff" />
+                                    </Pressable>
+                                    
+                                    <Pressable
+                                        style={[styles.callControlButton, styles.speakerButton]}
+                                        onPress={() => {/* Handle speaker */}}
+                                    >
+                                        <Ionicons name="volume-high" size={24} color="#fff" />
+                                    </Pressable>
+                                </View>
+                                
+                                <Text style={styles.statusText}>
+                                    Tap the red button to end the interview
+                                </Text>
+                            </>
+                        )}
+
+                        {callState === 'ended' && (
+                            <Pressable
+                                style={styles.backToMenuButton}
+                                onPress={() => router.back()}
+                            >
+                                <Text style={styles.backToMenuText}>Back to Interview Details</Text>
+                            </Pressable>
+                        )}
+                    </View>
+                </View>
+            )}
+        </MockInterviewConversation>
     );
 }
 
