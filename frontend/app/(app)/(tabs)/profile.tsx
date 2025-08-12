@@ -149,6 +149,29 @@ export default function Profile() {
                 </View>
             </View>
 
+            <View style={styles.cvSection}>
+                <TouchableOpacity 
+                    style={styles.cvContainer} 
+                    onPress={() => router.push('/interviews/cv-upload')}
+                >
+                    <View style={styles.cvLeft}>
+                        <Ionicons name="document-text" size={28} color={currentCV ? "#10B981" : "#F59E0B"} />
+                    </View>
+                    <View style={styles.cvInfo}>
+                        <Text style={styles.cvTitle}>
+                            {currentCV ? "Your CV" : "Upload Your CV"}
+                        </Text>
+                        <Text style={styles.cvSubtitle}>
+                            {currentCV 
+                                ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
+                                : "Get personalized interview questions tailored to your background"
+                            }
+                        </Text>
+                    </View>
+                    <Ionicons name="create-outline" size={22} color="#FFFFFF" />
+                </TouchableOpacity>
+            </View>
+
             <View style={styles.statsContainer}>
                 <StatCard
                     icon="bar-chart"
@@ -201,7 +224,7 @@ export default function Profile() {
                     {interviews && interviews.length > 5 && (
                         <TouchableOpacity 
                             style={styles.viewAllButton}
-                            onPress={() => router.push('/interviews')}
+                            onPress={() => router.push('/interviews/index')}
                         >
                             <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
                             <Ionicons name="chevron-forward" size={16} color="#3B82F6" />
@@ -451,5 +474,51 @@ const styles = StyleSheet.create({
         fontFamily: 'Inter_500Medium',
         color: '#3B82F6',
         marginRight: 4,
+    },
+    cvSection: {
+        paddingHorizontal: 20,
+        marginBottom: 24,
+        marginTop: 8,
+    },
+    cvContainer: {
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: 'rgba(59, 130, 246, 0.3)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 20,
+        shadowColor: '#3B82F6',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    cvLeft: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: 'rgba(59, 130, 246, 0.25)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+        borderWidth: 2,
+        borderColor: 'rgba(59, 130, 246, 0.4)',
+    },
+    cvInfo: {
+        flex: 1,
+    },
+    cvTitle: {
+        fontSize: 18,
+        fontFamily: 'Inter_700Bold',
+        color: '#fff',
+        marginBottom: 6,
+        letterSpacing: 0.3,
+    },
+    cvSubtitle: {
+        fontSize: 15,
+        fontFamily: 'Inter_500Medium',
+        color: '#E5E7EB',
+        lineHeight: 20,
     },
 });

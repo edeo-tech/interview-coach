@@ -92,7 +92,7 @@ const InterviewResults = () => {
       <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.push('/interviews/' as any)}>
+          <TouchableOpacity onPress={() => router.push('/interviews/index' as any)}>
             <Ionicons name="close" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Interview Results</Text>
@@ -178,7 +178,7 @@ const InterviewResults = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.push('/interviews/' as any)}
+            onPress={() => router.push('/interviews/index' as any)}
             className="bg-gray-600 rounded-lg p-4 flex-row items-center justify-center"
           >
             <Ionicons name="home" size={20} color="white" />

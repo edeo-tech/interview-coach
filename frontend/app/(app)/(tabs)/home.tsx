@@ -73,13 +73,6 @@ export default function Home() {
               Practice with AI-powered mock interviews
             </Text>
           </View>
-          
-          <TouchableOpacity
-            onPress={() => router.push('/interviews/cv-upload')}
-            style={styles.headerButton}
-          >
-            <Ionicons name="document-text" size={20} color="white" />
-          </TouchableOpacity>
         </View>
 
         {/* Quick Action: Create New Interview (card style) */}
@@ -115,9 +108,9 @@ export default function Home() {
           <View style={[styles.statusCard, styles.successCard]}>
             <View style={styles.statusHeader}>
               <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <Text style={styles.successTitle}>CV Ready</Text>
+              <Text style={styles.successTitle}>Your CV</Text>
             </View>
-            <Text style={styles.statusDescription}>
+            <Text style={styles.statusDescription}> 
               {cv.skills.length} skills • {cv.experience_years} years experience
             </Text>
           </View>
@@ -229,13 +222,6 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontSize: 15,
     lineHeight: 20,
-  },
-  headerButton: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 12,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   statusCard: {
     padding: 20,
