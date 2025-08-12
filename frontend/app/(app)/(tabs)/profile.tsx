@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
@@ -28,7 +28,6 @@ export default function Profile() {
     const user = {
         name: auth?.name || 'User',
         email: auth?.email || 'user@example.com',
-        avatar: auth?.profile_picture || 'https://i.pravatar.cc/300',
         joinedDate: 'January 2025',
         totalInterviews: 15,
         averageScore: 83,
@@ -70,7 +69,6 @@ export default function Profile() {
         >
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
-                <Image source={{ uri: user.avatar }} style={styles.avatar} />
                 <Text style={styles.name}>{user.name}</Text>
                 <Text style={styles.email}>{user.email}</Text>
                 <View style={styles.rankBadge}>
@@ -153,28 +151,21 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'center',
-        paddingTop: 20,
+        paddingTop: 40,
         paddingBottom: 30,
     },
-    avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginBottom: 16,
-        borderWidth: 3,
-        borderColor: '#3B82F6',
-    },
     name: {
-        fontSize: 24,
+        fontSize: 28,
         fontFamily: 'Inter_700Bold',
         color: '#fff',
-        marginBottom: 4,
+        marginBottom: 8,
+        marginTop: 8,
     },
     email: {
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
         color: '#6B7280',
-        marginBottom: 12,
+        marginBottom: 16,
     },
     rankBadge: {
         flexDirection: 'row',
