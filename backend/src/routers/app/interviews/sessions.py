@@ -293,7 +293,7 @@ async def finish_interview_attempt(
     
     # Fetch transcript from ElevenLabs if conversation_id is provided
     if finish_request.conversation_id:
-        print(f"   - Fetching transcript from ElevenLabs...")
+        print(f"   - Fetching transcript from ElevenLabs... {finish_request.conversation_id}")
         from services.elevenlabs_transcript_service import fetch_and_update_transcript
         transcript_success = await fetch_and_update_transcript(
             req, finish_request.attempt_id, finish_request.conversation_id
