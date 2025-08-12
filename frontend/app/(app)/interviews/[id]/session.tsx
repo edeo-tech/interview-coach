@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useStartAttempt, useFinishAttempt } from '../../../../_queries/interviews/interviews';
+import { useStartAttempt, useFinishAttempt, useAddTranscript } from '../../../../_queries/interviews/interviews';
 
 const InterviewSession = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -16,6 +16,7 @@ const InterviewSession = () => {
 
   const startAttemptMutation = useStartAttempt();
   const finishAttemptMutation = useFinishAttempt();
+  const addTranscriptMutation = useAddTranscript();
 
   useEffect(() => {
     if (id && !attemptId) {
@@ -26,7 +27,8 @@ const InterviewSession = () => {
   const startSession = async () => {
     try {
       const response = await startAttemptMutation.mutateAsync(id);
-      setAgentId(response.data.agent_id);
+      // Backend doesn't provide agent_id anymore since ElevenLabs is handled on frontend
+      setAgentId('frontend-managed');
       setAttemptId(response.data.attempt_id);
       setSessionStartTime(new Date());
       setIsSessionActive(true);
@@ -52,13 +54,27 @@ const InterviewSession = () => {
     }, 2000);
   };
 
-  const addToTranscript = (speaker: 'user' | 'agent', text: string) => {
+  const addToTranscript = async (speaker: 'user' | 'agent', text: string) => {
     const newTurn = {
       speaker,
       text,
       timestamp: new Date().toISOString()
     };
+    
+    // Update local state immediately for UI responsiveness
     setTranscript(prev => [...prev, newTurn]);
+    
+    // Save to backend
+    try {
+      await addTranscriptMutation.mutateAsync({
+        interviewId: id,
+        turn: newTurn
+      });
+      console.log(`✅ Transcript saved: ${speaker} - ${text.substring(0, 50)}...`);
+    } catch (error) {
+      console.error('❌ Failed to save transcript:', error);
+      // Could show a toast here, but continue with the interview
+    }
   };
 
   const handleEndInterview = () => {

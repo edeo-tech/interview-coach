@@ -21,26 +21,73 @@ class InterviewGradingService:
     
     async def grade_interview(self, req: Request, attempt_id: str) -> Dict:
         """Grade an interview attempt using AI"""
+        print(f"\n🤖 [GRADING] Starting interview grading process:")
+        print(f"   - Attempt ID: {attempt_id}")
+        
         try:
             # Get attempt, interview, and CV data
             attempt = await self._get_attempt_data(req, attempt_id)
+            print(f"   - Attempt status: {attempt.get('status')}")
+            print(f"   - Transcript length: {len(attempt.get('transcript', []))}")
+            
             interview = await self._get_interview_data(req, attempt['interview_id'])
+            print(f"   - Interview role: {interview.get('role_title')}")
+            print(f"   - Company: {interview.get('company')}")
+            
             cv = await self._get_cv_data_for_interview(req, interview.get('user_id'))
+            print(f"   - CV data found: {'Yes' if cv else 'No'}")
             
             if not attempt or not interview:
                 raise ValueError("Required interview data not found")
             
             # Format transcript for analysis
             transcript_text = self._format_transcript(attempt.get('transcript', []))
+            print(f"   - Formatted transcript length: {len(transcript_text)} characters")
             
             if not transcript_text.strip():
                 # No transcript to grade
-                return await self._create_default_feedback(attempt_id)
+                print(f"   ⚠️  WARNING: No transcript content found! Using default feedback.")
+                default_feedback = await self._create_default_feedback(attempt_id)
+                
+                # Still save to database
+                await create_feedback(
+                    req,
+                    attempt_id,
+                    overall_score=default_feedback["overall_score"],
+                    strengths=default_feedback["strengths"],
+                    improvement_areas=default_feedback["improvement_areas"],
+                    detailed_feedback=default_feedback["detailed_feedback"],
+                    rubric_scores=default_feedback["rubric_scores"],
+                )
+                await update_attempt(req, attempt_id, status="graded")
+                
+                return default_feedback
             
             # Create grading prompt
             grading_prompt = self._build_grading_prompt(interview, cv, transcript_text)
+            print(f"   - Grading prompt length: {len(grading_prompt)} characters")
+            
+            # Check if API key is configured
+            if not OPENAI_API_KEY:
+                print(f"   ❌ ERROR: OPENAI_API_KEY not configured! Using default feedback.")
+                default_feedback = await self._create_default_feedback(attempt_id)
+                
+                # Still save to database
+                await create_feedback(
+                    req,
+                    attempt_id,
+                    overall_score=default_feedback["overall_score"],
+                    strengths=default_feedback["strengths"],
+                    improvement_areas=default_feedback["improvement_areas"],
+                    detailed_feedback=default_feedback["detailed_feedback"],
+                    rubric_scores=default_feedback["rubric_scores"],
+                )
+                await update_attempt(req, attempt_id, status="graded")
+                
+                return default_feedback
             
             # Call OpenAI API
+            print(f"   - Calling OpenAI API...")
             response = await self.client.post(
                 "/chat/completions",
                 json={
@@ -53,14 +100,18 @@ class InterviewGradingService:
             
             response.raise_for_status()
             result = response.json()
+            print(f"   - OpenAI API response received")
             
             # Parse the AI response
             feedback_data = json.loads(result['choices'][0]['message']['content'])
+            print(f"   - Parsed feedback data successfully")
             
             # Ensure required fields exist
             feedback_data = self._validate_feedback_data(feedback_data)
+            print(f"   - Validated feedback data")
             
             # Save feedback to database and mark attempt graded
+            print(f"   - Saving feedback to database...")
             await create_feedback(
                 req,
                 attempt_id,
@@ -71,13 +122,36 @@ class InterviewGradingService:
                 rubric_scores=feedback_data["rubric_scores"],
             )
 
+            print(f"   - Updating attempt status to 'graded'...")
             await update_attempt(req, attempt_id, status="graded")
 
+            print(f"   ✅ SUCCESS: Interview grading completed!")
             return feedback_data
             
         except Exception as e:
-            print(f"Error grading interview {attempt_id}: {e}")
-            return await self._create_default_feedback(attempt_id)
+            print(f"   ❌ ERROR grading interview: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            
+            # Create default feedback and still save it
+            default_feedback = await self._create_default_feedback(attempt_id)
+            
+            try:
+                await create_feedback(
+                    req,
+                    attempt_id,
+                    overall_score=default_feedback["overall_score"],
+                    strengths=default_feedback["strengths"],
+                    improvement_areas=default_feedback["improvement_areas"],
+                    detailed_feedback=default_feedback["detailed_feedback"],
+                    rubric_scores=default_feedback["rubric_scores"],
+                )
+                await update_attempt(req, attempt_id, status="graded")
+                print(f"   ✅ Default feedback saved successfully")
+            except Exception as save_error:
+                print(f"   ❌ ERROR saving default feedback: {str(save_error)}")
+            
+            return default_feedback
     
     def _format_transcript(self, transcript: List[Dict]) -> str:
         """Format transcript for AI analysis"""

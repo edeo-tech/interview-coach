@@ -92,18 +92,56 @@ export default function MockInterview() {
                         console.log('🎤 AI spoke:', text);
                         setInterviewNotes(prev => [...prev, `AI: ${text}`]);
                         if (attemptId && params.interviewId) {
+                            console.log('🚀 Saving AI transcript:', {
+                                attemptId,
+                                interviewId: params.interviewId,
+                                speaker: 'agent',
+                                textLength: text.length,
+                                timestamp: ts
+                            });
                             addTranscript.mutate({
                                 interviewId: params.interviewId as string,
                                 turn: { speaker: 'agent', text, timestamp: ts }
+                            }, {
+                                onSuccess: () => {
+                                    console.log('✅ AI transcript saved successfully');
+                                },
+                                onError: (error) => {
+                                    console.error('❌ Failed to save AI transcript:', error);
+                                }
+                            });
+                        } else {
+                            console.warn('⚠️ Cannot save AI transcript - missing:', {
+                                attemptId: attemptId || 'MISSING',
+                                interviewId: params.interviewId || 'MISSING'
                             });
                         }
                     } else if (message.source === 'user') {
                         console.log('🎙️ User spoke:', text);
                         setInterviewNotes(prev => [...prev, `You: ${text}`]);
                         if (attemptId && params.interviewId) {
+                            console.log('🚀 Saving user transcript:', {
+                                attemptId,
+                                interviewId: params.interviewId,
+                                speaker: 'user',
+                                textLength: text.length,
+                                timestamp: ts
+                            });
                             addTranscript.mutate({
                                 interviewId: params.interviewId as string,
                                 turn: { speaker: 'user', text, timestamp: ts }
+                            }, {
+                                onSuccess: () => {
+                                    console.log('✅ User transcript saved successfully');
+                                },
+                                onError: (error) => {
+                                    console.error('❌ Failed to save user transcript:', error);
+                                }
+                            });
+                        } else {
+                            console.warn('⚠️ Cannot save user transcript - missing:', {
+                                attemptId: attemptId || 'MISSING',
+                                interviewId: params.interviewId || 'MISSING'
                             });
                         }
                     }
@@ -193,7 +231,12 @@ Remember: This is a practice interview to help ${userName} improve their intervi
 
         // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
         try {
+            console.log('📝 Starting interview attempt for interview:', params.interviewId);
             const res = await startAttempt.mutateAsync(params.interviewId as string);
+            console.log('✅ Attempt created successfully:', {
+                attemptId: res.data.attempt_id,
+                interviewId: params.interviewId
+            });
             setAttemptId(res.data.attempt_id);
         } catch (e) {
             console.error('❌ Failed to start attempt:', e);
