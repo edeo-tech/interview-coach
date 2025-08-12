@@ -106,16 +106,16 @@ export default function InterviewDetails() {
             <Text style={styles.emptyText}>No attempts yet</Text>
           ) : (
             attempts.map((attempt) => (
-              <View key={attempt._id} style={styles.attemptCard}>
+              <View key={attempt.id} style={styles.attemptCard}>
                 <Text style={styles.attemptDate}>
                   {new Date(attempt.created_at).toLocaleDateString()}
                 </Text>
                 <Text style={styles.attemptStatus}>{attempt.status}</Text>
                 <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
-                  <TouchableOpacity onPress={() => router.push({ pathname: '/interviews/[id]/attempts/[attemptId]/transcript', params: { id, attemptId: attempt._id } })}>
+                  <TouchableOpacity onPress={() => router.push({ pathname: '/interviews/[id]/attempts/[attemptId]/transcript', params: { id, attemptId: attempt.id } })}>
                     <Text style={{ color: '#60a5fa' }}>View transcript</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push({ pathname: '/interviews/[id]/attempts/[attemptId]/grading', params: { id, attemptId: attempt._id } })}>
+                  <TouchableOpacity onPress={() => router.push({ pathname: '/interviews/[id]/attempts/[attemptId]/grading', params: { id, attemptId: attempt.id } })}>
                     <Text style={{ color: '#60a5fa' }}>View grading</Text>
                   </TouchableOpacity>
                 </View>

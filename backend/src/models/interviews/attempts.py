@@ -6,6 +6,7 @@ class InterviewAttempt(MongoBaseModel):
     interview_id: str
     status: str  # active, completed, graded
     agent_id: Optional[str] = None
+    conversation_id: Optional[str] = None  # ElevenLabs conversation ID
     transcript: List[Dict] = []  # [{speaker, text, timestamp}]
     duration_seconds: int = 0
     started_at: Optional[datetime] = None

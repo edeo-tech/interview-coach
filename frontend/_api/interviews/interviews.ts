@@ -80,9 +80,10 @@ export const interviewsApi = {
   }) =>
     protectedApi.post(`/app/interviews/${interviewId}/transcript`, turn),
 
-  finishAttempt: (interviewId: string, attemptId: string, durationSeconds?: number) =>
+  finishAttempt: (interviewId: string, attemptId: string, durationSeconds?: number, conversationId?: string) =>
     protectedApi.post(`/app/interviews/${interviewId}/finish`, { 
       attempt_id: attemptId,
-      duration_seconds: durationSeconds
+      duration_seconds: durationSeconds,
+      conversation_id: conversationId
     })
 };
