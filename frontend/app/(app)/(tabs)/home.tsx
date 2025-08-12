@@ -358,18 +358,18 @@ const styles = StyleSheet.create({
   },
   interviewCard: {
     backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 8,
-    marginBottom: 6,
+    borderRadius: 12,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   interviewCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    minHeight: 44,
-    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    minHeight: 68,
+    gap: 12,
   },
   cardLeftAccent: {
     width: 28,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   interviewCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   interviewTitle: {
     color: '#ffffff',
