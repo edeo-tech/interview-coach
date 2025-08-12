@@ -13,18 +13,6 @@ export default function Home() {
   const insets = useSafeAreaInsets();
 
   const handleCreateNewInterview = () => {
-    if (!cv) {
-      Alert.alert(
-        'CV Required',
-        'Please upload your CV first to create interview sessions.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Upload CV', onPress: () => router.push('/interviews/cv-upload') }
-        ]
-      );
-      return;
-    }
-    
     router.push('/interviews/create');
   };
 

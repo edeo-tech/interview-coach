@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, StyleSheet 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useCreateInterview } from '../../../_queries/interviews/interviews';
+import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
 
 const InterviewSetup = () => {
   const [formData, setFormData] = useState({
@@ -11,10 +11,9 @@ const InterviewSetup = () => {
     role_title: '',
     job_description: '',
     difficulty: 'mid' as 'junior' | 'mid' | 'senior',
-    interview_type: 'technical' as 'technical' | 'behavioral' | 'leadership'
   });
 
-  const createInterviewMutation = useCreateInterview();
+  const createInterviewMutation = useCreateInterviewFromURL();
 
   const handleStart = async () => {
     if (!formData.company.trim() || !formData.role_title.trim()) {
@@ -28,8 +27,10 @@ const InterviewSetup = () => {
     }
 
     try {
-      const response = await createInterviewMutation.mutateAsync(formData);
-      router.push(`/interviews/${response.data._id}/session` as any);
+      const response = await createInterviewMutation.mutateAsync({
+        job_url: formData.job_description // Treating job description as job content
+      });
+      router.push(`/interviews/${response.data.id}/session` as any);
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview');
     }
@@ -93,44 +94,6 @@ const InterviewSetup = () => {
           </View>
         </View>
 
-        {/* Interview Type */}
-        <View style={styles.selectorGroup}>
-          <Text style={styles.label}>Interview Type</Text>
-          <View style={styles.typeContainer}>
-            {([
-              { key: 'technical', label: 'Technical', desc: 'Coding, system design, problem solving' },
-              { key: 'behavioral', label: 'Behavioral', desc: 'Leadership, teamwork, past experiences' },
-              { key: 'leadership', label: 'Leadership', desc: 'Management, strategy, decision making' }
-            ] as const).map((type) => (
-              <TouchableOpacity
-                key={type.key}
-                onPress={() => setFormData({...formData, interview_type: type.key as 'technical' | 'behavioral' | 'leadership'})}
-                style={[
-                  styles.typeOption,
-                  formData.interview_type === type.key ? styles.typeSelected : styles.typeUnselected
-                ]}
-              >
-                <View style={styles.typeContent}>
-                  <Text style={[
-                    styles.typeLabel,
-                    formData.interview_type === type.key ? styles.typeLabelSelected : styles.typeLabelUnselected
-                  ]}>
-                    {type.label}
-                  </Text>
-                  <Text style={[
-                    styles.typeDesc,
-                    formData.interview_type === type.key ? styles.typeDescSelected : styles.typeDescUnselected
-                  ]}>
-                    {type.desc}
-                  </Text>
-                </View>
-                {formData.interview_type === type.key && (
-                  <Ionicons name="checkmark-circle" size={20} color="white" />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
         
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Job Description</Text>
@@ -255,47 +218,6 @@ const styles = StyleSheet.create({
   },
   difficultyTextUnselected: {
     color: '#d1d5db',
-  },
-  typeContainer: {
-    gap: 8,
-  },
-  typeOption: {
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  typeSelected: {
-    backgroundColor: '#2563eb',
-    borderColor: '#3b82f6',
-  },
-  typeUnselected: {
-    backgroundColor: '#374151',
-    borderColor: '#4b5563',
-  },
-  typeContent: {
-    flex: 1,
-  },
-  typeLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  typeLabelSelected: {
-    color: '#ffffff',
-  },
-  typeLabelUnselected: {
-    color: '#e5e7eb',
-  },
-  typeDesc: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  typeDescSelected: {
-    color: '#bfdbfe',
-  },
-  typeDescUnselected: {
-    color: '#9ca3af',
   },
   startButton: {
     backgroundColor: '#2563eb',

@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../../_queries/interviews/interviews';
+import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 
 export default function CreateInterview() {
+  const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
   const [inputType, setInputType] = useState<'url' | 'file'>('url');
   const [jobUrl, setJobUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
-  const [interviewType, setInterviewType] = useState<'technical' | 'behavioral' | 'leadership'>('technical');
+  const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   
+  const { data: currentCV, isLoading: cvLoading } = useCV();
+  const uploadCV = useUploadCV();
   const createFromURL = useCreateInterviewFromURL();
   const createFromFile = useCreateInterviewFromFile();
   
-  const isLoading = createFromURL.isPending || createFromFile.isPending;
+  const isLoading = createFromURL.isPending || createFromFile.isPending || uploadCV.isPending;
+
+  // If user already has CV, skip to job step
+  React.useEffect(() => {
+    if (currentCV && currentStep === 'cv') {
+      setCurrentStep('job');
+    }
+  }, [currentCV, currentStep]);
 
   const handleFileSelect = async () => {
     try {
@@ -30,6 +41,53 @@ export default function CreateInterview() {
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to select file');
+    }
+  };
+
+  const handleCVFileSelect = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        // Validate file size (max 5MB)
+        if (result.assets[0].size && result.assets[0].size > 5 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Please select a file smaller than 5MB.');
+          return;
+        }
+        setSelectedCVFile(result.assets[0]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to select CV file');
+    }
+  };
+
+  const handleCVUpload = async () => {
+    if (!selectedCVFile) {
+      Alert.alert('Error', 'Please select your CV file');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', {
+        uri: selectedCVFile.uri,
+        type: selectedCVFile.mimeType || 'application/pdf',
+        name: selectedCVFile.name || 'cv.pdf',
+      } as any);
+      
+      await uploadCV.mutateAsync(formData);
+      Alert.alert('Success!', 'Your CV has been uploaded successfully.', [
+        { text: 'Continue', onPress: () => setCurrentStep('job') }
+      ]);
+      
+    } catch (error: any) {
+      Alert.alert(
+        'Upload Error', 
+        error.response?.data?.detail || 'Failed to upload CV. Please try again.'
+      );
     }
   };
 
@@ -50,12 +108,11 @@ export default function CreateInterview() {
       try {
         const result = await createFromURL.mutateAsync({
           job_url: jobUrl,
-          interview_type: interviewType,
         });
         
         console.log('Interview created from URL:', result.data);
         Alert.alert('Success', 'Interview created successfully!', [
-          { text: 'OK', onPress: () => router.push(`/interviews/${result.data._id}/details` as any) }
+          { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
         ]);
       } catch (error: any) {
         Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
@@ -73,13 +130,12 @@ export default function CreateInterview() {
           type: selectedFile.mimeType || 'application/octet-stream',
           name: selectedFile.name,
         } as any);
-        formData.append('interview_type', interviewType);
 
         const result = await createFromFile.mutateAsync(formData);
         
         console.log('Interview created from file:', result.data);
         Alert.alert('Success', 'Interview created successfully!', [
-          { text: 'OK', onPress: () => router.push(`/interviews/${result.data._id}/details` as any) }
+          { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
         ]);
       } catch (error: any) {
         Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from file');
@@ -89,16 +145,104 @@ export default function CreateInterview() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          style={styles.scrollView} 
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardDismissMode="interactive"
+        >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => {
+            if (currentStep === 'job' && !currentCV) {
+              setCurrentStep('cv');
+            } else {
+              router.back();
+            }
+          }}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create New Interview</Text>
+          <Text style={styles.headerTitle}>
+            {currentStep === 'cv' ? 'Upload Your CV' : 
+             currentCV ? 'Job Details' : 'Create New Interview'}
+          </Text>
         </View>
 
-        {/* Input Type Selector */}
+
+        {/* CV Upload Step */}
+        {currentStep === 'cv' && (
+          <>
+            <View style={styles.section}>
+              <TouchableOpacity
+                onPress={handleCVFileSelect}
+                style={styles.fileButton}
+              >
+                {selectedCVFile ? (
+                  <View style={styles.selectedFileContainer}>
+                    <Ionicons name="document-attach" size={24} color="#10b981" />
+                    <View style={styles.fileInfo}>
+                      <Text style={styles.fileName}>{selectedCVFile.name}</Text>
+                      <Text style={styles.fileSize}>
+                        {selectedCVFile.size ? `${(selectedCVFile.size / 1024).toFixed(1)} KB` : 'Size unknown'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => setSelectedCVFile(null)}>
+                      <Ionicons name="close-circle" size={24} color="#ef4444" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.uploadPrompt}>
+                    <Ionicons name="cloud-upload" size={32} color="#9ca3af" />
+                    <Text style={styles.uploadText}>Select your CV (PDF, DOC, DOCX, TXT)</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleCVUpload}
+              disabled={!selectedCVFile || uploadCV.isPending}
+              style={[
+                styles.submitButton,
+                (!selectedCVFile || uploadCV.isPending) && styles.submitButtonDisabled
+              ]}
+            >
+              {uploadCV.isPending ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Ionicons name="arrow-forward" size={24} color="white" />
+                  <Text style={styles.submitText}>Continue</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </>
+        )}
+
+        {/* Job Details Step */}
+        {currentStep === 'job' && (
+          <>
+            {/* CV Status Display */}
+            {currentCV && (
+              <View style={styles.cvStatusCard}>
+                <View style={styles.cvStatusHeader}>
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Text style={styles.cvStatusTitle}>CV Ready</Text>
+                </View>
+                <Text style={styles.cvStatusDescription}>
+                  {currentCV.skills.length} skills • {currentCV.experience_years} years experience
+                </Text>
+              </View>
+            )}
+
+            {/* Input Type Selector */}
         <View style={styles.inputTypeContainer}>
           <TouchableOpacity
             onPress={() => setInputType('url')}
@@ -132,13 +276,9 @@ export default function CreateInterview() {
         {/* URL Input */}
         {inputType === 'url' && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Job Posting URL</Text>
-            <Text style={styles.sectionDescription}>
-              Paste a link from LinkedIn, Indeed, or any company website
-            </Text>
             <TextInput
               style={styles.urlInput}
-              placeholder="https://www.linkedin.com/jobs/view/..."
+              placeholder="Paste job posting URL (LinkedIn, Indeed, etc.)"
               placeholderTextColor="#6b7280"
               value={jobUrl}
               onChangeText={setJobUrl}
@@ -151,11 +291,6 @@ export default function CreateInterview() {
         {/* File Upload */}
         {inputType === 'file' && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Job Description File</Text>
-            <Text style={styles.sectionDescription}>
-              Upload a PDF, Word, or text file containing the job description
-            </Text>
-            
             <TouchableOpacity
               onPress={handleFileSelect}
               style={styles.fileButton}
@@ -176,67 +311,44 @@ export default function CreateInterview() {
               ) : (
                 <View style={styles.uploadPrompt}>
                   <Ionicons name="cloud-upload" size={32} color="#9ca3af" />
-                  <Text style={styles.uploadText}>Tap to select file</Text>
-                  <Text style={styles.uploadFormats}>PDF, DOC, DOCX, or TXT</Text>
+                  <Text style={styles.uploadText}>Select job description file</Text>
                 </View>
               )}
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Interview Type */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Interview Type</Text>
-          <View style={styles.typeContainer}>
-            {(['technical', 'behavioral', 'leadership'] as const).map((type) => (
-              <TouchableOpacity
-                key={type}
-                onPress={() => setInterviewType(type)}
-                style={[styles.typeButton, interviewType === type && styles.typeButtonActive]}
-              >
-                <Ionicons
-                  name={
-                    type === 'technical' ? 'code-slash' :
-                    type === 'behavioral' ? 'people' : 'trending-up'
-                  }
-                  size={20}
-                  color={interviewType === type ? '#ffffff' : '#9ca3af'}
-                />
-                <Text style={[styles.typeText, interviewType === type && styles.typeTextActive]}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
 
-        {/* Submit Button */}
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={isLoading || (inputType === 'url' ? !jobUrl.trim() : !selectedFile)}
-          style={[
-            styles.submitButton,
-            (isLoading || (inputType === 'url' ? !jobUrl.trim() : !selectedFile)) && styles.submitButtonDisabled
-          ]}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <>
-              <Ionicons name="add-circle" size={24} color="white" />
-              <Text style={styles.submitText}>Create Interview</Text>
-            </>
-          )}
-        </TouchableOpacity>
+            {/* Submit Button */}
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={isLoading || (inputType === 'url' ? !jobUrl.trim() : !selectedFile)}
+              style={[
+                styles.submitButton,
+                (isLoading || (inputType === 'url' ? !jobUrl.trim() : !selectedFile)) && styles.submitButtonDisabled
+              ]}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Ionicons name="add-circle" size={24} color="white" />
+                  <Text style={styles.submitText}>Create Interview</Text>
+                </>
+              )}
+            </TouchableOpacity>
 
-        {/* Info Box */}
-        <View style={styles.infoBox}>
-          <Ionicons name="information-circle" size={20} color="#60a5fa" />
-          <Text style={styles.infoText}>
-            Our AI will analyze the job posting and create a personalized mock interview based on the role requirements and your CV.
-          </Text>
-        </View>
-      </ScrollView>
+            {/* Info Box */}
+            <View style={styles.infoBox}>
+              <Ionicons name="information-circle" size={20} color="#60a5fa" />
+              <Text style={styles.infoText}>
+                Our AI will analyze the job posting and create a personalized mock interview based on the role requirements and your CV.
+              </Text>
+            </View>
+          </>
+        )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -246,9 +358,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0a0a0a',
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  scrollViewContent: {
+    paddingBottom: 100, // Extra space at bottom for keyboard
   },
   header: {
     flexDirection: 'row',
@@ -289,17 +407,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
-  },
-  sectionTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  sectionDescription: {
-    color: '#9ca3af',
-    fontSize: 14,
-    marginBottom: 16,
   },
   urlInput: {
     backgroundColor: '#1f2937',
@@ -344,37 +451,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 8,
   },
-  uploadFormats: {
-    color: '#6b7280',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  typeContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  typeButton: {
-    flex: 1,
-    backgroundColor: '#1f2937',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#374151',
-  },
-  typeButtonActive: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
-  },
-  typeText: {
-    color: '#9ca3af',
-    fontSize: 14,
-    marginTop: 8,
-    fontWeight: '500',
-  },
-  typeTextActive: {
-    color: '#ffffff',
-  },
   submitButton: {
     backgroundColor: '#2563eb',
     borderRadius: 12,
@@ -392,6 +468,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  cvStatusCard: {
+    backgroundColor: 'rgba(5, 46, 22, 0.15)',
+    borderColor: 'rgba(34, 197, 94, 0.25)',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  cvStatusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  cvStatusTitle: {
+    color: '#10b981',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  cvStatusDescription: {
+    color: '#d1d5db',
+    fontSize: 14,
   },
   infoBox: {
     backgroundColor: 'rgba(59, 130, 246, 0.1)',

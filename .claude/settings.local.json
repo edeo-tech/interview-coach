@@ -6,7 +6,12 @@
       "Bash(rm:*)",
       "Bash(mkdir:*)",
       "Bash(pip install:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 10 npx expo doctor)",
+      "Bash(npx expo:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run:*)"
     ],
     "deny": []
   }

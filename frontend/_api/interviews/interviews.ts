@@ -2,12 +2,10 @@ import { protectedApi } from '../axiosConfig';
 
 export interface CreateInterviewFromURLRequest {
   job_url: string;
-  interview_type?: 'technical' | 'behavioral' | 'leadership';
 }
 
 export interface CreateInterviewFromFileRequest {
   file: FormData;
-  interview_type?: 'technical' | 'behavioral' | 'leadership';
 }
 
 export interface Interview {
