@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from authentication import Authorization
 from utils.__errors__.error_decorator_routes import error_decorator
@@ -38,6 +38,7 @@ class TranscriptTurn(BaseModel):
 class FinishAttemptRequest(BaseModel):
     attempt_id: str
     duration_seconds: Optional[int] = None
+    conversation_id: Optional[str] = None
 
 @router.post("/create/url")
 @error_decorator
@@ -254,6 +255,7 @@ async def finish_interview_attempt(
     print(f"   - Interview ID: {interview_id}")
     print(f"   - Attempt ID: {finish_request.attempt_id}")
     print(f"   - Duration: {finish_request.duration_seconds} seconds")
+    print(f"   - Conversation ID: {finish_request.conversation_id}")
     
     # Verify ownership
     interview = await get_interview(req, interview_id)
@@ -273,10 +275,35 @@ async def finish_interview_attempt(
     
     print(f"   - Current transcript length: {len(attempt.transcript)}")
     
-    # Mark attempt complete
-    completed_attempt = await finish_attempt(
-        req, finish_request.attempt_id, finish_request.duration_seconds
-    )
+    # Mark attempt complete and store conversation_id
+    update_data = {
+        "status": "completed",
+        "ended_at": datetime.now(timezone.utc)
+    }
+    
+    if finish_request.duration_seconds:
+        update_data["duration_seconds"] = finish_request.duration_seconds
+        
+    if finish_request.conversation_id:
+        update_data["conversation_id"] = finish_request.conversation_id
+        print(f"   - Storing conversation_id: {finish_request.conversation_id}")
+    
+    from crud.interviews.attempts import update_attempt
+    completed_attempt = await update_attempt(req, finish_request.attempt_id, **update_data)
+    
+    # Fetch transcript from ElevenLabs if conversation_id is provided
+    if finish_request.conversation_id:
+        print(f"   - Fetching transcript from ElevenLabs...")
+        from services.elevenlabs_transcript_service import fetch_and_update_transcript
+        transcript_success = await fetch_and_update_transcript(
+            req, finish_request.attempt_id, finish_request.conversation_id
+        )
+        if transcript_success:
+            print(f"   ✅ Transcript retrieved and stored successfully")
+        else:
+            print(f"   ⚠️  Failed to retrieve transcript from ElevenLabs")
+    else:
+        print(f"   - No conversation_id provided, skipping transcript retrieval")
     
     # Trigger grading (async task). No server-side ElevenLabs agent to clean up.
     print(f"   - Triggering grading service...")

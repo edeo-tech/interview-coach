@@ -84,12 +84,14 @@ export const useFinishAttempt = () => {
     mutationFn: ({ 
       interviewId, 
       attemptId, 
-      durationSeconds 
+      durationSeconds,
+      conversationId 
     }: { 
       interviewId: string; 
       attemptId: string; 
-      durationSeconds?: number 
-    }) => interviewsApi.finishAttempt(interviewId, attemptId, durationSeconds),
+      durationSeconds?: number;
+      conversationId?: string;
+    }) => interviewsApi.finishAttempt(interviewId, attemptId, durationSeconds, conversationId),
     onSuccess: (_, { interviewId }) => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.detail(interviewId) });
     },

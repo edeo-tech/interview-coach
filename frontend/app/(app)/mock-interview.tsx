@@ -24,6 +24,7 @@ export default function MockInterview() {
     const finishAttempt = useFinishAttempt();
 
     const [attemptId, setAttemptId] = useState<string | null>(null);
+    const [conversationId, setConversationId] = useState<string | null>(null);
     
     const topics = params.topics ? JSON.parse(params.topics as string) : [];
     
@@ -44,118 +45,36 @@ export default function MockInterview() {
 
     const conversationConfig = useMemo(() => ({
         onConnect: () => {
-            console.log('🎤 Connected to interview AI successfully');
             setCallState('active');
             
             // Set a timeout to check if AI speaks within 10 seconds
             setTimeout(() => {
-                console.log('⏰ 10 seconds passed since connection - checking if AI has spoken...');
                 if (interviewNotes.length === 0) {
                     console.log('⚠️ AI has not spoken yet after 10 seconds');
                 }
             }, 10000);
         },
         onDisconnect: () => {
-            console.log('🔌 Disconnected from interview AI');
             // Don't automatically change state - let the user control ending
-            console.log('ℹ️ Connection ended, but not changing UI state automatically');
         },
-        onMessage: (message: any) => {
-            console.log('📝 AI Message received:', JSON.stringify(message, null, 2));
-            
-            // Handle different message types based on ElevenLabs SDK structure
-            if (message.message && typeof message.message === 'object') {
-                const msg = message.message as any;
-                
-                console.log('🔍 Message type:', msg.type);
-                console.log('🔍 Message source:', message.source);
-                
-                // Handle conversation initiation
-                if (msg.type === 'conversation_initiation_metadata') {
-                    console.log('✅ Conversation initiated, waiting for AI to speak...');
-                    
-                    // Try sending an initial message to trigger AI response
-                    setTimeout(() => {
-                        console.log('🚀 Sending initial trigger message to start conversation...');
-                        // This might trigger the AI to start speaking
-                        // Some agents need a user input first
-                    }, 2000);
-                    
-                    return;
+        onMessage: (evt: any) => {
+            // Normalize event shape: sometimes { message: {...}, source }, sometimes already flat
+            const e = evt?.message?.type ? evt.message : evt;
+          
+            // Capture conversation_id from initiation event
+            if (e.type === 'conversation_initiation_metadata') {
+                const convId = e.conversation_initiation_metadata_event?.conversation_id;
+                if (convId) {
+                    console.log('📝 Captured conversation_id:', convId);
+                    setConversationId(convId);
                 }
-                
-                // Handle transcript messages
-                if (msg.type === 'transcript' || msg.type === 'agent_response') {
-                    const text = msg.text || msg.content || msg.message || '';
-                    const ts = new Date().toISOString();
-                    if (message.source === 'ai') {
-                        console.log('🎤 AI spoke:', text);
-                        setInterviewNotes(prev => [...prev, `AI: ${text}`]);
-                        if (attemptId && params.interviewId) {
-                            console.log('🚀 Saving AI transcript:', {
-                                attemptId,
-                                interviewId: params.interviewId,
-                                speaker: 'agent',
-                                textLength: text.length,
-                                timestamp: ts
-                            });
-                            addTranscript.mutate({
-                                interviewId: params.interviewId as string,
-                                turn: { speaker: 'agent', text, timestamp: ts }
-                            }, {
-                                onSuccess: () => {
-                                    console.log('✅ AI transcript saved successfully');
-                                },
-                                onError: (error) => {
-                                    console.error('❌ Failed to save AI transcript:', error);
-                                }
-                            });
-                        } else {
-                            console.warn('⚠️ Cannot save AI transcript - missing:', {
-                                attemptId: attemptId || 'MISSING',
-                                interviewId: params.interviewId || 'MISSING'
-                            });
-                        }
-                    } else if (message.source === 'user') {
-                        console.log('🎙️ User spoke:', text);
-                        setInterviewNotes(prev => [...prev, `You: ${text}`]);
-                        if (attemptId && params.interviewId) {
-                            console.log('🚀 Saving user transcript:', {
-                                attemptId,
-                                interviewId: params.interviewId,
-                                speaker: 'user',
-                                textLength: text.length,
-                                timestamp: ts
-                            });
-                            addTranscript.mutate({
-                                interviewId: params.interviewId as string,
-                                turn: { speaker: 'user', text, timestamp: ts }
-                            }, {
-                                onSuccess: () => {
-                                    console.log('✅ User transcript saved successfully');
-                                },
-                                onError: (error) => {
-                                    console.error('❌ Failed to save user transcript:', error);
-                                }
-                            });
-                        } else {
-                            console.warn('⚠️ Cannot save user transcript - missing:', {
-                                attemptId: attemptId || 'MISSING',
-                                interviewId: params.interviewId || 'MISSING'
-                            });
-                        }
-                    }
-                }
-                
-                // Handle any other message types
-                console.log('🔍 All message properties:', Object.keys(msg));
-            } else {
-                console.log('⚠️ Unexpected message format:', message);
+                return;
             }
+
+            // For all other events, just show that interview is active
+            // We'll get the complete transcript from ElevenLabs API after the call
         },
         onError: (error: any) => {
-            console.error('❌ Interview AI Error:', error);
-            console.error('Error details:', JSON.stringify(error, null, 2));
             setCallState('incoming'); // Reset to incoming state on error
         },
         clientTools: {
@@ -166,7 +85,6 @@ export default function MockInterview() {
                     score: number;
                     summary: string;
                 };
-                console.log('Interview Feedback:', feedbackParams);
                 return "Feedback recorded successfully!";
             },
             evaluate_answer: (parameters: unknown) => {
@@ -176,7 +94,6 @@ export default function MockInterview() {
                     rating: number;
                     feedback: string;
                 };
-                console.log('Answer Evaluation:', answerParams);
                 return "Answer evaluated!";
             },
         },
@@ -220,33 +137,18 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         setCallState('connecting');
         
         const agentId = process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID;
-        console.log('🚀 Starting interview session...');
-        console.log('Agent ID:', agentId || 'NOT SET');
-        console.log('Auth user:', auth?.name || 'Anonymous');
-        console.log('Interview params:', {
-            role: params.role,
-            company: params.companyName,
-            difficulty: params.difficulty
-        });
 
         // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
         try {
-            console.log('📝 Starting interview attempt for interview:', params.interviewId);
             const res = await startAttempt.mutateAsync(params.interviewId as string);
-            console.log('✅ Attempt created successfully:', {
-                attemptId: res.data.attempt_id,
-                interviewId: params.interviewId
-            });
             setAttemptId(res.data.attempt_id);
         } catch (e) {
-            console.error('❌ Failed to start attempt:', e);
             setCallState('incoming');
             return;
         }
 
         try {
             const prompt = buildInterviewPrompt();
-            console.log('📋 Built interview prompt length:', prompt.length);
             
             // Try without prompt override first to see if agent speaks
             const sessionConfig = {
@@ -262,22 +164,15 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                 dynamicVariables: {
                     candidate_name: auth?.name || 'Candidate',
                     job_title: params.role as string,
-                    company: params.companyName as string
+                    company: params.companyName as string,
+                    cv_data: cvProfile?.raw_text || '',
+                    job_description: topics.join(', '),
                 }
             };
-
-            console.log('🔧 Session config:', JSON.stringify(sessionConfig, null, 2));
-            console.log('⏳ Calling conversation.startSession...');
             
             await conversation.startSession(sessionConfig);
-            console.log('✅ conversation.startSession completed successfully');
-            console.log('ℹ️ Expecting AI to start speaking shortly with greeting...');
             
         } catch (error) {
-            console.error('❌ Failed to start interview session:', error);
-            console.error('Error type:', typeof error);
-            console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
-            console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
             setCallState('incoming'); // Reset to incoming state on error
         }
     }, [buildInterviewPrompt, auth, params]);
@@ -288,17 +183,16 @@ Remember: This is a practice interview to help ${userName} improve their intervi
     }, [router]);
 
     const endInterview = useCallback(async (conversation: any) => {
-        console.log('🛑 Ending interview session...');
         try {
             await conversation.endSession();
-            console.log('✅ Interview session ended successfully');
             // Notify backend of finish and trigger grading
             if (attemptId && params.interviewId) {
                 try {
                     await finishAttempt.mutateAsync({
                         interviewId: params.interviewId as string,
                         attemptId: attemptId,
-                        durationSeconds: duration
+                        durationSeconds: duration,
+                        conversationId: conversationId || undefined
                     });
                     // Navigate to transcript breakdown
                     router.replace({
@@ -306,12 +200,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         params: { id: params.interviewId as string, attemptId }
                     });
                 } catch (e) {
-                    console.error('❌ Error finishing attempt:', e);
+                    // Error finishing attempt
                 }
             }
             setCallState('ended');
         } catch (error) {
-            console.error('❌ Error ending interview session:', error);
             setCallState('ended'); // Force end even if there's an error
         }
     }, [attemptId, params.interviewId, duration, finishAttempt]);
