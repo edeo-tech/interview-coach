@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView, Image } from 'react-nati
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCV } from '../../_queries/interviews/cv';
+import { useStartAttempt, useAddTranscript, useFinishAttempt } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
 
@@ -18,6 +19,11 @@ export default function MockInterview() {
     // Fetch user data and CV
     const { auth } = useAuth();
     const { data: cvProfile } = useCV();
+    const startAttempt = useStartAttempt();
+    const addTranscript = useAddTranscript();
+    const finishAttempt = useFinishAttempt();
+
+    const [attemptId, setAttemptId] = useState<string | null>(null);
     
     const topics = params.topics ? JSON.parse(params.topics as string) : [];
     
@@ -80,14 +86,26 @@ export default function MockInterview() {
                 
                 // Handle transcript messages
                 if (msg.type === 'transcript' || msg.type === 'agent_response') {
+                    const text = msg.text || msg.content || msg.message || '';
+                    const ts = new Date().toISOString();
                     if (message.source === 'ai') {
-                        const text = msg.text || msg.content || msg.message || '';
                         console.log('🎤 AI spoke:', text);
                         setInterviewNotes(prev => [...prev, `AI: ${text}`]);
+                        if (attemptId && params.interviewId) {
+                            addTranscript.mutate({
+                                interviewId: params.interviewId as string,
+                                turn: { speaker: 'agent', text, timestamp: ts }
+                            });
+                        }
                     } else if (message.source === 'user') {
-                        const text = msg.text || msg.content || msg.message || '';
                         console.log('🎙️ User spoke:', text);
                         setInterviewNotes(prev => [...prev, `You: ${text}`]);
+                        if (attemptId && params.interviewId) {
+                            addTranscript.mutate({
+                                interviewId: params.interviewId as string,
+                                turn: { speaker: 'user', text, timestamp: ts }
+                            });
+                        }
                     }
                 }
                 
@@ -173,9 +191,12 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             difficulty: params.difficulty
         });
 
-        if (!agentId || agentId === 'your-agent-id-here') {
-            console.error('❌ No valid ElevenLabs Agent ID configured!');
-            console.error('Please set EXPO_PUBLIC_ELEVENLABS_AGENT_ID in your environment');
+        // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
+        try {
+            const res = await startAttempt.mutateAsync(params.interviewId as string);
+            setAttemptId(res.data.attempt_id);
+        } catch (e) {
+            console.error('❌ Failed to start attempt:', e);
             setCallState('incoming');
             return;
         }
@@ -228,12 +249,29 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         try {
             await conversation.endSession();
             console.log('✅ Interview session ended successfully');
+            // Notify backend of finish and trigger grading
+            if (attemptId && params.interviewId) {
+                try {
+                    await finishAttempt.mutateAsync({
+                        interviewId: params.interviewId as string,
+                        attemptId: attemptId,
+                        durationSeconds: duration
+                    });
+                    // Navigate to transcript breakdown
+                    router.replace({
+                        pathname: '/interviews/[id]/attempts/[attemptId]/transcript',
+                        params: { id: params.interviewId as string, attemptId }
+                    });
+                } catch (e) {
+                    console.error('❌ Error finishing attempt:', e);
+                }
+            }
             setCallState('ended');
         } catch (error) {
             console.error('❌ Error ending interview session:', error);
             setCallState('ended'); // Force end even if there's an error
         }
-    }, []);
+    }, [attemptId, params.interviewId, duration, finishAttempt]);
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;

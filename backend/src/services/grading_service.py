@@ -1,9 +1,10 @@
 import json
 from typing import Dict, List
+from fastapi import Request
 from decouple import config
 import httpx
 
-from crud.interviews.attempts import get_attempt, create_feedback
+from crud.interviews.attempts import get_attempt, create_feedback, update_attempt
 from crud.interviews.interviews import get_interview
 from crud.interviews.cv_profiles import get_user_cv
 
@@ -18,13 +19,13 @@ class InterviewGradingService:
             timeout=60.0
         )
     
-    async def grade_interview(self, attempt_id: str) -> Dict:
+    async def grade_interview(self, req: Request, attempt_id: str) -> Dict:
         """Grade an interview attempt using AI"""
         try:
             # Get attempt, interview, and CV data
-            attempt = await self._get_attempt_data(attempt_id)
-            interview = await self._get_interview_data(attempt['interview_id'])
-            cv = await self._get_cv_data_for_interview(attempt['interview_id'])
+            attempt = await self._get_attempt_data(req, attempt_id)
+            interview = await self._get_interview_data(req, attempt['interview_id'])
+            cv = await self._get_cv_data_for_interview(req, interview.get('user_id'))
             
             if not attempt or not interview:
                 raise ValueError("Required interview data not found")
@@ -59,10 +60,19 @@ class InterviewGradingService:
             # Ensure required fields exist
             feedback_data = self._validate_feedback_data(feedback_data)
             
-            # Save feedback to database
-            # Note: This needs to be refactored to work with actual database connection
-            # await self._save_feedback(attempt_id, feedback_data)
-            
+            # Save feedback to database and mark attempt graded
+            await create_feedback(
+                req,
+                attempt_id,
+                overall_score=feedback_data["overall_score"],
+                strengths=feedback_data["strengths"],
+                improvement_areas=feedback_data["improvement_areas"],
+                detailed_feedback=feedback_data["detailed_feedback"],
+                rubric_scores=feedback_data["rubric_scores"],
+            )
+
+            await update_attempt(req, attempt_id, status="graded")
+
             return feedback_data
             
         except Exception as e:
@@ -203,43 +213,34 @@ Be constructive but honest in your feedback. Highlight both strengths and areas 
             }
         }
     
-    async def _get_attempt_data(self, attempt_id: str) -> Dict:
-        """Get attempt data - placeholder for database access"""
-        # This would need to be refactored to work with actual database
-        return {
-            "interview_id": "mock_interview_id",
-            "transcript": [
-                {"speaker": "agent", "text": "Tell me about your experience with Python"},
-                {"speaker": "user", "text": "I have been using Python for about 3 years..."}
-            ]
-        }
+    async def _get_attempt_data(self, req: Request, attempt_id: str) -> Dict:
+        """Get attempt data from DB"""
+        attempt = await get_attempt(req, attempt_id)
+        if not attempt:
+            raise ValueError("Attempt not found")
+        return attempt.model_dump()
     
-    async def _get_interview_data(self, interview_id: str) -> Dict:
-        """Get interview data - placeholder"""
-        return {
-            "role_title": "Software Engineer",
-            "company": "TechCorp",
-            "difficulty": "mid",
-            "interview_type": "technical",
-            "jd_structured": {
-                "requirements": "Python, FastAPI, MongoDB experience required"
-            }
-        }
+    async def _get_interview_data(self, req: Request, interview_id: str) -> Dict:
+        """Get interview data from DB"""
+        interview = await get_interview(req, interview_id)
+        if not interview:
+            raise ValueError("Interview not found")
+        return interview.model_dump()
     
-    async def _get_cv_data_for_interview(self, interview_id: str) -> Dict:
-        """Get CV data - placeholder"""
-        return {
-            "skills": ["Python", "FastAPI", "MongoDB"],
-            "experience_years": 3
-        }
+    async def _get_cv_data_for_interview(self, req: Request, user_id: str) -> Dict:
+        """Get CV data for the user associated with the interview"""
+        if not user_id:
+            return {}
+        cv = await get_user_cv(req, user_id)
+        return cv.model_dump() if cv else {}
 
 # Global service instance
 grading_service = InterviewGradingService()
 
-async def trigger_interview_grading(attempt_id: str):
+async def trigger_interview_grading(req: Request, attempt_id: str):
     """Trigger grading for an interview attempt"""
     try:
-        feedback_data = await grading_service.grade_interview(attempt_id)
+        feedback_data = await grading_service.grade_interview(req, attempt_id)
         print(f"Interview {attempt_id} graded successfully")
         return feedback_data
     except Exception as e:

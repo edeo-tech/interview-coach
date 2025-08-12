@@ -29,7 +29,6 @@ class CreateInterviewFromFileRequest(BaseModel):
 
 class StartAttemptResponse(BaseModel):
     attempt_id: str
-    agent_id: str
 
 class TranscriptTurn(BaseModel):
     speaker: str  # user or agent
@@ -181,19 +180,12 @@ async def start_interview_attempt(
     if interview.user_id != user_id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # Create attempt record
+    # Create attempt record (frontend handles ElevenLabs entirely)
     attempt = await create_attempt(req, interview_id)
-    
-    # Initialize ElevenLabs agent
-    from services.elevenlabs_service import create_interview_agent
-    agent_id = await create_interview_agent(interview_id, user_id)
-    
-    # Update attempt with agent_id
-    await update_attempt(req, attempt.id, agent_id=agent_id)
-    
+
     return JSONResponse(
         status_code=200,
-        content={"attempt_id": attempt.id, "agent_id": agent_id}
+        content={"attempt_id": attempt.id}
     )
 
 @router.post("/{interview_id}/transcript")
@@ -256,14 +248,9 @@ async def finish_interview_attempt(
         req, finish_request.attempt_id, finish_request.duration_seconds
     )
     
-    # Trigger grading (async task)
+    # Trigger grading (async task). No server-side ElevenLabs agent to clean up.
     from services.grading_service import trigger_interview_grading
-    await trigger_interview_grading(finish_request.attempt_id)
-    
-    # Cleanup ElevenLabs agent
-    if attempt.agent_id:
-        from services.elevenlabs_service import cleanup_agent
-        await cleanup_agent(attempt.agent_id)
+    await trigger_interview_grading(req, finish_request.attempt_id)
     
     return JSONResponse(
         status_code=200,

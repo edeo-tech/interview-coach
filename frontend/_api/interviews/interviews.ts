@@ -48,7 +48,6 @@ export interface InterviewAttempt {
 
 export interface StartAttemptResponse {
   attempt_id: string;
-  agent_id: string;
 }
 
 export interface InterviewWithAttempts {
