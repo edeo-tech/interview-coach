@@ -158,6 +158,37 @@ export default function AttemptGradingScreen() {
         </View>
         <Text style={styles.detailedFeedback}>{data?.detailed_feedback}</Text>
       </View>
+
+      {/* View Transcript Section */}
+      <Pressable 
+        style={[styles.transcriptCard, !data && styles.transcriptCardDisabled]}
+        onPress={() => {
+          if (data) {
+            router.push({ 
+              pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
+              params: { id, attemptId } 
+            });
+          }
+        }}
+        disabled={!data}
+      >
+        <View style={styles.transcriptCardContent}>
+          <View style={styles.transcriptCardLeft}>
+            <View style={styles.transcriptIconContainer}>
+              <Ionicons name="document-text-outline" size={24} color={data ? "#3B82F6" : "#6B7280"} />
+            </View>
+            <View style={styles.transcriptTextContainer}>
+              <Text style={[styles.transcriptTitle, !data && styles.transcriptTitleDisabled]}>
+                View Interview Transcript
+              </Text>
+              <Text style={[styles.transcriptSubtitle, !data && styles.transcriptSubtitleDisabled]}>
+                Review the full conversation and your responses
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={data ? "#3B82F6" : "#6B7280"} />
+        </View>
+      </Pressable>
     </ScrollView>
   );
 
@@ -189,36 +220,21 @@ export default function AttemptGradingScreen() {
         )}
         
         <View style={styles.footer}>
-          <View style={styles.footerButtons}>
-            <Pressable 
-              style={[styles.secondary, !data && styles.secondaryDisabled]} 
-              onPress={() => {
-                if (data) {
-                  router.push({ 
-                    pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
-                    params: { id, attemptId } 
-                  });
-                }
-              }}
-              disabled={!data}
-            >
-              <Ionicons name="document-text-outline" size={18} color={data ? "#3B82F6" : "#6B7280"} />
-              <Text style={[styles.secondaryText, !data && styles.secondaryTextDisabled]}>
-                View Transcript
-              </Text>
-            </Pressable>
-            
-            <Pressable 
-              style={[styles.primary, !data && styles.primaryDisabled]} 
-              onPress={() => router.replace({ pathname: '/interviews/[id]/details', params: { id } })}
-              disabled={!data}
-            >
-              <Text style={[styles.primaryText, !data && styles.primaryTextDisabled]}>
-                Back to Interview
-              </Text>
-              <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#9CA3AF"} />
-            </Pressable>
-          </View>
+          <Pressable 
+            style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
+            onPress={() => {
+              if (data) {
+                router.replace({ pathname: '/interviews/[id]/details', params: { id } });
+              }
+            }}
+            disabled={!data}
+          >
+            <Ionicons name="refresh-circle" size={24} color={data ? "#fff" : "#6B7280"} />
+            <Text style={[styles.practiceAgainText, !data && styles.practiceAgainTextDisabled]}>
+              Practice Again & Improve
+            </Text>
+            <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
+          </Pressable>
         </View>
       </View>
     </LinearGradient>
@@ -265,53 +281,88 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, 
     borderTopColor: 'rgba(255,255,255,0.08)',
   },
-  footerButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  primary: { 
-    backgroundColor: '#3B82F6', 
-    paddingVertical: 16, 
-    borderRadius: 12, 
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  primaryDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  primaryText: { 
-    color: '#fff', 
-    fontSize: 16, 
-    fontWeight: '600',
-  },
-  primaryTextDisabled: { 
-    color: '#9CA3AF',
-  },
-  secondary: { 
-    backgroundColor: 'rgba(255,255,255,0.06)', 
-    paddingVertical: 16, 
-    borderRadius: 12, 
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    flex: 1,
+  // Transcript Card Styles
+  transcriptCard: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
   },
-  secondaryDisabled: {
+  transcriptCardDisabled: {
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderColor: 'rgba(255,255,255,0.05)',
   },
-  secondaryText: { 
-    color: '#3B82F6', 
-    fontSize: 16, 
-    fontWeight: '600',
+  transcriptCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  secondaryTextDisabled: { 
+  transcriptCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  transcriptIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  transcriptTextContainer: {
+    flex: 1,
+  },
+  transcriptTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  transcriptTitleDisabled: {
+    color: '#6B7280',
+  },
+  transcriptSubtitle: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  transcriptSubtitleDisabled: {
+    color: '#6B7280',
+  },
+
+  // Practice Again Button Styles
+  practiceAgainButton: {
+    backgroundColor: '#F43F5E',
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  practiceAgainButtonDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  practiceAgainText: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
+  practiceAgainTextDisabled: {
     color: '#6B7280',
   },
   center: { 
