@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import TranscriptView from '../../../../../../components/TranscriptView';
 import { useInterview } from '../../../../../../_queries/interviews/interviews';
@@ -68,10 +69,19 @@ export default function AttemptTranscriptScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}> 
-        <ActivityIndicator color="#3B82F6" />
-        <Text style={styles.loadingText}>Loading interview...</Text>
-      </View>
+      <LinearGradient
+        colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.gradient}
+      >
+        <View style={styles.center}> 
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#3B82F6" />
+            <Text style={styles.loadingTitle}>Loading interview...</Text>
+          </View>
+        </View>
+      </LinearGradient>
     );
   }
 
@@ -139,39 +149,61 @@ export default function AttemptTranscriptScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.title}>Interview Transcript</Text>
+    <LinearGradient
+      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.gradient}
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </Pressable>
+          <Text style={styles.headerTitle}>Interview Transcript</Text>
+        </View>
+        {renderContent()}
+        {renderFooter()}
       </View>
-      {renderContent()}
-      {renderFooter()}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0a' },
+  gradient: {
+    flex: 1,
+  },
+  container: { 
+    flex: 1, 
+    backgroundColor: 'transparent',
+  },
   header: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     paddingTop: 60, 
     paddingHorizontal: 20, 
-    paddingBottom: 12, 
+    paddingBottom: 16, 
     borderBottomWidth: 1, 
-    borderBottomColor: '#333' 
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   backButton: {
     padding: 8,
     marginRight: 12,
   },
-  title: { color: '#fff', fontSize: 18, fontFamily: 'Inter_600SemiBold', flex: 1 },
-  footer: { padding: 20, borderTopWidth: 1, borderTopColor: '#333' },
+  headerTitle: { 
+    color: '#fff', 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    flex: 1,
+  },
+  footer: { 
+    padding: 20, 
+    borderTopWidth: 1, 
+    borderTopColor: 'rgba(255,255,255,0.08)',
+  },
   primary: { 
     backgroundColor: '#3B82F6', 
-    paddingVertical: 14, 
+    paddingVertical: 16, 
     borderRadius: 12, 
     alignItems: 'center',
     flexDirection: 'row',
@@ -179,39 +211,45 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryDisabled: {
-    backgroundColor: '#374151',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  primaryText: { color: '#fff', fontSize: 16, fontFamily: 'Inter_600SemiBold' },
-  primaryTextDisabled: { color: '#9CA3AF' },
-  arrowIcon: { marginLeft: 4 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0a0a' },
-  loadingText: { 
-    color: '#6B7280', 
+  primaryText: { 
+    color: '#fff', 
     fontSize: 16, 
-    fontFamily: 'Inter_400Regular', 
-    marginTop: 16 
+    fontWeight: '600',
+  },
+  primaryTextDisabled: { 
+    color: '#9CA3AF',
+  },
+  arrowIcon: { 
+    marginLeft: 4,
+  },
+  center: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center',
   },
   loadingCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
-    maxWidth: 300,
+    borderColor: 'rgba(255,255,255,0.08)',
+    maxWidth: 320,
+    marginHorizontal: 20,
   },
   loadingTitle: {
     color: '#fff',
     fontSize: 20,
-    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   loadingSubtitle: {
     color: '#9CA3AF',
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
@@ -235,7 +273,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#6B7280',
     fontSize: 12,
-    fontFamily: 'Inter_500Medium',
+    fontWeight: '500',
   },
   gradingContainer: {
     flexDirection: 'row',
@@ -247,8 +285,6 @@ const styles = StyleSheet.create({
   gradingText: {
     color: '#3B82F6',
     fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
   },
 });
-
-

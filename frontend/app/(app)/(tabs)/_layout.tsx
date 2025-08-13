@@ -66,7 +66,7 @@ export default function TabLayout() {
                 headerShown: false,
                 tabBarStyle: {
                     backgroundColor: 'rgba(10,10,10,0.1)',
-                    borderTopColor: 'rgba(255,255,255,0.12)',
+                    borderTopColor: 'rgba(255,255,255,0.01)',
                     borderTopWidth: 1,
                     height: 84,
                     paddingHorizontal: 30,
@@ -74,10 +74,10 @@ export default function TabLayout() {
                 tabBarBackground: () => (
                     <BlurView 
                         tint="light" 
-                        intensity={15} 
+                        intensity={10} 
                         style={{ 
                             flex: 1,
-                            backgroundColor: 'rgba(129, 129, 129, 0.1)',
+                            backgroundColor: 'rgba(55, 55, 55, 0.1)',
                         }} 
                     />
                 ),
