@@ -178,7 +178,7 @@ const InterviewResults = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.push('/interviews/index' as any)}
+            onPress={() => router.replace('/interviews/index' as any)}
             className="bg-gray-600 rounded-lg p-4 flex-row items-center justify-center"
           >
             <Ionicons name="home" size={20} color="white" />
