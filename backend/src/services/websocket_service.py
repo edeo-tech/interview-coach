@@ -35,21 +35,31 @@ class WebSocketManager:
     
     async def send_to_attempt(self, attempt_id: str, message: dict):
         """Send a message to all clients listening for a specific attempt"""
+        print(f"\n📡 [WEBSOCKET] send_to_attempt called:")
+        print(f"   - Attempt ID: {attempt_id}")
+        print(f"   - Attempt ID type: {type(attempt_id)}")
+        print(f"   - All active attempt IDs: {list(self.connections.keys())}")
+        
         if attempt_id not in self.connections:
-            print(f"📡 [WEBSOCKET] No connections for attempt: {attempt_id}")
+            print(f"   ❌ No connections found for attempt: {attempt_id}")
+            print(f"   - Available connections: {list(self.connections.keys())}")
             return
         
         message_str = json.dumps(message)
         connections_to_remove = []
         
-        print(f"📡 [WEBSOCKET] Broadcasting to {len(self.connections[attempt_id])} clients for attempt: {attempt_id}")
+        print(f"   ✅ Found {len(self.connections[attempt_id])} clients for attempt: {attempt_id}")
         print(f"   - Message type: {message.get('type', 'unknown')}")
+        print(f"   - Message size: {len(message_str)} bytes")
         
+        successful_sends = 0
         for websocket in self.connections[attempt_id].copy():
             try:
                 await websocket.send_text(message_str)
+                successful_sends += 1
+                print(f"   ✅ Sent to client #{successful_sends}")
             except Exception as e:
-                print(f"❌ [WEBSOCKET] Failed to send to client: {e}")
+                print(f"   ❌ Failed to send to client: {e}")
                 connections_to_remove.append(websocket)
         
         # Remove failed connections
@@ -59,6 +69,9 @@ class WebSocketManager:
                     self.connections[attempt_id].discard(websocket)
                 if not self.connections[attempt_id]:
                     del self.connections[attempt_id]
+        
+        print(f"   - Total successful sends: {successful_sends}")
+        print(f"   - Total failed sends: {len(connections_to_remove)}")
     
     async def broadcast_transcript_update(self, attempt_id: str, transcript: list):
         """Broadcast transcript update to all clients for an attempt"""

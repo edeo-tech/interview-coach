@@ -130,13 +130,20 @@ async def handle_post_call_webhook(request: Request):
         print(f"✅ Updated attempt: {attempt.id}")
         
         # Send real-time transcript update to frontend
+        print(f"\n📡 [WEBSOCKET] Preparing to broadcast transcript update:")
+        print(f"   - Attempt ID: {attempt.id}")
+        print(f"   - Attempt ID (stringified): {str(attempt.id)}")
+        print(f"   - Transcript length: {len(attempt.transcript)}")
+        print(f"   - First turn preview: {attempt.transcript[0] if attempt.transcript else 'No transcript'}")
+        
         await websocket_manager.broadcast_transcript_update(
             str(attempt.id), 
             attempt.transcript
         )
         
         # Start grading process immediately
-        print("🎯 Starting grading process...")
+        print("\n🎯 Starting grading process...")
+        print(f"   - Broadcasting grading_started for attempt: {str(attempt.id)}")
         await websocket_manager.broadcast_grading_started(str(attempt.id))
         
         try:
@@ -148,11 +155,18 @@ async def handle_post_call_webhook(request: Request):
                 # Get the feedback document from database to get the ID
                 from crud.interviews.attempts import get_attempt_feedback
                 feedback = await get_attempt_feedback(request, str(attempt.id))
+                print(f"\n📡 [WEBSOCKET] Preparing to broadcast grading_completed:")
+                print(f"   - Attempt ID: {str(attempt.id)}")
+                print(f"   - Feedback found: {feedback is not None}")
                 if feedback:
+                    print(f"   - Feedback ID: {str(feedback.id)}")
+                    print(f"   - Overall score: {feedback.overall_score}")
                     await websocket_manager.broadcast_grading_completed(
                         str(attempt.id), 
                         str(feedback.id)
                     )
+                else:
+                    print(f"   - WARNING: No feedback document found in database!")
         except Exception as grade_error:
             print(f"❌ Grading failed: {grade_error}")
             await websocket_manager.broadcast_error(

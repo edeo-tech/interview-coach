@@ -157,13 +157,17 @@ class InterviewGradingService:
         """Format transcript for AI analysis"""
         formatted = []
         for turn in transcript:
-            speaker = turn.get('speaker', 'unknown')
-            text = turn.get('text', '')
-            timestamp = turn.get('timestamp', '')
+            # Handle ElevenLabs format: role/message/time_in_call_secs
+            speaker = turn.get('role', turn.get('speaker', 'unknown'))
+            text = turn.get('message', turn.get('text', ''))
+            timestamp = turn.get('time_in_call_secs', turn.get('timestamp', ''))
+            
+            print(f"   - Processing turn: role={speaker}, message_length={len(text)}, time={timestamp}")
             
             if text.strip():
                 formatted.append(f"{speaker.upper()}: {text}")
         
+        print(f"   - Total formatted turns: {len(formatted)}")
         return "\n".join(formatted)
     
     def _build_grading_prompt(self, interview: Dict, cv: Dict, transcript: str) -> str:

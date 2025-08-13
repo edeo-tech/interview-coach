@@ -53,16 +53,30 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
       ws.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
-          console.log('📡 [WEBSOCKET] Received message:', message.type);
+          console.log('📡 [WEBSOCKET] Message received on frontend:');
+          console.log('   - Type:', message.type);
+          console.log('   - Attempt ID:', message.attempt_id);
+          console.log('   - Current attemptId param:', attemptId);
+          console.log('   - Full message:', message);
+          
+          // Verify the message is for this attempt
+          if (message.attempt_id !== attemptId) {
+            console.log('⚠️ [WEBSOCKET] Message attempt_id mismatch, ignoring');
+            return;
+          }
           
           // Call specific handlers
           if (message.type === 'transcript_updated' && options.onTranscriptUpdate) {
+            console.log('🔄 [WEBSOCKET] Calling onTranscriptUpdate with transcript length:', message.transcript?.length || 0);
             options.onTranscriptUpdate(message.transcript || []);
           } else if (message.type === 'grading_started' && options.onGradingStarted) {
+            console.log('🎯 [WEBSOCKET] Calling onGradingStarted');
             options.onGradingStarted();
           } else if (message.type === 'grading_completed' && options.onGradingCompleted) {
+            console.log('✅ [WEBSOCKET] Calling onGradingCompleted with feedback_id:', message.feedback_id);
             options.onGradingCompleted(message.feedback_id || '');
           } else if (message.type === 'error' && options.onError) {
+            console.log('❌ [WEBSOCKET] Calling onError with message:', message.message);
             options.onError(message.message || 'Unknown error');
           }
           
@@ -72,6 +86,7 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
           }
         } catch (error) {
           console.error('❌ [WEBSOCKET] Error parsing message:', error);
+          console.error('❌ [WEBSOCKET] Raw message data:', event.data);
         }
       };
 
