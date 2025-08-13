@@ -29,4 +29,5 @@ export interface AuthenticatedUser
     profile_qrcode?: string;
     is_banned: boolean;
     last_login?: string;
+    is_premium: boolean;
 }

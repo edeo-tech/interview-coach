@@ -6,11 +6,45 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
+import { useFeedbackCheck } from '../../../../hooks/premium/usePremiumCheck';
+
+const BlurredSection = ({ 
+  children, 
+  isBlurred, 
+  onUpgradePress 
+}: { 
+  children: React.ReactNode; 
+  isBlurred: boolean; 
+  onUpgradePress?: () => void;
+}) => {
+  if (!isBlurred) {
+    return <>{children}</>;
+  }
+
+  return (
+    <View style={styles.blurredContainer}>
+      <View style={styles.blurredContent}>
+        {children}
+      </View>
+      <View style={styles.upgradeOverlay}>
+        <Ionicons name="diamond" size={32} color="#f59e0b" />
+        <Text style={styles.upgradeTitle}>Premium Feature</Text>
+        <Text style={styles.upgradeMessage}>
+          Upgrade to Premium to see detailed feedback and scores
+        </Text>
+        <TouchableOpacity onPress={onUpgradePress} style={styles.upgradeButton}>
+          <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 const InterviewResults = () => {
   const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
   const { data: feedback, isLoading, error } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
+  const { canViewDetailedFeedback } = useFeedbackCheck();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -105,6 +139,8 @@ const InterviewResults = () => {
     );
   }
 
+  const feedbackAccess = canViewDetailedFeedback();
+
   return (
     <LinearGradient
       colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
@@ -146,46 +182,66 @@ const InterviewResults = () => {
           </View>
 
           {/* Rubric Breakdown */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Detailed Scores</Text>
-            {Object.entries(feedback.rubric_scores).map(([category, score]) => (
-              <RubricScore key={category} category={category} score={score} />
-            ))}
-          </View>
+          <BlurredSection 
+            isBlurred={feedbackAccess.shouldBlur} 
+            onUpgradePress={() => router.push('/paywall' as any)}
+          >
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Detailed Scores</Text>
+              {Object.entries(feedback.rubric_scores).map(([category, score]) => (
+                <RubricScore key={category} category={category} score={score} />
+              ))}
+            </View>
+          </BlurredSection>
 
           {/* Strengths */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <Text style={styles.sectionTitle}>Strengths</Text>
-            </View>
-            {feedback.strengths.map((strength, index) => (
-              <View key={index} style={styles.listItem}>
-                <Text style={styles.bulletPoint}>•</Text>
-                <Text style={styles.listText}>{strength}</Text>
+          <BlurredSection 
+            isBlurred={feedbackAccess.shouldBlur} 
+            onUpgradePress={() => router.push('/paywall' as any)}
+          >
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                <Text style={styles.sectionTitle}>Strengths</Text>
               </View>
-            ))}
-          </View>
+              {feedback.strengths.map((strength, index) => (
+                <View key={index} style={styles.listItem}>
+                  <Text style={styles.bulletPoint}>•</Text>
+                  <Text style={styles.listText}>{strength}</Text>
+                </View>
+              ))}
+            </View>
+          </BlurredSection>
 
           {/* Areas for Improvement */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="trending-up" size={20} color="#f59e0b" />
-              <Text style={styles.sectionTitle}>Areas for Improvement</Text>
-            </View>
-            {feedback.improvement_areas.map((area, index) => (
-              <View key={index} style={styles.listItem}>
-                <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
-                <Text style={styles.listText}>{area}</Text>
+          <BlurredSection 
+            isBlurred={feedbackAccess.shouldBlur} 
+            onUpgradePress={() => router.push('/paywall' as any)}
+          >
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="trending-up" size={20} color="#f59e0b" />
+                <Text style={styles.sectionTitle}>Areas for Improvement</Text>
               </View>
-            ))}
-          </View>
+              {feedback.improvement_areas.map((area, index) => (
+                <View key={index} style={styles.listItem}>
+                  <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
+                  <Text style={styles.listText}>{area}</Text>
+                </View>
+              ))}
+            </View>
+          </BlurredSection>
 
           {/* Detailed Feedback */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Detailed Feedback</Text>
-            <Text style={styles.detailedText}>{feedback.detailed_feedback}</Text>
-          </View>
+          <BlurredSection 
+            isBlurred={feedbackAccess.shouldBlur} 
+            onUpgradePress={() => router.push('/paywall' as any)}
+          >
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Detailed Feedback</Text>
+              <Text style={styles.detailedText}>{feedback.detailed_feedback}</Text>
+            </View>
+          </BlurredSection>
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
@@ -467,6 +523,50 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 4,
+  },
+  blurredContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  blurredContent: {
+    opacity: 0.3,
+  },
+  upgradeOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    padding: 20,
+  },
+  upgradeTitle: {
+    color: '#f59e0b',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  upgradeMessage: {
+    color: '#ffffff',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  upgradeButton: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  upgradeButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 

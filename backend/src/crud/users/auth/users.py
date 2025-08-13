@@ -1,13 +1,22 @@
 from fastapi import Request, HTTPException
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
-
+from decouple import config
+import stripe
+import logging
 
 from models.users.users import User
 from models.users.authenticated_user import AuthenticatedUser
 from crud._generic import _db_actions
 
 from authentication import Authorization
+
+# Configure Stripe
+STRIPE_API_KEY = config("STRIPE_API_KEY", default="", cast=str)
+if STRIPE_API_KEY:
+    stripe.api_key = STRIPE_API_KEY
+
+logger = logging.getLogger(__name__)
 
 # from utils.qr_codes.profiles.generate import generateQRCode
 
@@ -26,6 +35,33 @@ async def create_user(req:Request, user:User):
         BaseModel=User,
         new_document=user
     )
+
+    ## create Stripe customer for reliable payment identification
+    stripe_customer_id = ""
+    if STRIPE_API_KEY:
+        try:
+            stripe_customer = stripe.Customer.create(
+                email=user.email,
+                name=user.name,
+                metadata={
+                    "user_id": str(user.id),
+                    "username": user.name
+                }
+            )
+            stripe_customer_id = stripe_customer.id
+            logger.info(f"Created Stripe customer {stripe_customer_id} for user {user.id}")
+
+            # Update user with Stripe customer ID
+            await _db_actions.updateDocument(
+                req=req,
+                collection_name='users',
+                BaseModel=User,
+                document_id=user.id,
+                stripe_customer_id=stripe_customer_id
+            )
+        except Exception as e:
+            logger.error(f"Failed to create Stripe customer for user {user.id}: {e}")
+            # Don't fail user registration if Stripe customer creation fails
 
     return user
 
@@ -47,7 +83,7 @@ async def handle_login(req:Request, user:User):
     
     # Convert user to dict, excluding sensitive fields
     user_dict = user.model_dump(
-        exclude={'password', 'expo_notification_token', 'device_os'},
+        exclude={'password', 'expo_notification_token', 'device_os', 'stripe_customer_id', 'stripe_subscription_id'},
         exclude_none=True,
         by_alias=False
     )

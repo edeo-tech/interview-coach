@@ -9,4 +9,5 @@ class AuthenticatedUser(BaseModel):
     profile_picture: Optional[str] = Field('', description="The profile picture URL of the user")
     profile_qrcode: Optional[str] = Field('', description="The profile QR code URL of the user")
     is_banned: bool = Field(..., description="Whether the user is banned")
-    last_login: Optional[datetime] = Field(None, description="The last time the user logged in") 
+    last_login: Optional[datetime] = Field(None, description="The last time the user logged in")
+    is_premium: bool = Field(default=False, description="Whether the user has an active premium subscription") 

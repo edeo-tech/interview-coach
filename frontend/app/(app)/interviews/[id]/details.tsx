@@ -4,14 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useInterview, useStartAttempt } from '../../../../_queries/interviews/interviews';
+import { useInterview, useStartAttempt, useInterviewAttemptsCount } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
+import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
 
 export default function InterviewDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: interviewData, isLoading, error } = useInterview(id);
+  const { data: attemptsData } = useInterviewAttemptsCount(id);
   const startAttempt = useStartAttempt();
   const { posthogScreen } = usePosthogSafely();
+  const { canRetryInterview } = useInterviewRetryCheck();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -22,6 +25,16 @@ export default function InterviewDetails() {
 
   const handleStartInterview = async () => {
     try {
+      // Check if user can retry this interview
+      const hasExistingAttempts = attemptsData?.has_attempts || false;
+      const retryCheck = canRetryInterview(hasExistingAttempts);
+      
+      if (!retryCheck.canRetry && retryCheck.requiresUpgrade) {
+        // Show paywall for premium upgrade
+        router.push('/paywall');
+        return;
+      }
+
       // Navigate directly to mock interview with interview data
       // No backend call needed for frontend-only implementation
       router.push({
@@ -103,7 +116,9 @@ export default function InterviewDetails() {
           ) : (
             <>
               <Ionicons name="call" size={24} color="white" />
-              <Text style={styles.startButtonText}>Start Mock Interview</Text>
+              <Text style={styles.startButtonText}>
+                {attemptsData?.has_attempts ? 'Retry Interview' : 'Start Mock Interview'}
+              </Text>
             </>
           )}
         </TouchableOpacity>

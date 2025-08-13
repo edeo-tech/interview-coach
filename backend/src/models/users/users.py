@@ -41,6 +41,18 @@ class User(MongoBaseModel):
         default=False,
         description='Whether the user is banned'
     )
+    is_premium:bool = Field(
+        default=False,
+        description='Whether the user has an active premium subscription'
+    )
+    stripe_customer_id:str = Field(
+        default='',
+        description='The Stripe customer ID for this user'
+    )
+    stripe_subscription_id:str = Field(
+        default='',
+        description='The current active Stripe subscription ID'
+    )
 
 class LoginUser(BaseModel):
     email:EmailStr = Field(
