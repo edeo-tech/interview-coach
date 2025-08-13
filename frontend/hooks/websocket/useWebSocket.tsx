@@ -25,7 +25,11 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
   const maxReconnectAttempts = 5;
 
   const connect = useCallback(() => {
-    if (isConnecting || isConnected) return;
+    // Prevent multiple connections
+    if (wsRef.current || isConnecting || isConnected) {
+      console.log('🔌 [WEBSOCKET] Already connected or connecting, skipping...');
+      return;
+    }
     
     setIsConnecting(true);
     
@@ -127,7 +131,7 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
   useEffect(() => {
     connect();
     return disconnect;
-  }, [connect, disconnect]);
+  }, [attemptId]); // Only reconnect if attemptId changes
 
   return {
     isConnected,

@@ -55,11 +55,11 @@ def validate_elevenlabs_signature(payload: bytes, signature_header: str) -> bool
         print(f"🔍 Signature validation debug:")
         print(f"   - Timestamp: {timestamp}")
         print(f"   - Received hash: {hash_value}")
-        print(f"   - Expected hash: v0={expected_hash}")
+        print(f"   - Expected hash: {expected_hash}")
         print(f"   - Secret length: {len(ELEVENLABS_WEBHOOK_SECRET)}")
         
-        # Compare without the 'v0=' prefix since it's already in hash_value
-        return hmac.compare_digest(hash_value, f"v0={expected_hash}")
+        # Compare the hashes directly (hash_value already has v0= stripped)
+        return hmac.compare_digest(hash_value, expected_hash)
     
     except Exception as e:
         print(f"❌ Webhook signature validation error: {e}")
