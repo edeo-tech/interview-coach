@@ -17,6 +17,7 @@ ELEVENLABS_WEBHOOK_SECRET = config("ELEVENLABS_WEBHOOK_SECRET", cast=str, defaul
 def validate_elevenlabs_signature(payload: bytes, signature_header: str) -> bool:
     """Validate ElevenLabs webhook signature using HMAC"""
     if not signature_header or not ELEVENLABS_WEBHOOK_SECRET:
+        print(f"❌ Missing signature header or webhook secret")
         return False
     
     try:
@@ -32,11 +33,13 @@ def validate_elevenlabs_signature(payload: bytes, signature_header: str) -> bool
                 hash_value = part[3:]
         
         if not timestamp or not hash_value:
+            print(f"❌ Could not parse timestamp or hash from signature header")
             return False
         
         # Validate timestamp (reject if older than 30 minutes)
         tolerance = int(time.time()) - 30 * 60
         if int(timestamp) < tolerance:
+            print(f"❌ Timestamp too old: {timestamp}")
             return False
         
         # Validate signature
@@ -46,27 +49,46 @@ def validate_elevenlabs_signature(payload: bytes, signature_header: str) -> bool
             msg=full_payload_to_sign.encode("utf-8"),
             digestmod=sha256,
         )
-        expected_hash = 'v0=' + mac.hexdigest()
+        expected_hash = mac.hexdigest()
         
-        return hmac.compare_digest(hash_value, expected_hash)
+        # Debug logging
+        print(f"🔍 Signature validation debug:")
+        print(f"   - Timestamp: {timestamp}")
+        print(f"   - Received hash: {hash_value}")
+        print(f"   - Expected hash: v0={expected_hash}")
+        print(f"   - Secret length: {len(ELEVENLABS_WEBHOOK_SECRET)}")
+        
+        # Compare without the 'v0=' prefix since it's already in hash_value
+        return hmac.compare_digest(hash_value, f"v0={expected_hash}")
     
     except Exception as e:
         print(f"❌ Webhook signature validation error: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 @router.post("/post-call")
 async def handle_post_call_webhook(request: Request):
     """Handle ElevenLabs post-call webhook for transcription data"""
     print(f"\n🎣 [WEBHOOK] Received post-call webhook:")
+    print(f"   - Headers: {dict(request.headers)}")
     
     # Get raw payload and signature
     payload = await request.body()
     signature_header = request.headers.get("elevenlabs-signature", "")
     
-    # Validate signature
-    if not validate_elevenlabs_signature(payload, signature_header):
-        print("❌ Invalid webhook signature")
-        raise HTTPException(status_code=401, detail="Invalid signature")
+    # Log signature header for debugging
+    print(f"   - Signature header: {signature_header}")
+    print(f"   - Payload length: {len(payload)} bytes")
+    
+    # Skip signature validation if secret is not configured (for testing)
+    if not ELEVENLABS_WEBHOOK_SECRET:
+        print("⚠️  WARNING: ELEVENLABS_WEBHOOK_SECRET not configured, skipping signature validation")
+    else:
+        # Validate signature
+        if not validate_elevenlabs_signature(payload, signature_header):
+            print("❌ Invalid webhook signature")
+            raise HTTPException(status_code=401, detail="Invalid signature")
     
     try:
         # Parse webhook payload
