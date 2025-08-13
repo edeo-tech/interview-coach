@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { interviewsApi, CreateInterviewFromURLRequest, Interview, InterviewWithAttempts } from '../../_api/interviews/interviews';
+import { interviewsApi, CreateInterviewFromURLRequest, Interview, InterviewWithAttempts, AttemptsCountResponse } from '../../_api/interviews/interviews';
 
 // Query keys
 export const interviewKeys = {
@@ -8,6 +8,7 @@ export const interviewKeys = {
   list: (filters: string) => [...interviewKeys.lists(), filters] as const,
   details: () => [...interviewKeys.all, 'detail'] as const,
   detail: (id: string) => [...interviewKeys.details(), id] as const,
+  attemptsCount: (id: string) => [...interviewKeys.all, 'attempts-count', id] as const,
 };
 
 // Hooks
@@ -26,6 +27,17 @@ export const useInterview = (interviewId: string) => {
     queryKey: interviewKeys.detail(interviewId),
     queryFn: async () => {
       const response = await interviewsApi.get(interviewId);
+      return response.data;
+    },
+    enabled: !!interviewId,
+  });
+};
+
+export const useInterviewAttemptsCount = (interviewId: string) => {
+  return useQuery({
+    queryKey: interviewKeys.attemptsCount(interviewId),
+    queryFn: async () => {
+      const response = await interviewsApi.getAttemptsCount(interviewId);
       return response.data;
     },
     enabled: !!interviewId,

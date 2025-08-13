@@ -164,6 +164,35 @@ async def get_interview_details(
         })
     )
 
+@router.get("/{interview_id}/attempts-count")
+@error_decorator
+async def get_interview_attempts_count(
+    req: Request,
+    interview_id: str,
+    user_id: str = Depends(auth.auth_wrapper)
+):
+    """Get the count of attempts for a specific interview"""
+    # Verify interview exists and belongs to user
+    interview = await get_interview(req, interview_id)
+    
+    if not interview:
+        raise HTTPException(status_code=404, detail="Interview not found")
+    
+    if interview.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get all attempts for this interview
+    attempts = await get_interview_attempts(req, interview_id)
+    
+    return JSONResponse(
+        status_code=200,
+        content={
+            "interview_id": interview_id,
+            "attempts_count": len(attempts),
+            "has_attempts": len(attempts) > 0
+        }
+    )
+
 @router.post("/{interview_id}/start")
 @error_decorator
 async def start_interview_attempt(

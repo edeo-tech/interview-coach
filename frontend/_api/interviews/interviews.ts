@@ -53,6 +53,12 @@ export interface InterviewWithAttempts {
   attempts: InterviewAttempt[];
 }
 
+export interface AttemptsCountResponse {
+  interview_id: string;
+  attempts_count: number;
+  has_attempts: boolean;
+}
+
 export const interviewsApi = {
   // Interview management
   createFromURL: (data: CreateInterviewFromURLRequest) => 
@@ -68,6 +74,9 @@ export const interviewsApi = {
   
   get: (interviewId: string) =>
     protectedApi.get<InterviewWithAttempts>(`/app/interviews/${interviewId}`),
+
+  getAttemptsCount: (interviewId: string) =>
+    protectedApi.get<AttemptsCountResponse>(`/app/interviews/${interviewId}/attempts-count`),
 
   // Interview attempts
   startAttempt: (interviewId: string) =>
