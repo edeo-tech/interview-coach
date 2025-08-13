@@ -100,27 +100,15 @@ export default function InterviewDetails() {
             <Ionicons name="time-outline" size={14} color="#9ca3af" />
             <Text style={styles.detailText}>{formatDuration(attempt.duration_seconds)}</Text>
           </View>
-        </View>
-
-        {/* Performance indicator for graded attempts */}
-        {hasGrade && (
-          <View style={styles.performanceRow}>
-            <Text style={styles.performanceLabel}>Performance: </Text>
-            <Text style={[styles.performanceLevel, { color: getScoreColor(grade) }]}>
-              {getScoreLabel(grade)}
-            </Text>
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBarBg}>
-                <View 
-                  style={[
-                    styles.progressBar, 
-                    { backgroundColor: getScoreColor(grade), width: `${grade}%` }
-                  ]} 
-                />
-              </View>
+          {hasGrade && (
+            <View style={styles.detailItem}>
+              <Ionicons name="star-outline" size={14} color={getScoreColor(grade)} />
+              <Text style={[styles.detailText, { color: getScoreColor(grade) }]}>
+                {getScoreLabel(grade)}
+              </Text>
             </View>
-          </View>
-        )}
+          )}
+        </View>
 
         {/* Action button */}
         <TouchableOpacity
@@ -212,7 +200,7 @@ export default function InterviewDetails() {
       end={{ x: 0, y: 1 }}
       style={styles.gradient}
     >
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
@@ -331,7 +319,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   headerTitle: {
     color: '#ffffff',
@@ -462,7 +451,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   attemptTitle: {
     color: '#ffffff',
@@ -471,12 +460,12 @@ const styles = StyleSheet.create({
   },
   gradeContainer: {
     alignItems: 'center',
-    minWidth: 60,
+    minWidth: 55,
   },
   gradeScore: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   gradeLabel: {
     color: '#9ca3af',
@@ -486,7 +475,8 @@ const styles = StyleSheet.create({
   attemptDetails: {
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 12,
+    marginBottom: 18,
+    flexWrap: 'wrap',
   },
   detailItem: {
     flexDirection: 'row',
@@ -496,34 +486,6 @@ const styles = StyleSheet.create({
   detailText: {
     color: '#d1d5db',
     fontSize: 13,
-  },
-  performanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
-  },
-  performanceLabel: {
-    color: '#9ca3af',
-    fontSize: 13,
-  },
-  performanceLevel: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  progressContainer: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: '#374151',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 3,
   },
   singleActionButton: {
     flexDirection: 'row',
