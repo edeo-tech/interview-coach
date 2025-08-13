@@ -60,7 +60,7 @@ export default function AttemptTranscriptScreen() {
       >
         <View style={styles.center}> 
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#3B82F6" />
+            <ActivityIndicator size="large" color="#F59E0B" />
             <Text style={styles.loadingTitle}>Loading interview...</Text>
           </View>
         </View>
@@ -73,7 +73,7 @@ export default function AttemptTranscriptScreen() {
       return (
         <View style={styles.center}>
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#3B82F6" />
+            <ActivityIndicator size="large" color="#F59E0B" />
             <Text style={styles.loadingTitle}>Processing Interview</Text>
             <Text style={styles.loadingSubtitle}>
               Your interview is being processed. The transcript will appear here shortly.

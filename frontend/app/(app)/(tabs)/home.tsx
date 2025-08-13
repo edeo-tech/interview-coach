@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import ChatGPTBackground from '../../../components/ChatGPTBackground';
 
 export default function Home() {
   const { data: interviews, isLoading: interviewsLoading } = useInterviews();
@@ -66,12 +66,7 @@ export default function Home() {
   };
 
   return (
-    <LinearGradient
-      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
-    >
+    <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -211,7 +206,7 @@ export default function Home() {
       </ScrollView>
 
     </View>
-    </LinearGradient>
+    </ChatGPTBackground>
   );
 }
 

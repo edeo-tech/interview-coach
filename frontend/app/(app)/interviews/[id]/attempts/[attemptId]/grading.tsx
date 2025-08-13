@@ -49,7 +49,7 @@ export default function AttemptGradingScreen() {
     return (
       <View style={styles.center}>
         <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color="#F59E0B" />
           <Text style={styles.loadingTitle}>Generating Feedback</Text>
           <Text style={styles.loadingSubtitle}>
             {gradingStatus || 'Our AI is analyzing your interview performance to provide personalized feedback.'}
@@ -153,7 +153,7 @@ export default function AttemptGradingScreen() {
 
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Ionicons name="document-text" size={20} color="#3B82F6" />
+          <Ionicons name="document-text" size={20} color="#F59E0B" />
           <Text style={styles.sectionTitle}>Detailed Feedback</Text>
         </View>
         <Text style={styles.detailedFeedback}>{data?.detailed_feedback}</Text>
@@ -175,7 +175,7 @@ export default function AttemptGradingScreen() {
         <View style={styles.transcriptCardContent}>
           <View style={styles.transcriptCardLeft}>
             <View style={styles.transcriptIconContainer}>
-              <Ionicons name="document-text-outline" size={24} color={data ? "#3B82F6" : "#6B7280"} />
+              <Ionicons name="document-text-outline" size={24} color={data ? "#F59E0B" : "#6B7280"} />
             </View>
             <View style={styles.transcriptTextContainer}>
               <Text style={[styles.transcriptTitle, !data && styles.transcriptTitleDisabled]}>
@@ -186,7 +186,7 @@ export default function AttemptGradingScreen() {
               </Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={data ? "#3B82F6" : "#6B7280"} />
+          <Ionicons name="chevron-forward" size={20} color={data ? "#F59E0B" : "#6B7280"} />
         </View>
       </Pressable>
     </ScrollView>

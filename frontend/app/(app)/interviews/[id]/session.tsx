@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   userBubble: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#F59E0B',
   },
   agentBubble: {
     backgroundColor: 'rgba(255,255,255,0.08)',

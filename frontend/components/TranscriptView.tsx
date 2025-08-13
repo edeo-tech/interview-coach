@@ -31,7 +31,7 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
                   <Ionicons 
                     name={turn.role === 'user' ? 'person' : 'chatbubble-ellipses'} 
                     size={14} 
-                    color={turn.role === 'user' ? '#ffffff' : '#3B82F6'} 
+                    color={turn.role === 'user' ? '#ffffff' : '#F59E0B'} 
                   />
                 </View>
                 <Text style={[styles.speaker, turn.role === 'user' ? styles.userSpeaker : styles.agentSpeaker]}>
@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
   userBubble: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: '#F59E0B',
+    borderColor: '#F59E0B',
   },
   agentBubble: {
     backgroundColor: 'rgba(255,255,255,0.06)',

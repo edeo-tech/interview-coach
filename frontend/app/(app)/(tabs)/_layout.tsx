@@ -32,12 +32,12 @@ function CustomTabBar({ state, descriptors, navigation }) {
                                 style={styles.tab}
                             >
                                 {options.tabBarIcon({
-                                    color: isFocused ? '#F43F5E' : '#B3B3B3',
+                                    color: isFocused ? '#F59E0B' : '#B3B3B3',
                                     size: 24,
                                 })}
                                 <Text style={[
                                     styles.tabText,
-                                    { color: isFocused ? '#F43F5E' : '#B3B3B3' }
+                                    { color: isFocused ? '#F59E0B' : '#B3B3B3' }
                                 ]}>
                                     {options.title}
                                 </Text>
@@ -81,7 +81,7 @@ export default function TabLayout() {
                         }} 
                     />
                 ),
-                tabBarActiveTintColor: '#F43F5E',
+                tabBarActiveTintColor: '#F59E0B',
                 tabBarInactiveTintColor: '#B3B3B3',
                 headerStyle: {
                     backgroundColor: 'transparent',
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: '#F43F5E',
+        backgroundColor: '#F59E0B',
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#000',

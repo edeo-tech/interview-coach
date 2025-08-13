@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import ChatGPTBackground from '../../../components/ChatGPTBackground';
 
-const StatCard = ({ icon, label, value, color = '#3B82F6' }: any) => (
+const StatCard = ({ icon, label, value, color = '#F59E0B' }: any) => (
     <View style={styles.statCard}>
         <Ionicons name={icon} size={24} color={color} />
         <Text style={styles.statValue}>{value}</Text>
@@ -139,12 +139,7 @@ export default function Profile() {
     };
 
     return (
-        <LinearGradient
-            colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.gradient}
-        >
+        <ChatGPTBackground style={styles.gradient}>
         <ScrollView 
             style={styles.container} 
             contentContainerStyle={styles.scrollContent}
@@ -201,7 +196,7 @@ export default function Profile() {
                     icon="bar-chart"
                     label="Total Interviews"
                     value={user.totalInterviews}
-                    color="#3B82F6"
+                    color="#F59E0B"
                 />
                 <StatCard
                     icon="trending-up"
@@ -234,7 +229,7 @@ export default function Profile() {
                                 style={styles.interviewItem}
                             >
                                 <View style={styles.interviewIcon}>
-                                    <Ionicons name="briefcase" size={16} color="#3B82F6" />
+                                    <Ionicons name="briefcase" size={16} color="#F59E0B" />
                                 </View>
                                 <View style={styles.interviewInfo}>
                                     <Text style={styles.interviewTitle}>{interview.role_title}</Text>
@@ -257,7 +252,7 @@ export default function Profile() {
                             }}
                         >
                             <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
-                            <Ionicons name="chevron-forward" size={16} color="#3B82F6" />
+                            <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -282,7 +277,7 @@ export default function Profile() {
 
             <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
         </ScrollView>
-        </LinearGradient>
+        </ChatGPTBackground>
     );
 }
 
@@ -331,7 +326,7 @@ const styles = StyleSheet.create({
     profileDetailValue: {
         fontSize: 14,
         fontFamily: 'Inter_600SemiBold',
-        color: '#3B82F6',
+        color: '#F59E0B',
         flex: 1,
     },
     rankBadge: {
@@ -502,7 +497,7 @@ const styles = StyleSheet.create({
     viewAllText: {
         fontSize: 14,
         fontFamily: 'Inter_500Medium',
-        color: '#3B82F6',
+        color: '#F59E0B',
         marginRight: 4,
     },
     cvSection: {
@@ -518,7 +513,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 20,
-        shadowColor: '#3B82F6',
+        shadowColor: '#F59E0B',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 8,

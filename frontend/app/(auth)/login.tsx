@@ -152,7 +152,7 @@ const Login = () => {
               onPress={() => router.replace('/(auth)/register')}
             >
               <Text style={styles.linkText}>Create Account</Text>
-              <Ionicons name="chevron-forward" size={16} color="#3B82F6" />
+              <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   button: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#F59E0B',
     paddingVertical: 18,
     borderRadius: 12,
     flexDirection: 'row',
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
   linkText: {
-    color: '#3B82F6',
+    color: '#F59E0B',
     fontSize: 16,
     fontWeight: '600',
     marginRight: 4,

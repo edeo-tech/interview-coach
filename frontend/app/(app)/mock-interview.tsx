@@ -398,7 +398,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                             </View>
                         {callState === 'active' && (
                             <View style={styles.timer}>
-                                <Ionicons name="time-outline" size={16} color="#3B82F6" />
+                                <Ionicons name="time-outline" size={16} color="#F59E0B" />
                                 <Text style={styles.timerText}>{formatDuration(duration)}</Text>
                             </View>
                         )}
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     timerText: {
         fontSize: 14,
         fontFamily: 'Inter_600SemiBold',
-        color: '#3B82F6',
+        color: '#F59E0B',
     },
     incomingIndicator: {
         flexDirection: 'row',
@@ -852,7 +852,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
     },
     userNote: {
-        backgroundColor: '#1E40AF',
+        backgroundColor: '#F59E0B',
         alignSelf: 'flex-end',
         maxWidth: '80%',
     },
@@ -879,7 +879,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#3B82F6',
+        backgroundColor: '#F59E0B',
         paddingHorizontal: 32,
         paddingVertical: 16,
         borderRadius: 30,
