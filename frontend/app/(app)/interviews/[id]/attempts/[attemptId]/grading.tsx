@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
@@ -36,13 +37,6 @@ export default function AttemptGradingScreen() {
   const loading = isLoading || (!data && isFetching) || isGrading;
 
   const renderLoadingState = () => {
-    const statusMessages = [
-      'Analyzing your responses...',
-      'Evaluating technical knowledge...',
-      'Assessing communication skills...',
-      'Generating personalized feedback...'
-    ];
-
     return (
       <View style={styles.center}>
         <View style={styles.loadingCard}>
@@ -62,28 +56,61 @@ export default function AttemptGradingScreen() {
     );
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return '#10b981';
+    if (score >= 80) return '#3b82f6';
+    if (score >= 70) return '#f59e0b';
+    if (score >= 60) return '#f97316';
+    return '#ef4444';
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 90) return 'Excellent';
+    if (score >= 80) return 'Good';
+    if (score >= 70) return 'Fair';
+    if (score >= 60) return 'Needs Work';
+    return 'Poor';
+  };
+
   const renderFeedback = () => (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 16 }}>
-      <View style={styles.scoreCard}>
-        <Text style={styles.score}>{data.overall_score}</Text>
-        <Text style={styles.scoreLabel}>Overall Score</Text>
-        <View style={styles.scoreBar}>
-          <View style={[styles.scoreProgress, { width: `${data.overall_score}%` }]} />
+    <ScrollView 
+      style={styles.scrollView} 
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.overallScoreCard}>
+        <Text style={styles.sectionTitle}>Overall Performance</Text>
+        <View style={styles.scoreRow}>
+          <View style={styles.scoreLeft}>
+            <Text style={[styles.overallScore, { color: getScoreColor(data.overall_score) }]}>
+              {data.overall_score}
+            </Text>
+            <Text style={styles.scoreOutOf}>out of 100</Text>
+          </View>
+          <View style={styles.scoreRight}>
+            <Text style={[styles.scoreLabel, { color: getScoreColor(data.overall_score) }]}>
+              {getScoreLabel(data.overall_score)}
+            </Text>
+            <Text style={styles.performanceLevel}>Performance Level</Text>
+          </View>
+        </View>
+        <View style={styles.overallProgressBar}>
+          <View style={[styles.overallProgress, { backgroundColor: getScoreColor(data.overall_score), width: `${data.overall_score}%` }]} />
         </View>
       </View>
 
-      <View style={styles.rubricContainer}>
-        <Text style={styles.cardTitle}>Performance Breakdown</Text>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Performance Breakdown</Text>
         {Object.entries(data.rubric_scores || {}).map(([category, score]) => (
           <View key={category} style={styles.rubricItem}>
             <View style={styles.rubricHeader}>
               <Text style={styles.rubricCategory}>
                 {category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </Text>
-              <Text style={styles.rubricScore}>{score}/100</Text>
+              <Text style={[styles.rubricScore, { color: getScoreColor(score) }]}>{score}/100</Text>
             </View>
             <View style={styles.rubricBar}>
-              <View style={[styles.rubricProgress, { width: `${score}%` }]} />
+              <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(score), width: `${score}%` }]} />
             </View>
           </View>
         ))}
@@ -92,27 +119,33 @@ export default function AttemptGradingScreen() {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-          <Text style={styles.cardTitle}>Strengths</Text>
+          <Text style={styles.sectionTitle}>Strengths</Text>
         </View>
         {data.strengths.map((s, i) => (
-          <Text key={i} style={styles.item}>• {s}</Text>
+          <View key={i} style={styles.listItem}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.listText}>{s}</Text>
+          </View>
         ))}
       </View>
 
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="trending-up" size={20} color="#F59E0B" />
-          <Text style={styles.cardTitle}>Areas to Improve</Text>
+          <Text style={styles.sectionTitle}>Areas to Improve</Text>
         </View>
         {data.improvement_areas.map((s, i) => (
-          <Text key={i} style={styles.item}>• {s}</Text>
+          <View key={i} style={styles.listItem}>
+            <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
+            <Text style={styles.listText}>{s}</Text>
+          </View>
         ))}
       </View>
 
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="document-text" size={20} color="#3B82F6" />
-          <Text style={styles.cardTitle}>Detailed Feedback</Text>
+          <Text style={styles.sectionTitle}>Detailed Feedback</Text>
         </View>
         <Text style={styles.detailedFeedback}>{data.detailed_feedback}</Text>
       </View>
@@ -120,62 +153,92 @@ export default function AttemptGradingScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.title}>Interview Feedback</Text>
-      </View>
-      
-      {loading ? renderLoadingState() : data ? renderFeedback() : (
-        <View style={styles.center}>
-          <View style={styles.emptyCard}>
-            <Ionicons name="document-text" size={48} color="#6B7280" />
-            <Text style={styles.emptyTitle}>No Feedback Available</Text>
-            <Text style={styles.emptySubtitle}>
-              Your interview feedback will appear here once it's ready.
-            </Text>
-          </View>
+    <LinearGradient
+      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.gradient}
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </Pressable>
+          <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
-      )}
-      
-      <View style={styles.footer}>
-        <Pressable 
-          style={[styles.primary, !data && styles.primaryDisabled]} 
-          onPress={() => router.replace({ pathname: '/interviews/[id]/details', params: { id } })}
-          disabled={!data}
-        >
-          <Text style={[styles.primaryText, !data && styles.primaryTextDisabled]}>
-            Back to Interview
-          </Text>
-          <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#9CA3AF"} />
-        </Pressable>
+        
+        {loading ? renderLoadingState() : data ? renderFeedback() : (
+          <View style={styles.center}>
+            <View style={styles.emptyCard}>
+              <Ionicons name="document-text" size={48} color="#6B7280" />
+              <Text style={styles.emptyTitle}>No Feedback Available</Text>
+              <Text style={styles.emptySubtitle}>
+                Your interview feedback will appear here once it's ready.
+              </Text>
+            </View>
+          </View>
+        )}
+        
+        <View style={styles.footer}>
+          <Pressable 
+            style={[styles.primary, !data && styles.primaryDisabled]} 
+            onPress={() => router.replace({ pathname: '/interviews/[id]/details', params: { id } })}
+            disabled={!data}
+          >
+            <Text style={[styles.primaryText, !data && styles.primaryTextDisabled]}>
+              Back to Interview
+            </Text>
+            <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#9CA3AF"} />
+          </Pressable>
+        </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0a' },
+  gradient: {
+    flex: 1,
+  },
+  container: { 
+    flex: 1, 
+    backgroundColor: 'transparent',
+  },
   header: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     paddingTop: 60, 
     paddingHorizontal: 20, 
-    paddingBottom: 12, 
+    paddingBottom: 16, 
     borderBottomWidth: 1, 
-    borderBottomColor: '#333' 
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   backButton: {
     padding: 8,
     marginRight: 12,
   },
-  title: { color: '#fff', fontSize: 18, fontFamily: 'Inter_600SemiBold', flex: 1 },
-  footer: { padding: 20, borderTopWidth: 1, borderTopColor: '#333' },
+  headerTitle: { 
+    color: '#fff', 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingVertical: 20,
+    paddingBottom: 24,
+  },
+  footer: { 
+    padding: 20, 
+    borderTopWidth: 1, 
+    borderTopColor: 'rgba(255,255,255,0.08)',
+  },
   primary: { 
     backgroundColor: '#3B82F6', 
-    paddingVertical: 14, 
+    paddingVertical: 16, 
     borderRadius: 12, 
     alignItems: 'center',
     flexDirection: 'row',
@@ -183,34 +246,44 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryDisabled: {
-    backgroundColor: '#374151',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  primaryText: { color: '#fff', fontSize: 16, fontFamily: 'Inter_600SemiBold' },
-  primaryTextDisabled: { color: '#9CA3AF' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  primaryText: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: '600',
+  },
+  primaryTextDisabled: { 
+    color: '#9CA3AF',
+  },
+  center: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+  },
   
   // Loading states
   loadingCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
-    maxWidth: 300,
+    borderColor: 'rgba(255,255,255,0.08)',
+    maxWidth: 320,
+    marginHorizontal: 20,
   },
   loadingTitle: {
     color: '#fff',
     fontSize: 20,
-    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   loadingSubtitle: {
     color: '#9CA3AF',
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
@@ -234,78 +307,108 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#6B7280',
     fontSize: 12,
-    fontFamily: 'Inter_500Medium',
+    fontWeight: '500',
   },
 
   // Empty state
   emptyCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
-    maxWidth: 300,
+    borderColor: 'rgba(255,255,255,0.08)',
+    maxWidth: 320,
+    marginHorizontal: 20,
   },
   emptyTitle: {
     color: '#fff',
     fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
     color: '#9CA3AF',
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
     textAlign: 'center',
     lineHeight: 20,
   },
 
   // Feedback content
-  scoreCard: {
-    backgroundColor: '#111',
+  overallScoreCard: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
     padding: 24,
-    alignItems: 'center',
-  },
-  score: { 
-    color: '#3B82F6', 
-    fontSize: 48, 
-    fontFamily: 'Inter_700Bold',
-    marginBottom: 8,
-  },
-  scoreLabel: {
-    color: '#9CA3AF',
-    fontSize: 16,
-    fontFamily: 'Inter_500Medium',
     marginBottom: 16,
   },
-  scoreBar: {
+  sectionTitle: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  scoreLeft: {
+    alignItems: 'flex-start',
+  },
+  scoreRight: {
+    alignItems: 'flex-end',
+  },
+  overallScore: { 
+    fontSize: 48, 
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  scoreOutOf: {
+    color: '#9CA3AF',
+    fontSize: 14,
+  },
+  scoreLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  performanceLevel: {
+    color: '#9CA3AF',
+    fontSize: 12,
+  },
+  overallProgressBar: {
     width: '100%',
     height: 8,
     backgroundColor: '#374151',
     borderRadius: 4,
     overflow: 'hidden',
   },
-  scoreProgress: {
+  overallProgress: {
     height: '100%',
-    backgroundColor: '#3B82F6',
     borderRadius: 4,
   },
 
-  rubricContainer: {
-    backgroundColor: '#111',
-    borderWidth: 1,
-    borderColor: '#333',
-    borderRadius: 12,
-    padding: 16,
+  card: { 
+    backgroundColor: 'rgba(255,255,255,0.06)', 
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.08)', 
+    borderRadius: 16, 
+    padding: 20,
+    marginBottom: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
   },
   rubricItem: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   rubricHeader: {
     flexDirection: 'row',
@@ -314,14 +417,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rubricCategory: {
-    color: '#D1D5DB',
-    fontSize: 14,
-    fontFamily: 'Inter_500Medium',
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '500',
   },
   rubricScore: {
-    color: '#3B82F6',
     fontSize: 14,
-    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
   },
   rubricBar: {
     height: 6,
@@ -331,41 +433,28 @@ const styles = StyleSheet.create({
   },
   rubricProgress: {
     height: '100%',
-    backgroundColor: '#3B82F6',
     borderRadius: 3,
   },
-
-  card: { 
-    backgroundColor: '#111', 
-    borderWidth: 1, 
-    borderColor: '#333', 
-    borderRadius: 12, 
-    padding: 16 
-  },
-  cardHeader: {
+  listItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 12,
-    gap: 8,
   },
-  cardTitle: { 
-    color: '#fff', 
-    fontFamily: 'Inter_600SemiBold', 
+  bulletPoint: {
+    color: '#10b981',
+    marginRight: 12,
     fontSize: 16,
+    lineHeight: 20,
   },
-  item: { 
-    color: '#D1D5DB', 
-    lineHeight: 20, 
-    marginBottom: 8,
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+  listText: {
+    color: '#d1d5db',
+    fontSize: 15,
+    lineHeight: 20,
+    flex: 1,
   },
   detailedFeedback: {
-    color: '#D1D5DB',
+    color: '#d1d5db',
     lineHeight: 22,
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
   },
 });
-
-
