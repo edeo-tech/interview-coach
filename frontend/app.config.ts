@@ -43,6 +43,8 @@ module.exports = {
         },
         plugins: [
             "expo-router",
+            "expo-apple-authentication",
+            "expo-audio",
           "expo-secure-store",
           "expo-localization",  
           "@livekit/react-native-expo-plugin",
