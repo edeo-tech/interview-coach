@@ -34,9 +34,9 @@ export interface InterviewAttempt {
   status: 'active' | 'completed' | 'graded';
   agent_id?: string;
   transcript: Array<{
-    speaker: 'user' | 'agent';
-    text: string;
-    timestamp: string;
+    role: 'user' | 'agent';
+    message: string;
+    time_in_call_secs: number;
   }>;
   duration_seconds: number;
   started_at?: string;
@@ -74,9 +74,9 @@ export const interviewsApi = {
     protectedApi.post<StartAttemptResponse>(`/app/interviews/${interviewId}/start`),
   
   addTranscript: (interviewId: string, turn: {
-    speaker: 'user' | 'agent';
-    text: string;
-    timestamp?: string;
+    role: 'user' | 'agent';
+    message: string;
+    time_in_call_secs?: number;
   }) =>
     protectedApi.post(`/app/interviews/${interviewId}/transcript`, turn),
 

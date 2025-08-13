@@ -1,6 +1,6 @@
 from fastapi import Request
 from typing import Optional, List, Dict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument
 from models.interviews.attempts import InterviewAttempt, InterviewFeedback
@@ -46,19 +46,24 @@ async def update_attempt(req: Request, attempt_id: str, **kwargs) -> Optional[In
 async def add_transcript_turn(
     req: Request, 
     attempt_id: str, 
-    speaker: str, 
-    text: str, 
-    timestamp: datetime = None
+    role: str, 
+    message: str, 
+    time_in_call_secs: int = None
 ) -> Optional[InterviewAttempt]:
     """Add a new turn to the interview transcript"""
-    if timestamp is None:
-        timestamp = datetime.now(timezone.utc)
+    if time_in_call_secs is None:
+        # Calculate time in call from attempt start time
+        attempt = await get_attempt(req, attempt_id)
+        if attempt and attempt.started_at:
+            time_in_call_secs = int((datetime.now(timezone.utc) - attempt.started_at).total_seconds())
+        else:
+            time_in_call_secs = 0
     
     print(f"\n🎤 [TRANSCRIPT] Adding transcript segment:")
     print(f"   - Attempt ID: {attempt_id}")
-    print(f"   - Speaker: {speaker}")
-    print(f"   - Text preview: {text[:100]}..." if len(text) > 100 else f"   - Text: {text}")
-    print(f"   - Timestamp: {timestamp.isoformat()}")
+    print(f"   - Role: {role}")
+    print(f"   - Message preview: {message[:100]}..." if len(message) > 100 else f"   - Message: {message}")
+    print(f"   - Time in call: {time_in_call_secs} seconds")
     
     # Get current attempt
     attempt = await get_attempt(req, attempt_id)
@@ -68,11 +73,11 @@ async def add_transcript_turn(
     
     print(f"   - Current transcript length: {len(attempt.transcript)}")
     
-    # Add new turn
+    # Add new turn in ElevenLabs format
     new_turn = {
-        "speaker": speaker,
-        "text": text,
-        "timestamp": timestamp.isoformat()
+        "role": role,
+        "message": message,
+        "time_in_call_secs": time_in_call_secs
     }
     
     updated_transcript = attempt.transcript + [new_turn]
@@ -111,6 +116,60 @@ async def finish_attempt(
         print(f"   - Final transcript length: {len(result.transcript)}")
     else:
         print(f"   ❌ ERROR: Failed to finish attempt!")
+    
+    return result
+
+async def update_attempt_with_webhook_data(
+    req: Request,
+    conversation_id: str,
+    transcript: List[Dict],
+    analysis: Dict
+) -> Optional[InterviewAttempt]:
+    """Update attempt with data from ElevenLabs webhook"""
+    print(f"\n🎣 [WEBHOOK] Updating attempt with webhook data:")
+    print(f"   - Conversation ID: {conversation_id}")
+    print(f"   - Transcript turns: {len(transcript)}")
+    
+    # Find attempt by conversation_id
+    from crud._generic._db_actions import getMultipleDocuments
+    attempts = await getMultipleDocuments(
+        req, "interview_attempts", InterviewAttempt,
+        conversation_id=conversation_id
+    )
+    
+    if not attempts:
+        print(f"   ❌ ERROR: No attempt found with conversation_id: {conversation_id}")
+        return None
+    
+    attempt = attempts[0]  # Should only be one
+    print(f"   - Found attempt ID: {attempt.id}")
+    
+    # Store transcript in original ElevenLabs format
+    print(f"   - Storing {len(transcript)} transcript turns in ElevenLabs format")
+    
+    # Calculate duration from last turn
+    duration_seconds = 0
+    if transcript:
+        last_turn = max(transcript, key=lambda x: x.get("time_in_call_secs", 0))
+        duration_seconds = last_turn.get("time_in_call_secs", 0)
+    
+    # Update attempt with webhook data
+    update_data = {
+        "transcript": transcript,  # Store original ElevenLabs format
+        "status": "completed",
+        "ended_at": datetime.now(timezone.utc),
+        "duration_seconds": duration_seconds,
+        "elevenlabs_analysis": analysis  # Store raw analysis for reference
+    }
+    
+    result = await update_attempt(req, attempt.id, **update_data)
+    
+    if result:
+        print(f"   ✅ SUCCESS: Updated attempt with webhook data!")
+        print(f"   - Final transcript length: {len(transcript)}")
+        print(f"   - Duration: {duration_seconds} seconds")
+    else:
+        print(f"   ❌ ERROR: Failed to update attempt with webhook data!")
     
     return result
 

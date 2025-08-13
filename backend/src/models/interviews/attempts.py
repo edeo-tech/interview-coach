@@ -11,6 +11,7 @@ class InterviewAttempt(MongoBaseModel):
     duration_seconds: int = 0
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
+    elevenlabs_analysis: Optional[Dict] = None  # Raw analysis from ElevenLabs webhook
 
 class InterviewFeedback(MongoBaseModel):
     attempt_id: str

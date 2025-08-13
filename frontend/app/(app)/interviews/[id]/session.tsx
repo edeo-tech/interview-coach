@@ -10,7 +10,7 @@ const InterviewSession = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [attemptId, setAttemptId] = useState<string | null>(null);
-  const [transcript, setTranscript] = useState<Array<{speaker: string; text: string; timestamp: string}>>([]);
+  const [transcript, setTranscript] = useState<Array<{role: string; message: string; time_in_call_secs: number}>>([]);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
 
@@ -54,11 +54,15 @@ const InterviewSession = () => {
     }, 2000);
   };
 
-  const addToTranscript = async (speaker: 'user' | 'agent', text: string) => {
+  const addToTranscript = async (role: 'user' | 'agent', message: string) => {
+    const callStartTime = sessionStartTime?.getTime() || Date.now();
+    const currentTime = Date.now();
+    const timeInCallSecs = Math.floor((currentTime - callStartTime) / 1000);
+    
     const newTurn = {
-      speaker,
-      text,
-      timestamp: new Date().toISOString()
+      role,
+      message,
+      time_in_call_secs: timeInCallSecs
     };
     
     // Update local state immediately for UI responsiveness
@@ -70,7 +74,7 @@ const InterviewSession = () => {
         interviewId: id,
         turn: newTurn
       });
-      console.log(`✅ Transcript saved: ${speaker} - ${text.substring(0, 50)}...`);
+      console.log(`✅ Transcript saved: ${role} - ${message.substring(0, 50)}...`);
     } catch (error) {
       console.error('❌ Failed to save transcript:', error);
       // Could show a toast here, but continue with the interview
@@ -178,23 +182,19 @@ const InterviewSession = () => {
           transcript.map((turn, index) => (
             <View key={index} style={[
               styles.messageContainer,
-              turn.speaker === 'user' ? styles.userMessage : styles.agentMessage
+              turn.role === 'user' ? styles.userMessage : styles.agentMessage
             ]}>
               <View style={[
                 styles.messageBubble,
-                turn.speaker === 'user' ? styles.userBubble : styles.agentBubble
+                turn.role === 'user' ? styles.userBubble : styles.agentBubble
               ]}>
-                <Text style={styles.messageText}>{turn.text}</Text>
+                <Text style={styles.messageText}>{turn.message}</Text>
                 <Text style={[
                   styles.messageInfo,
-                  turn.speaker === 'user' ? styles.userMessageInfo : styles.agentMessageInfo
+                  turn.role === 'user' ? styles.userMessageInfo : styles.agentMessageInfo
                 ]}>
-                  {turn.speaker === 'user' ? 'You' : 'Interviewer'} • {
-                    new Date(turn.timestamp).toLocaleTimeString('en-US', {
-                      hour12: false,
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })
+                  {turn.role === 'user' ? 'You' : 'Interviewer'} • {
+                    Math.floor(turn.time_in_call_secs / 60)}:{(turn.time_in_call_secs % 60).toString().padStart(2, '0')
                   }
                 </Text>
               </View>

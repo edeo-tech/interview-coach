@@ -22,16 +22,10 @@ export const useAttemptFeedback = (
       return response.data;
     },
     enabled: !!attemptId,
-    // Poll every 2 seconds while grading is in progress
-    refetchInterval: (data) => {
-      // If we have data, stop polling
-      if (data) return false;
-      // Otherwise, keep polling every 2 seconds
-      return 2000;
-    },
-    // Retry more times for feedback since grading can take time
-    retry: 10,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    // Note: Polling removed - WebSocket updates handle real-time feedback notifications
+    // The query will be refetched manually when WebSocket events are received
+    retry: 3, // Reduced retry count since WebSocket handles updates
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     ...(options || {}),
   });
 };

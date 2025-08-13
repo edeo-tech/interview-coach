@@ -31,9 +31,9 @@ class StartAttemptResponse(BaseModel):
     attempt_id: str
 
 class TranscriptTurn(BaseModel):
-    speaker: str  # user or agent
-    text: str
-    timestamp: Optional[datetime] = None
+    role: str  # user or agent
+    message: str
+    time_in_call_secs: Optional[int] = None
 
 class FinishAttemptRequest(BaseModel):
     attempt_id: str
@@ -209,8 +209,8 @@ async def add_transcript(
     """Add a turn to the interview transcript"""
     print(f"\n📡 [API] Received transcript turn request:")
     print(f"   - Interview ID: {interview_id}")
-    print(f"   - Speaker: {turn.speaker}")
-    print(f"   - Text preview: {turn.text[:100]}..." if len(turn.text) > 100 else f"   - Text: {turn.text}")
+    print(f"   - Role: {turn.role}")
+    print(f"   - Message preview: {turn.message[:100]}..." if len(turn.message) > 100 else f"   - Message: {turn.message}")
     
     # Get the active attempt for this interview
     attempts = await get_interview_attempts(req, interview_id)
@@ -229,7 +229,7 @@ async def add_transcript(
         raise HTTPException(status_code=403, detail="Access denied")
     
     updated_attempt = await add_transcript_turn(
-        req, active_attempt.id, turn.speaker, turn.text, turn.timestamp
+        req, active_attempt.id, turn.role, turn.message, turn.time_in_call_secs
     )
     
     if not updated_attempt:
@@ -291,29 +291,10 @@ async def finish_interview_attempt(
     from crud.interviews.attempts import update_attempt
     completed_attempt = await update_attempt(req, finish_request.attempt_id, **update_data)
     
-    # Fetch transcript from ElevenLabs if conversation_id is provided
-    if finish_request.conversation_id:
-        print(f"   - Fetching transcript from ElevenLabs... {finish_request.conversation_id}")
-        from services.elevenlabs_transcript_service import fetch_and_update_transcript
-        transcript_success = await fetch_and_update_transcript(
-            req, finish_request.attempt_id, finish_request.conversation_id
-        )
-        if transcript_success:
-            print(f"   ✅ Transcript retrieved and stored successfully")
-        else:
-            print(f"   ⚠️  Failed to retrieve transcript from ElevenLabs")
-    else:
-        print(f"   - No conversation_id provided, skipping transcript retrieval")
-    
-    # Trigger grading (async task). No server-side ElevenLabs agent to clean up.
-    print(f"   - Triggering grading service...")
-    from services.grading_service import trigger_interview_grading
-    grading_result = await trigger_interview_grading(req, finish_request.attempt_id)
-    
-    if grading_result:
-        print(f"   ✅ SUCCESS: Interview finished and grading triggered successfully")
-    else:
-        print(f"   ⚠️  WARNING: Interview finished but grading may have failed")
+    # Note: Transcript retrieval and grading are now handled by the ElevenLabs webhook
+    # This provides much faster processing (1-2 seconds vs 20+ seconds)
+    print(f"   - Waiting for ElevenLabs webhook to process transcript and trigger grading...")
+    print(f"   ✅ SUCCESS: Interview finished - webhook will handle transcript and grading")
     
     return JSONResponse(
         status_code=200,

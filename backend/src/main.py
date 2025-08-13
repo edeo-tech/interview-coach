@@ -9,6 +9,8 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
 from routers.app._index import router as app_router
+from routers.webhooks._index import router as webhook_router
+from routers.websockets._index import router as websocket_router
 
 CONNECTION_STRING_DB=config("CONNECTION_STRING_DB", cast=str)
 DB_NAME=config("DB_NAME", cast=str)
@@ -54,6 +56,18 @@ app.include_router(
     app_router, 
     prefix='/app', 
     tags=['app']
+)
+
+app.include_router(
+    webhook_router, 
+    prefix='/webhooks', 
+    tags=['webhooks']
+)
+
+app.include_router(
+    websocket_router, 
+    prefix='/ws', 
+    tags=['websockets']
 )
 
 if __name__ == "__main__":

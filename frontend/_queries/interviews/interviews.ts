@@ -72,7 +72,7 @@ export const useAddTranscript = () => {
       turn 
     }: { 
       interviewId: string; 
-      turn: { speaker: 'user' | 'agent'; text: string; timestamp?: string } 
+      turn: { role: 'user' | 'agent'; message: string; time_in_call_secs?: number } 
     }) => interviewsApi.addTranscript(interviewId, turn),
   });
 };

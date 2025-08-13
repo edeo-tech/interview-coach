@@ -47,7 +47,7 @@ class ElevenLabsTranscriptService:
                     if status in ['done', 'processing']:
                         transcript = data.get('transcript', [])
                         print(f"   ✅ Retrieved transcript with {len(transcript)} entries")
-                        return self._convert_transcript_format(transcript)
+                        return transcript  # Return original ElevenLabs format
                     
                     elif status in ['failed']:
                         print(f"   ❌ Conversation failed")
@@ -70,40 +70,7 @@ class ElevenLabsTranscriptService:
         print(f"   ❌ Failed to retrieve transcript after {max_retries} attempts")
         return None
     
-    def _convert_transcript_format(self, elevenlabs_transcript: List[Dict]) -> List[Dict]:
-        """
-        Convert ElevenLabs transcript format to our internal format
-        
-        ElevenLabs format:
-        [{"role": "user", "time_in_call_secs": 10, "message": "Hello"}]
-        
-        Our format:
-        [{"speaker": "user", "text": "Hello", "timestamp": "2023-..."}]
-        """
-        converted = []
-        
-        for entry in elevenlabs_transcript:
-            role = entry.get('role', '')
-            message = entry.get('message', '').strip()
-            time_in_call = entry.get('time_in_call_secs', 0)
-            
-            if message:
-                # Convert role to our speaker format
-                speaker = 'user' if role == 'user' else 'agent'
-                
-                # Create a rough timestamp (we don't have the actual call start time here)
-                # This is approximate - in production you might want to store call start time
-                from datetime import datetime, timezone, timedelta
-                estimated_timestamp = datetime.now(timezone.utc) - timedelta(seconds=time_in_call)
-                
-                converted.append({
-                    "speaker": speaker,
-                    "text": message,
-                    "timestamp": estimated_timestamp.isoformat()
-                })
-                
-        print(f"   - Converted {len(converted)} transcript entries")
-        return converted
+
 
 # Global service instance
 elevenlabs_transcript_service = ElevenLabsTranscriptService()

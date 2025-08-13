@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
 export type TranscriptTurn = {
-  speaker: 'user' | 'agent';
-  text: string;
-  timestamp?: string;
+  role: 'user' | 'agent';
+  message: string;
+  time_in_call_secs: number;
 };
 
 interface TranscriptViewProps {
@@ -16,13 +16,13 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {transcript.map((turn, idx) => (
         <View
-          key={`${idx}-${turn.timestamp || idx}`}
-          style={[styles.bubble, turn.speaker === 'user' ? styles.userBubble : styles.agentBubble]}
+          key={`${idx}-${turn.time_in_call_secs || idx}`}
+          style={[styles.bubble, turn.role === 'user' ? styles.userBubble : styles.agentBubble]}
         >
-          <Text style={styles.speaker}>{turn.speaker === 'user' ? 'You' : 'AI'}</Text>
-          <Text style={styles.text}>{turn.text}</Text>
-          {!!turn.timestamp && (
-            <Text style={styles.timestamp}>{new Date(turn.timestamp).toLocaleTimeString()}</Text>
+          <Text style={styles.speaker}>{turn.role === 'user' ? 'You' : 'AI'}</Text>
+          <Text style={styles.text}>{turn.message}</Text>
+          {!!turn.time_in_call_secs && (
+            <Text style={styles.timestamp}>{Math.floor(turn.time_in_call_secs / 60)}:{(turn.time_in_call_secs % 60).toString().padStart(2, '0')}</Text>
           )}
         </View>
       ))}

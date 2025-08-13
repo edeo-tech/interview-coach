@@ -185,8 +185,16 @@ Remember: This is a practice interview to help ${userName} improve their intervi
     const endInterview = useCallback(async (conversation: any) => {
         try {
             await conversation.endSession();
-            // Notify backend of finish and trigger grading
+            setCallState('ended');
+            
+            // Navigate immediately to transcript screen (with loading state)
             if (attemptId && params.interviewId) {
+                router.replace({
+                    pathname: '/interviews/[id]/attempts/[attemptId]/transcript',
+                    params: { id: params.interviewId as string, attemptId }
+                });
+                
+                // Trigger backend finish in background (webhook will handle the rest)
                 try {
                     await finishAttempt.mutateAsync({
                         interviewId: params.interviewId as string,
@@ -194,20 +202,14 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         durationSeconds: duration,
                         conversationId: conversationId || undefined
                     });
-                    // Navigate to transcript breakdown
-                    router.replace({
-                        pathname: '/interviews/[id]/attempts/[attemptId]/transcript',
-                        params: { id: params.interviewId as string, attemptId }
-                    });
                 } catch (e) {
-                    // Error finishing attempt
+                    console.log('Error finishing attempt:', e);
                 }
             }
-            setCallState('ended');
         } catch (error) {
-            setCallState('ended'); // Force end even if there's an error
+            setCallState('ended');
         }
-    }, [attemptId, params.interviewId, duration, finishAttempt]);
+    }, [attemptId, params.interviewId, duration, finishAttempt, router]);
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
