@@ -15,8 +15,6 @@ export default function AttemptTranscriptScreen() {
   
   const [transcript, setTranscript] = useState<any[]>([]);
   const [hasTranscript, setHasTranscript] = useState(false);
-  const [isGrading, setIsGrading] = useState(false);
-  const [canProceed, setCanProceed] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -35,10 +33,6 @@ export default function AttemptTranscriptScreen() {
     if (attempt?.transcript && Array.isArray(attempt.transcript)) {
       setTranscript(attempt.transcript);
       setHasTranscript(attempt.transcript.length > 0);
-      // If we have a transcript and status is graded, we can proceed
-      if (attempt.status === 'graded') {
-        setCanProceed(true);
-      }
     }
   }, [attempt]);
 
@@ -49,17 +43,6 @@ export default function AttemptTranscriptScreen() {
       setTranscript(newTranscript);
       setHasTranscript(newTranscript.length > 0);
       // Refetch the interview data to get updated attempt
-      refetch();
-    },
-    onGradingStarted: () => {
-      console.log('🎯 [TRANSCRIPT] Grading started');
-      setIsGrading(true);
-    },
-    onGradingCompleted: (feedbackId) => {
-      console.log('✅ [TRANSCRIPT] Grading completed:', feedbackId);
-      setIsGrading(false);
-      setCanProceed(true);
-      // Refetch to get updated status
       refetch();
     },
     onError: (error) => {
@@ -110,42 +93,8 @@ export default function AttemptTranscriptScreen() {
   };
 
   const renderFooter = () => {
-    if (!hasTranscript) {
-      return null; // No footer while loading
-    }
-
-    if (isGrading) {
-      return (
-        <View style={styles.footer}>
-          <View style={styles.gradingContainer}>
-            <ActivityIndicator color="#3B82F6" />
-            <Text style={styles.gradingText}>Generating feedback...</Text>
-          </View>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.footer}>
-        <Pressable 
-          style={[styles.primary, !canProceed && styles.primaryDisabled]} 
-          onPress={() => {
-            if (canProceed) {
-              router.push({ 
-                pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
-                params: { id, attemptId } 
-              });
-            }
-          }}
-          disabled={!canProceed}
-        >
-          <Text style={[styles.primaryText, !canProceed && styles.primaryTextDisabled]}>
-            {canProceed ? 'View Feedback' : 'Generating Feedback...'}
-          </Text>
-          {canProceed && <Ionicons name="arrow-forward" size={20} color="#fff" style={styles.arrowIcon} />}
-        </Pressable>
-      </View>
-    );
+    // No footer needed - just the transcript
+    return null;
   };
 
   return (
@@ -195,34 +144,6 @@ const styles = StyleSheet.create({
     fontSize: 20, 
     fontWeight: 'bold', 
     flex: 1,
-  },
-  footer: { 
-    padding: 20, 
-    borderTopWidth: 1, 
-    borderTopColor: 'rgba(255,255,255,0.08)',
-  },
-  primary: { 
-    backgroundColor: '#3B82F6', 
-    paddingVertical: 16, 
-    borderRadius: 12, 
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  primaryDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  primaryText: { 
-    color: '#fff', 
-    fontSize: 16, 
-    fontWeight: '600',
-  },
-  primaryTextDisabled: { 
-    color: '#9CA3AF',
-  },
-  arrowIcon: { 
-    marginLeft: 4,
   },
   center: { 
     flex: 1, 
@@ -274,17 +195,5 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 12,
     fontWeight: '500',
-  },
-  gradingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    paddingVertical: 20,
-  },
-  gradingText: {
-    color: '#3B82F6',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

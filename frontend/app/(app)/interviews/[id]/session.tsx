@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useStartAttempt, useFinishAttempt, useAddTranscript } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
@@ -149,18 +150,33 @@ const InterviewSession = () => {
 
   if (!agentId) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <View style={styles.spinner} />
-          <Text style={styles.loadingTitle}>Preparing your interview...</Text>
-          <Text style={styles.loadingSubtitle}>Setting up AI interviewer</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient
+        colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.gradient}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <View style={styles.loadingCard}>
+              <View style={styles.spinner} />
+              <Text style={styles.loadingTitle}>Preparing your interview...</Text>
+              <Text style={styles.loadingSubtitle}>Setting up AI interviewer</Text>
+            </View>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.gradient}
+    >
+      <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.connectionInfo}>
@@ -253,19 +269,33 @@ const InterviewSession = () => {
           In a real implementation, this would connect to ElevenLabs for voice conversation
         </Text>
       </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: 'transparent',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  loadingCard: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    maxWidth: 320,
   },
   spinner: {
     width: 48,
@@ -278,18 +308,22 @@ const styles = StyleSheet.create({
   },
   loadingTitle: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
   },
   loadingSubtitle: {
     color: '#9ca3af',
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   header: {
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
+    borderBottomColor: 'rgba(255,255,255,0.08)',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -329,11 +363,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 16,
+    padding: 32,
+    marginHorizontal: 20,
+    marginVertical: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   emptyTranscriptText: {
     color: '#9ca3af',
     textAlign: 'center',
     marginTop: 16,
+    fontSize: 15,
+    lineHeight: 20,
   },
   messageContainer: {
     marginBottom: 16,
@@ -346,14 +389,16 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '80%',
-    padding: 12,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
   },
   userBubble: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#3B82F6',
   },
   agentBubble: {
-    backgroundColor: '#374151',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   messageText: {
     color: '#ffffff',
@@ -372,7 +417,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
     borderTopWidth: 1,
-    borderTopColor: '#374151',
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
   statusContainer: {
     flexDirection: 'row',
@@ -403,14 +448,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
+    paddingVertical: 16,
+    borderRadius: 12,
   },
   simulateButton: {
-    backgroundColor: '#4b5563',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   endButton: {
-    backgroundColor: '#dc2626',
+    backgroundColor: '#F43F5E',
   },
   actionButtonText: {
     color: '#ffffff',

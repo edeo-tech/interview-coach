@@ -11,6 +11,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useToast } from '@/components/Toast';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegister, useLogin } from '@/_queries/users/auth/users';
@@ -82,162 +84,278 @@ const Register = () => {
   const isLoading = registerLoading || loginLoading;
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <LinearGradient
+      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.gradient}
     >
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContainer,
-          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
-        ]}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Full Name"
-              placeholderTextColor="#999"
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-              autoCorrect={false}
-            />
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContainer,
+            { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="person-add" size={48} color="#ffffff" />
+            </View>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join us to start your interview preparation</Text>
           </View>
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#999"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
+          {/* Form Card */}
+          <View style={styles.formCard}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your full name"
+                  placeholderTextColor="#6B7280"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Password (min 8 characters)"
-              placeholderTextColor="#999"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-          </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#6B7280"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
 
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleRegister}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Sign Up</Text>
-            )}
-          </TouchableOpacity>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Minimum 8 characters"
+                  placeholderTextColor="#6B7280"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
+              {password.length > 0 && (
+                <View style={styles.passwordStrength}>
+                  <View style={[styles.strengthBar, password.length >= 8 ? styles.strengthBarStrong : styles.strengthBarWeak]} />
+                  <Text style={[styles.strengthText, password.length >= 8 ? styles.strengthTextStrong : styles.strengthTextWeak]}>
+                    {password.length >= 8 ? 'Strong password' : `${8 - password.length} more characters needed`}
+                  </Text>
+                </View>
+              )}
+            </View>
 
-          <View style={styles.linkContainer}>
-            <Text style={styles.linkText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
-              <Text style={styles.link}>Sign In</Text>
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleRegister}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#ffffff" size="small" />
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>Create Account</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#ffffff" style={styles.buttonIcon} />
+                </>
+              )}
             </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account?</Text>
+            <TouchableOpacity 
+              style={styles.linkButton}
+              onPress={() => router.replace('/(auth)/login')}
+            >
+              <Text style={styles.linkText}>Sign In</Text>
+              <Ionicons name="chevron-forward" size={16} color="#3B82F6" />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'transparent',
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
+    paddingHorizontal: 20,
   },
-  formContainer: {
-    paddingHorizontal: 30,
+  header: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
+    color: '#ffffff',
+    marginBottom: 8,
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
+    color: '#9CA3AF',
     textAlign: 'center',
+    lineHeight: 22,
   },
-  inputContainer: {
+  formCard: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    marginBottom: 32,
+  },
+  inputGroup: {
     marginBottom: 20,
   },
+  inputLabel: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 16,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
   input: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderRadius: 10,
+    flex: 1,
+    paddingVertical: 16,
     fontSize: 16,
-    color: '#333',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3.84,
-    elevation: 2,
+    color: '#ffffff',
+  },
+  passwordStrength: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  strengthBar: {
+    width: 40,
+    height: 3,
+    borderRadius: 2,
+    marginRight: 8,
+  },
+  strengthBarWeak: {
+    backgroundColor: '#F59E0B',
+  },
+  strengthBarStrong: {
+    backgroundColor: '#10B981',
+  },
+  strengthText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  strengthTextWeak: {
+    color: '#F59E0B',
+  },
+  strengthTextStrong: {
+    color: '#10B981',
   },
   button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 15,
-    borderRadius: 10,
+    backgroundColor: '#3B82F6',
+    paddingVertical: 18,
+    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    marginTop: 8,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
   buttonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  linkContainer: {
+  buttonIcon: {
+    marginLeft: 8,
+  },
+  footer: {
+    alignItems: 'center',
+  },
+  footerText: {
+    color: '#9CA3AF',
+    fontSize: 15,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  linkButton: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 30,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   linkText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  link: {
-    color: '#007AFF',
-    fontSize: 14,
+    color: '#3B82F6',
+    fontSize: 16,
     fontWeight: '600',
+    marginRight: 4,
   },
 });
 
