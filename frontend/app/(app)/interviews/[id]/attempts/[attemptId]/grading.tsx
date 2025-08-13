@@ -189,16 +189,36 @@ export default function AttemptGradingScreen() {
         )}
         
         <View style={styles.footer}>
-          <Pressable 
-            style={[styles.primary, !data && styles.primaryDisabled]} 
-            onPress={() => router.replace({ pathname: '/interviews/[id]/details', params: { id } })}
-            disabled={!data}
-          >
-            <Text style={[styles.primaryText, !data && styles.primaryTextDisabled]}>
-              Back to Interview
-            </Text>
-            <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#9CA3AF"} />
-          </Pressable>
+          <View style={styles.footerButtons}>
+            <Pressable 
+              style={[styles.secondary, !data && styles.secondaryDisabled]} 
+              onPress={() => {
+                if (data) {
+                  router.push({ 
+                    pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
+                    params: { id, attemptId } 
+                  });
+                }
+              }}
+              disabled={!data}
+            >
+              <Ionicons name="document-text-outline" size={18} color={data ? "#3B82F6" : "#6B7280"} />
+              <Text style={[styles.secondaryText, !data && styles.secondaryTextDisabled]}>
+                View Transcript
+              </Text>
+            </Pressable>
+            
+            <Pressable 
+              style={[styles.primary, !data && styles.primaryDisabled]} 
+              onPress={() => router.replace({ pathname: '/interviews/[id]/details', params: { id } })}
+              disabled={!data}
+            >
+              <Text style={[styles.primaryText, !data && styles.primaryTextDisabled]}>
+                Back to Interview
+              </Text>
+              <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#9CA3AF"} />
+            </Pressable>
+          </View>
         </View>
       </View>
     </LinearGradient>
@@ -245,6 +265,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, 
     borderTopColor: 'rgba(255,255,255,0.08)',
   },
+  footerButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   primary: { 
     backgroundColor: '#3B82F6', 
     paddingVertical: 16, 
@@ -253,6 +277,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
+    flex: 1,
   },
   primaryDisabled: {
     backgroundColor: 'rgba(255,255,255,0.08)',
@@ -264,6 +289,30 @@ const styles = StyleSheet.create({
   },
   primaryTextDisabled: { 
     color: '#9CA3AF',
+  },
+  secondary: { 
+    backgroundColor: 'rgba(255,255,255,0.06)', 
+    paddingVertical: 16, 
+    borderRadius: 12, 
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    flex: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  secondaryDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  secondaryText: { 
+    color: '#3B82F6', 
+    fontSize: 16, 
+    fontWeight: '600',
+  },
+  secondaryTextDisabled: { 
+    color: '#6B7280',
   },
   center: { 
     flex: 1, 
