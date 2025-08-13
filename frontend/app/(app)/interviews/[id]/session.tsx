@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStartAttempt, useFinishAttempt, useAddTranscript } from '../../../../_queries/interviews/interviews';
+import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 
 const InterviewSession = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,6 +18,14 @@ const InterviewSession = () => {
   const startAttemptMutation = useStartAttempt();
   const finishAttemptMutation = useFinishAttempt();
   const addTranscriptMutation = useAddTranscript();
+  const { posthogScreen } = usePosthogSafely();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interview_session');
+    }, [posthogScreen])
+  );
 
   useEffect(() => {
     if (id && !attemptId) {

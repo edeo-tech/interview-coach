@@ -1,13 +1,22 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
+import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 
 const InterviewResults = () => {
   const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
   const { data: feedback, isLoading, error } = useAttemptFeedback(attemptId);
+  const { posthogScreen } = usePosthogSafely();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interview_results');
+    }, [posthogScreen])
+  );
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-green-400';

@@ -1,14 +1,23 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
+import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 
 const InterviewsHome = () => {
   const { data: interviews, isLoading: interviewsLoading } = useInterviews();
   const { data: cv } = useCV();
+  const { posthogScreen } = usePosthogSafely();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interviews_list');
+    }, [posthogScreen])
+  );
 
   const handleStartNewInterview = () => {
     if (!cv) {

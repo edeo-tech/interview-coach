@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
+import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 
 const StatCard = ({ icon, label, value, color = '#3B82F6' }: any) => (
     <View style={styles.statCard}>
@@ -28,6 +29,14 @@ export default function Profile() {
     const router = useRouter();
     const { data: interviews } = useInterviews();
     const { data: currentCV } = useCV();
+    const { posthogScreen, posthogCapture } = usePosthogSafely();
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (Platform.OS === 'web') return;
+            posthogScreen('profile');
+        }, [posthogScreen])
+    );
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -92,6 +101,10 @@ export default function Profile() {
     };
 
     const handleInterviewPress = (interviewId: string) => {
+        posthogCapture('view_interview_details', {
+            source: 'profile',
+            interview_id: interviewId
+        });
         router.push(`/interviews/${interviewId}/details` as any);
     };
 
@@ -109,6 +122,11 @@ export default function Profile() {
                     style: 'destructive',
                     onPress: async () => {
                         try {
+                            posthogCapture('user_logout', {
+                                total_interviews: interviews?.length || 0,
+                                has_cv: !!currentCV,
+                                user_rank: user.rank
+                            });
                             await logout();
                             router.replace('/(auth)/login');
                         } catch (error) {
@@ -152,7 +170,13 @@ export default function Profile() {
             <View style={styles.cvSection}>
                 <TouchableOpacity 
                     style={styles.cvContainer} 
-                    onPress={() => router.push('/interviews/cv-upload')}
+                    onPress={() => {
+                        posthogCapture('navigate_to_cv_upload', {
+                            source: 'profile',
+                            has_existing_cv: !!currentCV
+                        });
+                        router.push('/interviews/cv-upload');
+                    }}
                 >
                     <View style={styles.cvLeft}>
                         <Ionicons name="document-text" size={28} color={currentCV ? "#10B981" : "#F59E0B"} />
@@ -224,7 +248,13 @@ export default function Profile() {
                     {interviews && interviews.length > 5 && (
                         <TouchableOpacity 
                             style={styles.viewAllButton}
-                            onPress={() => router.push('/interviews/index')}
+                            onPress={() => {
+                                posthogCapture('view_all_interviews', {
+                                    source: 'profile',
+                                    total_interviews: interviews.length
+                                });
+                                router.push('/interviews/index');
+                            }}
                         >
                             <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
                             <Ionicons name="chevron-forward" size={16} color="#3B82F6" />

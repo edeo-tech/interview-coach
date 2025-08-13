@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
+import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 
 const InterviewSetup = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,14 @@ const InterviewSetup = () => {
   });
 
   const createInterviewMutation = useCreateInterviewFromURL();
+  const { posthogScreen } = usePosthogSafely();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interview_setup');
+    }, [posthogScreen])
+  );
 
   const handleStart = async () => {
     if (!formData.company.trim() || !formData.role_title.trim()) {

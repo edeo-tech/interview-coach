@@ -10,10 +10,11 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useToast } from '@/components/Toast';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,12 +22,21 @@ const Login = () => {
   const { login, loginLoading, loginErrorMessage, loginSuccess } = useAuth();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
+  const { posthogScreen, posthogCapture } = usePosthogSafely();
+  
+  useFocusEffect(() => {
+    posthogScreen('auth_login');
+  });
 
   useEffect(() => {
     if (loginErrorMessage) {
+      posthogCapture('login_failed', {
+        error_message: loginErrorMessage,
+        email_domain: email.split('@')[1] || 'unknown'
+      });
       showToast(loginErrorMessage, 'error');
     }
-  }, [loginErrorMessage]);
+  }, [loginErrorMessage, posthogCapture, email]);
 
   useEffect(() => {
     if (loginSuccess) {
@@ -47,6 +57,9 @@ const Login = () => {
       return;
     }
 
+    posthogCapture('login_attempted', {
+      email_domain: email.split('@')[1] || 'unknown'
+    });
     login({ email, password });
   };
 

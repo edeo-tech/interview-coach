@@ -1,12 +1,13 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Image, Animated, PanResponder, Dimensions } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, Text, StyleSheet, Pressable, ScrollView, Image, Animated, PanResponder, Dimensions, Platform } from 'react-native';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useCV } from '../../_queries/interviews/cv';
 import { useStartAttempt, useAddTranscript, useFinishAttempt } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
+import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -96,6 +97,7 @@ export default function MockInterview() {
     );
     const [duration, setDuration] = useState(0);
     const [interviewNotes, setInterviewNotes] = useState<string[]>([]);
+    const { posthogScreen, posthogCapture } = usePosthogSafely();
     
     // Fetch user data and CV
     const { auth } = useAuth();
@@ -103,6 +105,13 @@ export default function MockInterview() {
     const startAttempt = useStartAttempt();
     const addTranscript = useAddTranscript();
     const finishAttempt = useFinishAttempt();
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (Platform.OS === 'web') return;
+            posthogScreen('mock_interview');
+        }, [posthogScreen])
+    );
 
     const [attemptId, setAttemptId] = useState<string | null>(null);
     const [conversationId, setConversationId] = useState<string | null>(null);
@@ -126,6 +135,14 @@ export default function MockInterview() {
 
     const conversationConfig = useMemo(() => ({
         onConnect: () => {
+            posthogCapture('interview_started', {
+                interview_id: params.interviewId as string,
+                attempt_id: attemptId,
+                role: params.role as string,
+                company: params.companyName as string,
+                difficulty: params.difficulty as string,
+                has_cv: !!cvProfile
+            });
             setCallState('active');
             
             // Set a timeout to check if AI speaks within 10 seconds
@@ -215,6 +232,13 @@ Remember: This is a practice interview to help ${userName} improve their intervi
     }, [auth, cvProfile, interviewer, params, topics]);
 
     const acceptCall = useCallback(async (conversation: any) => {
+        posthogCapture('interview_call_answered', {
+            interview_id: params.interviewId as string,
+            role: params.role as string,
+            company: params.companyName as string,
+            difficulty: params.difficulty as string,
+            topics_count: topics.length
+        });
         setCallState('connecting');
         
         const agentId = process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID;
@@ -259,13 +283,26 @@ Remember: This is a practice interview to help ${userName} improve their intervi
     }, [buildInterviewPrompt, auth, params]);
 
     const declineCall = useCallback(() => {
+        posthogCapture('interview_call_declined', {
+            interview_id: params.interviewId as string,
+            role: params.role as string,
+            company: params.companyName as string,
+            difficulty: params.difficulty as string
+        });
         setCallState('ended');
         router.back();
-    }, [router]);
+    }, [router, posthogCapture, params]);
 
     const endInterview = useCallback(async (conversation: any) => {
         try {
             await conversation.endSession();
+            posthogCapture('interview_ended', {
+                interview_id: params.interviewId as string,
+                attempt_id: attemptId,
+                duration_seconds: duration,
+                role: params.role as string,
+                company: params.companyName as string
+            });
             setCallState('ended');
             
             // Navigate immediately to transcript screen (with loading state)

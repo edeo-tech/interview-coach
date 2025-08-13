@@ -1,15 +1,24 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useInterview, useStartAttempt } from '../../../../_queries/interviews/interviews';
+import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 
 export default function InterviewDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: interviewData, isLoading, error } = useInterview(id);
   const startAttempt = useStartAttempt();
+  const { posthogScreen } = usePosthogSafely();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interview_details');
+    }, [posthogScreen])
+  );
 
   const handleStartInterview = async () => {
     try {

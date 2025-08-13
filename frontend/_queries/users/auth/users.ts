@@ -17,13 +17,18 @@ import {
     AuthenticatedUser
 } from '@/_interfaces/users/users';
 
+// hooks
+import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
+
 
 
 
 const post_login_logic = async (
     response: LoginResponse,
     queryClient: QueryClient,
-    router: Router
+    router: Router,
+    posthogIdentify?: (userId: string, properties?: Record<string, any>) => void,
+    posthogCapture?: (eventName: string, properties?: Record<string, any>) => void
 ) =>
 {
     // Set tokens in secure storage
@@ -36,15 +41,22 @@ const post_login_logic = async (
         // Purchases.logIn(response.user.id);
         // Purchases.setEmail(response.user.email);
         
-        // posthog.identify(response.user.id, {
-        //     name: response.user.name,
-        //     email: response.user.email,
-        //     os: Platform.OS,
-        // });
+        if (posthogIdentify) {
+            posthogIdentify(response.user.id, {
+                name: response.user.name,
+                email: response.user.email,
+                os: Platform.OS,
+            });
+        }
     }
 
     // Update auth cache with the new user data
     queryClient.setQueryData(['auth'], response.user);
+
+    // Track login event
+    if (posthogCapture) {
+        posthogCapture('sign_in', { type: 'password' });
+    }
 
     // Navigate to home screen after successful login
     router.replace('/(app)/(tabs)/home');
@@ -68,12 +80,13 @@ export const useRegister = () =>
 export const useLogin = () =>
 {
     const queryClient = useQueryClient();
+    const { posthogIdentify, posthogCapture } = usePosthogSafely();
 
     return useMutation({
         mutationFn: async (body: LoginUser) => (await usersAuthApi.login(body)).data,
         onSuccess: async (response: LoginResponse) => {
             try {
-                await post_login_logic(response, queryClient, router);
+                await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture);
             } catch (error) {
                 console.error('Error in post_login_logic:', error);
                 throw error; // This will cause the mutation to be marked as failed

@@ -1,22 +1,40 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
+import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 
 export default function Home() {
   const { data: interviews, isLoading: interviewsLoading } = useInterviews();
   const { data: cv } = useCV();
   const insets = useSafeAreaInsets();
+  const { posthogScreen, posthogCapture } = usePosthogSafely();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('home');
+    }, [posthogScreen])
+  );
 
   const handleCreateNewInterview = () => {
+    posthogCapture('navigate_to_create_interview', {
+      source: 'home',
+      has_cv: !!cv,
+      total_existing_interviews: interviews?.length || 0
+    });
     router.push('/interviews/create');
   };
 
   const handleInterviewPress = (interviewId: string) => {
+    posthogCapture('view_interview_details', {
+      source: 'home',
+      interview_id: interviewId
+    });
     router.push(`/interviews/${interviewId}/details` as any);
   };
 
@@ -96,7 +114,13 @@ export default function Home() {
               Upload your CV to get personalized interview questions and feedback.
             </Text>
             <TouchableOpacity 
-              onPress={() => router.push('/interviews/cv-upload')}
+              onPress={() => {
+                posthogCapture('navigate_to_cv_upload', {
+                  source: 'home',
+                  has_existing_cv: false
+                });
+                router.push('/interviews/cv-upload');
+              }}
               style={styles.statusAction}
             >
               <Text style={styles.warningAction}>Upload CV →</Text>

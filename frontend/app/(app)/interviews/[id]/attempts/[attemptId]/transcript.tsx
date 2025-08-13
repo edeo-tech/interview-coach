@@ -1,19 +1,28 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Platform } from 'react-native';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import TranscriptView from '../../../../../../components/TranscriptView';
 import { useInterview } from '../../../../../../_queries/interviews/interviews';
 import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
+import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 
 export default function AttemptTranscriptScreen() {
   const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
   const { data, isLoading, refetch } = useInterview(id);
+  const { posthogScreen } = usePosthogSafely();
   
   const [transcript, setTranscript] = useState<any[]>([]);
   const [hasTranscript, setHasTranscript] = useState(false);
   const [isGrading, setIsGrading] = useState(false);
   const [canProceed, setCanProceed] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interview_transcript');
+    }, [posthogScreen])
+  );
 
   const attempt = useMemo(() => {
     const attempts = data?.attempts || [];

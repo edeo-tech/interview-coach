@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../../_queries/interviews/interviews';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
+import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 
 export default function CreateInterview() {
   const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
@@ -18,8 +19,16 @@ export default function CreateInterview() {
   const uploadCV = useUploadCV();
   const createFromURL = useCreateInterviewFromURL();
   const createFromFile = useCreateInterviewFromFile();
+  const { posthogScreen, posthogCapture } = usePosthogSafely();
   
   const isLoading = createFromURL.isPending || createFromFile.isPending || uploadCV.isPending;
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interview_create');
+    }, [posthogScreen])
+  );
 
   // If user already has CV, skip to job step
   React.useEffect(() => {
@@ -79,11 +88,21 @@ export default function CreateInterview() {
       } as any);
       
       await uploadCV.mutateAsync(formData);
+      posthogCapture('cv_upload_success', {
+        source: 'create_interview',
+        file_type: selectedCVFile.mimeType || 'unknown',
+        file_size_kb: selectedCVFile.size ? Math.round(selectedCVFile.size / 1024) : null
+      });
       Alert.alert('Success!', 'Your CV has been uploaded successfully.', [
         { text: 'Continue', onPress: () => setCurrentStep('job') }
       ]);
       
     } catch (error: any) {
+      posthogCapture('cv_upload_failed', {
+        source: 'create_interview',
+        error_message: error.response?.data?.detail || error.message,
+        file_type: selectedCVFile.mimeType || 'unknown'
+      });
       Alert.alert(
         'Upload Error', 
         error.response?.data?.detail || 'Failed to upload CV. Please try again.'
@@ -110,11 +129,21 @@ export default function CreateInterview() {
           job_url: jobUrl,
         });
         
+        posthogCapture('interview_created', {
+          method: 'url',
+          has_cv: !!currentCV,
+          job_url_domain: new URL(jobUrl).hostname
+        });
+        
         console.log('Interview created from URL:', result.data);
         Alert.alert('Success', 'Interview created successfully!', [
           { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
         ]);
       } catch (error: any) {
+        posthogCapture('interview_creation_failed', {
+          method: 'url',
+          error_message: error.response?.data?.detail || error.message
+        });
         Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
       }
     } else {
@@ -133,11 +162,23 @@ export default function CreateInterview() {
 
         const result = await createFromFile.mutateAsync(formData);
         
+        posthogCapture('interview_created', {
+          method: 'file',
+          has_cv: !!currentCV,
+          file_type: selectedFile.mimeType || 'unknown',
+          file_size_kb: selectedFile.size ? Math.round(selectedFile.size / 1024) : null
+        });
+        
         console.log('Interview created from file:', result.data);
         Alert.alert('Success', 'Interview created successfully!', [
           { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
         ]);
       } catch (error: any) {
+        posthogCapture('interview_creation_failed', {
+          method: 'file',
+          error_message: error.response?.data?.detail || error.message,
+          file_type: selectedFile.mimeType || 'unknown'
+        });
         Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from file');
       }
     }

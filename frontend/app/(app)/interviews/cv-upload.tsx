@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCV, useUploadCV, useDeleteCV } from '../../../_queries/interviews/cv';
+import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 
 const CVUpload = () => {
   const { data: currentCV, isLoading: cvLoading } = useCV();
   const uploadMutation = useUploadCV();
   const deleteMutation = useDeleteCV();
   const [uploadProgress, setUploadProgress] = useState(false);
+  const { posthogScreen, posthogCapture } = usePosthogSafely();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('cv_upload');
+    }, [posthogScreen])
+  );
 
   const handleUpload = async () => {
     try {
@@ -42,6 +51,13 @@ const CVUpload = () => {
       
       await uploadMutation.mutateAsync(formData);
       
+      posthogCapture('cv_upload_success', {
+        source: 'cv_upload_page',
+        file_type: file.mimeType || 'unknown',
+        file_size_kb: file.size ? Math.round(file.size / 1024) : null,
+        is_replacement: !!currentCV
+      });
+      
       Alert.alert(
         'Success!', 
         'Your CV has been uploaded and processed successfully.',
@@ -50,6 +66,12 @@ const CVUpload = () => {
       
     } catch (error: any) {
       console.error('Upload error:', error);
+      posthogCapture('cv_upload_failed', {
+        source: 'cv_upload_page',
+        error_message: error.response?.data?.detail || error.message,
+        file_type: file.mimeType || 'unknown',
+        is_replacement: !!currentCV
+      });
       Alert.alert(
         'Upload Error', 
         error.response?.data?.detail || 'Failed to upload CV. Please try again.'
@@ -71,8 +93,17 @@ const CVUpload = () => {
           onPress: async () => {
             try {
               await deleteMutation.mutateAsync();
+              posthogCapture('cv_deleted', {
+                source: 'cv_upload_page',
+                had_skills_count: currentCV?.skills?.length || 0,
+                had_experience_years: currentCV?.experience_years || 0
+              });
               Alert.alert('Success', 'CV deleted successfully');
             } catch (error: any) {
+              posthogCapture('cv_deletion_failed', {
+                source: 'cv_upload_page',
+                error_message: error.message
+              });
               Alert.alert('Error', 'Failed to delete CV');
             }
           }

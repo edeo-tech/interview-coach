@@ -1,9 +1,16 @@
 import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import { Platform } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 
 const Landing = () =>
 {
     const router = useRouter();
+    const { posthogScreen } = usePosthogSafely();
+    
+    useFocusEffect(() => {
+        posthogScreen('auth_landing');
+    });
 
     useEffect(() => {
         router.replace('/(auth)/login');

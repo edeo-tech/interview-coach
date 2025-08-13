@@ -10,10 +10,11 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useToast } from '@/components/Toast';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegister, useLogin } from '@/_queries/users/auth/users';
+import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -21,6 +22,11 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
+  const { posthogScreen, posthogCapture } = usePosthogSafely();
+  
+  useFocusEffect(() => {
+    posthogScreen('auth_register');
+  });
   
   const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess } = useRegister();
   const { mutate: login, isPending: loginLoading } = useLogin();
@@ -28,17 +34,24 @@ const Register = () => {
   useEffect(() => {
     if (registerError) {
       const errorMessage = registerError.response?.data?.detail || 'Registration failed. Please try again.';
+      posthogCapture('registration_failed', {
+        error_message: errorMessage,
+        email_domain: email.split('@')[1] || 'unknown'
+      });
       showToast(errorMessage, 'error');
     }
-  }, [registerError]);
+  }, [registerError, posthogCapture, email]);
 
   useEffect(() => {
     if (registerSuccess) {
+      posthogCapture('registration_successful', {
+        email_domain: email.split('@')[1] || 'unknown'
+      });
       showToast('Registration successful! Logging you in...', 'success');
       // Auto-login after successful registration
       login({ email, password });
     }
-  }, [registerSuccess]);
+  }, [registerSuccess, posthogCapture, email, login, password]);
 
   const handleRegister = () => {
     // Validation
@@ -58,6 +71,11 @@ const Register = () => {
       return;
     }
 
+    posthogCapture('registration_attempted', {
+      email_domain: email.split('@')[1] || 'unknown',
+      password_length: password.length,
+      name_provided: !!name
+    });
     register({ name, email, password });
   };
 

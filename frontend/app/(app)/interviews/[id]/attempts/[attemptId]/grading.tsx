@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView, Platform } from 'react-native';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
+import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 
 export default function AttemptGradingScreen() {
   const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
+  const { posthogScreen } = usePosthogSafely();
 
   const [isGrading, setIsGrading] = useState(false);
   const [gradingStatus, setGradingStatus] = useState<string>('');
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('interview_grading');
+    }, [posthogScreen])
+  );
 
   // WebSocket for real-time updates
   const { isConnected } = useWebSocket(attemptId as string, {

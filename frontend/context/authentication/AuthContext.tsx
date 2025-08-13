@@ -18,7 +18,7 @@ import { useCheckAuth, useLogin, useLogout } from '@/_queries/users/auth/users';
 import Purchases from 'react-native-purchases';
 
 // hooks
-// import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
+import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
 
 
 type AuthContextType = {
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
 {
     const segments = useSegments();
     const router = useRouter();
-    // const { posthogCapture } = usePosthogSafely();
+    const { posthogCapture, posthogIdentify } = usePosthogSafely();
     
     const { data: auth, isLoading: authLoading, error: authError } = useCheckAuth();
     const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess } = useLogin();
@@ -84,14 +84,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
                 // Purchases.logIn(auth?.id);
                 Purchases.setEmail(auth?.email);
                 
-                // posthog.identify(auth?.id, {
-                //     name: auth?.name,
-                //     email: auth?.email,
-                //     os: Platform.OS,
-                // });
+                posthogIdentify(auth?.id, {
+                    name: auth?.name,
+                    email: auth?.email,
+                    os: Platform.OS,
+                });
             }
 
-            // posthogCapture('sign_in', { type: 'token' });
+            posthogCapture('sign_in', { type: 'token' });
         }
     }, [auth]);
 
