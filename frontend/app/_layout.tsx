@@ -56,25 +56,25 @@ export default function RootLayoutWrapper() {
         </QueryClientProvider>
     );
 
-    // if (Platform.OS !== 'web') {
-    //     return (
-    //         <PostHogProvider
-    //             apiKey='phc_wu49TQpyR6PbvbTNoCj9MFfWUhJ9CslN43Yctld2jWn'
-    //             autocapture={false}
-    //             options={{
-    //                 host: "https://eu.i.posthog.com",
-    //                 enableSessionReplay: true,
-    //                 captureAppLifecycleEvents: true,
-    //                 sessionReplayConfig: {
-    //                     maskAllTextInputs: false,
-    //                     maskAllImages: false,
-    //                 },
-    //             }}
-    //         >
-    //             {AppTree}
-    //         </PostHogProvider>
-    //     );
-    // }
+    if (Platform.OS !== 'web') {
+        return (
+            <PostHogProvider
+                apiKey='phc_HMWfNEsv3dRtaMjS562G6DlsrQnoTHP1TLEEhoV6unw'
+                autocapture={false}
+                options={{
+                    host: "https://eu.i.posthog.com",
+                    enableSessionReplay: true,
+                    captureAppLifecycleEvents: true,
+                    sessionReplayConfig: {
+                        maskAllTextInputs: false,
+                        maskAllImages: false,
+                    },
+                }}
+            >
+                {AppTree}
+            </PostHogProvider>
+        );
+    }
 
     return AppTree;
 }
