@@ -93,7 +93,7 @@ export default function InterviewDetails() {
             <ActivityIndicator color="white" />
           ) : (
             <>
-              <Ionicons name="videocam" size={24} color="white" />
+              <Ionicons name="call" size={24} color="white" />
               <Text style={styles.startButtonText}>Start Mock Interview</Text>
             </>
           )}
@@ -210,20 +210,21 @@ const styles = StyleSheet.create({
   startButton: {
     backgroundColor: '#F43F5E',
     borderRadius: 12,
-    padding: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   startButtonText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     marginLeft: 8,
   },

@@ -1,11 +1,92 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Image, Animated, PanResponder, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useCV } from '../../_queries/interviews/cv';
 import { useStartAttempt, useAddTranscript, useFinishAttempt } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
+
+const { width: screenWidth } = Dimensions.get('window');
+
+const SlideToAnswer = ({ onAnswer, onDecline }: { onAnswer: () => void; onDecline: () => void }) => {
+    const slideAnim = React.useRef(new Animated.Value(0)).current;
+    const [hasAnswered, setHasAnswered] = useState(false);
+    
+    const SLIDE_WIDTH = screenWidth - 80; // Container width minus padding
+    const BUTTON_SIZE = 80;
+    const SLIDE_THRESHOLD = SLIDE_WIDTH - BUTTON_SIZE - 20; // Leave some margin
+    
+    const panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderMove: (_, gestureState) => {
+            const { dx } = gestureState;
+            if (dx >= 0 && dx <= SLIDE_THRESHOLD) {
+                slideAnim.setValue(dx);
+            }
+        },
+        onPanResponderRelease: (_, gestureState) => {
+            const { dx } = gestureState;
+            if (dx >= SLIDE_THRESHOLD && !hasAnswered) {
+                // Slide completed - answer the call
+                setHasAnswered(true);
+                Animated.timing(slideAnim, {
+                    toValue: SLIDE_THRESHOLD,
+                    duration: 150,
+                    useNativeDriver: false,
+                }).start(() => {
+                    onAnswer();
+                });
+            } else {
+                // Slide not completed - return to start
+                Animated.spring(slideAnim, {
+                    toValue: 0,
+                    useNativeDriver: false,
+                    tension: 150,
+                    friction: 8,
+                }).start();
+            }
+        },
+    });
+
+    return (
+        <View style={styles.slideContainer}>
+            {/* Slide to Answer */}
+            <View style={styles.slideTrack}>
+                <View style={styles.slideTextContainer}>
+                    <Animated.Text 
+                        style={[
+                            styles.slideText,
+                            {
+                                opacity: slideAnim.interpolate({
+                                    inputRange: [0, SLIDE_THRESHOLD * 0.7],
+                                    outputRange: [0.6, 0],
+                                    extrapolate: 'clamp',
+                                }),
+                            }
+                        ]}
+                    >
+                        slide to answer
+                    </Animated.Text>
+                </View>
+                <Animated.View
+                    style={[
+                        styles.slideButton,
+                        {
+                            transform: [{ translateX: slideAnim }],
+                        },
+                    ]}
+                    {...panResponder.panHandlers}
+                >
+                    <Ionicons name="call" size={28} color="#fff" />
+                </Animated.View>
+            </View>
+            
+        </View>
+    );
+};
 
 export default function MockInterview() {
     const params = useLocalSearchParams();
@@ -211,6 +292,42 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         }
     }, [attemptId, params.interviewId, duration, finishAttempt, router]);
 
+    // Incoming call haptic effects
+    useEffect(() => {
+        let hapticInterval: ReturnType<typeof setInterval>;
+        
+        if (callState === 'incoming') {
+            // Start haptic feedback pattern (more constant iPhone-like vibration)
+            const triggerHapticPattern = () => {
+                // Longer vibration sequence for more constant feel
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                setTimeout(() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                }, 150);
+                setTimeout(() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                }, 300);
+                setTimeout(() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                }, 450);
+            };
+            
+            // Trigger haptics immediately
+            triggerHapticPattern();
+            
+            // Repeat more frequently for constant feel
+            hapticInterval = setInterval(triggerHapticPattern, 1000);
+        }
+
+        // Cleanup function
+        return () => {
+            if (hapticInterval) {
+                clearInterval(hapticInterval);
+            }
+        };
+    }, [callState]);
+
+    // Duration timer effect
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
         if (callState === 'active') {
@@ -225,6 +342,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         };
     }, [callState]);
 
+
     const formatDuration = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -235,14 +353,12 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         <MockInterviewConversation config={conversationConfig}>
             {(conversation) => (
                 <View style={styles.container}>
-                    <View style={styles.header}>
-                        <Pressable style={styles.backButton} onPress={() => router.back()}>
-                            <Ionicons name="arrow-back" size={24} color="#fff" />
-                        </Pressable>
-                        <View style={styles.headerInfo}>
-                            <Text style={styles.companyName}>{params.companyName}</Text>
-                            <Text style={styles.role}>{params.role}</Text>
-                        </View>
+                    {callState !== 'incoming' && (
+                        <View style={styles.header}>
+                            <View style={styles.headerInfo}>
+                                <Text style={styles.companyName}>{params.companyName}</Text>
+                                <Text style={styles.role}>{params.role}</Text>
+                            </View>
                         {callState === 'active' && (
                             <View style={styles.timer}>
                                 <Ionicons name="time-outline" size={16} color="#3B82F6" />
@@ -255,13 +371,14 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                 <Text style={styles.incomingText}>Incoming</Text>
                             </View>
                         )}
-                        {callState === 'connecting' && (
-                            <View style={styles.connectingIndicator}>
-                                <Ionicons name="time-outline" size={16} color="#F59E0B" />
-                                <Text style={styles.connectingText}>Connecting...</Text>
-                            </View>
-                        )}
-                    </View>
+                            {callState === 'connecting' && (
+                                <View style={styles.connectingIndicator}>
+                                    <Ionicons name="time-outline" size={16} color="#F59E0B" />
+                                    <Text style={styles.connectingText}>Connecting...</Text>
+                                </View>
+                            )}
+                        </View>
+                    )}
 
                     <ScrollView 
                         style={styles.content}
@@ -269,25 +386,17 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         showsVerticalScrollIndicator={false}
                     >
                         {callState === 'incoming' && (
-                            <View style={styles.incomingCallContainer}>
-                                <View style={styles.interviewerProfile}>
-                                    <Text style={styles.interviewerAvatar}>{interviewer.avatar}</Text>
-                                    <Text style={styles.interviewerName}>{interviewer.name}</Text>
-                                    <Text style={styles.interviewerRole}>{interviewer.role}</Text>
-                                    <Text style={styles.interviewerCompany}>@ {params.companyName}</Text>
+                            <View style={styles.iphoneCallContainer}>
+                                <View style={styles.iphoneHeader}>
+                                    <Text style={styles.iphoneCallerName}>{interviewer.name}</Text>
+                                    <Text style={styles.iphoneCallStatus}>calling...</Text>
+                                    <Text style={styles.iphoneCallSubtext}>{params.companyName} • {params.role}</Text>
                                 </View>
                                 
-                                <Text style={styles.incomingCallTitle}>Incoming Interview Call</Text>
-                                <Text style={styles.incomingCallSubtitle}>
-                                    {interviewer.name} is calling to start your {params.difficulty} level interview
-                                </Text>
-                                
-                                <View style={styles.topicsContainer}>
-                                    {topics.map((topic: string, index: number) => (
-                                        <View key={index} style={styles.topicBadge}>
-                                            <Text style={styles.topicText}>{topic}</Text>
-                                        </View>
-                                    ))}
+                                <View style={styles.iphoneMiddleSection}>
+                                    <View style={styles.iphoneAvatarContainer}>
+                                        <Text style={styles.iphoneAvatar}>{interviewer.avatar}</Text>
+                                    </View>
                                 </View>
                             </View>
                         )}
@@ -360,21 +469,10 @@ Remember: This is a practice interview to help ${userName} improve their intervi
 
                     <View style={styles.footer}>
                         {callState === 'incoming' && (
-                            <View style={styles.incomingCallButtons}>
-                                <Pressable
-                                    style={[styles.callActionButton, styles.declineButton]}
-                                    onPress={declineCall}
-                                >
-                                    <Ionicons name="call" size={28} color="#fff" />
-                                </Pressable>
-                                
-                                <Pressable
-                                    style={[styles.callActionButton, styles.acceptButton]}
-                                    onPress={() => acceptCall(conversation)}
-                                >
-                                    <Ionicons name="call" size={28} color="#fff" />
-                                </Pressable>
-                            </View>
+                            <SlideToAnswer
+                                onAnswer={() => acceptCall(conversation)}
+                                onDecline={declineCall}
+                            />
                         )}
 
                         {callState === 'connecting' && (
@@ -432,7 +530,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#1a1a1a',
     },
     header: {
         flexDirection: 'row',
@@ -823,5 +921,115 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'Inter_500Medium',
         color: '#6B7280',
+    },
+    // iPhone Call Interface Styles
+    iphoneCallContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingTop: 60,
+    },
+    iphoneHeader: {
+        alignItems: 'center',
+        marginBottom: 60,
+    },
+    iphoneCallerName: {
+        fontSize: 42,
+        fontFamily: 'Inter_300Light',
+        color: '#ffffff',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    iphoneCallStatus: {
+        fontSize: 18,
+        fontFamily: 'Inter_400Regular',
+        color: 'rgba(255, 255, 255, 0.7)',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    iphoneCallSubtext: {
+        fontSize: 16,
+        fontFamily: 'Inter_400Regular',
+        color: 'rgba(255, 255, 255, 0.5)',
+        textAlign: 'center',
+    },
+    iphoneMiddleSection: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iphoneAvatarContainer: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    iphoneAvatar: {
+        fontSize: 50,
+    },
+    // Slide to Answer Styles
+    slideContainer: {
+        alignItems: 'center',
+        paddingBottom: 40,
+        paddingHorizontal: 40,
+        width: '100%',
+    },
+    slideTrack: {
+        width: '100%',
+        height: 80,
+        backgroundColor: 'rgba(128, 90, 168, 0.6)', // Purple/pink like iPhone
+        borderRadius: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 30,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    slideTextContainer: {
+        position: 'absolute',
+        right: 45, // Move text slightly to the right
+        width: 180,
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    slideText: {
+        color: 'rgba(255, 255, 255, 0.6)', // Darker style text
+        fontSize: 20,
+        fontFamily: 'Inter_400Regular',
+        textAlign: 'center',
+    },
+    slideButton: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#34C759',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        left: 0,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    declineButton: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#FF3B30',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: [{ rotate: '135deg' }],
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
     },
 });

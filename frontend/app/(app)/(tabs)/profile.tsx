@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useRouter } from 'expo-router';
+import { useInterviews } from '../../../_queries/interviews/interviews';
+import { useCV } from '../../../_queries/interviews/cv';
 
 const StatCard = ({ icon, label, value, color = '#3B82F6' }: any) => (
     <View style={styles.statCard}>
@@ -24,15 +26,73 @@ const MenuItem = ({ icon, label, onPress }: any) => (
 export default function Profile() {
     const { auth, logout, logoutLoading } = useAuth();
     const router = useRouter();
+    const { data: interviews } = useInterviews();
+    const { data: currentCV } = useCV();
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
+    const getIndustryRole = () => {
+        if (!interviews || interviews.length === 0) {
+            return 'Industry / Role: Not specified';
+        }
+        
+        // Get the most recent interview to determine target role
+        const latestInterview = interviews[0];
+        const roleTitle = latestInterview.role_title || 'Software Engineer';
+        
+        // Extract industry from company or role title
+        let industry = 'Tech';
+        
+        // Try to infer industry from role title keywords
+        if (roleTitle.toLowerCase().includes('sales') || roleTitle.toLowerCase().includes('sdr') || roleTitle.toLowerCase().includes('account')) {
+            industry = 'Sales';
+        } else if (roleTitle.toLowerCase().includes('marketing') || roleTitle.toLowerCase().includes('growth')) {
+            industry = 'Marketing';
+        } else if (roleTitle.toLowerCase().includes('product') || roleTitle.toLowerCase().includes('pm')) {
+            industry = 'Product';
+        } else if (roleTitle.toLowerCase().includes('engineer') || roleTitle.toLowerCase().includes('developer') || roleTitle.toLowerCase().includes('software')) {
+            industry = 'Engineering';
+        } else if (roleTitle.toLowerCase().includes('design') || roleTitle.toLowerCase().includes('ui') || roleTitle.toLowerCase().includes('ux')) {
+            industry = 'Design';
+        } else if (roleTitle.toLowerCase().includes('data') || roleTitle.toLowerCase().includes('analyst')) {
+            industry = 'Data';
+        }
+        
+        // Simplify role title for display
+        let displayRole = roleTitle;
+        if (roleTitle.length > 20) {
+            // Truncate long titles but keep meaningful parts
+            displayRole = roleTitle.split(' ').slice(0, 2).join(' ');
+        }
+        
+        return `${industry} / ${displayRole}`;
+    };
+
+    const getExperienceText = () => {
+        if (currentCV?.experience_years) {
+            return `${currentCV.experience_years} years experience`;
+        }
+        return 'Experience level not specified';
+    };
 
     const user = {
         name: auth?.name || 'User',
         email: auth?.email || 'user@example.com',
         joinedDate: 'January 2025',
-        totalInterviews: 15,
+        totalInterviews: interviews?.length || 0,
         averageScore: 83,
         streak: 7,
         rank: 'Advanced',
+    };
+
+    const handleInterviewPress = (interviewId: string) => {
+        router.push(`/interviews/${interviewId}/details` as any);
     };
 
     const handleLogout = () => {
@@ -67,14 +127,49 @@ export default function Profile() {
             end={{ x: 0, y: 1 }}
             style={styles.gradient}
         >
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+            style={styles.container} 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+        >
             <View style={styles.header}>
                 <Text style={styles.name}>{user.name}</Text>
                 <Text style={styles.email}>{user.email}</Text>
+                <View style={styles.profileDetailContainer}>
+                    <Text style={styles.profileDetailLabel}>Target Role:</Text>
+                    <Text style={styles.profileDetailValue}>{getIndustryRole().replace('Industry / Role: ', '').replace(/Industry \/ /, '')}</Text>
+                </View>
+                <View style={styles.profileDetailContainer}>
+                    <Text style={styles.profileDetailLabel}>Experience:</Text>
+                    <Text style={styles.profileDetailValue}>{getExperienceText()}</Text>
+                </View>
                 <View style={styles.rankBadge}>
                     <Ionicons name="trophy" size={16} color="#F59E0B" />
                     <Text style={styles.rankText}>{user.rank}</Text>
                 </View>
+            </View>
+
+            <View style={styles.cvSection}>
+                <TouchableOpacity 
+                    style={styles.cvContainer} 
+                    onPress={() => router.push('/interviews/cv-upload')}
+                >
+                    <View style={styles.cvLeft}>
+                        <Ionicons name="document-text" size={28} color={currentCV ? "#10B981" : "#F59E0B"} />
+                    </View>
+                    <View style={styles.cvInfo}>
+                        <Text style={styles.cvTitle}>
+                            {currentCV ? "Your CV" : "Upload Your CV"}
+                        </Text>
+                        <Text style={styles.cvSubtitle}>
+                            {currentCV 
+                                ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
+                                : "Get personalized interview questions tailored to your background"
+                            }
+                        </Text>
+                    </View>
+                    <Ionicons name="create-outline" size={22} color="#FFFFFF" />
+                </TouchableOpacity>
             </View>
 
             <View style={styles.statsContainer}>
@@ -99,30 +194,50 @@ export default function Profile() {
             </View>
 
             <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Interview History</Text>
+                <View style={styles.menuContainer}>
+                    {(!interviews || interviews.length === 0) ? (
+                        <View style={styles.emptyState}>
+                            <Ionicons name="chatbubble-outline" size={32} color="#6b7280" />
+                            <Text style={styles.emptyStateText}>No practice interviews yet</Text>
+                            <Text style={styles.emptyStateSubtext}>Start your first mock interview to see it here</Text>
+                        </View>
+                    ) : (
+                        interviews.slice(0, 5).map((interview) => (
+                            <TouchableOpacity
+                                key={interview.id}
+                                onPress={() => handleInterviewPress(interview.id)}
+                                style={styles.interviewItem}
+                            >
+                                <View style={styles.interviewIcon}>
+                                    <Ionicons name="briefcase" size={16} color="#3B82F6" />
+                                </View>
+                                <View style={styles.interviewInfo}>
+                                    <Text style={styles.interviewTitle}>{interview.role_title}</Text>
+                                    <Text style={styles.interviewCompany}>{interview.company}</Text>
+                                    <Text style={styles.interviewDate}>{formatDate(interview.created_at)}</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+                            </TouchableOpacity>
+                        ))
+                    )}
+                    {interviews && interviews.length > 5 && (
+                        <TouchableOpacity 
+                            style={styles.viewAllButton}
+                            onPress={() => router.push('/interviews/index')}
+                        >
+                            <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
+                            <Ionicons name="chevron-forward" size={16} color="#3B82F6" />
+                        </TouchableOpacity>
+                    )}
+                </View>
+            </View>
+
+            <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Account</Text>
                 <View style={styles.menuContainer}>
-                    <MenuItem icon="person-outline" label="Edit Profile" />
-                    <MenuItem icon="notifications-outline" label="Notifications" />
-                    <MenuItem icon="lock-closed-outline" label="Privacy" />
                     <MenuItem icon="settings-outline" label="Settings" />
-                </View>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Progress</Text>
-                <View style={styles.menuContainer}>
-                    <MenuItem icon="analytics-outline" label="Performance Analytics" />
-                    <MenuItem icon="ribbon-outline" label="Achievements" />
-                    <MenuItem icon="calendar-outline" label="Interview History" />
-                </View>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Support</Text>
-                <View style={styles.menuContainer}>
                     <MenuItem icon="help-circle-outline" label="Help Center" />
-                    <MenuItem icon="chatbubble-outline" label="Contact Support" />
-                    <MenuItem icon="document-text-outline" label="Terms & Privacy" />
                 </View>
             </View>
 
@@ -149,6 +264,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
     },
+    scrollContent: {
+        paddingBottom: 120, // Extra space for nav bar + floating action button
+    },
     header: {
         alignItems: 'center',
         paddingTop: 40,
@@ -165,7 +283,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
         color: '#6B7280',
-        marginBottom: 16,
+        marginBottom: 8,
+    },
+    profileDetailContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 6,
+        paddingHorizontal: 20,
+    },
+    profileDetailLabel: {
+        fontSize: 14,
+        fontFamily: 'Inter_500Medium',
+        color: '#6B7280',
+        marginRight: 8,
+        minWidth: 80,
+    },
+    profileDetailValue: {
+        fontSize: 14,
+        fontFamily: 'Inter_600SemiBold',
+        color: '#3B82F6',
+        flex: 1,
     },
     rankBadge: {
         flexDirection: 'row',
@@ -177,6 +314,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#333',
         gap: 6,
+        marginTop: 8,
     },
     rankText: {
         fontSize: 14,
@@ -269,5 +407,118 @@ const styles = StyleSheet.create({
         fontFamily: 'Inter_400Regular',
         color: '#6B7280',
         marginBottom: 40,
+    },
+    emptyState: {
+        alignItems: 'center',
+        padding: 24,
+    },
+    emptyStateText: {
+        fontSize: 16,
+        fontFamily: 'Inter_500Medium',
+        color: '#9CA3AF',
+        marginTop: 12,
+        marginBottom: 4,
+    },
+    emptyStateSubtext: {
+        fontSize: 14,
+        fontFamily: 'Inter_400Regular',
+        color: '#6B7280',
+        textAlign: 'center',
+    },
+    interviewItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.08)',
+    },
+    interviewIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    interviewInfo: {
+        flex: 1,
+    },
+    interviewTitle: {
+        fontSize: 16,
+        fontFamily: 'Inter_600SemiBold',
+        color: '#fff',
+        marginBottom: 2,
+    },
+    interviewCompany: {
+        fontSize: 14,
+        fontFamily: 'Inter_400Regular',
+        color: '#9CA3AF',
+        marginBottom: 2,
+    },
+    interviewDate: {
+        fontSize: 12,
+        fontFamily: 'Inter_400Regular',
+        color: '#6B7280',
+    },
+    viewAllButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.08)',
+    },
+    viewAllText: {
+        fontSize: 14,
+        fontFamily: 'Inter_500Medium',
+        color: '#3B82F6',
+        marginRight: 4,
+    },
+    cvSection: {
+        paddingHorizontal: 20,
+        marginBottom: 24,
+        marginTop: 8,
+    },
+    cvContainer: {
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: 'rgba(59, 130, 246, 0.3)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 20,
+        shadowColor: '#3B82F6',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    cvLeft: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: 'rgba(59, 130, 246, 0.25)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+        borderWidth: 2,
+        borderColor: 'rgba(59, 130, 246, 0.4)',
+    },
+    cvInfo: {
+        flex: 1,
+    },
+    cvTitle: {
+        fontSize: 18,
+        fontFamily: 'Inter_700Bold',
+        color: '#fff',
+        marginBottom: 6,
+        letterSpacing: 0.3,
+    },
+    cvSubtitle: {
+        fontSize: 15,
+        fontFamily: 'Inter_500Medium',
+        color: '#E5E7EB',
+        lineHeight: 20,
     },
 });

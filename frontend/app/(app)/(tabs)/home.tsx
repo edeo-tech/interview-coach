@@ -73,13 +73,6 @@ export default function Home() {
               Practice with AI-powered mock interviews
             </Text>
           </View>
-          
-          <TouchableOpacity
-            onPress={() => router.push('/interviews/cv-upload')}
-            style={styles.headerButton}
-          >
-            <Ionicons name="document-text" size={20} color="white" />
-          </TouchableOpacity>
         </View>
 
         {/* Quick Action: Create New Interview (card style) */}
@@ -115,9 +108,9 @@ export default function Home() {
           <View style={[styles.statusCard, styles.successCard]}>
             <View style={styles.statusHeader}>
               <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <Text style={styles.successTitle}>CV Ready</Text>
+              <Text style={styles.successTitle}>Your CV</Text>
             </View>
-            <Text style={styles.statusDescription}>
+            <Text style={styles.statusDescription}> 
               {cv.skills.length} skills • {cv.experience_years} years experience
             </Text>
           </View>
@@ -229,13 +222,6 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontSize: 15,
     lineHeight: 20,
-  },
-  headerButton: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 12,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   statusCard: {
     padding: 20,
@@ -358,18 +344,18 @@ const styles = StyleSheet.create({
   },
   interviewCard: {
     backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 8,
-    marginBottom: 6,
+    borderRadius: 12,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   interviewCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    minHeight: 44,
-    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    minHeight: 68,
+    gap: 12,
   },
   cardLeftAccent: {
     width: 28,
@@ -386,7 +372,7 @@ const styles = StyleSheet.create({
   interviewCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   interviewTitle: {
     color: '#ffffff',

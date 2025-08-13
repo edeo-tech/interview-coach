@@ -234,7 +234,7 @@ export default function CreateInterview() {
               <View style={styles.cvStatusCard}>
                 <View style={styles.cvStatusHeader}>
                   <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  <Text style={styles.cvStatusTitle}>CV Ready</Text>
+                  <Text style={styles.cvStatusTitle}>Your CV</Text>
                 </View>
                 <Text style={styles.cvStatusDescription}>
                   {currentCV.skills.length} skills • {currentCV.experience_years} years experience

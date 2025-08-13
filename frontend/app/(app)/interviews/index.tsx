@@ -100,7 +100,7 @@ const InterviewsHome = () => {
           <View className="bg-green-900/20 border border-green-600/30 rounded-lg p-4 mb-6">
             <View className="flex-row items-center">
               <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <Text className="text-green-400 font-medium ml-2">CV Ready</Text>
+              <Text className="text-green-400 font-medium ml-2">Your CV</Text>
             </View>
             <Text className="text-gray-300 mt-1 text-sm">
               {cv.skills.length} skills • {cv.experience_years} years experience

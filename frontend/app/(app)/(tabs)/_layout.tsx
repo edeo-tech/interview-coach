@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 function CustomTabBar({ state, descriptors, navigation }) {
     return (
         <View style={styles.tabBar}>
-            <BlurView tint="dark" intensity={30} style={styles.blurView}>
+            <BlurView tint="dark" intensity={15} style={styles.blurView}>
                 <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', paddingHorizontal: 30 }}>
                     {state.routes.map((route, index) => {
                         const { options } = descriptors[route.key];
@@ -65,7 +65,7 @@ export default function TabLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: 'rgba(10,10,10,0.5)',
+                    backgroundColor: 'rgba(10,10,10,0.1)',
                     borderTopColor: 'rgba(255,255,255,0.12)',
                     borderTopWidth: 1,
                     height: 84,
@@ -73,11 +73,11 @@ export default function TabLayout() {
                 },
                 tabBarBackground: () => (
                     <BlurView 
-                        tint="dark" 
-                        intensity={30} 
+                        tint="light" 
+                        intensity={15} 
                         style={{ 
                             flex: 1,
-                            backgroundColor: 'rgba(10,10,10,0.3)',
+                            backgroundColor: 'rgba(129, 129, 129, 0.1)',
                         }} 
                     />
                 ),
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     blurView: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: 'rgba(10,10,10,0.5)',
+        backgroundColor: 'rgba(10,10,10,0.2)',
         justifyContent: 'center',
         alignItems: 'center',
     },
