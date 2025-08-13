@@ -1,8 +1,9 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Image, Animated, PanResponder, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { useCV } from '../../_queries/interviews/cv';
 import { useStartAttempt, useAddTranscript, useFinishAttempt } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
@@ -107,6 +108,34 @@ export default function MockInterview() {
     const [attemptId, setAttemptId] = useState<string | null>(null);
     const [conversationId, setConversationId] = useState<string | null>(null);
     
+    // Audio state management
+    console.log('🎵 Creating audio player with ringtone.mp3...');
+    const ringtonePlayer = useAudioPlayer(require('../../assets/sounds/ringtone.mp3'));
+    const fadeAnimation = useRef(new Animated.Value(1)).current;
+    
+    // Initialize audio mode and log player initialization
+    useEffect(() => {
+        const initAudio = async () => {
+            try {
+                console.log('🎵 Setting up audio mode...');
+                await setAudioModeAsync({
+                    playsInSilentMode: true,
+                });
+                console.log('✅ Audio mode configured successfully');
+            } catch (error) {
+                console.log('❌ Error configuring audio mode:', error);
+            }
+        };
+        
+        initAudio();
+        
+        console.log('🎵 Audio player initialized:', {
+            isLoaded: ringtonePlayer.isLoaded,
+            duration: ringtonePlayer.duration,
+            playing: ringtonePlayer.playing
+        });
+    }, [ringtonePlayer.isLoaded]);
+    
     const topics = params.topics ? JSON.parse(params.topics as string) : [];
     
     // Generate random interviewer profile
@@ -123,6 +152,68 @@ export default function MockInterview() {
         const randomIndex = Math.floor(Math.random() * interviewerProfiles.length);
         return interviewerProfiles[randomIndex];
     });
+
+    // Ringtone functions using expo-audio
+    const playRingtone = useCallback(() => {
+        try {
+            console.log('🔊 Attempting to play ringtone...');
+            console.log('🔊 Player state before play:', {
+                isLoaded: ringtonePlayer.isLoaded,
+                playing: ringtonePlayer.playing,
+                paused: ringtonePlayer.paused,
+                duration: ringtonePlayer.duration,
+                currentTime: ringtonePlayer.currentTime,
+                volume: ringtonePlayer.volume
+            });
+            
+            ringtonePlayer.loop = true;
+            ringtonePlayer.volume = 1.0;
+            ringtonePlayer.play();
+            
+            console.log('🔊 Player state after play:', {
+                isLoaded: ringtonePlayer.isLoaded,
+                playing: ringtonePlayer.playing,
+                paused: ringtonePlayer.paused,
+                volume: ringtonePlayer.volume,
+                loop: ringtonePlayer.loop
+            });
+        } catch (error) {
+            console.log('❌ Error playing ringtone:', error);
+        }
+    }, [ringtonePlayer]);
+
+    const stopRingtone = useCallback(() => {
+        try {
+            console.log('🔇 Stopping ringtone...');
+            console.log('🔇 Player state before stop:', {
+                playing: ringtonePlayer.playing,
+                paused: ringtonePlayer.paused
+            });
+            
+            ringtonePlayer.pause();
+            
+            console.log('🔇 Player state after stop:', {
+                playing: ringtonePlayer.playing,
+                paused: ringtonePlayer.paused
+            });
+        } catch (error) {
+            console.log('❌ Error stopping ringtone:', error);
+        }
+    }, [ringtonePlayer]);
+
+    const fadeOutRingtone = useCallback(async () => {
+        return new Promise<void>((resolve) => {
+            Animated.timing(fadeAnimation, {
+                toValue: 0,
+                duration: 1000,
+                useNativeDriver: false,
+            }).start(() => {
+                stopRingtone();
+                fadeAnimation.setValue(1); // Reset for next time
+                resolve();
+            });
+        });
+    }, [fadeAnimation, stopRingtone]);
 
     const conversationConfig = useMemo(() => ({
         onConnect: () => {
@@ -215,6 +306,9 @@ Remember: This is a practice interview to help ${userName} improve their intervi
     }, [auth, cvProfile, interviewer, params, topics]);
 
     const acceptCall = useCallback(async (conversation: any) => {
+        // Fade out ringtone before connecting
+        await fadeOutRingtone();
+        
         setCallState('connecting');
         
         const agentId = process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID;
@@ -256,7 +350,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         } catch (error) {
             setCallState('incoming'); // Reset to incoming state on error
         }
-    }, [buildInterviewPrompt, auth, params]);
+    }, [buildInterviewPrompt, auth, params, fadeOutRingtone]);
 
     const declineCall = useCallback(() => {
         setCallState('ended');
@@ -292,11 +386,32 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         }
     }, [attemptId, params.interviewId, duration, finishAttempt, router]);
 
-    // Incoming call haptic effects
+    // Handle ringtone volume changes during fade
+    useEffect(() => {
+        const listener = fadeAnimation.addListener(({ value }) => {
+            try {
+                ringtonePlayer.volume = value;
+            } catch (error) {
+                console.log('Error setting ringtone volume:', error);
+            }
+        });
+
+        return () => {
+            fadeAnimation.removeListener(listener);
+        };
+    }, [fadeAnimation, ringtonePlayer]);
+
+    // Incoming call haptic effects and ringtone
     useEffect(() => {
         let hapticInterval: ReturnType<typeof setInterval>;
         
+        console.log('📞 Call state changed to:', callState);
+        
         if (callState === 'incoming') {
+            console.log('📞 Starting incoming call effects...');
+            // Start ringtone
+            playRingtone();
+            
             // Start haptic feedback pattern (more constant iPhone-like vibration)
             const triggerHapticPattern = () => {
                 // Longer vibration sequence for more constant feel
@@ -317,6 +432,10 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             
             // Repeat more frequently for constant feel
             hapticInterval = setInterval(triggerHapticPattern, 1000);
+        } else {
+            console.log('📞 Stopping ringtone for state:', callState);
+            // Stop ringtone if not incoming
+            stopRingtone();
         }
 
         // Cleanup function
@@ -325,7 +444,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                 clearInterval(hapticInterval);
             }
         };
-    }, [callState]);
+    }, [callState, playRingtone, stopRingtone]);
 
     // Duration timer effect
     useEffect(() => {
