@@ -7,6 +7,7 @@ import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import { GlassStyles } from '../../../constants/GlassStyles';
 
 export default function Home() {
   const { data: interviews, isLoading: interviewsLoading } = useInterviews();
@@ -256,19 +257,15 @@ const styles = StyleSheet.create({
   createCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
-    overflow: 'hidden',
     marginBottom: 16,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)'
+    ...GlassStyles.card,
   },
   createCardLeft: {
     width: 56,
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)'
+    ...GlassStyles.interactive,
   },
   createCardRight: {
     flex: 1,
@@ -281,12 +278,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   warningCard: {
-    backgroundColor: 'rgba(146, 64, 14, 0.15)',
-    borderColor: 'rgba(217, 119, 6, 0.25)',
+    ...GlassStyles.warning,
+    borderWidth: 1,
+    borderRadius: 14,
   },
   successCard: {
-    backgroundColor: 'rgba(5, 46, 22, 0.15)',
-    borderColor: 'rgba(34, 197, 94, 0.25)',
+    ...GlassStyles.success,
+    borderWidth: 1,
+    borderRadius: 14,
   },
   statusHeader: {
     flexDirection: 'row',
@@ -362,11 +361,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   interviewCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    ...GlassStyles.card,
     borderRadius: 12,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
   interviewCardContent: {
     flexDirection: 'row',

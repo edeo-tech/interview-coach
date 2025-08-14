@@ -14,6 +14,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useToast } from '@/components/Toast';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
+import { GlassStyles } from '../../constants/GlassStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegister, useLogin } from '@/_queries/users/auth/users';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
@@ -84,12 +86,7 @@ const Register = () => {
   const isLoading = registerLoading || loginLoading;
 
   return (
-    <LinearGradient
-      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
-    >
+    <ChatGPTBackground style={styles.gradient}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -199,7 +196,7 @@ const Register = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </ChatGPTBackground>
   );
 };
 
@@ -246,7 +243,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   formCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    ...GlassStyles.container,
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,

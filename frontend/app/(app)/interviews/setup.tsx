@@ -5,6 +5,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import { GlassStyles } from '../../../constants/GlassStyles';
 
 const InterviewSetup = () => {
   const [formData, setFormData] = useState({
@@ -46,7 +48,8 @@ const InterviewSetup = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ChatGPTBackground style={{flex: 1}}>
+      <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -145,7 +148,8 @@ const InterviewSetup = () => {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ChatGPTBackground>
   );
 };
 

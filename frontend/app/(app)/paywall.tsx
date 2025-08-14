@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
+import { GlassStyles } from '../../constants/GlassStyles';
 import * as Linking from 'expo-linking';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import { useAuth } from '../../context/authentication/AuthContext';
@@ -80,12 +82,7 @@ const Paywall = () => {
   ];
 
   return (
-    <LinearGradient
-      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
-    >
+    <ChatGPTBackground style={styles.gradient}>
       <SafeAreaView style={styles.container}>
         <ScrollView 
           style={styles.scrollView}
@@ -195,7 +192,7 @@ const Paywall = () => {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </ChatGPTBackground>
   );
 };
 

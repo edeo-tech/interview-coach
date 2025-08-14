@@ -7,6 +7,7 @@ import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import { GlassStyles } from '../../../constants/GlassStyles';
 
 const StatCard = ({ icon, label, value, color = '#F59E0B' }: any) => (
     <View style={styles.statCard}>
@@ -355,11 +356,8 @@ const styles = StyleSheet.create({
     },
     statCard: {
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        ...GlassStyles.card,
         padding: 16,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
         flex: 1,
         marginHorizontal: 6,
     },
@@ -386,10 +384,8 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     menuContainer: {
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        ...GlassStyles.container,
         borderRadius: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
         overflow: 'hidden',
     },
     menuItem: {

@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import ChatGPTBackground from '../../../components/ChatGPTBackground';
 
 const InterviewsHome = () => {
   const { data: interviews, isLoading: interviewsLoading } = useInterviews();
@@ -67,7 +68,8 @@ const InterviewsHome = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0a0a0a]">
+    <ChatGPTBackground style={{flex: 1}}>
+      <SafeAreaView className="flex-1">
       <ScrollView className="flex-1 px-6">
         {/* Header */}
         <View className="flex-row justify-between items-center py-6">
@@ -195,7 +197,8 @@ const InterviewsHome = () => {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ChatGPTBackground>
   );
 };
 
