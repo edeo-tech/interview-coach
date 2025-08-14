@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     },
     centerButton: {
         position: 'absolute',
-        top: -22,
+        top: -15,
         left: '50%',
         width: 64,
         height: 64,
