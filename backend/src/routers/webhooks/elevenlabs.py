@@ -187,17 +187,11 @@ async def handle_post_call_webhook(request: Request):
         
         print(f"✅ Updated attempt: {attempt.id}")
         
-        # Send real-time transcript update to frontend
-        print(f"\n📡 [WEBSOCKET] Preparing to broadcast transcript update:")
+        # Transcript is now stored in database only - no WebSocket broadcast needed
+        print(f"\n💾 [TRANSCRIPT] Transcript stored in database:")
         print(f"   - Attempt ID: {attempt.id}")
-        print(f"   - Attempt ID (stringified): {str(attempt.id)}")
         print(f"   - Transcript length: {len(attempt.transcript)}")
         print(f"   - First turn preview: {attempt.transcript[0] if attempt.transcript else 'No transcript'}")
-        
-        await websocket_manager.broadcast_transcript_update(
-            str(attempt.id), 
-            attempt.transcript
-        )
         
         # Start grading process immediately
         print("\n🎯 Starting grading process...")

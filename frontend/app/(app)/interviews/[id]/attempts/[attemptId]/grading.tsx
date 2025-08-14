@@ -111,7 +111,7 @@ export default function AttemptGradingScreen() {
     }, [posthogScreen])
   );
 
-  // WebSocket for real-time updates
+  // WebSocket to wait for grading completion
   const { isConnected } = useWebSocket(attemptId as string, {
     onGradingStarted: () => {
       console.log('🎯 [GRADING] Grading started');
@@ -122,7 +122,7 @@ export default function AttemptGradingScreen() {
       console.log('✅ [GRADING] Grading completed:', feedbackId);
       setIsGrading(false);
       setGradingStatus('');
-      // Refetch feedback data
+      // Fetch the completed grading results
       refetch();
     },
     onError: (error) => {

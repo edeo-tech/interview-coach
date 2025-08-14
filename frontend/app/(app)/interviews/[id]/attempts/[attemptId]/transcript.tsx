@@ -6,7 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import TranscriptView from '../../../../../../components/TranscriptView';
 import { useInterview } from '../../../../../../_queries/interviews/interviews';
-import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 
 export default function AttemptTranscriptScreen() {
@@ -37,19 +36,7 @@ export default function AttemptTranscriptScreen() {
     }
   }, [attempt]);
 
-  // WebSocket for real-time updates
-  const { isConnected } = useWebSocket(attemptId as string, {
-    onTranscriptUpdate: (newTranscript) => {
-      console.log('📝 [TRANSCRIPT] Received transcript update:', newTranscript.length, 'turns');
-      setTranscript(newTranscript);
-      setHasTranscript(newTranscript.length > 0);
-      // Refetch the interview data to get updated attempt
-      refetch();
-    },
-    onError: (error) => {
-      console.error('❌ [TRANSCRIPT] WebSocket error:', error);
-    }
-  });
+  // No WebSocket needed - transcript is loaded from stored data only
 
   if (isLoading) {
     return (
@@ -74,12 +61,6 @@ export default function AttemptTranscriptScreen() {
             <Text style={styles.loadingSubtitle}>
               Your interview is being processed. The transcript will appear here shortly.
             </Text>
-            <View style={styles.statusIndicator}>
-              <View style={[styles.statusDot, isConnected ? styles.connected : styles.disconnected]} />
-              <Text style={styles.statusText}>
-                {isConnected ? 'Connected' : 'Connecting...'}
-              </Text>
-            </View>
           </View>
         </View>
       );
@@ -189,27 +170,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  connected: {
-    backgroundColor: '#10B981',
-  },
-  disconnected: {
-    backgroundColor: '#EF4444',
-  },
-  statusText: {
-    color: '#6B7280',
-    fontSize: 12,
-    fontWeight: '500',
   },
   footer: { 
     padding: 20, 

@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface WebSocketMessage {
-  type: 'transcript_updated' | 'grading_started' | 'grading_completed' | 'error';
+  type: 'grading_started' | 'grading_completed' | 'error';
   attempt_id: string;
-  transcript?: any[];
   feedback_id?: string;
   message?: string;
 }
 
 interface UseWebSocketOptions {
   onMessage?: (message: WebSocketMessage) => void;
-  onTranscriptUpdate?: (transcript: any[]) => void;
   onGradingStarted?: () => void;
   onGradingCompleted?: (feedbackId: string) => void;
   onError?: (error: string) => void;
@@ -66,10 +64,7 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
           }
           
           // Call specific handlers
-          if (message.type === 'transcript_updated' && options.onTranscriptUpdate) {
-            console.log('🔄 [WEBSOCKET] Calling onTranscriptUpdate with transcript length:', message.transcript?.length || 0);
-            options.onTranscriptUpdate(message.transcript || []);
-          } else if (message.type === 'grading_started' && options.onGradingStarted) {
+          if (message.type === 'grading_started' && options.onGradingStarted) {
             console.log('🎯 [WEBSOCKET] Calling onGradingStarted');
             options.onGradingStarted();
           } else if (message.type === 'grading_completed' && options.onGradingCompleted) {

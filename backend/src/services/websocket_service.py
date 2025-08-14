@@ -84,13 +84,6 @@ class WebSocketManager:
         print(f"   - Total successful sends: {successful_sends}")
         print(f"   - Total failed sends: {len(connections_to_remove)}")
     
-    async def broadcast_transcript_update(self, attempt_id: str, transcript: list):
-        """Broadcast transcript update to all clients for an attempt"""
-        await self.send_to_attempt(attempt_id, {
-            "type": "transcript_updated",
-            "attempt_id": attempt_id,
-            "transcript": transcript
-        })
     
     async def broadcast_grading_started(self, attempt_id: str):
         """Broadcast that grading has started"""
