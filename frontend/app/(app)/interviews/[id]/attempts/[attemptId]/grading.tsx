@@ -1,16 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView, Platform, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
+import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
+
+const BlurredSection = ({ 
+  children, 
+  isBlurred, 
+  onUpgradePress 
+}: { 
+  children: React.ReactNode; 
+  isBlurred: boolean; 
+  onUpgradePress?: () => void;
+}) => {
+  if (!isBlurred) {
+    return <>{children}</>;
+  }
+
+  return (
+    <View style={blurredStyles.blurredContainer}>
+      <View style={blurredStyles.contentContainer}>
+        {children}
+      </View>
+      <BlurView intensity={30} tint="dark" style={blurredStyles.blurOverlay}>
+        <View style={blurredStyles.upgradeOverlay}>
+          <Ionicons name="diamond" size={32} color="#f59e0b" />
+          <Text style={blurredStyles.upgradeTitle}>Premium Feature</Text>
+          <Text style={blurredStyles.upgradeMessage}>
+            Upgrade to Premium to see detailed feedback and scores
+          </Text>
+          <TouchableOpacity onPress={onUpgradePress} style={blurredStyles.upgradeButton}>
+            <Text style={blurredStyles.upgradeButtonText}>Upgrade Now</Text>
+          </TouchableOpacity>
+        </View>
+      </BlurView>
+    </View>
+  );
+};
+
+const blurredStyles = StyleSheet.create({
+  blurredContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  contentContainer: {
+    borderRadius: 16,
+  },
+  blurOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  upgradeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  upgradeTitle: {
+    color: '#f59e0b',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  upgradeMessage: {
+    color: '#ffffff',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  upgradeButton: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  upgradeButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+});
 
 export default function AttemptGradingScreen() {
   const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
+  const { canViewDetailedFeedback } = useFeedbackCheck();
 
   const [isGrading, setIsGrading] = useState(false);
   const [gradingStatus, setGradingStatus] = useState<string>('');
@@ -44,6 +132,7 @@ export default function AttemptGradingScreen() {
   });
 
   const loading = isLoading || (!data && isFetching) || isGrading;
+  const feedbackAccess = canViewDetailedFeedback();
 
   const renderLoadingState = () => {
     return (
@@ -108,56 +197,76 @@ export default function AttemptGradingScreen() {
         </View>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Performance Breakdown</Text>
-        {Object.entries(data?.rubric_scores || {}).map(([category, score]) => (
-          <View key={category} style={styles.rubricItem}>
-            <View style={styles.rubricHeader}>
-              <Text style={styles.rubricCategory}>
-                {category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </Text>
-              <Text style={[styles.rubricScore, { color: getScoreColor(score) }]}>{score}/100</Text>
+      <BlurredSection 
+        isBlurred={feedbackAccess.shouldBlur} 
+        onUpgradePress={() => router.push('/paywall' as any)}
+      >
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Performance Breakdown</Text>
+          {Object.entries(data?.rubric_scores || {}).map(([category, score]) => (
+            <View key={category} style={styles.rubricItem}>
+              <View style={styles.rubricHeader}>
+                <Text style={styles.rubricCategory}>
+                  {category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Text>
+                <Text style={[styles.rubricScore, { color: getScoreColor(score) }]}>{score}/100</Text>
+              </View>
+              <View style={styles.rubricBar}>
+                <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(score), width: `${score}%` }]} />
+              </View>
             </View>
-            <View style={styles.rubricBar}>
-              <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(score), width: `${score}%` }]} />
+          ))}
+        </View>
+      </BlurredSection>
+
+      <BlurredSection 
+        isBlurred={feedbackAccess.shouldBlur} 
+        onUpgradePress={() => router.push('/paywall' as any)}
+      >
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Text style={styles.sectionTitle}>Strengths</Text>
+          </View>
+          {data?.strengths.map((s, i) => (
+            <View key={i} style={styles.listItem}>
+              <Text style={styles.bulletPoint}>•</Text>
+              <Text style={styles.listText}>{s}</Text>
             </View>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-          <Text style={styles.sectionTitle}>Strengths</Text>
+          ))}
         </View>
-        {data?.strengths.map((s, i) => (
-          <View key={i} style={styles.listItem}>
-            <Text style={styles.bulletPoint}>•</Text>
-            <Text style={styles.listText}>{s}</Text>
-          </View>
-        ))}
-      </View>
+      </BlurredSection>
 
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="trending-up" size={20} color="#F59E0B" />
-          <Text style={styles.sectionTitle}>Areas to Improve</Text>
-        </View>
-        {data?.improvement_areas.map((s, i) => (
-          <View key={i} style={styles.listItem}>
-            <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
-            <Text style={styles.listText}>{s}</Text>
+      <BlurredSection 
+        isBlurred={feedbackAccess.shouldBlur} 
+        onUpgradePress={() => router.push('/paywall' as any)}
+      >
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="trending-up" size={20} color="#F59E0B" />
+            <Text style={styles.sectionTitle}>Areas to Improve</Text>
           </View>
-        ))}
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="document-text" size={20} color="#3B82F6" />
-          <Text style={styles.sectionTitle}>Detailed Feedback</Text>
+          {data?.improvement_areas.map((s, i) => (
+            <View key={i} style={styles.listItem}>
+              <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
+              <Text style={styles.listText}>{s}</Text>
+            </View>
+          ))}
         </View>
-        <Text style={styles.detailedFeedback}>{data?.detailed_feedback}</Text>
-      </View>
+      </BlurredSection>
+
+      <BlurredSection 
+        isBlurred={feedbackAccess.shouldBlur} 
+        onUpgradePress={() => router.push('/paywall' as any)}
+      >
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="document-text" size={20} color="#3B82F6" />
+            <Text style={styles.sectionTitle}>Detailed Feedback</Text>
+          </View>
+          <Text style={styles.detailedFeedback}>{data?.detailed_feedback}</Text>
+        </View>
+      </BlurredSection>
 
       {/* View Transcript Section */}
       <Pressable 
