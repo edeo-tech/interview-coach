@@ -140,8 +140,8 @@ export default function Profile() {
 
     return (
         <ChatGPTBackground style={styles.gradient}>
+        <View style={styles.container}>
         <ScrollView 
-            style={styles.container} 
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
         >
@@ -277,6 +277,7 @@ export default function Profile() {
 
             <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
         </ScrollView>
+        </View>
         </ChatGPTBackground>
     );
 }
@@ -294,8 +295,8 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'center',
-        paddingTop: 40,
-        paddingBottom: 30,
+        paddingTop: 20,
+        paddingBottom: 24,
     },
     name: {
         fontSize: 28,
