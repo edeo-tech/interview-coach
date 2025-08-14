@@ -6,7 +6,6 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
-import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
 
@@ -101,8 +100,7 @@ export default function AttemptGradingScreen() {
   const { posthogScreen } = usePosthogSafely();
   const { canViewDetailedFeedback } = useFeedbackCheck();
 
-  const [isGrading, setIsGrading] = useState(false);
-  const [gradingStatus, setGradingStatus] = useState<string>('');
+  const [pollCount, setPollCount] = useState(0);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -111,28 +109,28 @@ export default function AttemptGradingScreen() {
     }, [posthogScreen])
   );
 
-  // WebSocket to wait for grading completion
-  const { isConnected } = useWebSocket(attemptId as string, {
-    onGradingStarted: () => {
-      console.log('🎯 [GRADING] Grading started');
-      setIsGrading(true);
-      setGradingStatus('Analyzing your responses...');
-    },
-    onGradingCompleted: (feedbackId) => {
-      console.log('✅ [GRADING] Grading completed:', feedbackId);
-      setIsGrading(false);
-      setGradingStatus('');
-      // Fetch the completed grading results
-      refetch();
-    },
-    onError: (error) => {
-      console.error('❌ [GRADING] WebSocket error:', error);
-      setIsGrading(false);
-      setGradingStatus('Error occurred during grading');
+  // Polling mechanism - check for feedback every 2 seconds
+  useEffect(() => {
+    if (data) {
+      console.log('✅ [GRADING] Feedback received, stopping polling');
+      return;
     }
-  });
 
-  const loading = isLoading || (!data && isFetching) || isGrading;
+    console.log(`🔄 [GRADING] Starting polling attempt #${pollCount + 1}`);
+    
+    const pollInterval = setInterval(() => {
+      console.log('🔄 [GRADING] Polling for feedback...');
+      refetch();
+      setPollCount(prev => prev + 1);
+    }, 2000);
+
+    return () => {
+      console.log('🛑 [GRADING] Cleaning up polling interval');
+      clearInterval(pollInterval);
+    };
+  }, [data, refetch, pollCount]);
+
+  const loading = isLoading || (!data && isFetching);
   const feedbackAccess = canViewDetailedFeedback();
 
   const renderLoadingState = () => {
@@ -142,12 +140,12 @@ export default function AttemptGradingScreen() {
           <ActivityIndicator size="large" color="#F59E0B" />
           <Text style={styles.loadingTitle}>Generating Feedback</Text>
           <Text style={styles.loadingSubtitle}>
-            {gradingStatus || 'Our AI is analyzing your interview performance to provide personalized feedback.'}
+            Our AI is analyzing your interview performance to provide personalized feedback.
           </Text>
           <View style={styles.statusIndicator}>
-            <View style={[styles.statusDot, isConnected ? styles.connected : styles.disconnected]} />
+            <View style={[styles.statusDot, styles.connected]} />
             <Text style={styles.statusText}>
-              {isConnected ? 'Connected' : 'Connecting...'}
+              Checking for results... (Poll #{pollCount})
             </Text>
           </View>
         </View>

@@ -13,33 +13,65 @@ class WebSocketManager:
     
     async def connect(self, websocket: WebSocket, attempt_id: str):
         """Accept a WebSocket connection for a specific attempt"""
+        print(f"🔌 [WEBSOCKET] Accepting connection for attempt: {attempt_id}")
         await websocket.accept()
+        print(f"🔌 [WEBSOCKET] WebSocket accepted, adding to connections...")
         
         with self.lock:
             if attempt_id not in self.connections:
                 self.connections[attempt_id] = set()
             self.connections[attempt_id].add(websocket)
+            total_connections = len(self.connections[attempt_id])
+            all_attempt_ids = list(self.connections.keys())
         
-        print(f"🔌 [WEBSOCKET] Client connected for attempt: {attempt_id}")
-        print(f"   - Total connections for attempt: {len(self.connections[attempt_id])}")
+        print(f"✅ [WEBSOCKET] Client connected successfully!")
+        print(f"   - Attempt ID: {attempt_id}")
+        print(f"   - Connections for this attempt: {total_connections}")
+        print(f"   - All active attempt IDs: {all_attempt_ids}")
+        print(f"   - WebSocket object: {websocket}")
     
     def disconnect(self, websocket: WebSocket, attempt_id: str):
         """Remove a WebSocket connection"""
+        print(f"🔌 [WEBSOCKET] Disconnecting client from attempt: {attempt_id}")
+        print(f"   - WebSocket object: {websocket}")
+        
         with self.lock:
             if attempt_id in self.connections:
                 self.connections[attempt_id].discard(websocket)
+                remaining_connections = len(self.connections[attempt_id])
                 if not self.connections[attempt_id]:
                     del self.connections[attempt_id]
+                    print(f"   - Removed attempt {attempt_id} from connections (no remaining connections)")
+                else:
+                    print(f"   - {remaining_connections} connections remaining for attempt {attempt_id}")
+            else:
+                print(f"   - Attempt {attempt_id} not found in connections")
         
-        print(f"🔌 [WEBSOCKET] Client disconnected from attempt: {attempt_id}")
+        print(f"✅ [WEBSOCKET] Client disconnected from attempt: {attempt_id}")
+        print(f"   - Remaining attempt IDs: {list(self.connections.keys())}")
+    
+    def log_connection_state(self):
+        """Log current connection state for debugging"""
+        with self.lock:
+            total_attempts = len(self.connections)
+            total_connections = sum(len(conns) for conns in self.connections.values())
+            
+        print(f"🔍 [WEBSOCKET] Connection State:")
+        print(f"   - Total attempts with connections: {total_attempts}")
+        print(f"   - Total active connections: {total_connections}")
+        print(f"   - Attempt IDs: {list(self.connections.keys())}")
+        for attempt_id, conns in self.connections.items():
+            print(f"   - {attempt_id}: {len(conns)} connections")
     
     async def send_to_attempt(self, attempt_id: str, message: dict, retry_count: int = 0):
         """Send a message to all clients listening for a specific attempt"""
         print(f"\n📡 [WEBSOCKET] send_to_attempt called:")
         print(f"   - Attempt ID: {attempt_id}")
         print(f"   - Attempt ID type: {type(attempt_id)}")
-        print(f"   - All active attempt IDs: {list(self.connections.keys())}")
         print(f"   - Retry count: {retry_count}")
+        
+        # Log current connection state
+        self.log_connection_state()
         
         if attempt_id not in self.connections:
             print(f"   ❌ No connections found for attempt: {attempt_id}")

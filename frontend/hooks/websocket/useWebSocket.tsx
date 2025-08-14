@@ -21,6 +21,12 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
+  const optionsRef = useRef(options);
+  
+  // Keep options ref up to date
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   const connect = useCallback(() => {
     // Prevent multiple connections
@@ -63,21 +69,22 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
             return;
           }
           
-          // Call specific handlers
-          if (message.type === 'grading_started' && options.onGradingStarted) {
+          // Call specific handlers using current options
+          const currentOptions = optionsRef.current;
+          if (message.type === 'grading_started' && currentOptions.onGradingStarted) {
             console.log('🎯 [WEBSOCKET] Calling onGradingStarted');
-            options.onGradingStarted();
-          } else if (message.type === 'grading_completed' && options.onGradingCompleted) {
+            currentOptions.onGradingStarted();
+          } else if (message.type === 'grading_completed' && currentOptions.onGradingCompleted) {
             console.log('✅ [WEBSOCKET] Calling onGradingCompleted with feedback_id:', message.feedback_id);
-            options.onGradingCompleted(message.feedback_id || '');
-          } else if (message.type === 'error' && options.onError) {
+            currentOptions.onGradingCompleted(message.feedback_id || '');
+          } else if (message.type === 'error' && currentOptions.onError) {
             console.log('❌ [WEBSOCKET] Calling onError with message:', message.message);
-            options.onError(message.message || 'Unknown error');
+            currentOptions.onError(message.message || 'Unknown error');
           }
           
           // Call general message handler
-          if (options.onMessage) {
-            options.onMessage(message);
+          if (currentOptions.onMessage) {
+            currentOptions.onMessage(message);
           }
         } catch (error) {
           console.error('❌ [WEBSOCKET] Error parsing message:', error);
@@ -112,7 +119,7 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
       console.error('❌ [WEBSOCKET] Failed to create connection:', error);
       setIsConnecting(false);
     }
-  }, [attemptId, isConnecting, isConnected, options]);
+  }, [attemptId, isConnecting, isConnected]); // Removed options from dependencies to prevent reconnections
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -139,8 +146,12 @@ export const useWebSocket = (attemptId: string, options: UseWebSocketOptions = {
 
   // Auto-connect on mount and cleanup on unmount
   useEffect(() => {
+    console.log('🔌 [WEBSOCKET] useEffect triggered - connecting...');
     connect();
-    return disconnect;
+    return () => {
+      console.log('🔌 [WEBSOCKET] useEffect cleanup - disconnecting...');
+      disconnect();
+    };
   }, [attemptId]); // Only reconnect if attemptId changes
 
   return {
