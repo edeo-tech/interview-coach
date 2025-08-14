@@ -6,7 +6,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Request, HTTPException
 from decouple import config
 
-from crud.interviews.attempts import update_attempt_with_webhook_data
+from crud.interviews.attempts import update_attempt_with_webhook_data, update_attempt_with_webhook_data_by_attempt_id
 from services.grading_service import trigger_interview_grading
 from services.websocket_service import websocket_manager
 
@@ -104,27 +104,85 @@ async def handle_post_call_webhook(request: Request):
         agent_id = data.get("agent_id")
         transcript = data.get("transcript", [])
         analysis = data.get("analysis", {})
+        metadata = data.get("metadata", {})
+        user_id = data.get("user_id")
         
-        if not conversation_id:
-            print("❌ No conversation_id in webhook data")
-            raise HTTPException(status_code=400, detail="Missing conversation_id")
+        # Log the full webhook data structure to understand where custom metadata is
+        print(f"\n🔍 Full webhook data keys: {list(webhook_data.keys())}")
+        print(f"🔍 Data object keys: {list(data.keys())}")
+        print(f"🔍 User ID from webhook: {user_id}")
         
-        print(f"\n🎣 [WEBHOOK] Received post-call webhook:")
+        # Extract attempt_id from multiple possible locations
+        attempt_id = None
+        
+        # Log available fields for debugging
+        print(f"   📋 Available data fields: {list(data.keys())}")
+        
+        # Check conversation_initiation_client_data which contains dynamic_variables
+        client_data = data.get("conversation_initiation_client_data", {})
+        dynamic_vars = {}
+        if isinstance(client_data, dict):
+            dynamic_vars = client_data.get("dynamic_variables", {})
+            print(f"   📋 Dynamic variables keys: {list(dynamic_vars.keys()) if dynamic_vars else 'None'}")
+        
+        # Try multiple locations in order of reliability (based on ElevenLabs docs)
+        attempt_id = (
+            # 1. Check dynamic_variables (most reliable according to ElevenLabs docs)
+            dynamic_vars.get("user_id")
+            # 2. Check metadata.user_id (sometimes mirrored by ElevenLabs)
+            or (metadata or {}).get("user_id")
+            # 3. Check top-level user_id (less reliable with public agents)
+            or user_id
+            # 4. Additional fallback checks
+            or client_data.get("user_id")
+            or client_data.get("userId")
+            or dynamic_vars.get("attempt_id")
+            or dynamic_vars.get("userId")
+        )
+        
+        if attempt_id:
+            print(f"   ✅ Found attempt_id: {attempt_id}")
+        else:
+            print(f"   ⚠️ No attempt_id found in any location")
+            print(f"   📋 Metadata content: {metadata}")
+            print(f"   📋 Client data keys: {list(client_data.keys()) if client_data else 'None'}")
+            print(f"   📋 Dynamic variables: {dynamic_vars}")
+        
+        print(f"\n🎣 [WEBHOOK] Post-call webhook summary:")
         print(f"   - Conversation ID: {conversation_id}")
         print(f"   - Agent ID: {agent_id}")
         print(f"   - Transcript turns: {len(transcript)}")
         print(f"   - Has analysis: {bool(analysis)}")
+        print(f"   - Attempt ID found: {attempt_id}")
         
-        # Find the attempt by conversation_id and update with webhook data
-        attempt = await update_attempt_with_webhook_data(
-            request, 
-            conversation_id, 
-            transcript, 
-            analysis
-        )
+        # Update the attempt with webhook data
+        attempt = None
+        
+        if attempt_id:
+            print(f"   ✅ Updating attempt using attempt_id: {attempt_id}")
+            attempt = await update_attempt_with_webhook_data_by_attempt_id(
+                request,
+                attempt_id,
+                conversation_id,
+                transcript,
+                analysis
+            )
+        else:
+            # Fallback to conversation_id lookup
+            print(f"   ⚠️ No attempt_id found, trying conversation_id lookup: {conversation_id}")
+            if conversation_id:
+                attempt = await update_attempt_with_webhook_data(
+                    request, 
+                    conversation_id, 
+                    transcript, 
+                    analysis
+                )
+            else:
+                print(f"❌ No conversation_id either, cannot process webhook")
+                raise HTTPException(status_code=400, detail="No attempt_id or conversation_id found")
         
         if not attempt:
-            print(f"❌ No attempt found for conversation_id: {conversation_id}")
+            print(f"❌ Could not find or update attempt")
             raise HTTPException(status_code=404, detail="Attempt not found")
         
         print(f"✅ Updated attempt: {attempt.id}")

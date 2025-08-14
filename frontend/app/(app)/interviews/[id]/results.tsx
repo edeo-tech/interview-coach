@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
@@ -23,9 +24,9 @@ const BlurredSection = ({
 
   return (
     <View style={styles.blurredContainer}>
-      <View style={styles.blurredContent}>
+      <BlurView intensity={20} tint="dark" style={styles.blurredContent}>
         {children}
-      </View>
+      </BlurView>
       <View style={styles.upgradeOverlay}>
         <Ionicons name="diamond" size={32} color="#f59e0b" />
         <Text style={styles.upgradeTitle}>Premium Feature</Text>
@@ -529,7 +530,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   blurredContent: {
-    opacity: 0.3,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   upgradeOverlay: {
     position: 'absolute',
@@ -537,7 +539,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 16,
