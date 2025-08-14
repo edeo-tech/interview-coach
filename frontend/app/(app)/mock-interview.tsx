@@ -162,9 +162,24 @@ export default function MockInterview() {
             // Capture conversation_id from initiation event
             if (e.type === 'conversation_initiation_metadata') {
                 const convId = e.conversation_initiation_metadata_event?.conversation_id;
-                if (convId) {
+                if (convId && attemptId) {
                     console.log('📝 Captured conversation_id:', convId);
+                    console.log('📝 Updating attempt with conversation_id...');
                     setConversationId(convId);
+                    
+                    // Immediately update the attempt with the conversation_id
+                    try {
+                        const updatePayload = {
+                            interviewId: params.interviewId as string,
+                            attemptId: attemptId,
+                            conversationId: convId
+                        };
+                        console.log('📝 Sending update to backend:', updatePayload);
+                        // TODO: Add an API call here to update the attempt with conversation_id
+                        // await updateAttemptConversationId.mutateAsync(updatePayload);
+                    } catch (error) {
+                        console.error('❌ Failed to update attempt with conversation_id:', error);
+                    }
                 }
                 return;
             }
@@ -266,18 +281,27 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             const prompt = buildInterviewPrompt();
             
             // Try without prompt override first to see if agent speaks
-            // Create a custom userId that encodes our attemptId and interviewId
-            const customUserId = JSON.stringify({
-                attemptId: newAttemptId,
-                interviewId: params.interviewId as string,
-                actualUserId: auth?.id || 'anonymous'
-            });
+            // Just send the attemptId as userId for simplicity
+            const userId = newAttemptId;
             
-            console.log('📝 Starting ElevenLabs session with custom userId:', customUserId);
+            console.log('📝 Starting ElevenLabs session with attemptId as userId:', userId);
+            console.log('📝 AgentId:', agentId);
+            console.log('📝 Session config being sent:', {
+                agentId: agentId,
+                userId: userId,
+                hasConversationToken: false,
+                dynamicVariablesKeys: Object.keys({
+                    candidate_name: auth?.name || 'Candidate',
+                    job_title: params.role as string,
+                    company: params.companyName as string,
+                    cv_data: cvProfile?.raw_text || '',
+                    job_description: topics.join(', '),
+                })
+            });
             
             const sessionConfig = {
                 agentId: agentId,
-                userId: customUserId, // This will be included in webhook data
+                userId: userId, // Just the attemptId as a string
                 // Temporarily comment out overrides to test basic agent functionality
                 // overrides: {
                 //     agent: {
@@ -295,9 +319,26 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                 }
             };
             
-            await conversation.startSession(sessionConfig);
+            console.log('📝 About to call conversation.startSession with config:', JSON.stringify(sessionConfig, null, 2));
+            
+            const sessionResult = await conversation.startSession(sessionConfig);
+            
+            console.log('✅ ElevenLabs session started successfully');
+            console.log('📝 Session result:', sessionResult);
+            
+            // If startSession returns a conversationId, capture it
+            if (sessionResult?.conversationId) {
+                console.log('📝 Got conversationId from startSession:', sessionResult.conversationId);
+                setConversationId(sessionResult.conversationId);
+            }
             
         } catch (error) {
+            console.error('❌ Failed to start ElevenLabs session:', error);
+            console.error('   Error details:', {
+                message: error?.message,
+                stack: error?.stack,
+                name: error?.name
+            });
             setCallState('incoming'); // Reset to incoming state on error
         }
     }, [buildInterviewPrompt, auth, params]);

@@ -6,7 +6,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Request, HTTPException
 from decouple import config
 
-from crud.interviews.attempts import update_attempt_with_webhook_data, update_attempt_with_webhook_data_by_attempt_id
+from crud.interviews.attempts import update_attempt_with_webhook_data, update_attempt_with_webhook_data_by_attempt_id, get_latest_active_attempt_for_agent
 from services.grading_service import trigger_interview_grading
 from services.websocket_service import websocket_manager
 
@@ -112,18 +112,28 @@ async def handle_post_call_webhook(request: Request):
         print(f"🔍 Data object keys: {list(data.keys())}")
         print(f"🔍 User ID from webhook: {user_id}")
         
-        # Extract attempt_id from userId (which contains our JSON-encoded custom data)
+        # Extract attempt_id from userId
         attempt_id = None
         if user_id:
-            try:
-                # Parse the JSON-encoded userId
-                custom_data = json.loads(user_id)
-                attempt_id = custom_data.get("attemptId")
-                interview_id = custom_data.get("interviewId")
-                actual_user_id = custom_data.get("actualUserId")
-                print(f"   ✅ Parsed custom data from userId: attemptId={attempt_id}, interviewId={interview_id}, actualUserId={actual_user_id}")
-            except json.JSONDecodeError:
-                print(f"   ⚠️ userId is not JSON-encoded, treating as regular user ID: {user_id}")
+            # userId should now just be the attemptId directly
+            attempt_id = user_id
+            print(f"   ✅ Using userId as attempt_id: {attempt_id}")
+        else:
+            print(f"   ⚠️ No user_id in webhook data")
+            # Log all available fields to debug
+            print(f"   📋 Available data fields: {list(data.keys())}")
+            print(f"   📋 Metadata content: {metadata}")
+            
+            # Check if there's conversation_initiation_client_data
+            client_data = data.get("conversation_initiation_client_data", {})
+            if client_data:
+                print(f"   📋 Client data: {client_data}")
+                # Try to extract userId from client data
+                if isinstance(client_data, dict):
+                    user_id_from_client = client_data.get("user_id") or client_data.get("userId")
+                    if user_id_from_client:
+                        attempt_id = user_id_from_client
+                        print(f"   ✅ Found userId in client data: {attempt_id}")
         
         print(f"\n🎣 [WEBHOOK] Received post-call webhook:")
         print(f"   - Conversation ID: {conversation_id}")
@@ -133,9 +143,12 @@ async def handle_post_call_webhook(request: Request):
         print(f"   - User ID: {user_id}")
         print(f"   - Attempt ID extracted: {attempt_id}")
         
-        # Try to update attempt using attempt_id from metadata first
+        # Try multiple approaches to find the attempt
+        attempt = None
+        
+        # Approach 1: Try to update using attempt_id from userId
         if attempt_id:
-            print(f"   ✅ Using attempt_id from metadata: {attempt_id}")
+            print(f"   ✅ Trying approach 1: Using attempt_id from userId: {attempt_id}")
             attempt = await update_attempt_with_webhook_data_by_attempt_id(
                 request,
                 attempt_id,
@@ -143,13 +156,10 @@ async def handle_post_call_webhook(request: Request):
                 transcript,
                 analysis
             )
-        else:
-            # Fallback to conversation_id lookup
-            print(f"   ⚠️ No attempt_id in metadata, falling back to conversation_id lookup")
-            if not conversation_id:
-                print("❌ No conversation_id in webhook data")
-                raise HTTPException(status_code=400, detail="Missing conversation_id")
-            
+        
+        # Approach 2: Try to find by conversation_id
+        if not attempt and conversation_id:
+            print(f"   ⚠️ Trying approach 2: Looking up by conversation_id: {conversation_id}")
             attempt = await update_attempt_with_webhook_data(
                 request, 
                 conversation_id, 
@@ -157,8 +167,26 @@ async def handle_post_call_webhook(request: Request):
                 analysis
             )
         
+        # Approach 3: Last resort - find latest active attempt for this agent
+        if not attempt and agent_id:
+            print(f"   ⚠️ Trying approach 3: Finding latest active attempt for agent: {agent_id}")
+            latest_attempt = await get_latest_active_attempt_for_agent(request, agent_id)
+            if latest_attempt:
+                print(f"   🔄 Updating latest active attempt: {latest_attempt.id}")
+                # Update it with the webhook data
+                attempt = await update_attempt_with_webhook_data_by_attempt_id(
+                    request,
+                    str(latest_attempt.id),
+                    conversation_id,
+                    transcript,
+                    analysis
+                )
+        
         if not attempt:
-            print(f"❌ No attempt found for conversation_id: {conversation_id}")
+            print(f"❌ Could not find attempt using any approach")
+            print(f"   - UserId/AttemptId: {attempt_id}")
+            print(f"   - ConversationId: {conversation_id}")
+            print(f"   - AgentId: {agent_id}")
             raise HTTPException(status_code=404, detail="Attempt not found")
         
         print(f"✅ Updated attempt: {attempt.id}")
