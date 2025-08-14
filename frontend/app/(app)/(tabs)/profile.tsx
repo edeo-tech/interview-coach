@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'center',
-        paddingTop: 20,
+        paddingTop: 62,
         paddingBottom: 24,
     },
     name: {
