@@ -1,7 +1,7 @@
 import axiosConfig from '@/_api/axiosConfig';
 
 // interfaces
-import { RegisterUser, LoginUser } from '@/_interfaces/users/users';
+import { RegisterUser, LoginUser, UpdateUserProfile } from '@/_interfaces/users/users';
 
 const BASE_PATH = '/app/users/auth';
 
@@ -25,6 +25,21 @@ class UsersAuthApi
     logout()
     {
         return axiosConfig.protectedApi.post(`${BASE_PATH}/logout`, {});
+    }
+
+    updateProfile(body: UpdateUserProfile)
+    {
+        return axiosConfig.protectedApi.patch(`${BASE_PATH}/profile`, body);
+    }
+
+    deleteAccount()
+    {
+        return axiosConfig.protectedApi.delete(`${BASE_PATH}/account`);
+    }
+
+    getSubscriptionDetails()
+    {
+        return axiosConfig.protectedApi.get(`${BASE_PATH}/subscription`);
     }
 }
 const usersAuthApi = new UsersAuthApi();

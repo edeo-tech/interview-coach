@@ -14,7 +14,9 @@ import {
     LoginUser,
     RegisterUser,
     LoginResponse,
-    AuthenticatedUser
+    AuthenticatedUser,
+    UpdateUserProfile,
+    SubscriptionDetails
 } from '@/_interfaces/users/users';
 
 // hooks
@@ -130,6 +132,58 @@ export const useLogout = () =>
         onError: (error) =>
         {
             console.error('Error logging out user:', error);
+        }
+    });
+}
+
+// update profile query
+export const useUpdateProfile = () =>
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (body: UpdateUserProfile) => (await usersAuthApi.updateProfile(body)).data,
+        onSuccess: (updatedUser: AuthenticatedUser) => {
+            // Update the auth cache with new user data
+            queryClient.setQueryData(['auth'], updatedUser);
+        },
+        onError: (error: any) => {
+            const errorMessage = error.response?.data?.detail || 'Failed to update profile';
+            console.error('Error updating profile:', errorMessage);
+        }
+    });
+}
+
+// delete account query  
+export const useDeleteAccount = () =>
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async () => await usersAuthApi.deleteAccount(),
+        onSuccess: () => {
+            // Clear all data and redirect to landing
+            queryClient.clear();
+            clearAllCookies();
+            router.replace('/(auth)/landing');
+        },
+        onError: (error: any) => {
+            const errorMessage = error.response?.data?.detail || 'Failed to delete account';
+            console.error('Error deleting account:', errorMessage);
+        }
+    });
+}
+
+// get subscription details query
+export const useSubscriptionDetails = () =>
+{
+    return useQuery<SubscriptionDetails>({
+        queryKey: ['subscription'],
+        queryFn: async () => (await usersAuthApi.getSubscriptionDetails()).data,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        retry: 1,
+        onError: (error: any) => {
+            console.error('Error fetching subscription details:', error);
         }
     });
 }

@@ -15,7 +15,9 @@
       "Bash(mv:*)",
       "Bash(cp:*)",
       "Bash(pip3 install:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

@@ -2,12 +2,15 @@ from fastapi import Request, HTTPException, APIRouter, Depends
 from fastapi.responses import JSONResponse, Response
 from fastapi.encoders import jsonable_encoder
 
-from models.users.users import User, LoginUser
+from models.users.users import User, LoginUser, UpdateUserProfile, SubscriptionDetails
 from crud.users.auth.users import (
     create_user,
     handle_login,
     update_user_last_active_at,
-    get_user_by_id
+    get_user_by_id,
+    update_user_profile,
+    delete_user_account,
+    get_subscription_details
 )
 from crud._generic import _db_actions
 from models.users.authenticated_user import AuthenticatedUser
@@ -97,3 +100,56 @@ async def logout(
     
     await auth.logout(req, user_id)
     return Response(status_code=204)
+
+@router.patch('/profile', response_description='Update user profile')
+@error_decorator
+async def update_profile(
+    req:Request,
+    profile_data:UpdateUserProfile,
+    user_id:str=Depends(auth.auth_wrapper)
+) -> JSONResponse:
+    updated_user = await update_user_profile(req, user_id, profile_data)
+    
+    if updated_user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    
+    # Return updated user data (excluding sensitive fields)
+    user_dict = updated_user.model_dump(
+        exclude={'password', 'expo_notification_token', 'device_os', 'stripe_customer_id', 'stripe_subscription_id'},
+        exclude_none=True
+    )
+    
+    authenticated_user = AuthenticatedUser(**user_dict)
+    return JSONResponse(
+        status_code=200,
+        content=jsonable_encoder(authenticated_user.model_dump(exclude_none=True))
+    )
+
+@router.delete('/account', response_description='Delete user account')
+@error_decorator
+async def delete_account(
+    req:Request,
+    user_id:str=Depends(auth.auth_wrapper)
+) -> JSONResponse:
+    success = await delete_user_account(req, user_id)
+    
+    if success:
+        return JSONResponse(
+            status_code=200,
+            content={"message": "Account successfully deleted"}
+        )
+    else:
+        raise HTTPException(status_code=500, detail='Failed to delete account')
+
+@router.get('/subscription', response_description='Get user subscription details')
+@error_decorator
+async def get_user_subscription(
+    req:Request,
+    user_id:str=Depends(auth.auth_wrapper)
+) -> JSONResponse:
+    subscription_details = await get_subscription_details(req, user_id)
+    
+    return JSONResponse(
+        status_code=200,
+        content=jsonable_encoder(subscription_details.model_dump())
+    )

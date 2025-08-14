@@ -5,6 +5,7 @@ import { useAuth } from '@/context/authentication/AuthContext';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
+import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
@@ -16,6 +17,30 @@ const StatCard = ({ icon, label, value, color = '#F59E0B' }: any) => (
         <Text style={styles.statLabel}>{label}</Text>
     </View>
 );
+
+const getScoreIconAndColor = (score: number | null | string) => {
+    // Handle string values (like "85%") by extracting the number
+    let numericScore: number | null = null;
+    
+    if (typeof score === 'string') {
+        const match = score.match(/(\d+)/);
+        numericScore = match ? parseInt(match[1], 10) : null;
+    } else {
+        numericScore = score;
+    }
+    
+    if (numericScore === null || numericScore === undefined) {
+        return { icon: 'trending-up', color: '#10B981' };
+    }
+    
+    if (numericScore < 40) {
+        return { icon: 'trending-down', color: '#EF4444' }; // Red for low scores
+    } else if (numericScore >= 40 && numericScore < 70) {
+        return { icon: 'arrow-forward', color: '#F59E0B' }; // Yellow/orange for medium scores
+    } else {
+        return { icon: 'trending-up', color: '#10B981' }; // Green for high scores
+    }
+};
 
 const MenuItem = ({ icon, label, onPress }: any) => (
     <Pressable style={styles.menuItem} onPress={onPress}>
@@ -30,6 +55,7 @@ export default function Profile() {
     const router = useRouter();
     const { data: interviews } = useInterviews();
     const { data: currentCV } = useCV();
+    const { data: userStats } = useUserStats();
     const { posthogScreen, posthogCapture } = usePosthogSafely();
 
     useFocusEffect(
@@ -91,13 +117,30 @@ export default function Profile() {
         return 'Experience level not specified';
     };
 
+    const getMemberSinceDate = () => {
+        if (!auth?.created_at) return 'January 2025';
+        
+        const createdDate = new Date(auth.created_at);
+        return createdDate.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    const getAverageScoreDisplay = () => {
+        if (userStats?.average_score !== null && userStats?.average_score !== undefined) {
+            return `${Math.round(userStats.average_score)}%`;
+        }
+        return 'N/A';
+    };
+
     const user = {
         name: auth?.name || 'User',
         email: auth?.email || 'user@example.com',
-        joinedDate: 'January 2025',
+        joinedDate: getMemberSinceDate(),
         totalInterviews: interviews?.length || 0,
-        averageScore: 83,
-        streak: 7,
+        averageScore: getAverageScoreDisplay(),
+        streak: auth?.streak || 0,
         rank: 'Advanced',
     };
 
@@ -200,10 +243,10 @@ export default function Profile() {
                     color="#F59E0B"
                 />
                 <StatCard
-                    icon="trending-up"
+                    icon={getScoreIconAndColor(user.averageScore).icon}
                     label="Average Score"
-                    value={`${user.averageScore}%`}
-                    color="#10B981"
+                    value={user.averageScore}
+                    color={getScoreIconAndColor(user.averageScore).color}
                 />
                 <StatCard
                     icon="flame"
@@ -249,7 +292,7 @@ export default function Profile() {
                                     source: 'profile',
                                     total_interviews: interviews.length
                                 });
-                                router.push('/interviews/index');
+                                router.push('/interviews/index' as any);
                             }}
                         >
                             <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
@@ -262,8 +305,26 @@ export default function Profile() {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Account</Text>
                 <View style={styles.menuContainer}>
-                    <MenuItem icon="settings-outline" label="Settings" />
-                    <MenuItem icon="help-circle-outline" label="Help Center" />
+                    <MenuItem 
+                        icon="settings-outline" 
+                        label="Settings"
+                        onPress={() => {
+                            posthogCapture('navigate_to_settings', {
+                                source: 'profile'
+                            });
+                            router.push('/(app)/settings');
+                        }}
+                    />
+                    <MenuItem 
+                        icon="document-text-outline" 
+                        label="Terms of Service"
+                        onPress={() => {
+                            posthogCapture('view_terms_of_service', {
+                                source: 'profile'
+                            });
+                            router.push('/(app)/terms');
+                        }}
+                    />
                 </View>
             </View>
 

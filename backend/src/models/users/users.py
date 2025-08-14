@@ -1,6 +1,7 @@
 from pydantic import Field, BaseModel, field_validator, EmailStr
 import re
 from datetime import datetime, timezone
+from typing import Optional
 
 from models._base import MongoBaseModel
 
@@ -53,6 +54,18 @@ class User(MongoBaseModel):
         default='',
         description='The current active Stripe subscription ID'
     )
+    accepted_terms:bool = Field(
+        default=True,
+        description='Whether the user has accepted the terms of service'
+    )
+    streak:int = Field(
+        default=0,
+        description='Current login streak in days'
+    )
+    streak_record:int = Field(
+        default=0,
+        description='Highest login streak ever achieved'
+    )
 
 class LoginUser(BaseModel):
     email:EmailStr = Field(
@@ -62,4 +75,36 @@ class LoginUser(BaseModel):
     password:str = Field(
         ...,
         description='The password of the user'
+    )
+
+class UpdateUserProfile(BaseModel):
+    name:Optional[str] = Field(
+        default=None,
+        description='The updated name of the user'
+    )
+    email:Optional[EmailStr] = Field(
+        default=None,
+        description='The updated email address of the user'
+    )
+
+class SubscriptionDetails(BaseModel):
+    is_premium:bool = Field(
+        ...,
+        description='Whether the user has an active premium subscription'
+    )
+    plan_name:str = Field(
+        ...,
+        description='The name of the subscription plan'
+    )
+    status:str = Field(
+        ...,
+        description='The status of the subscription (active, canceled, etc.)'
+    )
+    current_period_end:Optional[datetime] = Field(
+        default=None,
+        description='When the current billing period ends'
+    )
+    stripe_portal_url:Optional[str] = Field(
+        default=None,
+        description='URL to Stripe customer portal for managing subscription'
     )

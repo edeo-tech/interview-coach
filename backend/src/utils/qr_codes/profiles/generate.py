@@ -44,7 +44,7 @@ async def generateQRCode(url:str, add_logo:bool=True):
 async def getLogo():
     this_folder_path = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(this_folder_path, '../../../../'))
-    logo_path = os.path.join(project_root, 'src/assets/edeo_app_icon.png')
+    logo_path = os.path.join(project_root, 'src/assets/InterviewGuideAI_app_icon.png')
     return Image.open(logo_path)
 
 async def editLogoSize(logo, basewidth:int=75):

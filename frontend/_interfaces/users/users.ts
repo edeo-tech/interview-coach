@@ -30,4 +30,22 @@ export interface AuthenticatedUser
     is_banned: boolean;
     last_login?: string;
     is_premium: boolean;
+    created_at: string;
+    streak: number;
+    streak_record: number;
+}
+
+export interface UpdateUserProfile
+{
+    name?: string;
+    email?: string;
+}
+
+export interface SubscriptionDetails
+{
+    is_premium: boolean;
+    plan_name: string;
+    status: string;
+    current_period_end?: string;
+    stripe_portal_url?: string;
 }
