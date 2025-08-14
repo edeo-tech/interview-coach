@@ -125,7 +125,6 @@ async def update_user_last_active_at(req:Request, user_id:str):
         collection_name='users',
         BaseModel=User,
         document_id=user_id,
-        last_login=datetime.now(timezone.utc),
         **streak_updates
     )
 
