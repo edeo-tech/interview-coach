@@ -214,8 +214,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   difficultySelected: {
-    backgroundColor: '#2563eb',
-    borderColor: '#3b82f6',
+    backgroundColor: '#F59E0B',
+    borderColor: '#F59E0B',
   },
   difficultyUnselected: {
     backgroundColor: '#374151',
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     color: '#d1d5db',
   },
   startButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#F59E0B',
     padding: 16,
     borderRadius: 8,
     marginBottom: 32,

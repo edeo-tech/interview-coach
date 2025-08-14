@@ -13,6 +13,7 @@ export interface Interview {
   user_id: string;
   company: string;
   role_title: string;
+  company_logo_url: string;
   location: string;
   employment_type: string;
   experience_level: string;

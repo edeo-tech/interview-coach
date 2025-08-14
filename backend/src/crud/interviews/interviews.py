@@ -96,6 +96,7 @@ async def _create_interview_from_job_data(
         user_id=user_id,
         company=job_data.get('company', 'Unknown Company'),
         role_title=job_data.get('role_title', 'Unknown Position'),
+        company_logo_url=job_data.get('company_logo_url', None),
         location=job_data.get('location', ''),
         employment_type=job_data.get('employment_type', 'full-time'),
         experience_level=job_data.get('experience_level', 'mid'),

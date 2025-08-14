@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Platform, Image, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -155,38 +155,54 @@ const InterviewsHome = () => {
               <TouchableOpacity
                 key={interview._id}
                 onPress={() => handleInterviewPress(interview._id)}
-                className="bg-gray-800 rounded-lg p-4 mb-3"
+                style={styles.interviewCard}
               >
-                <View className="flex-row items-start justify-between">
-                  <View className="flex-1">
-                    <View className="flex-row items-center mb-2">
+                <View style={styles.interviewCardContent}>
+                  <View style={styles.interviewCardLeft}>
+                    {interview.company_logo_url ? (
+                      <Image 
+                        source={{ uri: interview.company_logo_url }}
+                        style={styles.companyLogo}
+                      />
+                    ) : (
+                      <View style={styles.logoPlaceholder}>
+                        <Ionicons 
+                          name={getInterviewTypeIcon(interview.interview_type) as any}
+                          size={20} 
+                          color="#9ca3af" 
+                        />
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.interviewCardRight}>
+                    <View style={styles.interviewHeader}>
                       <Ionicons 
                         name={getInterviewTypeIcon(interview.interview_type) as any}
                         size={16} 
                         color="#9ca3af" 
                       />
-                      <Text className="text-white font-semibold ml-2">
+                      <Text style={styles.roleTitle}>
                         {interview.role_title}
                       </Text>
                     </View>
                     
-                    <Text className="text-gray-300 mb-1">
+                    <Text style={styles.companyName}>
                       {interview.company}
                     </Text>
                     
-                    <View className="flex-row items-center">
-                      <Text className={`text-sm font-medium capitalize ${getDifficultyColor(interview.difficulty)}`}>
+                    <View style={styles.metaRow}>
+                      <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) === 'text-green-400' ? '#10b981' : getDifficultyColor(interview.difficulty) === 'text-yellow-400' ? '#f59e0b' : getDifficultyColor(interview.difficulty) === 'text-red-400' ? '#ef4444' : '#6b7280' }]}>
                         {interview.difficulty}
                       </Text>
-                      <Text className="text-gray-500 text-sm ml-2">•</Text>
-                      <Text className="text-gray-500 text-sm ml-2 capitalize">
+                      <Text style={styles.separator}>•</Text>
+                      <Text style={styles.typeText}>
                         {interview.interview_type}
                       </Text>
                     </View>
                   </View>
                   
-                  <View className="items-end">
-                    <Text className="text-gray-500 text-xs">
+                  <View style={styles.dateContainer}>
+                    <Text style={styles.dateText}>
                       {formatDate(interview.created_at)}
                     </Text>
                     <Ionicons name="chevron-forward" size={16} color="#6b7280" />
@@ -201,5 +217,82 @@ const InterviewsHome = () => {
     </ChatGPTBackground>
   );
 };
+
+const styles = StyleSheet.create({
+  interviewCard: {
+    backgroundColor: '#1f2937',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  interviewCardContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  interviewCardLeft: {
+    marginRight: 12,
+  },
+  companyLogo: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+  },
+  logoPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: '#374151',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  interviewCardRight: {
+    flex: 1,
+  },
+  interviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  roleTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  companyName: {
+    color: '#d1d5db',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  difficultyText: {
+    fontSize: 12,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  separator: {
+    color: '#6b7280',
+    fontSize: 12,
+    marginHorizontal: 8,
+  },
+  typeText: {
+    color: '#6b7280',
+    fontSize: 12,
+    textTransform: 'capitalize',
+  },
+  dateContainer: {
+    alignItems: 'flex-end',
+  },
+  dateText: {
+    color: '#6b7280',
+    fontSize: 11,
+    marginBottom: 4,
+  },
+});
 
 export default InterviewsHome;

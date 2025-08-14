@@ -58,7 +58,7 @@ class JobProcessingService:
             job_data = await self._process_job_url_with_openai(url)
             
             # Validate the response
-            self._validate_job_data(job_data)
+            await self._validate_job_data(job_data)
             
             return job_data
             
@@ -115,7 +115,7 @@ class JobProcessingService:
                 job_data = await self._process_job_with_text(text_content)
             
             # Validate the response
-            self._validate_job_data(job_data)
+            await self._validate_job_data(job_data)
             
             return job_data
             
@@ -451,8 +451,8 @@ Instructions:
 7. Return ONLY the JSON object
 """
     
-    def _validate_job_data(self, job_data: Dict[str, Any]) -> None:
-        """Validate the structure of job data"""
+    async def _validate_job_data(self, job_data: Dict[str, Any]) -> None:
+        """Validate the structure of job data and clean job title"""
         if not isinstance(job_data, dict):
             raise ValueError("Job data is not a valid dictionary")
         
@@ -469,6 +469,34 @@ Instructions:
                 job_data['role_title'] = 'Unknown Position'
             if 'job_description' not in job_data:
                 job_data['job_description'] = {}
+        
+        # Clean the job title using LLM
+        if job_data.get('role_title'):
+            try:
+                cleaned_title = await self._clean_job_name(
+                    job_data['role_title'], 
+                    job_data.get('company', '')
+                )
+                if cleaned_title != job_data['role_title']:
+                    logger.info(f"Cleaned job title: '{job_data['role_title']}' -> '{cleaned_title}'")
+                    job_data['role_title'] = cleaned_title
+            except Exception as e:
+                logger.warning(f"Failed to clean job title: {str(e)}")
+        
+        # Fetch company logo
+        if job_data.get('company'):
+            try:
+                logo_url = await self._fetch_company_logo(job_data['company'])
+                if logo_url:
+                    job_data['company_logo_url'] = logo_url
+                    logger.info(f"Added logo for {job_data['company']}: {logo_url}")
+                else:
+                    job_data['company_logo_url'] = None
+            except Exception as e:
+                logger.warning(f"Failed to fetch company logo: {str(e)}")
+                job_data['company_logo_url'] = None
+        else:
+            job_data['company_logo_url'] = None
         
         # Ensure job_description is properly structured
         if not isinstance(job_data.get('job_description'), dict):
@@ -505,6 +533,247 @@ Instructions:
                 'extraction_notes': ''
             }
     
+    async def _clean_job_name(self, job_title: str, company_name: str = "") -> str:
+        """
+        Clean job title using LLM to remove promotional content, salary info, etc.
+        Example: "Junior Python Developer – Elite Hedge Fund (up to £100K + Bonus + Hybrid)" 
+                 -> "Junior Python Developer"
+        """
+        if not job_title.strip():
+            return job_title
+            
+        # If the title is already clean (short and simple), return as-is
+        if len(job_title) < 50 and not any(char in job_title for char in ['£', '$', '€', '(', '–', '|']):
+            return job_title.strip()
+        
+        try:
+            prompt = f"""Clean this job title by removing promotional content, salary information, location details, and company prefixes while keeping the core role.
+
+Job Title: "{job_title}"
+Company: "{company_name}"
+
+Return only the cleaned job title. Examples:
+- "Senior Software Engineer – Tech Startup (£80K-£120K + Equity)" -> "Senior Software Engineer"
+- "Marketing Manager | Leading Fintech (Remote/Hybrid)" -> "Marketing Manager"  
+- "Google: Staff Software Engineer, Search Infrastructure" -> "Staff Software Engineer, Search Infrastructure"
+- "Junior Python Developer – Elite Hedge Fund (up to £100K + Bonus + Hybrid)" -> "Junior Python Developer"
+
+Cleaned title:"""
+
+            response = await self.client.post(
+                "/chat/completions",
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.1,
+                    "max_tokens": 100
+                }
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                cleaned_title = result['choices'][0]['message']['content'].strip()
+                
+                # Basic validation - ensure we got a reasonable response
+                if cleaned_title and len(cleaned_title) > 3 and len(cleaned_title) < 150:
+                    return cleaned_title
+                    
+        except Exception as e:
+            logger.warning(f"Failed to clean job title '{job_title}': {str(e)}")
+        
+        # Fallback: basic cleaning without LLM
+        return self._basic_job_title_cleanup(job_title)
+    
+    def _basic_job_title_cleanup(self, job_title: str) -> str:
+        """Fallback job title cleanup without LLM"""
+        import re
+        
+        # Remove salary ranges
+        job_title = re.sub(r'[£$€][\d,k-]+(?:\s*-\s*[£$€]?[\d,k]+)?(?:\s*[+]\s*\w+)?', '', job_title, flags=re.IGNORECASE)
+        
+        # Remove content in parentheses
+        job_title = re.sub(r'\([^)]*\)', '', job_title)
+        
+        # Remove content after dashes or pipes
+        job_title = re.split(r'\s*[–—|]\s*', job_title)[0]
+        
+        # Clean up whitespace
+        job_title = ' '.join(job_title.split())
+        
+        return job_title.strip()
+    
+    async def _fetch_company_logo(self, company_name: str) -> Optional[str]:
+        """
+        Fetch company logo URL. First checks cache from existing interviews,
+        then tries external APIs for larger companies.
+        """
+        if not company_name or not company_name.strip():
+            return None
+            
+        company_name = company_name.strip()
+        
+        # First, check if we already have a logo for this company in our database
+        try:
+            cached_logo = await self._get_company_logo_from_cache(company_name)
+            if cached_logo:
+                logger.info(f"Found cached logo for {company_name}: {cached_logo}")
+                return cached_logo
+        except Exception as e:
+            logger.warning(f"Failed to check logo cache for {company_name}: {str(e)}")
+        
+        # Try to fetch logo from external APIs
+        return await self._fetch_logo_from_apis(company_name)
+    
+    async def _fetch_logo_from_apis(self, company_name: str) -> Optional[str]:
+        """
+        Try to fetch company logo from external APIs
+        Uses Clearbit Logo API as primary source (free for logos)
+        """
+        try:
+            # Clearbit Logo API - free for logos, works well for larger companies
+            # Format: https://logo.clearbit.com/{domain}
+            domain = await self._company_name_to_domain(company_name)
+            if domain:
+                logo_url = f"https://logo.clearbit.com/{domain}?size=200"
+                
+                # Test if the logo exists
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.head(logo_url)
+                    if response.status_code == 200:
+                        logger.info(f"Found Clearbit logo for {company_name}: {logo_url}")
+                        return logo_url
+                        
+        except Exception as e:
+            logger.debug(f"Clearbit logo fetch failed for {company_name}: {str(e)}")
+        
+        # Could add more logo APIs here as fallbacks
+        # For now, we'll return None if Clearbit doesn't have it
+        logger.debug(f"No logo found for company: {company_name}")
+        return None
+    
+    async def _company_name_to_domain(self, company_name: str) -> Optional[str]:
+        """
+        Convert company name to domain using common patterns and LLM assistance
+        """
+        company_name = company_name.lower().strip()
+        
+        # Handle common company mappings
+        domain_mappings = {
+            'google': 'google.com',
+            'microsoft': 'microsoft.com',
+            'apple': 'apple.com',
+            'amazon': 'amazon.com',
+            'meta': 'meta.com',
+            'facebook': 'meta.com',
+            'netflix': 'netflix.com',
+            'tesla': 'tesla.com',
+            'uber': 'uber.com',
+            'airbnb': 'airbnb.com',
+            'spotify': 'spotify.com',
+            'stripe': 'stripe.com',
+            'shopify': 'shopify.com',
+            'linkedin': 'linkedin.com',
+            'twitter': 'twitter.com',
+            'x': 'x.com',
+            'reddit': 'reddit.com',
+            'github': 'github.com',
+            'gitlab': 'gitlab.com',
+            'atlassian': 'atlassian.com',
+            'salesforce': 'salesforce.com',
+            'oracle': 'oracle.com',
+            'ibm': 'ibm.com',
+            'intel': 'intel.com',
+            'nvidia': 'nvidia.com',
+            'amd': 'amd.com',
+            'adobe': 'adobe.com',
+            'zoom': 'zoom.us',
+            'slack': 'slack.com',
+            'discord': 'discord.com',
+            'twilio': 'twilio.com',
+            'datadog': 'datadoghq.com',
+            'mongodb': 'mongodb.com',
+            'cloudflare': 'cloudflare.com',
+        }
+        
+        # Clean company name for matching
+        clean_name = company_name.replace(' inc', '').replace(' ltd', '').replace(' llc', '').replace('.', '').strip()
+        
+        if clean_name in domain_mappings:
+            return domain_mappings[clean_name]
+        
+        # Try LLM to convert company name to domain for well-known companies
+        try:
+            prompt = f"""Convert this company name to its primary website domain. Only respond with well-known companies that you're confident about. If you're not sure, respond with "unknown".
+
+Company: "{company_name}"
+
+Examples:
+- "Goldman Sachs" -> "goldmansachs.com"
+- "JP Morgan" -> "jpmorgan.com" 
+- "Deutsche Bank" -> "db.com"
+- "Random Startup Inc" -> "unknown"
+
+Domain:"""
+
+            response = await self.client.post(
+                "/chat/completions",
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.1,
+                    "max_tokens": 50
+                }
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                domain = result['choices'][0]['message']['content'].strip().lower()
+                
+                # Basic validation
+                if domain != 'unknown' and '.' in domain and len(domain) > 5 and len(domain) < 50:
+                    # Remove any protocol or path
+                    domain = domain.replace('https://', '').replace('http://', '').split('/')[0]
+                    return domain
+                    
+        except Exception as e:
+            logger.debug(f"LLM domain conversion failed for {company_name}: {str(e)}")
+        
+        return None
+
+    async def _get_company_logo_from_cache(self, company_name: str) -> Optional[str]:
+        """
+        Check if we already have a logo URL for this company in existing interviews
+        """
+        try:
+            # Dynamic import to avoid circular dependency
+            from crud._generic._db_actions import getMultipleDocuments
+            from models.interviews.interviews import Interview
+            from fastapi import Request
+            
+            # Create a dummy request for the database query
+            # Note: This is a workaround - ideally we'd pass the request through
+            class DummyRequest:
+                def __init__(self):
+                    self.state = type('obj', (object,), {})()
+                    self.state.db = None
+            
+            # Look for existing interviews with this company that have logos
+            interviews = await getMultipleDocuments(
+                DummyRequest(), "interviews", Interview,
+                company=company_name,
+                limit=1
+            )
+            
+            for interview in interviews:
+                if interview.company_logo_url:
+                    return interview.company_logo_url
+                    
+        except Exception as e:
+            # If we can't query the database, just return None
+            logger.debug(f"Cache lookup failed for {company_name}: {str(e)}")
+        
+        return None
+
     async def close(self):
         """Close the HTTP client"""
         await self.client.aclose()

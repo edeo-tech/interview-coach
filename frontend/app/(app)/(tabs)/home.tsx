@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -165,11 +165,21 @@ export default function Home() {
               >
                                  <View style={styles.interviewCardContent}>
                    <View style={styles.cardLeftAccent}>
-                     <Ionicons 
-                       name={getInterviewTypeIcon(interview.interview_type) as any}
-                       size={28} 
-                       color="#ffffff" 
-                     />
+                     {interview.company_logo_url ? (
+                       <Image 
+                         source={{ uri: interview.company_logo_url }}
+                         style={styles.companyLogo}
+                         onError={() => {
+                           // Fallback handled by conditional rendering
+                         }}
+                       />
+                     ) : (
+                       <Ionicons 
+                         name={getInterviewTypeIcon(interview.interview_type) as any}
+                         size={28} 
+                         color="#ffffff" 
+                       />
+                     )}
                    </View>
                    
                    <View style={styles.interviewCardMain}>
@@ -381,6 +391,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)'
+  },
+  companyLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    backgroundColor: '#ffffff',
   },
   interviewCardMain: {
     flex: 1,
