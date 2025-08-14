@@ -266,13 +266,18 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             const prompt = buildInterviewPrompt();
             
             // Try without prompt override first to see if agent speaks
-            console.log('📝 Starting ElevenLabs session with metadata:', {
+            // Create a custom userId that encodes our attemptId and interviewId
+            const customUserId = JSON.stringify({
                 attemptId: newAttemptId,
-                interviewId: params.interviewId
+                interviewId: params.interviewId as string,
+                actualUserId: auth?.id || 'anonymous'
             });
+            
+            console.log('📝 Starting ElevenLabs session with custom userId:', customUserId);
             
             const sessionConfig = {
                 agentId: agentId,
+                userId: customUserId, // This will be included in webhook data
                 // Temporarily comment out overrides to test basic agent functionality
                 // overrides: {
                 //     agent: {
@@ -281,10 +286,6 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                 //         }
                 //     }
                 // },
-                metadata: {
-                    attemptId: newAttemptId,
-                    interviewId: params.interviewId as string,
-                },
                 dynamicVariables: {
                     candidate_name: auth?.name || 'Candidate',
                     job_title: params.role as string,

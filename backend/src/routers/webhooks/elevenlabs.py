@@ -105,17 +105,33 @@ async def handle_post_call_webhook(request: Request):
         transcript = data.get("transcript", [])
         analysis = data.get("analysis", {})
         metadata = data.get("metadata", {})
+        user_id = data.get("user_id")
         
-        # Extract attempt_id from metadata if available
-        attempt_id = metadata.get("attemptId")
+        # Log the full webhook data structure to understand where custom metadata is
+        print(f"\n🔍 Full webhook data keys: {list(webhook_data.keys())}")
+        print(f"🔍 Data object keys: {list(data.keys())}")
+        print(f"🔍 User ID from webhook: {user_id}")
+        
+        # Extract attempt_id from userId (which contains our JSON-encoded custom data)
+        attempt_id = None
+        if user_id:
+            try:
+                # Parse the JSON-encoded userId
+                custom_data = json.loads(user_id)
+                attempt_id = custom_data.get("attemptId")
+                interview_id = custom_data.get("interviewId")
+                actual_user_id = custom_data.get("actualUserId")
+                print(f"   ✅ Parsed custom data from userId: attemptId={attempt_id}, interviewId={interview_id}, actualUserId={actual_user_id}")
+            except json.JSONDecodeError:
+                print(f"   ⚠️ userId is not JSON-encoded, treating as regular user ID: {user_id}")
         
         print(f"\n🎣 [WEBHOOK] Received post-call webhook:")
         print(f"   - Conversation ID: {conversation_id}")
         print(f"   - Agent ID: {agent_id}")
         print(f"   - Transcript turns: {len(transcript)}")
         print(f"   - Has analysis: {bool(analysis)}")
-        print(f"   - Metadata: {metadata}")
-        print(f"   - Attempt ID from metadata: {attempt_id}")
+        print(f"   - User ID: {user_id}")
+        print(f"   - Attempt ID extracted: {attempt_id}")
         
         # Try to update attempt using attempt_id from metadata first
         if attempt_id:
