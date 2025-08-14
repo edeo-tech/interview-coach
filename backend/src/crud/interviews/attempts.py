@@ -291,37 +291,3 @@ async def update_attempt_with_webhook_data_by_attempt_id(
         print(f"   ❌ ERROR: Failed to update attempt with webhook data!")
     
     return result
-
-async def get_latest_active_attempt_for_agent(
-    req: Request,
-    agent_id: str
-) -> Optional[InterviewAttempt]:
-    """Get the most recent active attempt that doesn't have a conversation_id yet"""
-    print(f"\n🔍 [FALLBACK] Looking for latest active attempt for agent: {agent_id}")
-    
-    # Get all active attempts without conversation_id, ordered by start time
-    attempts = await getMultipleDocuments(
-        req, "interview_attempts", InterviewAttempt,
-        status="active",
-        conversation_id=None,
-        order_by="-started_at",  # Most recent first
-        limit=10  # Check recent attempts
-    )
-    
-    if attempts:
-        # Get the most recent one
-        attempt = attempts[0]
-        print(f"   ✅ Found active attempt without conversation_id: {attempt.id}")
-        print(f"   - Interview ID: {attempt.interview_id}")
-        print(f"   - Started at: {attempt.started_at}")
-        
-        # Double check it's recent (within last 5 minutes)
-        if attempt.started_at:
-            time_diff = datetime.now(timezone.utc) - attempt.started_at
-            if time_diff.total_seconds() < 300:  # 5 minutes
-                return attempt
-            else:
-                print(f"   ⚠️ Attempt is too old: {time_diff.total_seconds()} seconds ago")
-    
-    print(f"   ❌ No suitable active attempt found")
-    return None

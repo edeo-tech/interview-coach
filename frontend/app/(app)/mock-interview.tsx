@@ -281,45 +281,23 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             const prompt = buildInterviewPrompt();
             
             // Try without prompt override first to see if agent speaks
-            // Just send the attemptId as userId for simplicity
-            const userId = newAttemptId;
-            
-            console.log('📝 Starting ElevenLabs session with attemptId as userId:', userId);
+            console.log('📝 Starting ElevenLabs session with attemptId:', newAttemptId);
             console.log('📝 AgentId:', agentId);
-            console.log('📝 Session config being sent:', {
-                agentId: agentId,
-                userId: userId,
-                hasConversationToken: false,
-                dynamicVariablesKeys: Object.keys({
-                    candidate_name: auth?.name || 'Candidate',
-                    job_title: params.role as string,
-                    company: params.companyName as string,
-                    cv_data: cvProfile?.raw_text || '',
-                    job_description: topics.join(', '),
-                })
-            });
             
             const sessionConfig = {
                 agentId: agentId,
-                userId: userId, // Just the attemptId as a string
-                // Temporarily comment out overrides to test basic agent functionality
-                // overrides: {
-                //     agent: {
-                //         prompt: {
-                //             prompt: prompt
-                //         }
-                //     }
-                // },
+                userId: newAttemptId, // Keep this for compatibility
                 dynamicVariables: {
+                    user_id: newAttemptId,  // ✅ Add attemptId to dynamicVariables as recommended
                     candidate_name: auth?.name || 'Candidate',
-                    job_title: params.role as string,
-                    company: params.companyName as string,
+                    job_title: String(params.role || ''),
+                    company: String(params.companyName || ''),
                     cv_data: cvProfile?.raw_text || '',
                     job_description: topics.join(', '),
                 }
             };
             
-            console.log('📝 About to call conversation.startSession with config:', JSON.stringify(sessionConfig, null, 2));
+            console.log('📝 Session config dynamicVariables:', sessionConfig.dynamicVariables);
             
             const sessionResult = await conversation.startSession(sessionConfig);
             
@@ -334,11 +312,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             
         } catch (error) {
             console.error('❌ Failed to start ElevenLabs session:', error);
-            console.error('   Error details:', {
-                message: error?.message,
-                stack: error?.stack,
-                name: error?.name
-            });
+            // console.error('   Error details:', {
+            //     message: error?.message,
+            //     stack: error?.stack,
+            //     name: error?.name
+            // });
             setCallState('incoming'); // Reset to incoming state on error
         }
     }, [buildInterviewPrompt, auth, params]);
