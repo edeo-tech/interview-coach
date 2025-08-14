@@ -16,6 +16,7 @@
       "Bash(cp:*)",
       "Bash(pip3 install:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }
