@@ -6,7 +6,6 @@ import httpx
 
 from crud.interviews.attempts import get_attempt, create_feedback, update_attempt
 from crud.interviews.interviews import get_interview
-from crud.interviews.cv_profiles import get_user_cv
 
 # Environment variables - these need to be set
 OPENAI_API_KEY = config('OPENAI_API_KEY', default='', cast=str)
@@ -25,7 +24,7 @@ class InterviewGradingService:
         print(f"   - Attempt ID: {attempt_id}")
         
         try:
-            # Get attempt, interview, and CV data
+            # Get attempt and interview data (CV not needed for scoring)
             attempt = await self._get_attempt_data(req, attempt_id)
             print(f"   - Attempt status: {attempt.get('status')}")
             print(f"   - Transcript length: {len(attempt.get('transcript', []))}")
@@ -33,9 +32,6 @@ class InterviewGradingService:
             interview = await self._get_interview_data(req, attempt['interview_id'])
             print(f"   - Interview role: {interview.get('role_title')}")
             print(f"   - Company: {interview.get('company')}")
-            
-            cv = await self._get_cv_data_for_interview(req, interview.get('user_id'))
-            print(f"   - CV data found: {'Yes' if cv else 'No'}")
             
             if not attempt or not interview:
                 raise ValueError("Required interview data not found")
@@ -45,9 +41,9 @@ class InterviewGradingService:
             print(f"   - Formatted transcript length: {len(transcript_text)} characters")
             
             if not transcript_text.strip():
-                # No transcript to grade
-                print(f"   ⚠️  WARNING: No transcript content found! Using default feedback.")
-                default_feedback = await self._create_default_feedback(attempt_id)
+                # No transcript to grade - should get very low score
+                print(f"   ⚠️  WARNING: No transcript content found! Using minimal score feedback.")
+                default_feedback = await self._create_no_interview_feedback(attempt_id)
                 
                 # Still save to database
                 await create_feedback(
@@ -63,14 +59,14 @@ class InterviewGradingService:
                 
                 return default_feedback
             
-            # Create grading prompt
-            grading_prompt = self._build_grading_prompt(interview, cv, transcript_text)
+            # Create grading prompt (without CV data)
+            grading_prompt = self._build_grading_prompt(interview, transcript_text)
             print(f"   - Grading prompt length: {len(grading_prompt)} characters")
             
             # Check if API key is configured
             if not OPENAI_API_KEY:
                 print(f"   ❌ ERROR: OPENAI_API_KEY not configured! Using default feedback.")
-                default_feedback = await self._create_default_feedback(attempt_id)
+                default_feedback = await self._create_fallback_feedback(attempt_id)
                 
                 # Still save to database
                 await create_feedback(
@@ -134,7 +130,7 @@ class InterviewGradingService:
             traceback.print_exc()
             
             # Create default feedback and still save it
-            default_feedback = await self._create_default_feedback(attempt_id)
+            default_feedback = await self._create_fallback_feedback(attempt_id)
             
             try:
                 await create_feedback(
@@ -170,8 +166,8 @@ class InterviewGradingService:
         print(f"   - Total formatted turns: {len(formatted)}")
         return "\n".join(formatted)
     
-    def _build_grading_prompt(self, interview: Dict, cv: Dict, transcript: str) -> str:
-        """Build the grading prompt for AI analysis"""
+    def _build_grading_prompt(self, interview: Dict, transcript: str) -> str:
+        """Build the grading prompt for AI analysis (CV-independent)"""
         
         role = interview.get('role_title', 'Software Engineer')
         company = interview.get('company', 'the company')
@@ -181,13 +177,9 @@ class InterviewGradingService:
         jd_structured = interview.get('jd_structured', {})
         requirements = jd_structured.get('requirements', 'Standard requirements')
         
-        cv_summary = ""
-        if cv:
-            skills = cv.get('skills', [])
-            experience = cv.get('experience_years', 0)
-            cv_summary = f"Candidate has {experience} years experience with skills: {', '.join(skills[:10])}"
-        
         prompt = f"""You are an expert technical interviewer evaluating a {interview_type} interview for a {role} position at {company}. 
+
+IMPORTANT: Base your evaluation SOLELY on the candidate's performance during this interview. Do not make assumptions about their background, experience, or qualifications beyond what they demonstrate in their responses.
 
 JOB DETAILS:
 - Role: {role}
@@ -195,13 +187,10 @@ JOB DETAILS:
 - Level: {difficulty}
 - Requirements: {requirements}
 
-CANDIDATE BACKGROUND:
-{cv_summary}
-
 INTERVIEW TRANSCRIPT:
 {transcript}
 
-Please analyze this interview and provide a comprehensive evaluation. Return your response as valid JSON with exactly these fields:
+Please analyze this interview and provide a comprehensive evaluation based ONLY on the candidate's responses and performance during the interview. Return your response as valid JSON with exactly these fields:
 
 {{
     "overall_score": <integer 0-100>,
@@ -217,17 +206,18 @@ Please analyze this interview and provide a comprehensive evaluation. Return you
 }}
 
 EVALUATION CRITERIA:
-- Technical Knowledge: Accuracy and depth of technical responses
-- Communication: Clarity, articulation, and listening skills
-- Problem Solving: Logical thinking and approach to challenges
-- Cultural Fit: Enthusiasm, professionalism, and alignment with role
+- Technical Knowledge: Accuracy and depth of technical responses shown in the interview
+- Communication: Clarity, articulation, and listening skills demonstrated during the conversation
+- Problem Solving: Logical thinking and approach to challenges as evidenced by their responses
+- Cultural Fit: Enthusiasm, professionalism, and engagement displayed during the interview
 
-For {difficulty} level positions:
-- Junior (0-2 years): Focus on fundamentals, learning ability, enthusiasm
-- Mid (2-5 years): Expect solid technical skills, some leadership experience
-- Senior (5+ years): Require advanced technical knowledge, mentoring capability, system design skills
+SCORING GUIDELINES:
+- If the candidate did not answer questions or provided minimal responses, score accordingly low
+- If the interview was cut short or lacks substantial content, reflect this in the scoring
+- Base scores entirely on demonstrated performance, not potential or background assumptions
+- For {difficulty} level positions, evaluate based on what they actually showed during the interview
 
-Be constructive but honest in your feedback. Highlight both strengths and areas for improvement."""
+Be constructive but honest in your feedback. Highlight both strengths and areas for improvement based solely on interview performance."""
 
         return prompt
     
@@ -268,10 +258,31 @@ Be constructive but honest in your feedback. Highlight both strengths and areas 
         
         return data
     
-    async def _create_default_feedback(self, attempt_id: str) -> Dict:
-        """Create default feedback when AI grading fails"""
+    async def _create_no_interview_feedback(self, attempt_id: str) -> Dict:
+        """Create feedback for when there's no interview content (very low score)"""
         return {
-            "overall_score": 70,
+            "overall_score": 5,
+            "strengths": [
+                "Started the interview session"
+            ],
+            "improvement_areas": [
+                "Complete the full interview by answering all questions",
+                "Provide detailed responses to demonstrate your knowledge",
+                "Engage actively throughout the entire interview process"
+            ],
+            "detailed_feedback": "The interview was not completed or no responses were provided to the questions. To improve your score, make sure to participate fully in the interview by answering all questions with detailed, thoughtful responses that demonstrate your skills and knowledge.",
+            "rubric_scores": {
+                "technical_knowledge": 5,
+                "communication": 5,
+                "problem_solving": 5,
+                "cultural_fit": 5
+            }
+        }
+
+    async def _create_fallback_feedback(self, attempt_id: str) -> Dict:
+        """Create fallback feedback when AI grading fails but interview content exists"""
+        return {
+            "overall_score": 60,
             "strengths": [
                 "Completed the interview session",
                 "Showed interest in the position",
@@ -284,10 +295,10 @@ Be constructive but honest in your feedback. Highlight both strengths and areas 
             ],
             "detailed_feedback": "Thank you for completing the practice interview. This was a good learning experience. Focus on providing more detailed responses and specific examples from your experience to strengthen your interview performance.",
             "rubric_scores": {
-                "technical_knowledge": 70,
-                "communication": 75,
-                "problem_solving": 65,
-                "cultural_fit": 75
+                "technical_knowledge": 60,
+                "communication": 65,
+                "problem_solving": 55,
+                "cultural_fit": 65
             }
         }
     
@@ -305,12 +316,6 @@ Be constructive but honest in your feedback. Highlight both strengths and areas 
             raise ValueError("Interview not found")
         return interview.model_dump()
     
-    async def _get_cv_data_for_interview(self, req: Request, user_id: str) -> Dict:
-        """Get CV data for the user associated with the interview"""
-        if not user_id:
-            return {}
-        cv = await get_user_cv(req, user_id)
-        return cv.model_dump() if cv else {}
 
 # Global service instance
 grading_service = InterviewGradingService()
