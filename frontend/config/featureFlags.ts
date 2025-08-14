@@ -21,7 +21,7 @@ export interface FeatureFlags {
 // Default feature flags - can be overridden by remote config
 export const defaultFeatureFlags: FeatureFlags = {
   paywallEnabled: true,
-  premiumRetryRequired: false,
+  premiumRetryRequired: true,
   premiumDetailedFeedback: true,
 };
 

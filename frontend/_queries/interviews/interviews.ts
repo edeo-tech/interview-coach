@@ -106,6 +106,7 @@ export const useFinishAttempt = () => {
     }) => interviewsApi.finishAttempt(interviewId, attemptId, durationSeconds, conversationId),
     onSuccess: (_, { interviewId }) => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.detail(interviewId) });
+      queryClient.invalidateQueries({ queryKey: interviewKeys.attemptsCount(interviewId) });
     },
   });
 };
