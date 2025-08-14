@@ -130,7 +130,7 @@ export default function AttemptGradingScreen() {
     };
   }, [data, refetch, pollCount]);
 
-  const loading = isLoading || (!data && isFetching);
+  const loading = isLoading || !data;
   const feedbackAccess = canViewDetailedFeedback();
 
   const renderLoadingState = () => {
@@ -142,12 +142,6 @@ export default function AttemptGradingScreen() {
           <Text style={styles.loadingSubtitle}>
             Our AI is analyzing your interview performance to provide personalized feedback.
           </Text>
-          <View style={styles.statusIndicator}>
-            <View style={[styles.statusDot, styles.connected]} />
-            <Text style={styles.statusText}>
-              Checking for results... (Poll #{pollCount})
-            </Text>
-          </View>
         </View>
       </View>
     );
