@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 function CustomTabBar({ state, descriptors, navigation }) {
     return (
         <View style={styles.tabBar}>
-            <BlurView tint="dark" intensity={15} style={styles.blurView}>
+            <BlurView tint="dark" intensity={30} style={styles.blurView}>
                 <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', paddingHorizontal: 30 }}>
                     {state.routes.map((route, index) => {
                         const { options } = descriptors[route.key];
@@ -49,9 +49,11 @@ function CustomTabBar({ state, descriptors, navigation }) {
                     style={styles.centerButton}
                     onPress={() => router.push('/interviews/create')}
                 >
-                    <View style={styles.centerButtonInner}>
-                        <Ionicons name="add" size={28} color="#ffffff" />
-                    </View>
+                    <BlurView tint="dark" intensity={30} style={styles.centerButtonBlur}>
+                        <View style={styles.centerButtonInner}>
+                            <Ionicons name="add" size={28} color="#ffffff" />
+                        </View>
+                    </BlurView>
                 </TouchableOpacity>
             </BlurView>
         </View>
@@ -65,7 +67,7 @@ export default function TabLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: 'rgba(10,10,10,0.8)',
+                    backgroundColor: 'rgba(0,0,0,0.2)',
                         borderTopWidth: 0,
                     height: 84,
                     paddingHorizontal: 30,
@@ -73,7 +75,7 @@ export default function TabLayout() {
                 tabBarBackground: () => (
                     <BlurView 
                         tint="dark" 
-                        intensity={10} 
+                        intensity={30} 
                         style={{ 
                             flex: 1,
                             backgroundColor: 'rgba(55, 55, 55, 0.8)',
@@ -125,7 +127,7 @@ const styles = StyleSheet.create({
     blurView: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: 'rgba(10,10,10,0.2)',
+        backgroundColor: 'rgba(0,0,0,0.2)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -150,6 +152,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 100,
+    },
+    centerButtonBlur: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.2)',
     },
     centerButtonInner: {
         width: 64,
