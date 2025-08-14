@@ -337,7 +337,7 @@ export default function AttemptGradingScreen() {
               style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
               onPress={() => {
                 if (data) {
-                  router.replace('/interviews');
+                  router.replace('/(app)/(tabs)/home');
                 }
               }}
               disabled={!data}
