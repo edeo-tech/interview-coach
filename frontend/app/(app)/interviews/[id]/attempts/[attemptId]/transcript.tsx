@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator, Platform } from '
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import TranscriptView from '../../../../../../components/TranscriptView';
 import { useInterview } from '../../../../../../_queries/interviews/interviews';
 import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
@@ -52,19 +53,14 @@ export default function AttemptTranscriptScreen() {
 
   if (isLoading) {
     return (
-      <LinearGradient
-        colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.gradient}
-      >
+      <ChatGPTBackground style={styles.gradient}>
         <View style={styles.center}> 
           <View style={styles.loadingCard}>
             <ActivityIndicator size="large" color="#F59E0B" />
             <Text style={styles.loadingTitle}>Loading interview...</Text>
           </View>
         </View>
-      </LinearGradient>
+      </ChatGPTBackground>
     );
   }
 
@@ -122,12 +118,7 @@ export default function AttemptTranscriptScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
-    >
+    <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
@@ -138,7 +129,7 @@ export default function AttemptTranscriptScreen() {
         {renderContent()}
         {renderFooter()}
       </View>
-    </LinearGradient>
+    </ChatGPTBackground>
   );
 }
 

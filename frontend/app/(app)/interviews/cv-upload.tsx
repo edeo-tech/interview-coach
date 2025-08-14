@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator, Sty
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCV, useUploadCV, useDeleteCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
@@ -124,7 +125,8 @@ const CVUpload = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ChatGPTBackground style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -137,7 +139,7 @@ const CVUpload = () => {
         {/* Current CV Status */}
         {cvLoading ? (
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="small" color="#6b7280" />
+            <ActivityIndicator size="small" color="#F59E0B" />
             <Text style={styles.loadingText}>Loading CV information...</Text>
           </View>
         ) : currentCV ? (
@@ -212,9 +214,9 @@ const CVUpload = () => {
             ]}
           >
             {uploadMutation.isPending || uploadProgress ? (
-              <ActivityIndicator size="large" color="#3b82f6" />
+              <ActivityIndicator size="large" color="#F59E0B" />
             ) : (
-              <Ionicons name="cloud-upload" size={48} color="#3b82f6" />
+              <Ionicons name="cloud-upload" size={48} color="#F59E0B" />
             )}
             
             <Text style={styles.uploadText}>
@@ -274,13 +276,17 @@ const CVUpload = () => {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </ChatGPTBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,

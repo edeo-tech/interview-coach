@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityInd
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../../_queries/interviews/interviews';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
@@ -185,7 +186,8 @@ export default function CreateInterview() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ChatGPTBackground style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -256,7 +258,7 @@ export default function CreateInterview() {
               ]}
             >
               {uploadCV.isPending ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color="#F59E0B" />
               ) : (
                 <>
                   <Ionicons name="arrow-forward" size={24} color="white" />
@@ -370,7 +372,7 @@ export default function CreateInterview() {
               ]}
             >
               {isLoading ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color="#F59E0B" />
               ) : (
                 <>
                   <Ionicons name="add-circle" size={24} color="white" />
@@ -391,13 +393,17 @@ export default function CreateInterview() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </ChatGPTBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: 'transparent',
   },
   keyboardAvoidingView: {
     flex: 1,

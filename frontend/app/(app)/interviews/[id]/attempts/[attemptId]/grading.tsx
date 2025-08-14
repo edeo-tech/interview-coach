@@ -4,6 +4,7 @@ import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
@@ -302,12 +303,7 @@ export default function AttemptGradingScreen() {
   );
 
   return (
-    <LinearGradient
-      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
-    >
+    <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
@@ -346,7 +342,7 @@ export default function AttemptGradingScreen() {
           </Pressable>
         </View>
       </View>
-    </LinearGradient>
+    </ChatGPTBackground>
   );
 }
 

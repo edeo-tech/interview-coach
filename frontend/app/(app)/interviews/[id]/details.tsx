@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import ChatGPTBackground from '../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
@@ -82,7 +83,7 @@ export default function InterviewDetails() {
             </View>
           ) : attempt.status === 'graded' ? (
             <View style={styles.gradeContainer}>
-              <ActivityIndicator size="small" color="#3b82f6" />
+              <ActivityIndicator size="small" color="#F59E0B" />
               <Text style={styles.gradeLabel}>Loading...</Text>
             </View>
           ) : (
@@ -181,38 +182,37 @@ export default function InterviewDetails() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3b82f6" />
-          <Text style={styles.loadingText}>Loading interview details...</Text>
-        </View>
-      </SafeAreaView>
+      <ChatGPTBackground style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#F59E0B" />
+            <Text style={styles.loadingText}>Loading interview details...</Text>
+          </View>
+        </SafeAreaView>
+      </ChatGPTBackground>
     );
   }
 
   if (error || !interviewData) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={64} color="#ef4444" />
-          <Text style={styles.errorTitle}>Failed to load interview</Text>
-          <TouchableOpacity onPress={() => router.back()} style={styles.errorButton}>
-            <Text style={styles.errorButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <ChatGPTBackground style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={64} color="#ef4444" />
+            <Text style={styles.errorTitle}>Failed to load interview</Text>
+            <TouchableOpacity onPress={() => router.back()} style={styles.errorButton}>
+              <Text style={styles.errorButtonText}>Go Back</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </ChatGPTBackground>
     );
   }
 
   const { interview, attempts } = interviewData;
 
   return (
-    <LinearGradient
-      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
-    >
+    <ChatGPTBackground style={styles.gradient}>
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <ScrollView style={styles.scrollView}>
         {/* Header */}
@@ -281,7 +281,7 @@ export default function InterviewDetails() {
         </View>
       </ScrollView>
     </SafeAreaView>
-    </LinearGradient>
+    </ChatGPTBackground>
   );
 }
 
