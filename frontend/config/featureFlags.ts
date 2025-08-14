@@ -18,11 +18,11 @@ export interface FeatureFlags {
   // e.g., newUIEnabled: boolean;
 }
 
-// Default feature flags - can be overridden by remote config
+// Default feature flags - can be overridden by remote config - set to false for testing without paywalls
 export const defaultFeatureFlags: FeatureFlags = {
-  paywallEnabled: true,
+  paywallEnabled: false,
   premiumRetryRequired: false,
-  premiumDetailedFeedback: true,
+  premiumDetailedFeedback: false,
 };
 
 // Environment-based overrides (for development/testing)

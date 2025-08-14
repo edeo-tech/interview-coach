@@ -8,6 +8,7 @@ import { useStartAttempt, useAddTranscript, useFinishAttempt } from '../../_quer
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -420,7 +421,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
     return (
         <MockInterviewConversation config={conversationConfig}>
             {(conversation) => (
-                <View style={styles.container}>
+                <ChatGPTBackground style={styles.container}>
                     {callState !== 'incoming' && (
                         <View style={styles.header}>
                             <View style={styles.headerInfo}>
@@ -489,43 +490,30 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         )}
 
                         {callState === 'active' && (
-                            <View style={styles.interviewContainer}>
-                                {/* Call Screen Header */}
-                                <View style={styles.callHeader}>
-                                    <View style={styles.interviewerProfileSmall}>
-                                        <Image 
-                                            source={{ uri: interviewer.avatar }}
-                                            style={styles.interviewerAvatarSmallImage}
-                                            resizeMode="cover"
-                                        />
-                                        <View style={styles.interviewerInfoSmall}>
-                                            <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
-                                            <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.callStatus}>
-                                        <View style={styles.recordingIndicator} />
-                                        <Text style={styles.callStatusText}>Recording</Text>
-                                    </View>
+                            <View style={styles.activeCallContainer}>
+                                {/* iPhone-style Active Call Interface */}
+                                <View style={styles.activeCallHeader}>
+                                    <Text style={styles.activeCallStatus}>Interview in progress</Text>
+                                    <Text style={styles.activeCallDuration}>{formatDuration(duration)}</Text>
                                 </View>
 
-                                {/* Transcript/Notes */}
-                                <View style={styles.notesContainer}>
-                                    {interviewNotes.map((note, index) => (
-                                        <View key={index} style={[
-                                            styles.noteItem,
-                                            note.startsWith('You:') ? styles.userNote : styles.aiNote
-                                        ]}>
-                                            <Text style={styles.noteText}>{note}</Text>
-                                        </View>
-                                    ))}
-                                    {interviewNotes.length === 0 && (
-                                        <View style={styles.emptyNotes}>
-                                            <Text style={styles.emptyNotesText}>
-                                                Interview will start momentarily...
-                                            </Text>
-                                        </View>
-                                    )}
+                                {/* Large Centered Profile */}
+                                <View style={styles.activeCallMiddle}>
+                                    <View style={styles.activeCallAvatarContainer}>
+                                        <Image 
+                                            source={{ uri: interviewer.avatar }}
+                                            style={styles.activeCallAvatarImage}
+                                            resizeMode="cover"
+                                        />
+                                    </View>
+                                    <Text style={styles.activeCallInterviewerName}>{interviewer.name}</Text>
+                                    <Text style={styles.activeCallInterviewerRole}>{interviewer.role}</Text>
+                                    
+                                    {/* Recording indicator */}
+                                    <View style={styles.activeCallRecordingContainer}>
+                                        <View style={styles.activeCallRecordingDot} />
+                                        <Text style={styles.activeCallRecordingText}>Recording</Text>
+                                    </View>
                                 </View>
                             </View>
                         )}
@@ -595,7 +583,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                             </Pressable>
                         )}
                     </View>
-                </View>
+                </ChatGPTBackground>
             )}
         </MockInterviewConversation>
     );
@@ -604,15 +592,12 @@ Remember: This is a practice interview to help ${userName} improve their intervi
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 20,
         paddingTop: 60,
-        borderBottomWidth: 1,
-        borderBottomColor: '#333',
     },
     backButton: {
         padding: 8,
@@ -905,8 +890,6 @@ const styles = StyleSheet.create({
     footer: {
         alignItems: 'center',
         paddingVertical: 30,
-        borderTopWidth: 1,
-        borderTopColor: '#333',
     },
     startButton: {
         flexDirection: 'row',
@@ -1108,5 +1091,92 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 8,
         elevation: 8,
+    },
+    // iPhone-style Active Call Styles
+    activeCallContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingTop: 20,
+    },
+    activeCallHeader: {
+        alignItems: 'center',
+        marginBottom: 40,
+    },
+    activeCallStatus: {
+        fontSize: 16,
+        fontFamily: 'Inter_400Regular',
+        color: 'rgba(255, 255, 255, 0.7)',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    activeCallDuration: {
+        fontSize: 18,
+        fontFamily: 'Inter_600SemiBold',
+        color: '#F59E0B',
+        textAlign: 'center',
+    },
+    activeCallMiddle: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingBottom: 60,
+    },
+    activeCallAvatarContainer: {
+        width: 160,
+        height: 160,
+        borderRadius: 80,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: 'rgba(245, 158, 11, 0.3)',
+        marginBottom: 24,
+        shadowColor: '#F59E0B',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.2,
+        shadowRadius: 16,
+        elevation: 16,
+    },
+    activeCallAvatarImage: {
+        width: 160,
+        height: 160,
+        borderRadius: 80,
+    },
+    activeCallInterviewerName: {
+        fontSize: 28,
+        fontFamily: 'Inter_300Light',
+        color: '#ffffff',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    activeCallInterviewerRole: {
+        fontSize: 16,
+        fontFamily: 'Inter_400Regular',
+        color: 'rgba(255, 255, 255, 0.6)',
+        textAlign: 'center',
+        marginBottom: 24,
+    },
+    activeCallRecordingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(239, 68, 68, 0.12)',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.25)',
+    },
+    activeCallRecordingDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#EF4444',
+        marginRight: 8,
+    },
+    activeCallRecordingText: {
+        fontSize: 14,
+        fontFamily: 'Inter_500Medium',
+        color: '#EF4444',
     },
 });
