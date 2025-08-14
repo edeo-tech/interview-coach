@@ -96,7 +96,7 @@ const blurredStyles = StyleSheet.create({
 });
 
 export default function AttemptGradingScreen() {
-  const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
+  const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
   const { canViewDetailedFeedback } = useFeedbackCheck();
@@ -306,9 +306,15 @@ export default function AttemptGradingScreen() {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </Pressable>
+          {/* Only show back button if coming from details (not from interview) */}
+          {is_from_interview !== 'true' && (
+            <Pressable 
+              style={styles.backButton} 
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </Pressable>
+          )}
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
         
@@ -324,23 +330,26 @@ export default function AttemptGradingScreen() {
           </View>
         )}
         
-        <View style={styles.footer}>
-          <Pressable 
-            style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
-            onPress={() => {
-              if (data) {
-                router.replace({ pathname: '/interviews/[id]/details', params: { id } });
-              }
-            }}
-            disabled={!data}
-          >
-            <Ionicons name="refresh-circle" size={24} color={data ? "#fff" : "#6B7280"} />
-            <Text style={[styles.practiceAgainText, !data && styles.practiceAgainTextDisabled]}>
-              Practice Again & Improve
-            </Text>
-            <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
-          </Pressable>
-        </View>
+        {/* Only show footer button if coming from interview */}
+        {is_from_interview === 'true' && (
+          <View style={styles.footer}>
+            <Pressable 
+              style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
+              onPress={() => {
+                if (data) {
+                  router.replace('/interviews');
+                }
+              }}
+              disabled={!data}
+            >
+              <Ionicons name="refresh-circle" size={24} color={data ? "#fff" : "#6B7280"} />
+              <Text style={[styles.practiceAgainText, !data && styles.practiceAgainTextDisabled]}>
+                Practice Again & Improve
+              </Text>
+              <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
+            </Pressable>
+          </View>
+        )}
       </View>
     </ChatGPTBackground>
   );

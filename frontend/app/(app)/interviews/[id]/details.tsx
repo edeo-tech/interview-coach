@@ -124,7 +124,7 @@ export default function InterviewDetails() {
             if (attempt.status === 'graded') {
               router.push({ 
                 pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
-                params: { id, attemptId: attempt.id } 
+                params: { id, attemptId: attempt.id, is_from_interview: 'false' } 
               });
             }
           }}

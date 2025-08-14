@@ -341,7 +341,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             if (attemptId && params.interviewId) {
                 router.replace({
                     pathname: '/interviews/[id]/attempts/[attemptId]/grading',
-                    params: { id: params.interviewId as string, attemptId }
+                    params: { id: params.interviewId as string, attemptId, is_from_interview: 'true' }
                 });
                 
                 // Trigger backend finish in background (webhook will handle the rest)
