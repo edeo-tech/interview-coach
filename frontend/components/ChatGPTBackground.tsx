@@ -38,6 +38,7 @@ export default function ChatGPTBackground({ children, style }: ChatGPTBackground
       {/* Colorful streak 2 - Middle curve */}
       <LinearGradient
         colors={[
+          'rgba(19, 0, 57, 0.17)', // Bright yellow-gold
           'rgba(236, 72, 153, 0.5)', // Pink
           'rgba(245, 158, 11, 0.3)', // Orange
           'rgba(245, 158, 11, 0)',
@@ -57,6 +58,32 @@ export default function ChatGPTBackground({ children, style }: ChatGPTBackground
         start={{ x: 0.8, y: 0.6 }}
         end={{ x: 0.2, y: 1 }}
         style={[styles.streak, styles.streak3]}
+      />
+      
+      {/* Organic dark section - Top curved area */}
+      <LinearGradient
+        colors={[
+          '#0B1426', // Very dark navy
+          '#0F172A', // Dark slate
+          'rgba(15, 23, 42, 0.8)',
+          'rgba(15, 23, 42, 0)',
+        ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0.7, y: 0.6 }}
+        style={styles.darkSectionTop}
+      />
+      
+      {/* Organic dark section - Bottom flowing area */}
+      <LinearGradient
+        colors={[
+          '#111827', // Dark grey
+          '#0B1426', // Very dark navy
+          'rgba(11, 20, 38, 0.9)',
+          'rgba(11, 20, 38, 0)',
+        ]}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0.2, y: 0.4 }}
+        style={styles.darkSectionBottom}
       />
       
       {/* Glassmorphic prism effect 1 - Large crystal */}
@@ -101,6 +128,34 @@ export default function ChatGPTBackground({ children, style }: ChatGPTBackground
         />
       </View>
       
+      {/* Bright central accent - Color unifier 1 */}
+      <View style={[styles.brightAccent, styles.brightAccent1]}>
+        <LinearGradient
+          colors={[
+            'rgba(252, 180, 0, 0.6)', // Bright yellow-gold
+            'rgba(245, 158, 11, 0.4)', // Orange-gold
+            'rgba(249, 115, 22, 0.3)', // Orange
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.accentGradient}
+        />
+      </View>
+      
+      {/* Bright central accent - Color unifier 2 */}
+      <View style={[styles.brightAccent, styles.brightAccent2]}>
+        <LinearGradient
+          colors={[
+            'rgba(168, 85, 247, 0.8)', // Bright purple
+            'rgba(139, 92, 246, 0.6)', // Violet
+            'rgba(236, 72, 153, 0.5)', // Pink
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.accentGradient}
+        />
+      </View>
+      
       {/* Additional blur-like streak overlay */}
       <LinearGradient
         colors={[
@@ -128,7 +183,7 @@ export default function ChatGPTBackground({ children, style }: ChatGPTBackground
       
       {/* Frosted glass blur overlay */}
       <BlurView
-        intensity={1}
+        intensity={100}
         tint="dark"
         style={styles.blurOverlayGlass}
       />
@@ -164,11 +219,11 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '15deg' }],
   },
   streak2: {
-    top: '20%',
-    left: -80,
-    right: -80,
-    height: '50%',
-    transform: [{ rotate: '-25deg' }],
+    top: '40%',
+    left: -60,
+    right: -40,
+    height: '40%',
+    transform: [{ rotate: '-40deg' }],
   },
   streak3: {
     bottom: -80,
@@ -216,6 +271,48 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     opacity: 0.7,
+  },
+  darkSectionTop: {
+    position: 'absolute',
+    top: -40,
+    left: -20,
+    right: '30%',
+    height: '35%',
+    transform: [{ rotate: '-8deg' }],
+    opacity: 0.8,
+  },
+  darkSectionBottom: {
+    position: 'absolute',
+    bottom: -60,
+    left: '25%',
+    right: -30,
+    height: '40%',
+    transform: [{ rotate: '12deg' }],
+    opacity: 0.75,
+  },
+  brightAccent: {
+    position: 'absolute',
+    borderRadius: 25,
+  },
+  brightAccent1: {
+    top: '35%',
+    left: '35%',
+    width: 90,
+    height: 60,
+    transform: [{ rotate: '-15deg' }],
+    opacity: 0.7,
+  },
+  brightAccent2: {
+    top: '50%',
+    right: '30%',
+    width: 70,
+    height: 80,
+    transform: [{ rotate: '25deg' }],
+    opacity: 0.6,
+  },
+  accentGradient: {
+    flex: 1,
+    borderRadius: 25,
   },
   lightRefraction: {
     position: 'absolute',
