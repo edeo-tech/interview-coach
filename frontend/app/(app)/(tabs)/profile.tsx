@@ -17,6 +17,30 @@ const StatCard = ({ icon, label, value, color = '#F59E0B' }: any) => (
     </View>
 );
 
+const getScoreIconAndColor = (score: number | null | string) => {
+    // Handle string values (like "85%") by extracting the number
+    let numericScore: number | null = null;
+    
+    if (typeof score === 'string') {
+        const match = score.match(/(\d+)/);
+        numericScore = match ? parseInt(match[1], 10) : null;
+    } else {
+        numericScore = score;
+    }
+    
+    if (numericScore === null || numericScore === undefined) {
+        return { icon: 'trending-up', color: '#10B981' };
+    }
+    
+    if (numericScore < 40) {
+        return { icon: 'trending-down', color: '#EF4444' }; // Red for low scores
+    } else if (numericScore >= 40 && numericScore < 70) {
+        return { icon: 'arrow-forward', color: '#F59E0B' }; // Yellow/orange for medium scores
+    } else {
+        return { icon: 'trending-up', color: '#10B981' }; // Green for high scores
+    }
+};
+
 const MenuItem = ({ icon, label, onPress }: any) => (
     <Pressable style={styles.menuItem} onPress={onPress}>
         <Ionicons name={icon} size={24} color="#6B7280" />
@@ -218,10 +242,10 @@ export default function Profile() {
                     color="#F59E0B"
                 />
                 <StatCard
-                    icon="trending-up"
+                    icon={getScoreIconAndColor(user.averageScore).icon}
                     label="Average Score"
                     value={user.averageScore}
-                    color="#10B981"
+                    color={getScoreIconAndColor(user.averageScore).color}
                 />
                 <StatCard
                     icon="flame"
@@ -267,7 +291,7 @@ export default function Profile() {
                                     source: 'profile',
                                     total_interviews: interviews.length
                                 });
-                                router.push('/interviews/index');
+                                router.push('/interviews/index' as any);
                             }}
                         >
                             <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
