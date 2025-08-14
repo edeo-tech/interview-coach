@@ -118,20 +118,12 @@ export default function MockInterview() {
     
     const topics = params.topics ? JSON.parse(params.topics as string) : [];
     
-    // Generate random interviewer profile
-    const interviewerProfiles = [
-        { name: 'Sarah Chen', avatar: '👩‍💼', role: 'Senior Engineering Manager' },
-        { name: 'Marcus Johnson', avatar: '👨‍💼', role: 'Technical Lead' },
-        { name: 'Elena Rodriguez', avatar: '👩‍💼', role: 'Principal Engineer' },
-        { name: 'David Kim', avatar: '👨‍💼', role: 'Engineering Director' },
-        { name: 'Priya Patel', avatar: '👩‍💼', role: 'Staff Software Engineer' },
-        { name: 'Alex Thompson', avatar: '👨‍💼', role: 'Head of Engineering' }
-    ];
-    
-    const [interviewer] = useState(() => {
-        const randomIndex = Math.floor(Math.random() * interviewerProfiles.length);
-        return interviewerProfiles[randomIndex];
-    });
+    // Fixed interviewer profile - Niamh Morrisey
+    const interviewer = {
+        name: 'Niamh Morrisey',
+        avatar: 'https://res.cloudinary.com/dphekriyz/image/upload/v1755190732/temp_prof_female_vchg08.jpg',
+        role: 'Senior Technical Interviewer'
+    };
 
     const conversationConfig = useMemo(() => ({
         onConnect: () => {
@@ -441,12 +433,6 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                 <Text style={styles.timerText}>{formatDuration(duration)}</Text>
                             </View>
                         )}
-                        {callState === 'incoming' && (
-                            <View style={styles.incomingIndicator}>
-                                <Ionicons name="call" size={16} color="#10B981" />
-                                <Text style={styles.incomingText}>Incoming</Text>
-                            </View>
-                        )}
                             {callState === 'connecting' && (
                                 <View style={styles.connectingIndicator}>
                                     <Ionicons name="time-outline" size={16} color="#F59E0B" />
@@ -471,7 +457,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                 
                                 <View style={styles.iphoneMiddleSection}>
                                     <View style={styles.iphoneAvatarContainer}>
-                                        <Text style={styles.iphoneAvatar}>{interviewer.avatar}</Text>
+                                        <Image 
+                                            source={{ uri: interviewer.avatar }}
+                                            style={styles.iphoneAvatarImage}
+                                            resizeMode="cover"
+                                        />
                                     </View>
                                 </View>
                             </View>
@@ -480,7 +470,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         {callState === 'connecting' && (
                             <View style={styles.connectingContainer}>
                                 <View style={styles.interviewerProfileSmall}>
-                                    <Text style={styles.interviewerAvatarSmall}>{interviewer.avatar}</Text>
+                                    <Image 
+                                        source={{ uri: interviewer.avatar }}
+                                        style={styles.interviewerAvatarSmallImage}
+                                        resizeMode="cover"
+                                    />
                                     <View style={styles.interviewerInfoSmall}>
                                         <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
                                         <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
@@ -499,7 +493,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                 {/* Call Screen Header */}
                                 <View style={styles.callHeader}>
                                     <View style={styles.interviewerProfileSmall}>
-                                        <Text style={styles.interviewerAvatarSmall}>{interviewer.avatar}</Text>
+                                        <Image 
+                                            source={{ uri: interviewer.avatar }}
+                                            style={styles.interviewerAvatarSmallImage}
+                                            resizeMode="cover"
+                                        />
                                         <View style={styles.interviewerInfoSmall}>
                                             <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
                                             <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
@@ -837,10 +835,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    interviewerAvatarSmall: {
-        fontSize: 40,
-        marginRight: 12,
-    },
     interviewerInfoSmall: {
         flex: 1,
     },
@@ -973,10 +967,6 @@ const styles = StyleSheet.create({
     acceptButton: {
         backgroundColor: '#10B981',
     },
-    declineButton: {
-        backgroundColor: '#EF4444',
-        transform: [{ rotate: '135deg' }],
-    },
     connectingFooter: {
         alignItems: 'center',
         paddingVertical: 20,
@@ -1046,6 +1036,17 @@ const styles = StyleSheet.create({
     },
     iphoneAvatar: {
         fontSize: 50,
+    },
+    iphoneAvatarImage: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+    },
+    interviewerAvatarSmallImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 12,
     },
     // Slide to Answer Styles
     slideContainer: {
