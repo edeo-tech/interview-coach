@@ -337,11 +337,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             });
             setCallState('ended');
             
-            // Navigate immediately to transcript screen (with loading state)
+            // Navigate immediately to grading screen (with loading state)
             if (attemptId && params.interviewId) {
                 router.replace({
-                    pathname: '/interviews/[id]/attempts/[attemptId]/transcript',
-                    params: { id: params.interviewId as string, attemptId, is_from_interview: 'true' }
+                    pathname: '/interviews/[id]/attempts/[attemptId]/grading',
+                    params: { id: params.interviewId as string, attemptId }
                 });
                 
                 // Trigger backend finish in background (webhook will handle the rest)
@@ -422,7 +422,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         <MockInterviewConversation config={conversationConfig}>
             {(conversation) => (
                 <ChatGPTBackground style={styles.container}>
-                    {callState !== 'incoming' && (
+                    {callState !== 'incoming' && callState !== 'connecting' && (
                         <View style={styles.header}>
                             <View style={styles.headerInfo}>
                                 <Text style={styles.companyName}>{params.companyName}</Text>
@@ -434,12 +434,6 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                 <Text style={styles.timerText}>{formatDuration(duration)}</Text>
                             </View>
                         )}
-                            {callState === 'connecting' && (
-                                <View style={styles.connectingIndicator}>
-                                    <Ionicons name="time-outline" size={16} color="#F59E0B" />
-                                    <Text style={styles.connectingText}>Connecting...</Text>
-                                </View>
-                            )}
                         </View>
                     )}
 
@@ -452,8 +446,6 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                             <View style={styles.iphoneCallContainer}>
                                 <View style={styles.iphoneHeader}>
                                     <Text style={styles.iphoneCallerName}>{interviewer.name}</Text>
-                                    <Text style={styles.iphoneCallStatus}>calling...</Text>
-                                    <Text style={styles.iphoneCallSubtext}>{params.companyName} • {params.role}</Text>
                                 </View>
                                 
                                 <View style={styles.iphoneMiddleSection}>
@@ -464,27 +456,36 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                             resizeMode="cover"
                                         />
                                     </View>
+                                    
+                                    <Text style={styles.iphoneCallStatus}>calling...</Text>
+                                    
+                                    <View style={styles.iphoneCallSpacer} />
+                                    
+                                    <Text style={styles.iphoneCallSubtext}>{params.companyName} • {params.role}</Text>
                                 </View>
                             </View>
                         )}
 
                         {callState === 'connecting' && (
-                            <View style={styles.connectingContainer}>
-                                <View style={styles.interviewerProfileSmall}>
-                                    <Image 
-                                        source={{ uri: interviewer.avatar }}
-                                        style={styles.interviewerAvatarSmallImage}
-                                        resizeMode="cover"
-                                    />
-                                    <View style={styles.interviewerInfoSmall}>
-                                        <Text style={styles.interviewerNameSmall}>{interviewer.name}</Text>
-                                        <Text style={styles.interviewerRoleSmall}>{interviewer.role}</Text>
-                                    </View>
+                            <View style={styles.iphoneCallContainer}>
+                                <View style={styles.iphoneHeader}>
+                                    <Text style={styles.iphoneCallerName}>{interviewer.name}</Text>
                                 </View>
                                 
-                                <View style={styles.connectingStatus}>
-                                    <View style={styles.spinner} />
-                                    <Text style={styles.connectingText}>Connecting to {interviewer.name}...</Text>
+                                <View style={styles.iphoneMiddleSection}>
+                                    <View style={styles.iphoneAvatarContainer}>
+                                        <Image 
+                                            source={{ uri: interviewer.avatar }}
+                                            style={styles.iphoneAvatarImage}
+                                            resizeMode="cover"
+                                        />
+                                    </View>
+                                    
+                                    <Text style={styles.iphoneCallStatus}>connecting...</Text>
+                                    
+                                    <View style={styles.iphoneCallSpacer} />
+                                    
+                                    <Text style={styles.iphoneCallSubtext}>{params.companyName} • {params.role}</Text>
                                 </View>
                             </View>
                         )}
@@ -537,34 +538,16 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                             />
                         )}
 
-                        {callState === 'connecting' && (
-                            <View style={styles.connectingFooter}>
-                                <Text style={styles.statusText}>Connecting...</Text>
-                            </View>
-                        )}
+
 
                         {callState === 'active' && (
                             <>
                                 <View style={styles.callControls}>
                                     <Pressable
-                                        style={[styles.callControlButton, styles.muteButton]}
-                                        onPress={() => {/* Handle mute */}}
-                                    >
-                                        <Ionicons name="mic-off" size={24} color="#fff" />
-                                    </Pressable>
-                                    
-                                    <Pressable
                                         style={[styles.callControlButton, styles.endCallButton]}
                                         onPress={() => endInterview(conversation)}
                                     >
                                         <Ionicons name="call" size={28} color="#fff" />
-                                    </Pressable>
-                                    
-                                    <Pressable
-                                        style={[styles.callControlButton, styles.speakerButton]}
-                                        onPress={() => {/* Handle speaker */}}
-                                    >
-                                        <Ionicons name="volume-high" size={24} color="#fff" />
                                     </Pressable>
                                 </View>
                                 
@@ -980,21 +963,22 @@ const styles = StyleSheet.create({
     },
     iphoneHeader: {
         alignItems: 'center',
-        marginBottom: 60,
+        marginBottom: 40,
     },
     iphoneCallerName: {
         fontSize: 42,
         fontFamily: 'Inter_300Light',
         color: '#ffffff',
         textAlign: 'center',
-        marginBottom: 8,
+        marginBottom: 16,
     },
     iphoneCallStatus: {
         fontSize: 18,
         fontFamily: 'Inter_400Regular',
         color: 'rgba(255, 255, 255, 0.7)',
         textAlign: 'center',
-        marginBottom: 16,
+        marginTop: 16,
+        marginBottom: 24,
     },
     iphoneCallSubtext: {
         fontSize: 16,
@@ -1024,6 +1008,9 @@ const styles = StyleSheet.create({
         width: 120,
         height: 120,
         borderRadius: 60,
+    },
+    iphoneCallSpacer: {
+        height: 32,
     },
     interviewerAvatarSmallImage: {
         width: 40,
