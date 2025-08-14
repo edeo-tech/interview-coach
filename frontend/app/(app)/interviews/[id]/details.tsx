@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
@@ -226,8 +226,18 @@ export default function InterviewDetails() {
         {/* Job Info with Integrated CTA */}
         <View style={styles.jobCard}>
           <View style={styles.jobInfo}>
-            <Text style={styles.roleTitle}>{interview.role_title}</Text>
-            <Text style={styles.company}>{interview.company}</Text>
+            <View style={styles.jobHeader}>
+              {interview.company_logo_url && (
+                <Image 
+                  source={{ uri: interview.company_logo_url }}
+                  style={styles.companyLogo}
+                />
+              )}
+              <View style={styles.jobHeaderText}>
+                <Text style={styles.roleTitle}>{interview.role_title}</Text>
+                <Text style={styles.company}>{interview.company}</Text>
+              </View>
+            </View>
             <View style={styles.locationRow}>
               <Ionicons name="location-outline" size={16} color="#9ca3af" />
               <Text style={styles.location}>{interview.location || 'Remote'}</Text>
@@ -319,7 +329,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   errorButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#F59E0B',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -357,18 +367,32 @@ const styles = StyleSheet.create({
   jobInfo: {
     marginBottom: 20,
   },
+  jobHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  companyLogo: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    marginRight: 16,
+  },
+  jobHeaderText: {
+    flex: 1,
+  },
   roleTitle: {
     color: '#ffffff',
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
-    lineHeight: 32,
+    marginBottom: 4,
+    lineHeight: 28,
   },
   company: {
     color: '#60a5fa',
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
   },
   locationRow: {
     flexDirection: 'row',

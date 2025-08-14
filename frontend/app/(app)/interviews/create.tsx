@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   inputTypeButtonActive: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#F59E0B',
   },
   inputTypeText: {
     color: '#9ca3af',
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   submitButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#F59E0B',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
