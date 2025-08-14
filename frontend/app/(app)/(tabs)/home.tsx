@@ -163,43 +163,44 @@ export default function Home() {
                 onPress={() => handleInterviewPress(interview.id)}
                 style={styles.interviewCard}
               >
-                <View style={styles.interviewCardContent}>
-                  <View style={styles.cardLeftAccent}>
-                    <Ionicons 
-                      name={getInterviewTypeIcon(interview.interview_type) as any}
-                      size={14} 
-                      color="#ffffff" 
-                    />
-                  </View>
-                  
-                  <View style={styles.interviewCardLeft}>
-                    <View style={styles.interviewCardHeader}>
-                      <Text style={styles.interviewTitle} numberOfLines={1}>
-                        {interview.role_title}
-                      </Text>
-                      <Text style={styles.interviewCompany} numberOfLines={1}>
-                        {" • "}{interview.company}
-                      </Text>
-                    </View>
-                    
-                    <View style={styles.interviewMeta}>
-                      <View style={styles.interviewLocation}>
-                        <Ionicons name="location-outline" size={12} color="#6b7280" style={{flexShrink: 0}} />
-                        <Text style={styles.locationText} numberOfLines={1}>
-                          {interview.location || 'Remote'}
+                                 <View style={styles.interviewCardContent}>
+                   <View style={styles.cardLeftAccent}>
+                     <Ionicons 
+                       name={getInterviewTypeIcon(interview.interview_type) as any}
+                       size={28} 
+                       color="#ffffff" 
+                     />
+                   </View>
+                   
+                   <View style={styles.interviewCardMain}>
+                     <Text style={styles.interviewTitle}>
+                       {interview.role_title}
+                     </Text>
+                     
+                                           <View style={styles.interviewCompany}>
+                        <Ionicons name="business-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
+                        <Text style={styles.companyText} numberOfLines={1}>
+                          {interview.company.length > 30 ? interview.company.substring(0, 30) + '...' : interview.company}
                         </Text>
                       </View>
-                      <Text style={styles.metaSeparator}>•</Text>
-                      <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) }]} numberOfLines={1}>
-                        {interview.experience_level || interview.difficulty}
-                      </Text>
-                    </View>
-                  </View>
-                  
-                  <Text style={styles.interviewDate}>
-                    {formatDate(interview.created_at)}
-                  </Text>
-                </View>
+                      
+                      <View style={styles.interviewLocation}>
+                        <Ionicons name="location-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
+                        <Text style={styles.locationText} numberOfLines={1}>
+                          {(interview.location || 'Remote').length > 40 ? (interview.location || 'Remote').substring(0, 40) + '...' : (interview.location || 'Remote')}
+                        </Text>
+                      </View>
+                     
+                     <View style={styles.interviewBottomRow}>
+                       <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) }]}>
+                         {interview.experience_level || interview.difficulty}
+                       </Text>
+                       <Text style={styles.interviewDate}>
+                         {formatDate(interview.created_at)}
+                       </Text>
+                     </View>
+                   </View>
+                 </View>
               </TouchableOpacity>
             ))
           )}
@@ -368,71 +369,78 @@ const styles = StyleSheet.create({
   interviewCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingVertical: 16,
+    paddingVertical: 20,
     paddingHorizontal: 16,
-    minHeight: 68,
-    gap: 12,
+    minHeight: 80,
+    gap: 16,
   },
   cardLeftAccent: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
+    width: 48,
+    height: 48,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)'
   },
-  interviewCardLeft: {
+  interviewCardMain: {
     flex: 1,
     minWidth: 0, // Ensures text truncation works properly
-  },
-  interviewCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
   },
   interviewTitle: {
     color: '#ffffff',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     lineHeight: 18,
     flexShrink: 1,
+    marginBottom: 8,
   },
   interviewCompany: {
-    color: '#d1d5db',
-    fontSize: 13,
-    lineHeight: 18,
-    flexShrink: 1,
-  },
-  interviewMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'nowrap',
+    flexShrink: 1,
+    minWidth: 0,
+    marginBottom: 6,
+  },
+  companyText: {
+    color: '#d1d5db',
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 18,
+    marginLeft: 4,
+    flexShrink: 1,
   },
   interviewLocation: {
     flexDirection: 'row',
     alignItems: 'center',
     flexShrink: 1,
     minWidth: 0,
+    marginBottom: 8,
   },
   locationText: {
     color: '#9ca3af',
     fontSize: 12,
+    fontWeight: '500',
     lineHeight: 16,
-    marginLeft: 2,
+    marginLeft: 4,
     flexShrink: 1,
+  },
+  interviewBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   difficultyText: {
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     textTransform: 'capitalize',
     flexShrink: 0,
   },
   metaSeparator: {
     color: '#6b7280',
-    fontSize: 12,
+    fontSize: 14,
     marginHorizontal: 4,
-    lineHeight: 16,
+    lineHeight: 18,
     flexShrink: 0,
   },
   interviewType: {
@@ -450,6 +458,7 @@ const styles = StyleSheet.create({
   interviewDate: {
     color: '#9ca3af',
     fontSize: 11,
+    fontWeight: '500',
     lineHeight: 16,
   },
 
