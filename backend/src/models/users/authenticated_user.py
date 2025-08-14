@@ -10,4 +10,7 @@ class AuthenticatedUser(BaseModel):
     profile_qrcode: Optional[str] = Field('', description="The profile QR code URL of the user")
     is_banned: bool = Field(..., description="Whether the user is banned")
     last_login: Optional[datetime] = Field(None, description="The last time the user logged in")
-    is_premium: bool = Field(default=False, description="Whether the user has an active premium subscription") 
+    is_premium: bool = Field(default=False, description="Whether the user has an active premium subscription")
+    created_at: datetime = Field(..., description="When the user account was created")
+    streak: int = Field(default=0, description="Current login streak in days")
+    streak_record: int = Field(default=0, description="Highest login streak ever achieved") 

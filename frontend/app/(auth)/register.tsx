@@ -170,6 +170,18 @@ const Register = () => {
               )}
             </View>
 
+            <View style={styles.termsContainer}>
+              <Text style={styles.termsText}>
+                By registering you accept our{' '}
+                <TouchableOpacity
+                  onPress={() => router.push('/(auth)/terms')}
+                  style={styles.termsLink}
+                >
+                  <Text style={styles.termsLinkText}>terms of service</Text>
+                </TouchableOpacity>
+              </Text>
+            </View>
+
             <TouchableOpacity
               style={[styles.button, isLoading && styles.buttonDisabled]}
               onPress={handleRegister}
@@ -356,6 +368,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginRight: 4,
+  },
+  termsContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  termsText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  termsLink: {
+    paddingVertical: 2,
+  },
+  termsLinkText: {
+    color: '#F59E0B',
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 });
 

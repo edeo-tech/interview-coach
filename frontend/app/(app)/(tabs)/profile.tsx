@@ -5,6 +5,7 @@ import { useAuth } from '@/context/authentication/AuthContext';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
+import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 
@@ -29,6 +30,7 @@ export default function Profile() {
     const router = useRouter();
     const { data: interviews } = useInterviews();
     const { data: currentCV } = useCV();
+    const { data: userStats } = useUserStats();
     const { posthogScreen, posthogCapture } = usePosthogSafely();
 
     useFocusEffect(
@@ -90,13 +92,30 @@ export default function Profile() {
         return 'Experience level not specified';
     };
 
+    const getMemberSinceDate = () => {
+        if (!auth?.created_at) return 'January 2025';
+        
+        const createdDate = new Date(auth.created_at);
+        return createdDate.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    const getAverageScoreDisplay = () => {
+        if (userStats?.average_score !== null && userStats?.average_score !== undefined) {
+            return `${Math.round(userStats.average_score)}%`;
+        }
+        return 'N/A';
+    };
+
     const user = {
         name: auth?.name || 'User',
         email: auth?.email || 'user@example.com',
-        joinedDate: 'January 2025',
+        joinedDate: getMemberSinceDate(),
         totalInterviews: interviews?.length || 0,
-        averageScore: 83,
-        streak: 7,
+        averageScore: getAverageScoreDisplay(),
+        streak: auth?.streak || 0,
         rank: 'Advanced',
     };
 
@@ -201,7 +220,7 @@ export default function Profile() {
                 <StatCard
                     icon="trending-up"
                     label="Average Score"
-                    value={`${user.averageScore}%`}
+                    value={user.averageScore}
                     color="#10B981"
                 />
                 <StatCard
@@ -261,8 +280,26 @@ export default function Profile() {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Account</Text>
                 <View style={styles.menuContainer}>
-                    <MenuItem icon="settings-outline" label="Settings" />
-                    <MenuItem icon="help-circle-outline" label="Help Center" />
+                    <MenuItem 
+                        icon="settings-outline" 
+                        label="Settings"
+                        onPress={() => {
+                            posthogCapture('navigate_to_settings', {
+                                source: 'profile'
+                            });
+                            router.push('/(app)/settings');
+                        }}
+                    />
+                    <MenuItem 
+                        icon="document-text-outline" 
+                        label="Terms of Service"
+                        onPress={() => {
+                            posthogCapture('view_terms_of_service', {
+                                source: 'profile'
+                            });
+                            router.push('/(app)/terms');
+                        }}
+                    />
                 </View>
             </View>
 

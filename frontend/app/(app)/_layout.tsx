@@ -13,6 +13,8 @@ const AppLayout = () => {
             <Stack.Screen 
                 name="mock-interview"
             />
+            <Stack.Screen name="terms" />
+            <Stack.Screen name="settings" />
         </Stack>
     )
 }
