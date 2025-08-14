@@ -166,7 +166,7 @@ export default function AttemptGradingScreen() {
           if (data) {
             router.push({ 
               pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
-              params: { id, attemptId } 
+              params: { id, attemptId, is_from_interview: 'false' } 
             });
           }
         }}

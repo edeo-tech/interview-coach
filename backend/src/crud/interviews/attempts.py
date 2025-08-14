@@ -159,6 +159,7 @@ async def update_attempt_with_webhook_data(
         "status": "completed",
         "ended_at": datetime.now(timezone.utc),
         "duration_seconds": duration_seconds,
+        "conversation_id": conversation_id,  # Store conversation_id for future reference
         "elevenlabs_analysis": analysis  # Store raw analysis for reference
     }
     
@@ -237,3 +238,56 @@ async def get_user_feedback_history(req: Request, user_id: str, limit: int = 10)
                 })
     
     return feedback_list[:limit]
+
+async def update_attempt_with_webhook_data_by_attempt_id(
+    req: Request,
+    attempt_id: str,
+    conversation_id: str,
+    transcript: List[Dict],
+    analysis: Dict
+) -> Optional[InterviewAttempt]:
+    """Update attempt with data from ElevenLabs webhook using attempt_id directly"""
+    print(f"\n🎣 [WEBHOOK] Updating attempt with webhook data (by attempt_id):")
+    print(f"   - Attempt ID: {attempt_id}")
+    print(f"   - Conversation ID: {conversation_id}")
+    print(f"   - Transcript turns: {len(transcript)}")
+    
+    # Get attempt directly by ID
+    attempt = await get_attempt(req, attempt_id)
+    
+    if not attempt:
+        print(f"   ❌ ERROR: No attempt found with ID: {attempt_id}")
+        return None
+    
+    print(f"   - Found attempt for interview: {attempt.interview_id}")
+    
+    # Store transcript in original ElevenLabs format
+    print(f"   - Storing {len(transcript)} transcript turns in ElevenLabs format")
+    
+    # Calculate duration from last turn
+    duration_seconds = 0
+    if transcript:
+        last_turn = max(transcript, key=lambda x: x.get("time_in_call_secs", 0))
+        duration_seconds = last_turn.get("time_in_call_secs", 0)
+    
+    # Update attempt with webhook data
+    update_data = {
+        "transcript": transcript,  # Store original ElevenLabs format
+        "status": "completed",
+        "ended_at": datetime.now(timezone.utc),
+        "duration_seconds": duration_seconds,
+        "conversation_id": conversation_id,  # Store conversation_id for future reference
+        "elevenlabs_analysis": analysis  # Store raw analysis for reference
+    }
+    
+    result = await update_attempt(req, attempt_id, **update_data)
+    
+    if result:
+        print(f"   ✅ SUCCESS: Updated attempt with webhook data!")
+        print(f"   - Final transcript length: {len(transcript)}")
+        print(f"   - Duration: {duration_seconds} seconds")
+        print(f"   - Conversation ID stored: {conversation_id}")
+    else:
+        print(f"   ❌ ERROR: Failed to update attempt with webhook data!")
+    
+    return result

@@ -244,10 +244,20 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         const agentId = process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID;
 
         // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
+        let newAttemptId: string | null = null;
         try {
             const res = await startAttempt.mutateAsync(params.interviewId as string);
-            setAttemptId(res.data.attempt_id);
+            newAttemptId = res.data.attempt_id;
+            
+            if (!newAttemptId) {
+                console.error('❌ Backend returned no attempt_id');
+                setCallState('incoming');
+                return;
+            }
+            
+            setAttemptId(newAttemptId);
         } catch (e) {
+            console.error('❌ Failed to start attempt:', e);
             setCallState('incoming');
             return;
         }
@@ -256,6 +266,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             const prompt = buildInterviewPrompt();
             
             // Try without prompt override first to see if agent speaks
+            console.log('📝 Starting ElevenLabs session with metadata:', {
+                attemptId: newAttemptId,
+                interviewId: params.interviewId
+            });
+            
             const sessionConfig = {
                 agentId: agentId,
                 // Temporarily comment out overrides to test basic agent functionality
@@ -266,6 +281,10 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                 //         }
                 //     }
                 // },
+                metadata: {
+                    attemptId: newAttemptId,
+                    interviewId: params.interviewId as string,
+                },
                 dynamicVariables: {
                     candidate_name: auth?.name || 'Candidate',
                     job_title: params.role as string,
@@ -309,7 +328,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             if (attemptId && params.interviewId) {
                 router.replace({
                     pathname: '/interviews/[id]/attempts/[attemptId]/transcript',
-                    params: { id: params.interviewId as string, attemptId }
+                    params: { id: params.interviewId as string, attemptId, is_from_interview: 'true' }
                 });
                 
                 // Trigger backend finish in background (webhook will handle the rest)

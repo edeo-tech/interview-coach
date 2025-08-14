@@ -6,7 +6,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Request, HTTPException
 from decouple import config
 
-from crud.interviews.attempts import update_attempt_with_webhook_data
+from crud.interviews.attempts import update_attempt_with_webhook_data, update_attempt_with_webhook_data_by_attempt_id
 from services.grading_service import trigger_interview_grading
 from services.websocket_service import websocket_manager
 
@@ -104,24 +104,42 @@ async def handle_post_call_webhook(request: Request):
         agent_id = data.get("agent_id")
         transcript = data.get("transcript", [])
         analysis = data.get("analysis", {})
+        metadata = data.get("metadata", {})
         
-        if not conversation_id:
-            print("❌ No conversation_id in webhook data")
-            raise HTTPException(status_code=400, detail="Missing conversation_id")
+        # Extract attempt_id from metadata if available
+        attempt_id = metadata.get("attemptId")
         
         print(f"\n🎣 [WEBHOOK] Received post-call webhook:")
         print(f"   - Conversation ID: {conversation_id}")
         print(f"   - Agent ID: {agent_id}")
         print(f"   - Transcript turns: {len(transcript)}")
         print(f"   - Has analysis: {bool(analysis)}")
+        print(f"   - Metadata: {metadata}")
+        print(f"   - Attempt ID from metadata: {attempt_id}")
         
-        # Find the attempt by conversation_id and update with webhook data
-        attempt = await update_attempt_with_webhook_data(
-            request, 
-            conversation_id, 
-            transcript, 
-            analysis
-        )
+        # Try to update attempt using attempt_id from metadata first
+        if attempt_id:
+            print(f"   ✅ Using attempt_id from metadata: {attempt_id}")
+            attempt = await update_attempt_with_webhook_data_by_attempt_id(
+                request,
+                attempt_id,
+                conversation_id,
+                transcript,
+                analysis
+            )
+        else:
+            # Fallback to conversation_id lookup
+            print(f"   ⚠️ No attempt_id in metadata, falling back to conversation_id lookup")
+            if not conversation_id:
+                print("❌ No conversation_id in webhook data")
+                raise HTTPException(status_code=400, detail="Missing conversation_id")
+            
+            attempt = await update_attempt_with_webhook_data(
+                request, 
+                conversation_id, 
+                transcript, 
+                analysis
+            )
         
         if not attempt:
             print(f"❌ No attempt found for conversation_id: {conversation_id}")

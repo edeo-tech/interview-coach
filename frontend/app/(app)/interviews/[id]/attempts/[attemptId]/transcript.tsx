@@ -9,7 +9,7 @@ import { useWebSocket } from '../../../../../../hooks/websocket/useWebSocket';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 
 export default function AttemptTranscriptScreen() {
-  const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
+  const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, refetch } = useInterview(id);
   const { posthogScreen } = usePosthogSafely();
   
@@ -93,7 +93,31 @@ export default function AttemptTranscriptScreen() {
   };
 
   const renderFooter = () => {
-    // No footer needed - just the transcript
+    console.log('is_from_interview', is_from_interview);
+    // Only show "View Feedback" button if coming from interview (not from grading) and transcript is available
+    if (is_from_interview === 'true' && hasTranscript) {
+      return (
+        <View style={styles.footer}>
+          <Pressable 
+            style={styles.viewFeedbackButton}
+            onPress={() => {
+              router.push({ 
+                pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
+                params: { id, attemptId } 
+              });
+            }}
+          >
+            <Ionicons name="analytics-outline" size={24} color="#fff" />
+            <Text style={styles.viewFeedbackText}>
+              View Feedback & Analysis
+            </Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
+          </Pressable>
+        </View>
+      );
+    }
+    
+    // No footer needed when coming from grading or when transcript is not available
     return null;
   };
 
@@ -195,5 +219,33 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 12,
     fontWeight: '500',
+  },
+  footer: { 
+    padding: 20, 
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    borderTopWidth: 1, 
+    borderTopColor: 'rgba(255,255,255,0.08)',
+  },
+  viewFeedbackButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  viewFeedbackText: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
   },
 });
