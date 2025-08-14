@@ -33,16 +33,27 @@ class WebSocketManager:
         
         print(f"🔌 [WEBSOCKET] Client disconnected from attempt: {attempt_id}")
     
-    async def send_to_attempt(self, attempt_id: str, message: dict):
+    async def send_to_attempt(self, attempt_id: str, message: dict, retry_count: int = 0):
         """Send a message to all clients listening for a specific attempt"""
         print(f"\n📡 [WEBSOCKET] send_to_attempt called:")
         print(f"   - Attempt ID: {attempt_id}")
         print(f"   - Attempt ID type: {type(attempt_id)}")
         print(f"   - All active attempt IDs: {list(self.connections.keys())}")
+        print(f"   - Retry count: {retry_count}")
         
         if attempt_id not in self.connections:
             print(f"   ❌ No connections found for attempt: {attempt_id}")
             print(f"   - Available connections: {list(self.connections.keys())}")
+            
+            # Retry mechanism for timing issues
+            if retry_count < 3:
+                import asyncio
+                wait_time = (retry_count + 1) * 2  # 2, 4, 6 seconds
+                print(f"   🔄 Retrying in {wait_time} seconds (attempt {retry_count + 1}/3)")
+                await asyncio.sleep(wait_time)
+                await self.send_to_attempt(attempt_id, message, retry_count + 1)
+            else:
+                print(f"   ❌ Max retries reached, giving up")
             return
         
         message_str = json.dumps(message)
