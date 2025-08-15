@@ -19,7 +19,7 @@ class Interview(MongoBaseModel):
     
     # Interview configuration
     difficulty: str = "mid"  # Computed from experience_level
-    interview_type: str = "technical"  # technical/behavioral/leadership
+    interview_type: str = "technical"  # technical/behavioral/leadership/sales
     focus_areas: List[str] = []  # Extracted from tech_stack
     
     # Source information

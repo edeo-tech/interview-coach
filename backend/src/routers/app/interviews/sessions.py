@@ -22,10 +22,10 @@ auth = Authorization()
 
 class CreateInterviewFromURLRequest(BaseModel):
     job_url: str
-    interview_type: str = "technical"  # technical, behavioral, leadership
+    interview_type: str = "technical"  # technical, behavioral, leadership, sales
 
 class CreateInterviewFromFileRequest(BaseModel):
-    interview_type: str = "technical"  # technical, behavioral, leadership
+    interview_type: str = "technical"  # technical, behavioral, leadership, sales
 
 class StartAttemptResponse(BaseModel):
     attempt_id: str
@@ -48,6 +48,14 @@ async def create_interview_from_url(
     user_id: str = Depends(auth.auth_wrapper)
 ):
     """Create a new interview from job posting URL"""
+    # Validate interview type
+    valid_types = ["technical", "behavioral", "leadership", "sales"]
+    if request.interview_type not in valid_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid interview type. Must be one of: {', '.join(valid_types)}"
+        )
+    
     interview = await create_interview_from_url_crud(
         req=req,
         user_id=user_id,
@@ -69,10 +77,18 @@ async def create_interview_from_url(
 async def create_interview_from_file(
     req: Request,
     file: UploadFile = File(...),
-    interview_type: str = "technical",
+    interview_type: str = "technical",  # technical, behavioral, leadership, sales
     user_id: str = Depends(auth.auth_wrapper)
 ):
     """Create a new interview from uploaded job description file"""
+    # Validate interview type
+    valid_types = ["technical", "behavioral", "leadership", "sales"]
+    if interview_type not in valid_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid interview type. Must be one of: {', '.join(valid_types)}"
+        )
+    
     # Validate file type
     allowed_types = ['application/pdf', 'text/plain', 'application/msword', 
                      'application/vnd.openxmlformats-officedocument.wordprocessingml.document']

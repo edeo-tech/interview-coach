@@ -171,6 +171,7 @@ export default function InterviewDetails() {
           difficulty: interview.difficulty || 'Medium',
           topics: JSON.stringify(interview.focus_areas || ['General Interview Skills']),
           interviewId: id,
+          interviewType: interview.interview_type || 'technical', // Pass interview type
           location: interview.location || 'Remote',
           callState: 'incoming' // Start in incoming call state
         }

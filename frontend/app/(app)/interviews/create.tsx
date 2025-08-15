@@ -9,9 +9,12 @@ import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../../
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 
+type InterviewType = 'technical' | 'behavioral' | 'leadership' | 'sales';
+
 export default function CreateInterview() {
   const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
   const [inputType, setInputType] = useState<'url' | 'file'>('url');
+  const [interviewType, setInterviewType] = useState<InterviewType>('technical');
   const [jobUrl, setJobUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
@@ -128,12 +131,14 @@ export default function CreateInterview() {
       try {
         const result = await createFromURL.mutateAsync({
           job_url: jobUrl,
+          interview_type: interviewType,
         });
         
         posthogCapture('interview_created', {
           method: 'url',
           has_cv: !!currentCV,
-          job_url_domain: new URL(jobUrl).hostname
+          job_url_domain: new URL(jobUrl).hostname,
+          interview_type: interviewType
         });
         
         console.log('Interview created from URL:', result.data);
@@ -143,7 +148,8 @@ export default function CreateInterview() {
       } catch (error: any) {
         posthogCapture('interview_creation_failed', {
           method: 'url',
-          error_message: error.response?.data?.detail || error.message
+          error_message: error.response?.data?.detail || error.message,
+          interview_type: interviewType
         });
         Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
       }
@@ -161,13 +167,14 @@ export default function CreateInterview() {
           name: selectedFile.name,
         } as any);
 
-        const result = await createFromFile.mutateAsync(formData);
+        const result = await createFromFile.mutateAsync(formData, interviewType);
         
         posthogCapture('interview_created', {
           method: 'file',
           has_cv: !!currentCV,
           file_type: selectedFile.mimeType || 'unknown',
-          file_size_kb: selectedFile.size ? Math.round(selectedFile.size / 1024) : null
+          file_size_kb: selectedFile.size ? Math.round(selectedFile.size / 1024) : null,
+          interview_type: interviewType
         });
         
         console.log('Interview created from file:', result.data);
@@ -178,7 +185,8 @@ export default function CreateInterview() {
         posthogCapture('interview_creation_failed', {
           method: 'file',
           error_message: error.response?.data?.detail || error.message,
-          file_type: selectedFile.mimeType || 'unknown'
+          file_type: selectedFile.mimeType || 'unknown',
+          interview_type: interviewType
         });
         Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from file');
       }
@@ -284,6 +292,92 @@ export default function CreateInterview() {
                 </Text>
               </View>
             )}
+
+            {/* Interview Type Selector */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Interview Type</Text>
+              <View style={styles.interviewTypeContainer}>
+                <TouchableOpacity
+                  onPress={() => setInterviewType('technical')}
+                  style={[styles.interviewTypeButton, interviewType === 'technical' && styles.interviewTypeButtonActive]}
+                >
+                  <Ionicons 
+                    name="code-slash" 
+                    size={20} 
+                    color={interviewType === 'technical' ? '#ffffff' : '#9ca3af'} 
+                  />
+                  <Text style={[styles.interviewTypeText, interviewType === 'technical' && styles.interviewTypeTextActive]}>
+                    Technical
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={() => setInterviewType('behavioral')}
+                  style={[styles.interviewTypeButton, interviewType === 'behavioral' && styles.interviewTypeButtonActive]}
+                >
+                  <Ionicons 
+                    name="people" 
+                    size={20} 
+                    color={interviewType === 'behavioral' ? '#ffffff' : '#9ca3af'} 
+                  />
+                  <Text style={[styles.interviewTypeText, interviewType === 'behavioral' && styles.interviewTypeTextActive]}>
+                    Behavioral
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={() => setInterviewType('leadership')}
+                  style={[styles.interviewTypeButton, interviewType === 'leadership' && styles.interviewTypeButtonActive]}
+                >
+                  <Ionicons 
+                    name="trophy" 
+                    size={20} 
+                    color={interviewType === 'leadership' ? '#ffffff' : '#9ca3af'} 
+                  />
+                  <Text style={[styles.interviewTypeText, interviewType === 'leadership' && styles.interviewTypeTextActive]}>
+                    Leadership
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={() => setInterviewType('sales')}
+                  style={[styles.interviewTypeButton, interviewType === 'sales' && styles.interviewTypeButtonActive]}
+                >
+                  <Ionicons 
+                    name="trending-up" 
+                    size={20} 
+                    color={interviewType === 'sales' ? '#ffffff' : '#9ca3af'} 
+                  />
+                  <Text style={[styles.interviewTypeText, interviewType === 'sales' && styles.interviewTypeTextActive]}>
+                    Sales Call
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              
+              {/* Description based on interview type */}
+              <View style={styles.typeDescriptionContainer}>
+                {interviewType === 'technical' && (
+                  <Text style={styles.typeDescription}>
+                    Technical questions focused on coding, problem-solving, and system design
+                  </Text>
+                )}
+                {interviewType === 'behavioral' && (
+                  <Text style={styles.typeDescription}>
+                    Behavioral questions about your experience, teamwork, and problem-solving approach
+                  </Text>
+                )}
+                {interviewType === 'leadership' && (
+                  <Text style={styles.typeDescription}>
+                    Leadership scenarios, management experience, and strategic thinking questions
+                  </Text>
+                )}
+                {interviewType === 'sales' && (
+                  <Text style={styles.typeDescription}>
+                    🎯 <Text style={styles.typeDescriptionBold}>Mock sales call simulation</Text> - You'll act as the salesperson pitching to a prospect. Practice discovery, objection handling, and closing techniques.
+                  </Text>
+                )}
+              </View>
+            </View>
 
             {/* Input Type Selector */}
         <View style={styles.inputTypeContainer}>
@@ -554,5 +648,56 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
     lineHeight: 20,
+  },
+  sectionTitle: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  interviewTypeContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  interviewTypeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1f2937',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#374151',
+    minWidth: '47%',
+    justifyContent: 'center',
+  },
+  interviewTypeButtonActive: {
+    backgroundColor: '#F59E0B',
+    borderColor: '#F59E0B',
+  },
+  interviewTypeText: {
+    color: '#9ca3af',
+    marginLeft: 8,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  interviewTypeTextActive: {
+    color: '#ffffff',
+  },
+  typeDescriptionContainer: {
+    backgroundColor: 'rgba(55, 65, 81, 0.5)',
+    borderRadius: 8,
+    padding: 12,
+  },
+  typeDescription: {
+    color: '#d1d5db',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  typeDescriptionBold: {
+    fontWeight: 'bold',
+    color: '#F59E0B',
   },
 });

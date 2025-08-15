@@ -2,10 +2,12 @@ import { protectedApi } from '../axiosConfig';
 
 export interface CreateInterviewFromURLRequest {
   job_url: string;
+  interview_type?: 'technical' | 'behavioral' | 'leadership' | 'sales';
 }
 
 export interface CreateInterviewFromFileRequest {
   file: FormData;
+  interview_type?: 'technical' | 'behavioral' | 'leadership' | 'sales';
 }
 
 export interface Interview {
@@ -21,7 +23,7 @@ export interface Interview {
   jd_raw: string;
   job_description: Record<string, any>;
   difficulty: string;
-  interview_type: string;
+  interview_type: 'technical' | 'behavioral' | 'leadership' | 'sales';
   focus_areas: string[];
   source_type: 'url' | 'file';
   source_url?: string;
@@ -65,10 +67,14 @@ export const interviewsApi = {
   createFromURL: (data: CreateInterviewFromURLRequest) => 
     protectedApi.post<Interview>('/app/interviews/create/url', data),
   
-  createFromFile: (formData: FormData) => 
-    protectedApi.post<Interview>('/app/interviews/create/file', formData, {
+  createFromFile: (formData: FormData, interviewType?: string) => {
+    if (interviewType) {
+      formData.append('interview_type', interviewType);
+    }
+    return protectedApi.post<Interview>('/app/interviews/create/file', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
-    }),
+    });
+  },
   
   list: () => 
     protectedApi.get<Interview[]>('/app/interviews/'),

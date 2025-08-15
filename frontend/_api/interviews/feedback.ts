@@ -1,5 +1,19 @@
 import { protectedApi } from '../axiosConfig';
 
+export interface TechnicalRubricScores {
+  technical_knowledge: number;
+  communication: number;
+  problem_solving: number;
+  cultural_fit: number;
+}
+
+export interface SalesRubricScores {
+  discovery_questioning: number;
+  objection_handling: number;
+  rapport_building: number;
+  closing_technique: number;
+}
+
 export interface InterviewFeedback {
   _id: string;
   attempt_id: string;
@@ -7,12 +21,7 @@ export interface InterviewFeedback {
   strengths: string[];
   improvement_areas: string[];
   detailed_feedback: string;
-  rubric_scores: {
-    technical_knowledge: number;
-    communication: number;
-    problem_solving: number;
-    cultural_fit: number;
-  };
+  rubric_scores: TechnicalRubricScores | SalesRubricScores;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +45,15 @@ export interface InterviewStats {
     fair: number;
     needs_improvement: number;
   };
+}
+
+// Helper functions to work with different rubric types
+export function isSalesRubricScores(rubricScores: TechnicalRubricScores | SalesRubricScores): rubricScores is SalesRubricScores {
+  return 'discovery_questioning' in rubricScores;
+}
+
+export function isTechnicalRubricScores(rubricScores: TechnicalRubricScores | SalesRubricScores): rubricScores is TechnicalRubricScores {
+  return 'technical_knowledge' in rubricScores;
 }
 
 export const feedbackApi = {

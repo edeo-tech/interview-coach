@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useCV } from '../../_queries/interviews/cv';
-import { useStartAttempt, useAddTranscript, useFinishAttempt } from '../../_queries/interviews/interviews';
+import { useStartAttempt, useAddTranscript, useFinishAttempt, useInterview } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
@@ -103,6 +103,7 @@ export default function MockInterview() {
     // Fetch user data and CV
     const { auth } = useAuth();
     const { data: cvProfile } = useCV();
+    const { data: interviewData } = useInterview(params.interviewId as string);
     const startAttempt = useStartAttempt();
     const addTranscript = useAddTranscript();
     const finishAttempt = useFinishAttempt();
@@ -119,11 +120,14 @@ export default function MockInterview() {
     
     const topics = params.topics ? JSON.parse(params.topics as string) : [];
     
-    // Fixed interviewer profile - Niamh Morrisey
+    // Interviewer profile - changes based on interview type (check both API data and URL params)
+    const currentInterviewType = interviewData?.interview_type || params.interviewType as string;
     const interviewer = {
-        name: 'Niamh Morrisey',
-        avatar: 'https://res.cloudinary.com/dphekriyz/image/upload/v1755190732/temp_prof_female_vchg08.jpg',
-        role: 'Senior Technical Interviewer'
+        name: currentInterviewType === 'sales' ? 'Alex Martinez' : 'Niamh Morrisey',
+        avatar: currentInterviewType === 'sales' 
+            ? 'https://res.cloudinary.com/dphekriyz/image/upload/v1755190732/temp_prof_male_business_vchg09.jpg'
+            : 'https://res.cloudinary.com/dphekriyz/image/upload/v1755190732/temp_prof_female_vchg08.jpg',
+        role: currentInterviewType === 'sales' ? 'Director of Operations' : 'Senior Technical Interviewer'
     };
 
     const conversationConfig = useMemo(() => ({
@@ -211,7 +215,50 @@ export default function MockInterview() {
         const experienceYears = cvProfile?.experience_years || 0;
         const cvSummary = cvProfile?.raw_text?.substring(0, 800) || 'No CV available';
         
-        return `You are ${interviewer.name}, a ${interviewer.role} conducting a mock interview for a ${params.role} position at ${params.companyName}.
+        const currentInterviewType = interviewData?.interview_type || params.interviewType as string;
+        
+        if (currentInterviewType === 'sales') {
+            return `You are ${interviewer.name}, a ${interviewer.role} at TechFlow Solutions, participating in a sales call simulation.
+
+PROSPECT PROFILE (YOU):
+- Role: ${interviewer.role} at TechFlow Solutions
+- Company: Mid-market (100-1000 employees) Technology company  
+- Pain Points: Manual processes, inefficient workflows, scaling challenges, budget constraints
+- Personality: Busy, professionally skeptical but fair
+- Buying Authority: Can influence decisions, but needs to consult with leadership for final approval
+- Current Situation: Evaluating solutions but not in a rush to buy
+
+SALESPERSON INFORMATION:
+- Name: ${userName}
+- Experience Level: ${experienceYears} years
+- Key Skills: ${userSkills}
+- They're calling about: ${params.role} role at ${params.companyName}
+
+YOUR BEHAVIOR AS A PROSPECT:
+1. **Don't volunteer information** - Make ${userName} ask good discovery questions
+2. **Be realistically skeptical** - Don't be immediately interested or hostile  
+3. **Have objections ready**: Use 2-3 realistic objections during the conversation
+4. **Show buying signals gradually** if they demonstrate good sales skills
+5. **Respond naturally** - like a real busy executive would
+
+CONVERSATION GUIDELINES:
+- Start with: "Hi, I have about 10 minutes. What's this about?"
+- Don't lead the conversation - let ${userName} drive it
+- Ask clarifying questions if their pitch is vague: "Can you be more specific?"
+- Bring up objections naturally during the conversation
+- If they handle objections well, show some interest
+- End the call after 8-12 minutes with next steps (or lack thereof)
+
+OBJECTIONS TO USE (pick 2-3 based on conversation flow):
+- "We're already using [competitor solution] and it works fine"
+- "This isn't the right time, maybe next quarter"  
+- "I'd need to see a detailed ROI analysis first"
+- "Our budget for this type of solution is very limited"
+- "I'll need buy-in from several other departments"
+
+Remember: You're a realistic prospect, not an interviewer. Be challenging but fair, and reward good sales technique with engagement. This is practice for ${userName} to improve their sales skills.`;
+        } else {
+            return `You are ${interviewer.name}, a ${interviewer.role} conducting a mock interview for a ${params.role} position at ${params.companyName}.
 
 CANDIDATE INFORMATION:
 - Name: ${userName}
@@ -237,7 +284,8 @@ INTERVIEW GUIDELINES:
 9. Maintain a conversational, professional tone throughout
 
 Remember: This is a practice interview to help ${userName} improve their interview skills. Be supportive while maintaining interview realism.`;
-    }, [auth, cvProfile, interviewer, params, topics]);
+        }
+    }, [auth, cvProfile, interviewer, params, topics, interviewData]);
 
     const acceptCall = useCallback(async (conversation: any) => {
         posthogCapture('interview_call_answered', {
@@ -249,7 +297,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         });
         setCallState('connecting');
         
-        const agentId = process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID;
+        // Select agent based on interview type (check both API data and URL params)
+        const interviewType = interviewData?.interview_type || params.interviewType as string;
+        const agentId = interviewType === 'sales' 
+            ? 'agent_9101k2qdcg74f6bteqwe4y2se5ct'  // Sales agent
+            : process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID; // Default agent
 
         // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
         let newAttemptId: string | null = null;
@@ -275,7 +327,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             
             // Try without prompt override first to see if agent speaks
             console.log('📝 Starting ElevenLabs session with attemptId:', newAttemptId);
+            console.log('📝 Interview type from API:', interviewData?.interview_type);
+            console.log('📝 Interview type from params:', params.interviewType);
+            console.log('📝 Final interview type:', interviewType);
             console.log('📝 AgentId:', agentId);
+            console.log('📝 Is sales interview:', interviewType === 'sales');
             
             const sessionConfig = {
                 agentId: agentId,
@@ -462,6 +518,38 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                     <View style={styles.iphoneCallSpacer} />
                                     
                                     <Text style={styles.iphoneCallSubtext}>{params.companyName} • {params.role}</Text>
+                                    
+                                    {/* Instructions based on interview type */}
+                                    <View style={styles.instructionsContainer}>
+                                        {currentInterviewType === 'sales' ? (
+                                            <View style={styles.salesInstructionsCard}>
+                                                <View style={styles.instructionsHeader}>
+                                                    <Ionicons name="trending-up" size={20} color="#F59E0B" />
+                                                    <Text style={styles.instructionsTitle}>Sales Call Simulation</Text>
+                                                </View>
+                                                <Text style={styles.instructionsSubtitle}>You are the salesperson, they are the prospect</Text>
+                                                <View style={styles.instructionsList}>
+                                                    <Text style={styles.instructionItem}>• Lead the conversation and ask discovery questions</Text>
+                                                    <Text style={styles.instructionItem}>• Uncover their pain points and business needs</Text>
+                                                    <Text style={styles.instructionItem}>• Handle objections professionally</Text>
+                                                    <Text style={styles.instructionItem}>• Close for a specific next step</Text>
+                                                </View>
+                                            </View>
+                                        ) : (
+                                            <View style={styles.standardInstructionsCard}>
+                                                <View style={styles.instructionsHeader}>
+                                                    <Ionicons name="people" size={20} color="#3b82f6" />
+                                                    <Text style={styles.instructionsTitle}>Interview Tips</Text>
+                                                </View>
+                                                <View style={styles.instructionsList}>
+                                                    <Text style={styles.instructionItem}>• Speak clearly and take your time</Text>
+                                                    <Text style={styles.instructionItem}>• Use specific examples from your experience</Text>
+                                                    <Text style={styles.instructionItem}>• Ask clarifying questions if needed</Text>
+                                                    <Text style={styles.instructionItem}>• Stay confident and be yourself</Text>
+                                                </View>
+                                            </View>
+                                        )}
+                                    </View>
                                 </View>
                             </View>
                         )}
@@ -1165,5 +1253,54 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'Inter_500Medium',
         color: '#EF4444',
+    },
+    // Instructions Card Styles
+    instructionsContainer: {
+        marginTop: 32,
+        paddingHorizontal: 20,
+        width: '100%',
+    },
+    salesInstructionsCard: {
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        borderRadius: 16,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(245, 158, 11, 0.3)',
+        marginBottom: 20,
+    },
+    standardInstructionsCard: {
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderRadius: 16,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(59, 130, 246, 0.3)',
+        marginBottom: 20,
+    },
+    instructionsHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    instructionsTitle: {
+        fontSize: 18,
+        fontFamily: 'Inter_600SemiBold',
+        color: '#ffffff',
+        marginLeft: 8,
+    },
+    instructionsSubtitle: {
+        fontSize: 16,
+        fontFamily: 'Inter_500Medium',
+        color: '#F59E0B',
+        marginBottom: 16,
+        textAlign: 'center',
+    },
+    instructionsList: {
+        gap: 8,
+    },
+    instructionItem: {
+        fontSize: 14,
+        fontFamily: 'Inter_400Regular',
+        color: 'rgba(255, 255, 255, 0.8)',
+        lineHeight: 20,
     },
 });

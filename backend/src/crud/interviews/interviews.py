@@ -85,9 +85,9 @@ async def _create_interview_from_job_data(
         'mid'
     )
     
-    # Extract focus areas from tech stack
+    # Extract focus areas from tech stack and job description
     tech_stack = job_data.get('job_description', {}).get('tech_stack', [])
-    focus_areas = _compute_focus_areas(tech_stack, job_data.get('role_title', ''))
+    focus_areas = _compute_focus_areas(tech_stack, job_data.get('role_title', ''), interview_type)
     
     # Extract raw text for legacy compatibility
     jd_raw = _convert_job_data_to_text(job_data)
@@ -234,11 +234,39 @@ def extract_experience_requirement(jd_text: str) -> str:
     
     return "Not specified"
 
-def _compute_focus_areas(tech_stack: List[str], role_title: str) -> List[str]:
-    """Compute focus areas from tech stack and role"""
+def _compute_focus_areas(tech_stack: List[str], role_title: str, interview_type: str = "technical") -> List[str]:
+    """Compute focus areas from tech stack, role, and interview type"""
     focus_areas = []
     
-    # Join all tech for analysis
+    # For sales interviews, use sales-specific focus areas
+    if interview_type == "sales":
+        # Join all tech for analysis
+        tech_text = ' '.join(tech_stack).lower() + ' ' + role_title.lower()
+        
+        # Sales focus areas mapping
+        sales_area_keywords = {
+            'prospecting': ['prospecting', 'lead generation', 'outbound', 'cold calling', 'email campaigns'],
+            'discovery': ['discovery', 'needs assessment', 'qualification', 'questioning'],
+            'presentation': ['demo', 'presentation', 'pitch', 'product knowledge'],
+            'objection_handling': ['objection handling', 'overcoming objections', 'negotiation'],
+            'closing': ['closing', 'deal closing', 'sales closure', 'conversion'],
+            'relationship_building': ['relationship building', 'rapport', 'customer relationships'],
+            'crm': ['crm', 'salesforce', 'hubspot', 'pipedrive', 'sales tools'],
+            'industry_knowledge': ['saas', 'b2b', 'enterprise', 'smb', 'technology'],
+            'metrics': ['quota', 'targets', 'kpi', 'sales metrics', 'pipeline management']
+        }
+        
+        for area, keywords in sales_area_keywords.items():
+            if any(keyword in tech_text for keyword in keywords):
+                focus_areas.append(area)
+        
+        # Default sales focus areas if none detected
+        if not focus_areas:
+            focus_areas = ['prospecting', 'discovery', 'presentation', 'objection_handling', 'closing']
+            
+        return focus_areas
+    
+    # Technical focus areas for non-sales interviews
     tech_text = ' '.join(tech_stack).lower() + ' ' + role_title.lower()
     
     # Technical focus areas mapping

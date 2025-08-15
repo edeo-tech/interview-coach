@@ -21,22 +21,20 @@ class ElevenLabsService:
     
     async def create_interview_agent(self, interview_id: str, user_id: str) -> str:
         """Create an ElevenLabs agent for the interview session"""
-        # Get interview and CV data
-        from fastapi import Request
-        from backend.src.main import app
-        
-        # This is a workaround - in practice, you'd pass the request object
-        # For now, we'll create a mock request to access the database
-        # In production, refactor to pass database connection directly
-        
         try:
             # Get interview, CV, and user data
-            # Note: This needs to be refactored to work with actual database connection
             interview = await self._get_interview_data(interview_id)
             cv = await self._get_cv_data(user_id)
             user = await self._get_user_data(user_id)
             
-            # Build system prompt with context
+            # Check if this is a sales interview
+            interview_type = interview.get('interview_type', 'technical')
+            
+            if interview_type == "sales":
+                # Use predefined sales agent
+                return "agent_9101k2qdcg74f6bteqwe4y2se5ct"
+            
+            # Build system prompt with context for non-sales interviews
             system_prompt = self._build_interview_prompt(interview, cv, user)
             
             agent_config = {
@@ -72,6 +70,100 @@ class ElevenLabsService:
     
     def _build_interview_prompt(self, interview: Dict, cv: Dict, user: Dict) -> str:
         """Build the system prompt for the interview agent"""
+        
+        interview_type = interview.get('interview_type', 'technical')
+        
+        if interview_type == "sales":
+            return self._build_sales_call_prompt(interview, cv, user)
+        else:
+            return self._build_standard_interview_prompt(interview, cv, user)
+    
+    def _build_sales_call_prompt(self, interview: Dict, cv: Dict, user: Dict) -> str:
+        """Build the system prompt for the sales call simulation agent"""
+        
+        # Extract key information
+        role = interview.get('role_title', 'Sales Development Representative')
+        company = interview.get('company', 'the company')
+        difficulty = interview.get('difficulty', 'mid')
+        
+        user_name = user.get('name', 'Salesperson')
+        
+        # Get target customer profile from job requirements
+        jd_structured = interview.get('jd_structured', {})
+        requirements = jd_structured.get('requirements', '')
+        focus_areas = interview.get('focus_areas', [])
+        
+        # Determine industry and company size from job description
+        target_industry = "Technology"
+        target_company_size = "Mid-market (100-1000 employees)"
+        
+        if any(keyword in requirements.lower() for keyword in ['enterprise', 'large company', 'fortune']):
+            target_company_size = "Enterprise (1000+ employees)"
+        elif any(keyword in requirements.lower() for keyword in ['startup', 'small business', 'smb']):
+            target_company_size = "Small business (10-100 employees)"
+        
+        # Adjust difficulty-based behavior
+        if difficulty == "junior":
+            objection_level = "Be relatively easy-going with 1-2 mild objections. Show interest if they demonstrate basic sales skills."
+            personality_note = "Be patient and give them opportunities to recover from mistakes."
+        elif difficulty == "senior":
+            objection_level = "Be challenging with 3-4 strong objections. Require excellent handling before showing interest."
+            personality_note = "Be skeptical and demand high-level sales expertise."
+        else:  # mid
+            objection_level = "Present 2-3 realistic objections. Reward good sales technique with gradual interest."
+            personality_note = "Be professionally skeptical but fair."
+        
+        prompt = f"""You are playing the role of a PROSPECT in a sales call simulation for {role} training.
+
+PROSPECT PROFILE:
+- Role: Director of Operations at TechFlow Solutions
+- Company: {target_company_size} {target_industry} company
+- Pain Points: Manual processes, inefficient workflows, scaling challenges, budget constraints
+- Personality: Busy, {personality_note.lower()}
+- Buying Authority: Can influence decisions, but needs to consult with leadership for final approval
+- Current Situation: Evaluating solutions but not in a rush to buy
+
+YOUR BEHAVIOR AS A PROSPECT:
+1. **Don't volunteer information** - Make {user_name} ask good discovery questions
+2. **Be realistically skeptical** - Don't be immediately interested or hostile  
+3. **Have objections ready**: {objection_level}
+4. **Show buying signals gradually** if they demonstrate good sales skills
+5. **Respond naturally** - like a real busy executive would
+6. **Challenge them appropriately** for {difficulty} level difficulty
+
+CONVERSATION GUIDELINES:
+- Start with: "Hi, I have about 10 minutes. What's this about?"
+- Don't lead the conversation - let {user_name} drive it
+- Ask clarifying questions if their pitch is vague: "Can you be more specific?"
+- Bring up objections naturally during the conversation
+- If they handle objections well, show some interest
+- End the call after 8-12 minutes with next steps (or lack thereof)
+
+OBJECTIONS TO USE (pick 2-3 based on conversation flow and difficulty):
+- "We're already using [competitor solution] and it works fine"
+- "This isn't the right time, maybe next quarter"  
+- "I'd need to see a detailed ROI analysis first"
+- "Our budget for this type of solution is very limited"
+- "I'll need buy-in from several other departments"
+- "How do I know this isn't just another sales pitch?"
+- "We've been burned by vendors before"
+
+EVALUATION CRITERIA (respond positively if they demonstrate):
+- Good discovery questions about pain points and current situation
+- Active listening and building on your responses
+- Handling objections with empathy and solutions
+- Creating appropriate urgency without being pushy
+- Asking for specific next steps
+- Professional rapport building
+
+FOCUS AREAS FOR THIS ROLE: {', '.join(focus_areas) if focus_areas else 'Discovery, objection handling, closing'}
+
+Remember: You're a realistic prospect, not an interviewer. Be challenging but fair, and reward good sales technique with engagement. This is practice for {user_name} to improve their sales skills."""
+
+        return prompt
+    
+    def _build_standard_interview_prompt(self, interview: Dict, cv: Dict, user: Dict) -> str:
+        """Build the system prompt for standard interview types"""
         
         # Extract key information
         role = interview.get('role_title', 'Software Engineer')
@@ -125,24 +217,24 @@ Remember: Be conversational, professional, and adapt to the candidate's response
     async def _get_interview_data(self, interview_id: str) -> Dict:
         """Get interview data - placeholder for database access"""
         # This would need to be refactored to work with actual database
-        # For now, return mock data
+        # For now, return mock data - could be sales or technical
         return {
-            "company": "TechCorp",
-            "role_title": "Software Engineer",
+            "company": "SalesForce",
+            "role_title": "Sales Development Representative",
             "difficulty": "mid",
-            "interview_type": "technical",
+            "interview_type": "sales",
             "jd_structured": {
-                "requirements": "3+ years Python experience, React knowledge, API development"
+                "requirements": "2+ years B2B sales experience, SaaS background, cold calling, lead generation, CRM experience"
             },
-            "focus_areas": ["backend", "frontend"]
+            "focus_areas": ["prospecting", "discovery", "objection_handling", "closing"]
         }
     
     async def _get_cv_data(self, user_id: str) -> Dict:
         """Get CV data - placeholder for database access"""
         # This would need to be refactored to work with actual database
         return {
-            "skills": ["Python", "JavaScript", "React", "FastAPI", "MongoDB"],
-            "experience_years": 3
+            "skills": ["B2B Sales", "Cold Calling", "CRM", "Lead Generation", "SaaS"],
+            "experience_years": 2
         }
     
     async def _get_user_data(self, user_id: str) -> Dict:
