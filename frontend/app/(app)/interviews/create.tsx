@@ -299,49 +299,21 @@ export default function CreateInterview() {
               <View style={styles.interviewTypeContainer}>
                 <TouchableOpacity
                   onPress={() => setInterviewType('technical')}
-                  style={[styles.interviewTypeButton, interviewType === 'technical' && styles.interviewTypeButtonActive]}
+                  style={[styles.interviewTypeButton, styles.interviewTypeButtonWide, interviewType === 'technical' && styles.interviewTypeButtonActive]}
                 >
                   <Ionicons 
-                    name="code-slash" 
+                    name="chatbubble-ellipses" 
                     size={20} 
                     color={interviewType === 'technical' ? '#ffffff' : '#9ca3af'} 
                   />
                   <Text style={[styles.interviewTypeText, interviewType === 'technical' && styles.interviewTypeTextActive]}>
-                    Technical
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  onPress={() => setInterviewType('behavioral')}
-                  style={[styles.interviewTypeButton, interviewType === 'behavioral' && styles.interviewTypeButtonActive]}
-                >
-                  <Ionicons 
-                    name="people" 
-                    size={20} 
-                    color={interviewType === 'behavioral' ? '#ffffff' : '#9ca3af'} 
-                  />
-                  <Text style={[styles.interviewTypeText, interviewType === 'behavioral' && styles.interviewTypeTextActive]}>
-                    Behavioral
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  onPress={() => setInterviewType('leadership')}
-                  style={[styles.interviewTypeButton, interviewType === 'leadership' && styles.interviewTypeButtonActive]}
-                >
-                  <Ionicons 
-                    name="trophy" 
-                    size={20} 
-                    color={interviewType === 'leadership' ? '#ffffff' : '#9ca3af'} 
-                  />
-                  <Text style={[styles.interviewTypeText, interviewType === 'leadership' && styles.interviewTypeTextActive]}>
-                    Leadership
+                    Interview Screening Call
                   </Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
                   onPress={() => setInterviewType('sales')}
-                  style={[styles.interviewTypeButton, interviewType === 'sales' && styles.interviewTypeButtonActive]}
+                  style={[styles.interviewTypeButton, styles.interviewTypeButtonWide, interviewType === 'sales' && styles.interviewTypeButtonActive]}
                 >
                   <Ionicons 
                     name="trending-up" 
@@ -349,7 +321,7 @@ export default function CreateInterview() {
                     color={interviewType === 'sales' ? '#ffffff' : '#9ca3af'} 
                   />
                   <Text style={[styles.interviewTypeText, interviewType === 'sales' && styles.interviewTypeTextActive]}>
-                    Sales Call
+                    Mock Sales Call
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -358,17 +330,7 @@ export default function CreateInterview() {
               <View style={styles.typeDescriptionContainer}>
                 {interviewType === 'technical' && (
                   <Text style={styles.typeDescription}>
-                    Technical questions focused on coding, problem-solving, and system design
-                  </Text>
-                )}
-                {interviewType === 'behavioral' && (
-                  <Text style={styles.typeDescription}>
-                    Behavioral questions about your experience, teamwork, and problem-solving approach
-                  </Text>
-                )}
-                {interviewType === 'leadership' && (
-                  <Text style={styles.typeDescription}>
-                    Leadership scenarios, management experience, and strategic thinking questions
+                    Practice for your initial screening interview with technical, behavioral, and leadership questions tailored to your role
                   </Text>
                 )}
                 {interviewType === 'sales' && (
@@ -656,9 +618,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   interviewTypeContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    flexDirection: 'column',
+    gap: 12,
     marginBottom: 16,
   },
   interviewTypeButton: {
@@ -667,11 +628,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#1f2937',
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 14,
     borderWidth: 1,
     borderColor: '#374151',
-    minWidth: '47%',
     justifyContent: 'center',
+  },
+  interviewTypeButtonWide: {
+    width: '100%',
   },
   interviewTypeButtonActive: {
     backgroundColor: '#F59E0B',
