@@ -8,6 +8,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../../_queries/interviews/interviews';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
 
 type InterviewType = 'technical' | 'behavioral' | 'leadership' | 'sales';
 
@@ -121,23 +122,23 @@ export default function CreateInterview() {
         return;
       }
 
-      // Basic URL validation
-      const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-      if (!urlPattern.test(jobUrl)) {
+      // Validate the URL using our improved validation
+      const { url: cleanedUrl, isValid } = cleanJobUrl(jobUrl);
+      if (!isValid) {
         Alert.alert('Error', 'Please enter a valid URL');
         return;
       }
 
       try {
         const result = await createFromURL.mutateAsync({
-          job_url: jobUrl,
+          job_url: cleanedUrl,
           interview_type: interviewType,
         });
         
         posthogCapture('interview_created', {
           method: 'url',
           has_cv: !!currentCV,
-          job_url_domain: new URL(jobUrl).hostname,
+          job_url_domain: new URL(cleanedUrl).hostname,
           interview_type: interviewType
         });
         
@@ -380,7 +381,11 @@ export default function CreateInterview() {
               placeholder="Paste job posting URL (LinkedIn, Indeed, etc.)"
               placeholderTextColor="#6b7280"
               value={jobUrl}
-              onChangeText={setJobUrl}
+              onChangeText={(text) => {
+                // Extract URL from pasted text (handles LinkedIn shares, etc.)
+                const extractedUrl = extractUrlFromText(text);
+                setJobUrl(extractedUrl);
+              }}
               autoCapitalize="none"
               autoCorrect={false}
             />

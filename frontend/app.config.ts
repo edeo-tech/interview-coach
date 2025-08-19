@@ -11,7 +11,7 @@ module.exports = {
         splash: {
             image: "./assets/images/SPLASH.png",
             resizeMode: "contain",
-            backgroundColor: "#1b2234",
+            backgroundColor: "#151a31",
         },
         ios: {
             supportsTablet: true,
@@ -31,7 +31,7 @@ module.exports = {
         android: {
             splash: {
                 image: "./assets/images/SPLASH.png",
-                backgroundColor: "#1b2234",
+                backgroundColor: "#151a31",
             },
             package: "com.interviewcoach.app",
             // googleServicesFile: "./google-services.json",
