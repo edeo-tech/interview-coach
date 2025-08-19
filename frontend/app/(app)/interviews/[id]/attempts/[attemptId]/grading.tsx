@@ -12,11 +12,13 @@ import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumChec
 const BlurredSection = ({ 
   children, 
   isBlurred, 
-  onUpgradePress 
+  onUpgradePress,
+  showPaywall 
 }: { 
   children: React.ReactNode; 
   isBlurred: boolean; 
   onUpgradePress?: () => void;
+  showPaywall?: boolean;
 }) => {
   if (!isBlurred) {
     return <>{children}</>;
@@ -27,18 +29,20 @@ const BlurredSection = ({
       <View style={blurredStyles.contentContainer}>
         {children}
       </View>
-      <BlurView intensity={30} tint="dark" style={blurredStyles.blurOverlay}>
-        <View style={blurredStyles.upgradeOverlay}>
-          <Ionicons name="diamond" size={32} color="#f59e0b" />
-          <Text style={blurredStyles.upgradeTitle}>Premium Feature</Text>
-          <Text style={blurredStyles.upgradeMessage}>
-            Upgrade to Premium to see detailed feedback and scores
-          </Text>
-          <TouchableOpacity onPress={onUpgradePress} style={blurredStyles.upgradeButton}>
-            <Text style={blurredStyles.upgradeButtonText}>Upgrade Now</Text>
-          </TouchableOpacity>
-        </View>
-      </BlurView>
+      {showPaywall && (
+        <BlurView intensity={30} tint="dark" style={blurredStyles.blurOverlay}>
+          <View style={blurredStyles.upgradeOverlay}>
+            <Ionicons name="diamond" size={32} color="#f59e0b" />
+            <Text style={blurredStyles.upgradeTitle}>Premium Feature</Text>
+            <Text style={blurredStyles.upgradeMessage}>
+              Upgrade to Premium to see detailed feedback and scores
+            </Text>
+            <TouchableOpacity onPress={onUpgradePress} style={blurredStyles.upgradeButton}>
+              <Text style={blurredStyles.upgradeButtonText}>Upgrade Now</Text>
+            </TouchableOpacity>
+          </View>
+        </BlurView>
+      )}
     </View>
   );
 };
@@ -98,7 +102,7 @@ export default function AttemptGradingScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
-  const { canViewDetailedFeedback } = useFeedbackCheck();
+  const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
 
   const [pollCount, setPollCount] = useState(0);
 
@@ -192,7 +196,8 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Performance Breakdown</Text>
@@ -214,7 +219,8 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -232,7 +238,8 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -250,7 +257,8 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>
           <View style={styles.cardHeader}>

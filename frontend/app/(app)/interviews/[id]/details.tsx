@@ -17,7 +17,7 @@ export default function InterviewDetails() {
   const startAttempt = useStartAttempt();
   const { posthogScreen } = usePosthogSafely();
   const [attemptGrades, setAttemptGrades] = useState<{[key: string]: number}>({});
-  const { canRetryInterview } = useInterviewRetryCheck();
+  const { canRetryInterview, isPaywallEnabled } = useInterviewRetryCheck();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -155,7 +155,7 @@ export default function InterviewDetails() {
       const hasExistingAttempts = attemptsData?.has_attempts || false;
       const retryCheck = canRetryInterview(hasExistingAttempts);
       
-      if (!retryCheck.canRetry && retryCheck.requiresUpgrade) {
+      if (!retryCheck.canRetry && retryCheck.requiresUpgrade && isPaywallEnabled) {
         // Show paywall for premium upgrade
         router.push('/paywall');
         return;

@@ -12,11 +12,13 @@ import { useFeedbackCheck } from '../../../../hooks/premium/usePremiumCheck';
 const BlurredSection = ({ 
   children, 
   isBlurred, 
-  onUpgradePress 
+  onUpgradePress,
+  showPaywall 
 }: { 
   children: React.ReactNode; 
   isBlurred: boolean; 
   onUpgradePress?: () => void;
+  showPaywall?: boolean;
 }) => {
   if (!isBlurred) {
     return <>{children}</>;
@@ -27,16 +29,18 @@ const BlurredSection = ({
       <BlurView intensity={20} tint="dark" style={styles.blurredContent}>
         {children}
       </BlurView>
-      <View style={styles.upgradeOverlay}>
-        <Ionicons name="diamond" size={32} color="#f59e0b" />
-        <Text style={styles.upgradeTitle}>Premium Feature</Text>
-        <Text style={styles.upgradeMessage}>
-          Upgrade to Premium to see detailed feedback and scores
-        </Text>
-        <TouchableOpacity onPress={onUpgradePress} style={styles.upgradeButton}>
-          <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
-        </TouchableOpacity>
-      </View>
+      {showPaywall && (
+        <View style={styles.upgradeOverlay}>
+          <Ionicons name="diamond" size={32} color="#f59e0b" />
+          <Text style={styles.upgradeTitle}>Premium Feature</Text>
+          <Text style={styles.upgradeMessage}>
+            Upgrade to Premium to see detailed feedback and scores
+          </Text>
+          <TouchableOpacity onPress={onUpgradePress} style={styles.upgradeButton}>
+            <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -45,7 +49,7 @@ const InterviewResults = () => {
   const { id, attemptId } = useLocalSearchParams<{ id: string; attemptId: string }>();
   const { data: feedback, isLoading, error } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
-  const { canViewDetailedFeedback } = useFeedbackCheck();
+  const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -185,7 +189,8 @@ const InterviewResults = () => {
           {/* Rubric Breakdown */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>Detailed Scores</Text>
@@ -198,7 +203,8 @@ const InterviewResults = () => {
           {/* Strengths */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
               <View style={styles.cardHeader}>
@@ -217,7 +223,8 @@ const InterviewResults = () => {
           {/* Areas for Improvement */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
               <View style={styles.cardHeader}>
@@ -236,7 +243,8 @@ const InterviewResults = () => {
           {/* Detailed Feedback */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>Detailed Feedback</Text>

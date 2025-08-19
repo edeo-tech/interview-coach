@@ -284,7 +284,7 @@ export default function Profile() {
                             </TouchableOpacity>
                         ))
                     )}
-                    {interviews && interviews.length > 5 && (
+                    {/* {interviews && interviews.length > 5 && (
                         <TouchableOpacity 
                             style={styles.viewAllButton}
                             onPress={() => {
@@ -298,7 +298,7 @@ export default function Profile() {
                             <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
                             <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
                         </TouchableOpacity>
-                    )}
+                    )} */}
                 </View>
             </View>
 

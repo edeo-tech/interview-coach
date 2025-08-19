@@ -21,6 +21,7 @@ import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useUpdateProfile, useDeleteAccount, useSubscriptionDetails } from '@/_queries/users/auth/users';
 import { useToast } from '@/components/Toast';
+import { getCachedFeatureFlags } from '@/config/featureFlags';
 
 const Settings = () => {
   const router = useRouter();
@@ -325,88 +326,90 @@ const Settings = () => {
             </View>
           </View>
 
-          {/* Subscription Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Subscription</Text>
-            <View style={styles.card}>
-              {subscriptionLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color="#F59E0B" />
-                  <Text style={styles.loadingText}>Loading subscription details...</Text>
-                </View>
-              ) : subscription ? (
-                <>
-                  <View style={styles.subscriptionHeader}>
-                    <View style={styles.planBadge}>
-                      <Ionicons 
-                        name={subscription.is_premium ? "diamond" : "gift"} 
-                        size={16} 
-                        color={subscription.is_premium ? "#F59E0B" : "#6B7280"} 
-                      />
-                      <Text style={[
-                        styles.planName, 
-                        { color: subscription.is_premium ? "#F59E0B" : "#6B7280" }
-                      ]}>
-                        {subscription.plan_name}
-                      </Text>
-                    </View>
-                    <View style={[
-                      styles.statusBadge, 
-                      { backgroundColor: getSubscriptionStatusColor(subscription.status) + '20' }
-                    ]}>
-                      <Text style={[
-                        styles.statusText, 
-                        { color: getSubscriptionStatusColor(subscription.status) }
-                      ]}>
-                        {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
-                      </Text>
-                    </View>
+          {/* Subscription Section - Only show if paywalls are enabled */}
+          {getCachedFeatureFlags().paywallEnabled && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Subscription</Text>
+              <View style={styles.card}>
+                {subscriptionLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#F59E0B" />
+                    <Text style={styles.loadingText}>Loading subscription details...</Text>
                   </View>
+                ) : subscription ? (
+                  <>
+                    <View style={styles.subscriptionHeader}>
+                      <View style={styles.planBadge}>
+                        <Ionicons 
+                          name={subscription.is_premium ? "diamond" : "gift"} 
+                          size={16} 
+                          color={subscription.is_premium ? "#F59E0B" : "#6B7280"} 
+                        />
+                        <Text style={[
+                          styles.planName, 
+                          { color: subscription.is_premium ? "#F59E0B" : "#6B7280" }
+                        ]}>
+                          {subscription.plan_name}
+                        </Text>
+                      </View>
+                      <View style={[
+                        styles.statusBadge, 
+                        { backgroundColor: getSubscriptionStatusColor(subscription.status) + '20' }
+                      ]}>
+                        <Text style={[
+                          styles.statusText, 
+                          { color: getSubscriptionStatusColor(subscription.status) }
+                        ]}>
+                          {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                        </Text>
+                      </View>
+                    </View>
 
-                  {subscription.current_period_end && (
-                    <Text style={styles.billingText}>
-                      Next billing: {formatDate(subscription.current_period_end)}
-                    </Text>
-                  )}
+                    {subscription.current_period_end && (
+                      <Text style={styles.billingText}>
+                        Next billing: {formatDate(subscription.current_period_end)}
+                      </Text>
+                    )}
 
-                  {subscription.is_premium ? (
-                    subscription.stripe_portal_url && (
+                    {subscription.is_premium ? (
+                      subscription.stripe_portal_url && (
+                        <>
+                          <View style={styles.divider} />
+                          <TouchableOpacity
+                            style={styles.manageButton}
+                            onPress={handleManageSubscription}
+                          >
+                            <Ionicons name="settings-outline" size={20} color="#F59E0B" />
+                            <Text style={styles.manageButtonText}>Manage Subscription</Text>
+                            <Ionicons name="open-outline" size={16} color="#F59E0B" />
+                          </TouchableOpacity>
+                        </>
+                      )
+                    ) : (
                       <>
                         <View style={styles.divider} />
                         <TouchableOpacity
-                          style={styles.manageButton}
-                          onPress={handleManageSubscription}
+                          style={styles.upgradeButton}
+                          onPress={() => {
+                            posthogCapture('navigate_to_paywall', {
+                              source: 'settings'
+                            });
+                            router.push('/(app)/paywall');
+                          }}
                         >
-                          <Ionicons name="settings-outline" size={20} color="#F59E0B" />
-                          <Text style={styles.manageButtonText}>Manage Subscription</Text>
-                          <Ionicons name="open-outline" size={16} color="#F59E0B" />
+                          <Ionicons name="diamond" size={20} color="#ffffff" />
+                          <Text style={styles.upgradeButtonText}>Upgrade to Premium</Text>
+                          <Ionicons name="arrow-forward" size={16} color="#ffffff" />
                         </TouchableOpacity>
                       </>
-                    )
-                  ) : (
-                    <>
-                      <View style={styles.divider} />
-                      <TouchableOpacity
-                        style={styles.upgradeButton}
-                        onPress={() => {
-                          posthogCapture('navigate_to_paywall', {
-                            source: 'settings'
-                          });
-                          router.push('/(app)/paywall');
-                        }}
-                      >
-                        <Ionicons name="diamond" size={20} color="#ffffff" />
-                        <Text style={styles.upgradeButtonText}>Upgrade to Premium</Text>
-                        <Ionicons name="arrow-forward" size={16} color="#ffffff" />
-                      </TouchableOpacity>
-                    </>
-                  )}
-                </>
-              ) : (
-                <Text style={styles.errorText}>Failed to load subscription details</Text>
-              )}
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.errorText}>Failed to load subscription details</Text>
+                )}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* App Information Section */}
           <View style={styles.section}>

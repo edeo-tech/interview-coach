@@ -21,9 +21,9 @@ module.exports = {
                 "aps-environment": "production",
             },
             infoPlist: {
-                NSMicrophoneUsageDescription: "This app uses the microphone to record audio.",
-                NSPhotoLibraryUsageDescription: "This app accesses your photo library to let you pick a profile picture and submit plane captures.",
-                NSSpeechRecognitionUsageDescription: "This app uses speech recognition to transcribe your voice.",
+                NSMicrophoneUsageDescription: "This app uses your microphone to record your responses during mock interviews so the AI interviewer can hear you, transcribe your answers, and provide real-time feedback to help you improve.",
+                NSPhotoLibraryUsageDescription: "This app accesses your photo library to let you pick a profile picture.",
+                NSSpeechRecognitionUsageDescription: "This app uses speech recognition to transcribe your voice during mock interviews so the AI interviewer can hear you, transcribe your answers, and provide real-time feedback to help you improve.",
                 ITSAppUsesNonExemptEncryption: false,
                 LSMinimumSystemVersion: "13.0"
             },
