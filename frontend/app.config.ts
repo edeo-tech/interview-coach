@@ -4,7 +4,7 @@ module.exports = {
         slug: "interview-coach",
         version: "1.0.0",
         orientation: "portrait",
-        icon: "./assets/images/BLURAPPICON.png",
+        icon: "./assets/images/FinalAppIcon.png",
         scheme: "interviewcoach",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
@@ -38,7 +38,7 @@ module.exports = {
             versionCode: 1
         },
         web: {
-            favicon: "./assets/images/BLURAPPICON.png",
+            favicon: "./assets/images/FinalAppIcon.png",
             output: "server",
         },
         plugins: [
