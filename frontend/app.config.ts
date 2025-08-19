@@ -4,14 +4,14 @@ module.exports = {
         slug: "interview-coach",
         version: "1.0.0",
         orientation: "portrait",
-        icon: "./assets/images/InterviewGuideAI_app_icon.png",
+        icon: "./assets/images/BLURAPPICON.png",
         scheme: "interviewcoach",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
         splash: {
-            image: "./assets/images/InterviewGuideAI_app_icon.png",
+            image: "./assets/images/SPLASH.png",
             resizeMode: "contain",
-            backgroundColor: "#000000",
+            backgroundColor: "#1b2234",
         },
         ios: {
             supportsTablet: true,
@@ -30,15 +30,15 @@ module.exports = {
         },
         android: {
             splash: {
-                image: "./assets/images/InterviewGuideAI_app_icon.png",
-                backgroundColor: "#000000",
+                image: "./assets/images/SPLASH.png",
+                backgroundColor: "#1b2234",
             },
             package: "com.interviewcoach.app",
             // googleServicesFile: "./google-services.json",
             versionCode: 1
         },
         web: {
-            favicon: "./assets/images/InterviewGuideAI_app_icon.png",
+            favicon: "./assets/images/BLURAPPICON.png",
             output: "server",
         },
         plugins: [
