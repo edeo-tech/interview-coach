@@ -257,7 +257,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
       Animated.parallel(fadeOutAnimations).start();
     }, 800);
     
-    // Wait a moment then call onComplete
+    // Wait a moment then call onComplete - extended timing for celebration
     setTimeout(() => {
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -266,7 +266,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
       }).start(() => {
         onComplete();
       });
-    }, 2000);
+    }, 3500);
   };
 
   const currentStage = UPLOAD_STAGES[currentStageIndex];
@@ -275,8 +275,29 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
 
   return (
     <View style={styles.container}>
-      {/* Dark background overlay */}
-      <View style={styles.darkOverlay} />
+      {/* Subtle gradient background */}
+      <LinearGradient
+        colors={[
+          '#0F0A1F', // Very dark purple
+          '#1A0B2B', // Dark purple-blue
+          '#0F1419', // Dark slate
+        ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientBackground}
+      />
+      
+      {/* Subtle accent streaks */}
+      <LinearGradient
+        colors={[
+          'rgba(139, 92, 246, 0.08)',
+          'rgba(236, 72, 153, 0.05)',
+          'rgba(245, 158, 11, 0)',
+        ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0.7 }}
+        style={styles.accentStreak}
+      />
       
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Burst Ring Effect */}
@@ -436,15 +457,21 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
   },
-  darkOverlay: {
+  gradientBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  accentStreak: {
+    position: 'absolute',
+    top: -50,
+    left: -50,
+    right: -50,
+    height: '60%',
+    transform: [{ rotate: '15deg' }],
   },
   content: {
     flex: 1,
