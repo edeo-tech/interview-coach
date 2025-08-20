@@ -23,6 +23,7 @@ import { useUpdateProfile, useDeleteAccount } from '@/_queries/users/auth/users'
 import { useToast } from '@/components/Toast';
 import { getCachedFeatureFlags } from '@/config/featureFlags';
 import { usePremiumCheck } from '@/hooks/premium/usePremiumCheck';
+import { useCustomerInfo } from '@/context/purchases/CustomerInfo';
 
 const Settings = () => {
   const router = useRouter();
@@ -31,6 +32,7 @@ const Settings = () => {
   const { auth } = useAuth();
   const { showToast } = useToast();
   const { isPremium } = usePremiumCheck();
+  const { customerInfo } = useCustomerInfo();
 
   // Get app version info safely
   const getAppVersion = () => {
@@ -146,6 +148,62 @@ const Settings = () => {
     });
   };
 
+  // Get premium subscription start date from RevenueCat CustomerInfo
+  const getPremiumStartDate = () => {
+    if (!customerInfo || !isPremium) return null;
+    
+    const premiumEntitlement = customerInfo.entitlements.active['premium'];
+    if (!premiumEntitlement) return null;
+    
+    // Try to get the original purchase date
+    const originalPurchaseDate = premiumEntitlement.originalPurchaseDate;
+    if (originalPurchaseDate) {
+      return new Date(originalPurchaseDate);
+    }
+    
+    // Fallback to entitlement start date
+    const startDate = premiumEntitlement.latestPurchaseDate;
+    if (startDate) {
+      return new Date(startDate);
+    }
+    
+    return null;
+  };
+
+  // Get subscription management instructions based on platform
+  const getSubscriptionManagementInfo = () => {
+    if (Platform.OS === 'ios') {
+      return {
+        title: 'Manage Subscription',
+        description: 'Go to Settings > Apple ID > Subscriptions',
+        icon: 'settings-outline',
+        action: () => {
+          // Try to open iOS Settings app
+          Linking.openURL('App-Prefs:root=General&path=ManagedConfigurationList');
+        }
+      };
+    } else if (Platform.OS === 'android') {
+      return {
+        title: 'Manage Subscription',
+        description: 'Go to Google Play Store > Profile > Payments & subscriptions',
+        icon: 'card-outline',
+        action: () => {
+          // Try to open Google Play Store subscriptions
+          Linking.openURL('https://play.google.com/store/account/subscriptions');
+        }
+      };
+    } else {
+      return {
+        title: 'Manage Subscription',
+        description: 'Contact support for subscription management',
+        icon: 'help-circle-outline',
+        action: () => {
+          Linking.openURL('mailto:support@example.com?subject=Subscription Management');
+        }
+      };
+    }
+  };
+
   return (
     <ChatGPTBackground style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
@@ -258,6 +316,57 @@ const Settings = () => {
                   </TouchableOpacity>
                 )}
               </View>
+              
+              {/* Premium subscription details */}
+              {isPremium && (
+                <>
+                  {/* Subscription start date */}
+                  {(() => {
+                    const startDate = getPremiumStartDate();
+                    return startDate ? (
+                      <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldLabel}>Premium Since</Text>
+                        <Text style={styles.fieldValue}>
+                          {formatDate(startDate.toISOString())}
+                        </Text>
+                      </View>
+                    ) : null;
+                  })()}
+                  
+                  {/* Subscription management */}
+                  <View style={styles.fieldContainer}>
+                    <Text style={styles.fieldLabel}>Subscription Management</Text>
+                    <TouchableOpacity
+                      style={styles.manageSubscriptionContainer}
+                      onPress={() => {
+                        const info = getSubscriptionManagementInfo();
+                        try {
+                          info.action();
+                        } catch (error) {
+                          // Fallback to showing instructions if direct link fails
+                          Alert.alert(
+                            info.title,
+                            info.description,
+                            [{ text: 'OK' }]
+                          );
+                        }
+                      }}
+                    >
+                      <View style={styles.manageSubscriptionInfo}>
+                        <Ionicons 
+                          name={getSubscriptionManagementInfo().icon as any} 
+                          size={16} 
+                          color="#6b7280" 
+                        />
+                        <Text style={styles.manageSubscriptionText}>
+                          {getSubscriptionManagementInfo().title}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
           </View>
         )}
@@ -385,9 +494,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#374151',
   },
-  fieldContainer: {
-    paddingVertical: 12,
-  },
   fieldLabel: {
     fontSize: 12,
     color: '#6b7280',
@@ -422,11 +528,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#374151',
   },
-  linkItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-  },
   linkText: {
     flex: 1,
     fontSize: 16,
@@ -437,7 +538,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 0,
+    alignSelf: 'flex-start',
+    borderRadius: 8,
   },
   dangerButtonText: {
     fontSize: 16,
@@ -511,6 +615,22 @@ const styles = StyleSheet.create({
     color: '#f59e0b',
     fontWeight: '500',
     marginHorizontal: 8,
+  },
+  manageSubscriptionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  manageSubscriptionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  manageSubscriptionText: {
+    fontSize: 16,
+    color: '#e5e7eb',
+    marginLeft: 8,
   },
 });
 
