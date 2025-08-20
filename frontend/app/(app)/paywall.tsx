@@ -246,18 +246,12 @@ const Paywall = () => {
         ]}>
           {pkg.product.priceString}
         </Text>
-        <Text style={[
+        {/* <Text style={[
           styles.offeringDescription,
           isSelected && styles.offeringDescriptionSelected
         ]}>
           {pkg.product.description || `Billed ${pkg.packageType.toLowerCase()}`}
-        </Text>
-      </View>
-      <View style={[
-        styles.radioOuter,
-        isSelected && styles.radioOuterSelected
-      ]}>
-        {isSelected && <View style={styles.radioInner} />}
+        </Text> */}
       </View>
     </TouchableOpacity>
   );
@@ -303,6 +297,12 @@ const Paywall = () => {
           >
             <Ionicons name="close" size={20} color="rgba(255,255,255,0.3)" />
           </TouchableOpacity>
+
+          {/* Main title */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.mainTitle}>Unlock Premium Access</Text>
+            <Text style={styles.subtitle}>Choose your plan and start practicing</Text>
+          </View>
 
           {/* Benefits */}
           <View style={styles.benefitsContainer}>
@@ -371,7 +371,7 @@ const Paywall = () => {
             {isRestoring ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text style={styles.restoreButtonText}>Restore Purchases</Text>
+              <Text style={styles.restoreButtonText}>Restore</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -410,8 +410,31 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
-  benefitsContainer: {
+  titleContainer: {
     marginBottom: 40,
+    alignItems: 'center',
+  },
+  mainTitle: {
+    color: '#ffffff',
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: '#9ca3af',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  benefitsContainer: {
+    marginBottom: 24,
+  },
+  benefitsTitle: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   benefitRow: {
     flexDirection: 'row',
@@ -438,22 +461,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 2,
     borderColor: 'transparent',
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   offeringCardSelected: {
     borderColor: '#F59E0B',
     backgroundColor: 'rgba(245,158,11,0.1)',
   },
   offeringCardContent: {
-    flex: 1,
+    position: 'relative',
   },
   offeringHeader: {
     marginBottom: 8,
   },
   offeringTitle: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 16 : 14,
     fontWeight: '600',
     marginBottom: 4,
   },
@@ -462,7 +483,7 @@ const styles = StyleSheet.create({
   },
   offeringPrice: {
     color: '#ffffff',
-    fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 20 : 18,
     fontWeight: 'bold',
     marginBottom: 4,
   },
@@ -471,15 +492,15 @@ const styles = StyleSheet.create({
   },
   offeringDescription: {
     color: '#9ca3af',
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 14 : 12,
   },
   offeringDescriptionSelected: {
     color: '#fbbf24',
   },
   popularBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: -8,
+    right: -8,
     backgroundColor: '#10b981',
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -487,13 +508,13 @@ const styles = StyleSheet.create({
   },
   popularText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 12 : 10,
     fontWeight: 'bold',
   },
   savingsBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: -8,
+    right: -8,
     backgroundColor: '#F59E0B',
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -501,35 +522,16 @@ const styles = StyleSheet.create({
   },
   savingsText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 12 : 10,
     fontWeight: 'bold',
-  },
-  radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#6b7280',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOuterSelected: {
-    borderColor: '#F59E0B',
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#F59E0B',
   },
   bottomContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingBottom: 20
   },
   continueButton: {
     backgroundColor: '#F59E0B',
-    borderRadius: 16,
+    borderRadius: 100,
     paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
@@ -546,16 +548,16 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
   },
   restoreButton: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 6,
   },
   restoreButtonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
   },
 });

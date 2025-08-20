@@ -15,6 +15,7 @@ const AppLayout = () => {
             />
             <Stack.Screen name="terms" />
             <Stack.Screen name="settings" />
+            <Stack.Screen name="paywall" options={{ gestureEnabled: false }} />
         </Stack>
     )
 }
