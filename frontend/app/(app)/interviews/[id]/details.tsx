@@ -157,7 +157,7 @@ export default function InterviewDetails() {
       
       if (!retryCheck.canRetry && retryCheck.requiresUpgrade && isPaywallEnabled) {
         // Show paywall for premium upgrade
-        router.push('/paywall');
+        router.push('/paywall?source=retry');
         return;
       }
 

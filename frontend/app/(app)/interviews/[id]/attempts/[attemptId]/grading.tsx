@@ -196,7 +196,7 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
         showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>
@@ -219,7 +219,7 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
         showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>
@@ -238,7 +238,7 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
         showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>
@@ -257,7 +257,7 @@ export default function AttemptGradingScreen() {
 
       <BlurredSection 
         isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
         showPaywall={isPaywallEnabled}
       >
         <View style={styles.card}>

@@ -251,7 +251,7 @@ const Settings = () => {
                 {!isPremium && (
                   <TouchableOpacity
                     style={styles.upgradeButton}
-                    onPress={() => router.push('/(app)/paywall')}
+                    onPress={() => router.push('/(app)/paywall?source=settings')}
                   >
                     <Ionicons name="diamond" size={20} color="white" />
                     <Text style={styles.upgradeButtonText}>Upgrade</Text>

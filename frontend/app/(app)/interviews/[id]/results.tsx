@@ -189,7 +189,7 @@ const InterviewResults = () => {
           {/* Rubric Breakdown */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
             showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
@@ -203,7 +203,7 @@ const InterviewResults = () => {
           {/* Strengths */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
             showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
@@ -223,7 +223,7 @@ const InterviewResults = () => {
           {/* Areas for Improvement */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
             showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
@@ -243,7 +243,7 @@ const InterviewResults = () => {
           {/* Detailed Feedback */}
           <BlurredSection 
             isBlurred={feedbackAccess.shouldBlur} 
-            onUpgradePress={() => isPaywallEnabled && router.push('/paywall' as any)}
+            onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
             showPaywall={isPaywallEnabled}
           >
             <View style={styles.card}>
