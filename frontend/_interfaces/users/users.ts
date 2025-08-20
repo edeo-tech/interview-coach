@@ -29,7 +29,7 @@ export interface AuthenticatedUser
     profile_qrcode?: string;
     is_banned: boolean;
     last_login?: string;
-    is_premium: boolean;
+    // is_premium: boolean; // Now handled by RevenueCat
     created_at: string;
     streak: number;
     streak_record: number;

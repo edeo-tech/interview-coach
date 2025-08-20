@@ -30,7 +30,7 @@ const Middleware: React.FC<MiddlewareProps> = ({ children }) => {
 
     return (
         <AuthProvider>
-            {/* <CustomerInfoProvider> */}
+            <CustomerInfoProvider>
                 <GestureHandlerRootView style={{ flex: 1 }}>
                     {ElevenLabsProvider ? (
                         <ElevenLabsProvider>
@@ -40,7 +40,7 @@ const Middleware: React.FC<MiddlewareProps> = ({ children }) => {
                         content
                     )}
                 </GestureHandlerRootView>
-            {/* </CustomerInfoProvider> */}
+            </CustomerInfoProvider>
         </AuthProvider>
     );
 };

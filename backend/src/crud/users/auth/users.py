@@ -36,32 +36,32 @@ async def create_user(req:Request, user:User):
         new_document=user
     )
 
-    ## create Stripe customer for reliable payment identification
-    stripe_customer_id = ""
-    if STRIPE_API_KEY:
-        try:
-            stripe_customer = stripe.Customer.create(
-                email=user.email,
-                name=user.name,
-                metadata={
-                    "user_id": str(user.id),
-                    "username": user.name
-                }
-            )
-            stripe_customer_id = stripe_customer.id
-            logger.info(f"Created Stripe customer {stripe_customer_id} for user {user.id}")
+    ## Stripe customer creation removed - payments handled by RevenueCat
+    # stripe_customer_id = ""
+    # if STRIPE_API_KEY:
+    #     try:
+    #         stripe_customer = stripe.Customer.create(
+    #             email=user.email,
+    #             name=user.name,
+    #             metadata={
+    #                 "user_id": str(user.id),
+    #                 "username": user.name
+    #             }
+    #         )
+    #         stripe_customer_id = stripe_customer.id
+    #         logger.info(f"Created Stripe customer {stripe_customer_id} for user {user.id}")
 
-            # Update user with Stripe customer ID
-            await _db_actions.updateDocument(
-                req=req,
-                collection_name='users',
-                BaseModel=User,
-                document_id=user.id,
-                stripe_customer_id=stripe_customer_id
-            )
-        except Exception as e:
-            logger.error(f"Failed to create Stripe customer for user {user.id}: {e}")
-            # Don't fail user registration if Stripe customer creation fails
+    #         # Update user with Stripe customer ID
+    #         await _db_actions.updateDocument(
+    #             req=req,
+    #             collection_name='users',
+    #             BaseModel=User,
+    #             document_id=user.id,
+    #             stripe_customer_id=stripe_customer_id
+    #         )
+    #     except Exception as e:
+    #         logger.error(f"Failed to create Stripe customer for user {user.id}: {e}")
+    #         # Don't fail user registration if Stripe customer creation fails
 
     return user
 
@@ -278,7 +278,7 @@ async def get_subscription_details(req:Request, user_id:str) -> SubscriptionDeta
     
     # Default response for users without premium
     subscription_details = SubscriptionDetails(
-        is_premium=user.is_premium,
+        is_premium=False,  # Premium now handled by RevenueCat
         plan_name="Free Plan",
         status="free",
         current_period_end=None,

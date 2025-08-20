@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useAuth } from '../../context/authentication/AuthContext';
 import { getCachedFeatureFlags } from '../../config/featureFlags';
+import { useIsUserEntitled } from '../purchases/useIsUserEntitled';
 
 export interface PremiumCheckResult {
   isPremium: boolean;
@@ -10,11 +10,11 @@ export interface PremiumCheckResult {
 }
 
 export const usePremiumCheck = (): PremiumCheckResult => {
-  const { user } = useAuth();
+  const isEntitled = useIsUserEntitled();
 
   const result = useMemo(() => {
     const featureFlags = getCachedFeatureFlags();
-    const isPremium = user?.is_premium || false;
+    const isPremium = isEntitled;
     const isPaywallEnabled = featureFlags.paywallEnabled;
 
     const checkPremiumFeature = (feature: string) => {
@@ -47,7 +47,7 @@ export const usePremiumCheck = (): PremiumCheckResult => {
       checkPremiumFeature,
       showPaywall,
     };
-  }, [user?.is_premium]);
+  }, [isEntitled]);
 
   return result;
 };

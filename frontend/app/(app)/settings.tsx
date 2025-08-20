@@ -19,9 +19,10 @@ import Constants from 'expo-constants';
 import ChatGPTBackground from '@/components/ChatGPTBackground';
 import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
 import { useAuth } from '@/context/authentication/AuthContext';
-import { useUpdateProfile, useDeleteAccount, useSubscriptionDetails } from '@/_queries/users/auth/users';
+import { useUpdateProfile, useDeleteAccount } from '@/_queries/users/auth/users';
 import { useToast } from '@/components/Toast';
 import { getCachedFeatureFlags } from '@/config/featureFlags';
+import { usePremiumCheck } from '@/hooks/premium/usePremiumCheck';
 
 const Settings = () => {
   const router = useRouter();
@@ -29,6 +30,7 @@ const Settings = () => {
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { auth } = useAuth();
   const { showToast } = useToast();
+  const { isPremium } = usePremiumCheck();
 
   // Get app version info safely
   const getAppVersion = () => {
@@ -53,16 +55,17 @@ const Settings = () => {
     }
   };
 
-  // Local state for editing
-  const [editingName, setEditingName] = useState(false);
-  const [editingEmail, setEditingEmail] = useState(false);
-  const [tempName, setTempName] = useState(auth?.name || '');
-  const [tempEmail, setTempEmail] = useState(auth?.email || '');
+  const appVersion = getAppVersion();
+  const buildVersion = getBuildVersion();
+
+  // State for editing
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [name, setName] = useState(auth?.name || '');
+  const [email, setEmail] = useState(auth?.email || '');
 
   // Queries and mutations
   const { mutate: updateProfile, isPending: updatePending } = useUpdateProfile();
   const { mutate: deleteAccount, isPending: deletePending } = useDeleteAccount();
-  const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionDetails();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -71,640 +74,443 @@ const Settings = () => {
     }, [posthogScreen])
   );
 
-  const handleSaveName = () => {
-    const trimmedName = tempName.trim();
-    
-    // Don't make API call if nothing changed
-    if (trimmedName === auth?.name) {
-      setEditingName(false);
+  const handleUpdateName = () => {
+    if (!name.trim()) {
+      Alert.alert('Error', 'Name cannot be empty');
       return;
     }
-    
-    if (trimmedName === '') {
-      showToast('Name cannot be empty', 'error');
-      setTempName(auth?.name || ''); // Reset to original
-      setEditingName(false);
-      return;
-    }
-    
+
     posthogCapture('update_profile_name', {
-      source: 'settings'
+      old_name: auth?.name,
+      new_name: name
     });
 
-    updateProfile({ name: trimmedName }, {
-      onSuccess: () => {
-        setEditingName(false);
-        showToast('Name updated successfully', 'success');
-      },
-      onError: (error: any) => {
-        const errorMessage = error.response?.data?.detail || 'Failed to update name';
-        showToast(errorMessage, 'error');
-        setTempName(auth?.name || ''); // Reset to original
-        setEditingName(false);
+    updateProfile(
+      { name: name.trim() },
+      {
+        onSuccess: () => {
+          setIsEditingName(false);
+          showToast('Name updated successfully', 'success');
+        },
+        onError: (error) => {
+          console.error('Update name error:', error);
+          Alert.alert('Error', 'Failed to update name. Please try again.');
+          setName(auth?.name || '');
+        }
       }
-    });
-  };
-
-  const handleSaveEmail = () => {
-    const trimmedEmail = tempEmail.trim();
-    
-    // Don't make API call if nothing changed
-    if (trimmedEmail === auth?.email) {
-      setEditingEmail(false);
-      return;
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      showToast('Please enter a valid email address', 'error');
-      setTempEmail(auth?.email || ''); // Reset to original
-      setEditingEmail(false);
-      return;
-    }
-
-    posthogCapture('update_profile_email', {
-      source: 'settings'
-    });
-
-    updateProfile({ email: trimmedEmail }, {
-      onSuccess: () => {
-        setEditingEmail(false);
-        showToast('Email updated successfully', 'success');
-      },
-      onError: (error: any) => {
-        const errorMessage = error.response?.data?.detail || 'Failed to update email';
-        showToast(errorMessage, 'error');
-        setTempEmail(auth?.email || ''); // Reset to original
-        setEditingEmail(false);
-      }
-    });
+    );
   };
 
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
-      'Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete all your interviews, CV data, and account information.',
+      'Are you sure you want to delete your account? This action cannot be undone.',
       [
         {
           text: 'Cancel',
           style: 'cancel',
         },
         {
-          text: 'Delete Forever',
-          style: 'destructive',
+          text: 'Delete',
           onPress: () => {
-            Alert.alert(
-              'Final Confirmation',
-              'This is your last chance. Type DELETE to confirm account deletion.',
-              [
-                {
-                  text: 'Cancel',
-                  style: 'cancel',
-                },
-                {
-                  text: 'DELETE',
-                  style: 'destructive',
-                  onPress: () => {
-                    posthogCapture('delete_account', {
-                      source: 'settings',
-                      user_id: auth?.id
-                    });
-                    deleteAccount();
-                  },
-                },
-              ]
-            );
+            posthogCapture('delete_account_confirm');
+            deleteAccount(undefined, {
+              onSuccess: () => {
+                showToast('Account deleted successfully', 'success');
+                router.replace('/(auth)/landing');
+              },
+              onError: (error) => {
+                console.error('Delete account error:', error);
+                Alert.alert('Error', 'Failed to delete account. Please try again.');
+              }
+            });
           },
+          style: 'destructive',
         },
-      ]
+      ],
+      { cancelable: true }
     );
   };
 
-  const handleManageSubscription = () => {
-    if (subscription?.stripe_portal_url) {
-      posthogCapture('open_stripe_portal', {
-        source: 'settings',
-        plan: subscription.plan_name
-      });
-      Linking.openURL(subscription.stripe_portal_url);
-    }
+  const handleLinkPress = (url: string, eventName: string) => {
+    posthogCapture(eventName, { source: 'settings' });
+    Linking.openURL(url);
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
-  const getSubscriptionStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return '#10B981';
-      case 'canceled':
-        return '#EF4444';
-      case 'past_due':
-        return '#F59E0B';
-      default:
-        return '#6B7280';
-    }
-  };
-
   return (
-    <ChatGPTBackground style={styles.background}>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="chevron-back" size={24} color="#ffffff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Settings</Text>
-          <View style={styles.headerSpacer} />
+    <ChatGPTBackground style={styles.container}>
+      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Settings</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Profile Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Profile</Text>
+          <View style={styles.card}>
+            {/* Name Field */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Name</Text>
+              {isEditingName ? (
+                <View style={styles.editContainer}>
+                  <TextInput
+                    style={styles.input}
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="Enter your name"
+                    placeholderTextColor="#6b7280"
+                    onSubmitEditing={handleUpdateName}
+                    autoFocus
+                  />
+                  <TouchableOpacity
+                    onPress={handleUpdateName}
+                    disabled={updatePending}
+                  >
+                    {updatePending ? (
+                      <ActivityIndicator size="small" color="#F59E0B" />
+                    ) : (
+                      <Ionicons name="checkmark" size={20} color="#10b981" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIsEditingName(false);
+                      setName(auth?.name || '');
+                    }}
+                    style={{ marginLeft: 8 }}
+                  >
+                    <Ionicons name="close" size={20} color="#ef4444" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.fieldValueContainer}
+                  onPress={() => setIsEditingName(true)}
+                >
+                  <Text style={styles.fieldValue}>{auth?.name}</Text>
+                  <Ionicons name="pencil" size={16} color="#6b7280" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Email Field */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Email</Text>
+              <Text style={[styles.fieldValue, { color: '#6b7280' }]}>
+                {auth?.email}
+              </Text>
+            </View>
+
+            {/* Member Since */}
+            {auth?.created_at && (
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Member Since</Text>
+                <Text style={styles.fieldValue}>
+                  {formatDate(auth.created_at)}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Account Section */}
+        {/* Premium Section */}
+        {getCachedFeatureFlags().paywallEnabled && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Account</Text>
+            <Text style={styles.sectionTitle}>Premium</Text>
             <View style={styles.card}>
-              {/* Name Field */}
-              <View style={styles.field}>
-                <Text style={styles.fieldLabel}>Name</Text>
-                {editingName ? (
-                  <View style={styles.editingContainer}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={tempName}
-                      onChangeText={setTempName}
-                      placeholder="Enter your name"
-                      placeholderTextColor="#6B7280"
-                      autoFocus
-                      onBlur={handleSaveName}
-                      editable={!updatePending}
-                    />
-                    {updatePending && (
-                      <ActivityIndicator 
-                        size="small" 
-                        color="#F59E0B" 
-                        style={styles.loadingIndicator}
-                      />
-                    )}
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.fieldValue}
-                    onPress={() => setEditingName(true)}
-                  >
-                    <Text style={styles.fieldText}>{auth?.name}</Text>
-                    <Ionicons name="create-outline" size={20} color="#F59E0B" />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              <View style={styles.divider} />
-
-              {/* Email Field */}
-              <View style={styles.field}>
-                <Text style={styles.fieldLabel}>Email</Text>
-                {editingEmail ? (
-                  <View style={styles.editingContainer}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={tempEmail}
-                      onChangeText={setTempEmail}
-                      placeholder="Enter your email"
-                      placeholderTextColor="#6B7280"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoFocus
-                      onBlur={handleSaveEmail}
-                      editable={!updatePending}
-                    />
-                    {updatePending && (
-                      <ActivityIndicator 
-                        size="small" 
-                        color="#F59E0B" 
-                        style={styles.loadingIndicator}
-                      />
-                    )}
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.fieldValue}
-                    onPress={() => setEditingEmail(true)}
-                  >
-                    <Text style={styles.fieldText}>{auth?.email}</Text>
-                    <Ionicons name="create-outline" size={20} color="#F59E0B" />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              <View style={styles.divider} />
-
-              {/* Delete Account */}
-              <TouchableOpacity
-                style={styles.dangerField}
-                onPress={handleDeleteAccount}
-                disabled={deletePending}
-              >
-                <Text style={styles.dangerFieldLabel}>Delete Account</Text>
-                {deletePending ? (
-                  <ActivityIndicator size="small" color="#EF4444" />
-                ) : (
-                  <Ionicons name="trash-outline" size={20} color="#EF4444" />
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Subscription Section - Only show if paywalls are enabled */}
-          {getCachedFeatureFlags().paywallEnabled && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Subscription</Text>
-              <View style={styles.card}>
-                {subscriptionLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#F59E0B" />
-                    <Text style={styles.loadingText}>Loading subscription details...</Text>
-                  </View>
-                ) : subscription ? (
-                  <>
-                    <View style={styles.subscriptionHeader}>
-                      <View style={styles.planBadge}>
-                        <Ionicons 
-                          name={subscription.is_premium ? "diamond" : "gift"} 
-                          size={16} 
-                          color={subscription.is_premium ? "#F59E0B" : "#6B7280"} 
-                        />
-                        <Text style={[
-                          styles.planName, 
-                          { color: subscription.is_premium ? "#F59E0B" : "#6B7280" }
-                        ]}>
-                          {subscription.plan_name}
-                        </Text>
-                      </View>
-                      <View style={[
-                        styles.statusBadge, 
-                        { backgroundColor: getSubscriptionStatusColor(subscription.status) + '20' }
-                      ]}>
-                        <Text style={[
-                          styles.statusText, 
-                          { color: getSubscriptionStatusColor(subscription.status) }
-                        ]}>
-                          {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {subscription.current_period_end && (
-                      <Text style={styles.billingText}>
-                        Next billing: {formatDate(subscription.current_period_end)}
-                      </Text>
-                    )}
-
-                    {subscription.is_premium ? (
-                      subscription.stripe_portal_url && (
-                        <>
-                          <View style={styles.divider} />
-                          <TouchableOpacity
-                            style={styles.manageButton}
-                            onPress={handleManageSubscription}
-                          >
-                            <Ionicons name="settings-outline" size={20} color="#F59E0B" />
-                            <Text style={styles.manageButtonText}>Manage Subscription</Text>
-                            <Ionicons name="open-outline" size={16} color="#F59E0B" />
-                          </TouchableOpacity>
-                        </>
-                      )
-                    ) : (
-                      <>
-                        <View style={styles.divider} />
-                        <TouchableOpacity
-                          style={styles.upgradeButton}
-                          onPress={() => {
-                            posthogCapture('navigate_to_paywall', {
-                              source: 'settings'
-                            });
-                            router.push('/(app)/paywall');
-                          }}
-                        >
-                          <Ionicons name="diamond" size={20} color="#ffffff" />
-                          <Text style={styles.upgradeButtonText}>Upgrade to Premium</Text>
-                          <Ionicons name="arrow-forward" size={16} color="#ffffff" />
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <Text style={styles.errorText}>Failed to load subscription details</Text>
-                )}
-              </View>
-            </View>
-          )}
-
-          {/* App Information Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>App Information</Text>
-            <View style={styles.card}>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>App Name</Text>
-                <Text style={styles.infoValue}>{Constants.expoConfig?.name || 'Interview Guide AI'}</Text>
-              </View>
-              <View style={styles.dividerCompact} />
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Version</Text>
-                <Text style={styles.infoValue}>{getAppVersion()}</Text>
-              </View>
-              <View style={styles.dividerCompact} />
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Build</Text>
-                <Text style={styles.infoValue}>{getBuildVersion()}</Text>
-              </View>
-              <View style={styles.dividerCompact} />
-              <TouchableOpacity
-                style={styles.contactRow}
-                onPress={() => Linking.openURL('mailto:ross@edio.cc')}
-              >
-                <Text style={styles.infoLabel}>Support</Text>
-                <View style={styles.contactValue}>
-                  <Text style={styles.contactText}>ross@edio.cc</Text>
-                  <Ionicons name="mail-outline" size={16} color="#F59E0B" />
+              <View style={styles.premiumStatus}>
+                <View style={styles.premiumBadge}>
+                  <Ionicons 
+                    name={isPremium ? "diamond" : "gift"} 
+                    size={16} 
+                    color={isPremium ? "#F59E0B" : "#6B7280"} 
+                  />
+                  <Text style={[
+                    styles.premiumText,
+                    { color: isPremium ? "#F59E0B" : "#6B7280" }
+                  ]}>
+                    {isPremium ? "Premium" : "Free"}
+                  </Text>
                 </View>
-              </TouchableOpacity>
+                {!isPremium && (
+                  <TouchableOpacity
+                    style={styles.upgradeButton}
+                    onPress={() => router.push('/(app)/paywall')}
+                  >
+                    <Ionicons name="diamond" size={20} color="white" />
+                    <Text style={styles.upgradeButtonText}>Upgrade</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           </View>
-        </ScrollView>
-      </View>
+        )}
+
+        {/* Support Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Support</Text>
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.linkItem}
+              onPress={() => handleLinkPress('https://example.com/help', 'open_help_center')}
+            >
+              <Ionicons name="help-circle-outline" size={20} color="#6b7280" />
+              <Text style={styles.linkText}>Help Center</Text>
+              <Ionicons name="open-outline" size={16} color="#6b7280" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.linkItem}
+              onPress={() => handleLinkPress('mailto:support@example.com', 'contact_support')}
+            >
+              <Ionicons name="mail-outline" size={20} color="#6b7280" />
+              <Text style={styles.linkText}>Contact Support</Text>
+              <Ionicons name="open-outline" size={16} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Legal Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Legal</Text>
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.linkItem}
+              onPress={() => handleLinkPress('https://example.com/privacy', 'open_privacy_policy')}
+            >
+              <Ionicons name="shield-checkmark-outline" size={20} color="#6b7280" />
+              <Text style={styles.linkText}>Privacy Policy</Text>
+              <Ionicons name="open-outline" size={16} color="#6b7280" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.linkItem}
+              onPress={() => handleLinkPress('https://example.com/terms', 'open_terms')}
+            >
+              <Ionicons name="document-text-outline" size={20} color="#6b7280" />
+              <Text style={styles.linkText}>Terms of Service</Text>
+              <Ionicons name="open-outline" size={16} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Danger Zone */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: '#ef4444' }]}>Danger Zone</Text>
+          <View style={[styles.card, { borderColor: '#ef444440' }]}>
+            <TouchableOpacity
+              style={styles.dangerButton}
+              onPress={handleDeleteAccount}
+              disabled={deletePending}
+            >
+              {deletePending ? (
+                <ActivityIndicator size="small" color="#ef4444" />
+              ) : (
+                <>
+                  <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                  <Text style={styles.dangerButtonText}>Delete Account</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* App Info */}
+        <View style={styles.appInfo}>
+          <Text style={styles.appInfoText}>
+            Version {appVersion} ({buildVersion})
+          </Text>
+        </View>
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
     </ChatGPTBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#ffffff',
-    textAlign: 'center',
-    flex: 1,
-  },
-  headerSpacer: {
-    width: 40,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
   },
   scrollView: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  section: {
-    marginTop: 24,
     paddingHorizontal: 20,
   },
+  section: {
+    marginBottom: 24,
+  },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#e5e7eb',
     marginBottom: 12,
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    padding: 20,
+    borderColor: '#374151',
   },
-  field: {
-    marginBottom: 4,
+  fieldContainer: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+  },
+  fieldContainer: {
+    paddingVertical: 12,
   },
   fieldLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#9CA3AF',
-    marginBottom: 8,
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 4,
   },
   fieldValue: {
+    fontSize: 16,
+    color: '#e5e7eb',
+  },
+  fieldValueContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
   },
-  fieldText: {
-    fontSize: 16,
-    color: '#ffffff',
-    flex: 1,
-  },
-  editingContainer: {
-    position: 'relative',
-  },
-  textInput: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#ffffff',
-  },
-  loadingIndicator: {
-    position: 'absolute',
-    right: 16,
-    top: '50%',
-    marginTop: -10,
-  },
-  editingButtons: {
+  editContainer: {
     flexDirection: 'row',
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
     alignItems: 'center',
   },
-  cancelButtonText: {
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#e5e7eb',
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+    paddingBottom: 4,
+    marginRight: 12,
+  },
+  linkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+  },
+  linkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  linkText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#e5e7eb',
+    marginLeft: 12,
+  },
+  dangerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
+  dangerButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#ef4444',
+    marginLeft: 8,
+  },
+  appInfo: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  appInfoText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 8,
+  },
+  errorText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: '#ef4444',
   },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: '#F59E0B',
+  premiumStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  premiumBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  saveButtonText: {
+  premiumText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  upgradeButton: {
+    backgroundColor: '#f59e0b',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  upgradeButtonText: {
+    color: 'white',
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    marginLeft: 6,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginVertical: 20,
-  },
-  dividerCompact: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginVertical: 8,
-  },
-  dangerField: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
-  dangerFieldLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#EF4444',
-  },
-  subscriptionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  planBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  planName: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  billingText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginBottom: 8,
+    backgroundColor: '#374151',
+    marginVertical: 16,
   },
   manageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
+    justifyContent: 'center',
+    paddingVertical: 8,
   },
   manageButtonText: {
     fontSize: 16,
+    color: '#f59e0b',
     fontWeight: '500',
-    color: '#F59E0B',
-    flex: 1,
-    marginLeft: 8,
-  },
-  upgradeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-  },
-  upgradeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    flex: 1,
-    marginLeft: 8,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 12,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#EF4444',
-    textAlign: 'center',
-    paddingVertical: 20,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  infoLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#9CA3AF',
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '400',
-  },
-  contactRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  contactValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  contactText: {
-    fontSize: 14,
-    color: '#F59E0B',
-    fontWeight: '400',
+    marginHorizontal: 8,
   },
 });
 

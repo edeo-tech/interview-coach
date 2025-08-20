@@ -44,8 +44,8 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-// const revenueCatAppleApiKey = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY;
-// const revenueCatAndroidApiKey = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
+const revenueCatAppleApiKey = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY;
+const revenueCatAndroidApiKey = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
 
 export default function RootLayoutWrapper() {
     const AppTree = (
@@ -103,24 +103,24 @@ function RootLayout() {
     }, [fontsLoaded, setFontsLoaded]);
 
     useEffect(() => {
-        // const initializeRevenueCat = async () => {
-        //     if (!revenueCatAppleApiKey || !revenueCatAndroidApiKey) {
-        //         console.error("RevenueCat API keys are not defined");
-        //         return;
-        //     }
+        const initializeRevenueCat = async () => {
+            if (!revenueCatAppleApiKey || !revenueCatAndroidApiKey) {
+                console.error("RevenueCat API keys are not defined");
+                return;
+            }
 
-        //     if (Platform.OS === 'ios') {
-        //         await Purchases.configure({ apiKey: revenueCatAppleApiKey });
-        //     } else if (Platform.OS === 'android') {
-        //         await Purchases.configure({ apiKey: revenueCatAndroidApiKey });
-        //     }
-        // }
+            if (Platform.OS === 'ios') {
+                await Purchases.configure({ apiKey: revenueCatAppleApiKey });
+            } else if (Platform.OS === 'android') {
+                await Purchases.configure({ apiKey: revenueCatAndroidApiKey });
+            }
+        }
 
         if (Platform.OS !== 'web') {
             if (process.env.EXPO_PUBLIC_MODE === 'development') {
                 Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
             }
-            // initializeRevenueCat();
+            initializeRevenueCat();
         }
     }, []);
 

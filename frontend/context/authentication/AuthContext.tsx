@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
         {
             if(Platform.OS !== 'web')
             {
-                // Purchases.logIn(auth?.id);
+                Purchases.logIn(auth?.id);
                 Purchases.setEmail(auth?.email);
                 
                 posthogIdentify(auth?.id, {
