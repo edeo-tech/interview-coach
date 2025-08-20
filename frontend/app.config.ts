@@ -1,11 +1,11 @@
 module.exports = {
     expo: {
-        name: "Interview Guide AI",
-        slug: "interview-coach",
+        name: "Nextround",
+        slug: "nextround",
         version: "1.0.0",
         orientation: "portrait",
         icon: "./assets/images/FinalAppIcon.png",
-        scheme: "interviewcoach",
+        scheme: "nextround",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
         splash: {
