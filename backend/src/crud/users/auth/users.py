@@ -65,7 +65,6 @@ async def create_user(req:Request, user:User):
 
     return user
 
-
 def calculate_streak_update(current_streak: int, streak_record: int, last_login: datetime = None) -> dict:
     """Calculate new streak values based on last login date"""
     today = date.today()
@@ -170,6 +169,15 @@ async def get_user_by_id(req:Request, user_id:str):
         collection_name='users',
         BaseModel=User,
         _id=user_id
+    )
+    return user
+
+async def get_user_by_email(req:Request, email:str):
+    user = await _db_actions.getDocument(
+        req=req,
+        collection_name='users',
+        BaseModel=User,
+        email=email
     )
     return user
 
