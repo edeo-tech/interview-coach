@@ -1,8 +1,9 @@
-from fastapi import Request, HTTPException, APIRouter, Depends
+from fastapi import Request, HTTPException, APIRouter, Depends, status
 from fastapi.responses import JSONResponse, Response
 from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel, Field
 
-from models.users.users import User, LoginUser, UpdateUserProfile, SubscriptionDetails
+from models.users.users import User, LoginUser, UpdateUserProfile, SignUpType
 from crud.users.auth.users import (
     create_user,
     handle_login,
@@ -10,7 +11,9 @@ from crud.users.auth.users import (
     get_user_by_id,
     update_user_profile,
     delete_user_account,
-    get_subscription_details
+    get_subscription_details,
+    check_if_email_is_taken,
+    get_user_by_email
 )
 from crud._generic import _db_actions
 from models.users.authenticated_user import AuthenticatedUser
@@ -56,6 +59,135 @@ async def login(req:Request, login_user:LoginUser):
                 }
             }
         )
+    )
+
+async def handle_third_party_login(
+        req:Request,
+        third_party:SignUpType,
+        payload:dict,
+        device_os:str
+    ) -> JSONResponse:
+
+    print(f"🔑 GOOGLE/APPLE LOGIN: Starting third party login for email: {payload.get('email')}")
+    print(f"🔑 GOOGLE/APPLE LOGIN: Payload: {payload}")
+    print(f"🔑 GOOGLE/APPLE LOGIN: Device OS: {device_os}")
+
+    # Check if email provided is already linked to an existing account log in
+    if (await check_if_email_is_taken(req, payload['email'])):
+        print(f"🔑 GOOGLE/APPLE LOGIN: Email {payload['email']} already exists - logging in existing user")
+        user = await get_user_by_email(req, payload['email'])
+        await update_user_last_active_at(req, user.id)
+
+        encoded_user = user.model_dump(by_alias=False, exclude_none=True)
+
+        encoded_user = jsonable_encoder(
+            AuthenticatedUser(**encoded_user),
+            by_alias=False,
+            exclude_none=True,
+        )
+
+        access_token = auth.encode_short_lived_token(user.id)
+        refresh_token = await auth.encode_refresh_token(req, user.id)
+
+        response_data = {
+            'user': encoded_user,
+            'tokens': {
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            },
+            'sign_up': False
+        }
+        
+        print(f"🔑 GOOGLE/APPLE LOGIN: Existing user login successful - Response structure: {list(response_data.keys())}")
+        print(f"🔑 GOOGLE/APPLE LOGIN: User ID: {user.id}")
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=jsonable_encoder(response_data)
+        )
+    
+    # Otherwise create a new account for the user's information provided
+    print(f"🔑 GOOGLE/APPLE LOGIN: Email {payload['email']} not found - creating new user")
+    new_user = User(
+        name=payload.get('name', payload['email'].split('@')[0]),
+        email=payload['email'],
+        password='',
+        sign_up_type=third_party,
+        device_os=device_os
+    )
+
+    print(f"🔑 GOOGLE/APPLE LOGIN: Creating user with data: {new_user.model_dump(exclude={'password'})}")
+    created_user = await create_user(req, new_user)
+    print(f"🔑 GOOGLE/APPLE LOGIN: User created successfully with ID: {created_user.id}")
+
+    access_token = auth.encode_short_lived_token(created_user.id)
+    refresh_token = await auth.encode_refresh_token(req, created_user.id)
+
+    # Ensure created_user has the same structure as the existing user response
+    # Convert to AuthenticatedUser with catches count (same as existing user flow)
+    user_data = created_user.model_dump(by_alias=False, exclude_none=True)
+
+    # Create AuthenticatedUser object to match existing user response structure
+    authenticated_user_data = jsonable_encoder(
+        AuthenticatedUser(**user_data),
+        by_alias=False,
+        exclude_none=True,
+    )
+
+    response_data = {
+        'user': authenticated_user_data,
+        'tokens': {
+            'access_token': access_token,
+            'refresh_token': refresh_token
+        },
+        'sign_up': True
+    }
+    
+    print(f"🔑 GOOGLE/APPLE LOGIN: New user creation successful - Response structure: {list(response_data.keys())}")
+    print(f"🔑 GOOGLE/APPLE LOGIN: User data type: {type(authenticated_user_data)}")
+    print(f"🔑 GOOGLE/APPLE LOGIN: User data keys: {list(authenticated_user_data.keys()) if isinstance(authenticated_user_data, dict) else 'Not a dict'}")
+    print(f"🔑 GOOGLE/APPLE LOGIN: Catches count: {user_data.get('catches', 'N/A')}")
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=jsonable_encoder(response_data)
+    )
+
+class googleLoginBody(BaseModel):
+    token:str = Field(...)
+    device_os:str = Field(...)
+
+
+@router.post('/login/google', response_description='Login a user with Google')
+@error_decorator
+async def login_google(req:Request, body:googleLoginBody) -> JSONResponse:
+
+    idInfo = await auth.verify_google_signin_token(body.token)
+
+    return await handle_third_party_login(
+        req,
+        SignUpType.GOOGLE,
+        idInfo,
+        body.device_os
+    )
+    
+    
+class appleLoginBody(BaseModel):
+    user_token:str = Field(...)
+    device_os:str = Field(...)
+
+@router.post('/login/apple', response_description='Login a user with Apple')
+@error_decorator
+async def login_apple(req:Request, body:appleLoginBody) -> JSONResponse:
+    user_token = body.user_token
+
+    verified_payload = await auth.verify_apple_signin_token(user_token)
+    
+    return await handle_third_party_login(
+        req, 
+        SignUpType.APPLE, 
+        verified_payload, 
+        body.device_os
     )
 
 @router.get('/me', response_description='Get the current user')

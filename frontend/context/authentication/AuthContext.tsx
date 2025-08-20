@@ -8,11 +8,13 @@ import { getUserId } from '@/_api/cookies';
 // interfaces
 import { 
     AuthenticatedUser, 
-    LoginUser
+    LoginUser,
+    GoogleLoginBody,
+    AppleLoginBody
 } from '@/_interfaces/users/users';
 
 // queries
-import { useCheckAuth, useLogin, useLogout } from '@/_queries/users/auth/users';
+import { useCheckAuth, useLogin, useLogout, useGoogleLogin, useAppleLogin } from '@/_queries/users/auth/users';
 
 // utils
 import Purchases from 'react-native-purchases';
@@ -31,6 +33,12 @@ type AuthContextType = {
     loginErrorMessage: string;
     loginSuccess: boolean;
     logoutError: Error | null;
+    googleLogin: (body: GoogleLoginBody) => void;
+    googleLoginLoading: boolean;
+    googleLoginErrorMessage: string;
+    appleLogin: (body: AppleLoginBody) => void;
+    appleLoginLoading: boolean;
+    appleLoginErrorMessage: string;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,15 +50,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
     const { posthogCapture, posthogIdentify } = usePosthogSafely();
     
     const { data: auth, isLoading: authLoading, error: authError } = useCheckAuth();
-    const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess } = useLogin();
+    const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess } = useLogin({posthogIdentify, posthogCapture});
     const { mutate: logout, isPending: logoutLoading, error: logoutError } = useLogout();
+    const {
+        mutate: googleLogin,
+        isPending: googleLoginLoading,
+        error: googleLoginError,
+    } = useGoogleLogin({posthogIdentify, posthogCapture});
+    const {
+        mutate: appleLogin,
+        isPending: appleLoginLoading,
+        error: appleLoginError,
+    } = useAppleLogin({posthogIdentify, posthogCapture});
 
     const [loginErrorMessage, setLoginErrorMessage] = useState('');
+    const [googleLoginErrorMessage, setGoogleLoginErrorMessage] = useState('');
+    const [appleLoginErrorMessage, setAppleLoginErrorMessage] = useState('');
+
 
     useEffect(() =>
     {
         if(loginError) setLoginErrorMessage(loginError.response?.data?.detail || 'Login failed. Please try again.');
-    }, [loginError]);
+        if(googleLoginError) {
+            console.log("🔴 AUTH_CONTEXT: Google login error detected:", googleLoginError);
+            const errorMessage = googleLoginError.response?.data?.detail || 'Google login failed. Please try again.';
+            setGoogleLoginErrorMessage(errorMessage);
+        }
+        if(appleLoginError) {
+            console.log("🔴 AUTH_CONTEXT: Apple login error detected:", appleLoginError);
+            const errorMessage = appleLoginError.response?.data?.detail || 'Apple login failed. Please try again.';
+            setAppleLoginErrorMessage(errorMessage);
+        }
+    }, [loginError, googleLoginError, appleLoginError]);
 
     const navigate = async () =>
     {
@@ -107,6 +138,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
                 logoutError,
                 loginErrorMessage,
                 loginSuccess,
+                googleLogin,
+                googleLoginLoading,
+                googleLoginErrorMessage,
+                appleLogin,
+                appleLoginLoading,
+                appleLoginErrorMessage,
             }}>
             {children}
         </AuthContext.Provider>

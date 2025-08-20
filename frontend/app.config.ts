@@ -1,11 +1,11 @@
 module.exports = {
     expo: {
-        name: "Interview Guide AI",
+        name: "Nextround",
         slug: "interview-coach",
-        version: "1.0.0",
+        version: "1.0.1",
         orientation: "portrait",
         icon: "./assets/images/FinalAppIcon.png",
-        scheme: "interviewcoach",
+        scheme: "nextround",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
         splash: {
@@ -45,6 +45,8 @@ module.exports = {
             "expo-router",
           "expo-secure-store",
           "expo-localization",  
+          "expo-tracking-transparency",
+          "expo-apple-authentication",
           "@livekit/react-native-expo-plugin",
           "@config-plugins/react-native-webrtc",
           [

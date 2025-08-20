@@ -2,8 +2,14 @@ from pydantic import Field, BaseModel, field_validator, EmailStr
 import re
 from datetime import datetime, timezone
 from typing import Optional
+from enum import Enum
 
 from models._base import MongoBaseModel
+
+class SignUpType(str, Enum):
+    EMAIL = 'email'
+    GOOGLE = 'google'
+    APPLE = 'apple'
 
 class User(MongoBaseModel):
     name:str = Field(
@@ -66,6 +72,10 @@ class User(MongoBaseModel):
     streak_record:int = Field(
         default=0,
         description='Highest login streak ever achieved'
+    )
+    sign_up_type:SignUpType = Field(
+        default=SignUpType.EMAIL,
+        description='The type of sign up used by the user'
     )
 
 class LoginUser(BaseModel):

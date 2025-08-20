@@ -11,6 +11,18 @@ export interface LoginUser
     password: string;
 }
 
+export interface GoogleLoginBody
+{
+    token: string;
+    device_os: string;
+}
+
+export interface AppleLoginBody
+{
+    user_token: string;
+    device_os: string;
+}
+
 export interface LoginResponse
 {
     user: AuthenticatedUser;
@@ -18,6 +30,11 @@ export interface LoginResponse
         access_token: string;
         refresh_token: string;
     };
+}
+
+export interface ThirdPartyLoginResponse extends LoginResponse
+{
+    sign_up: boolean;
 }
 
 export interface AuthenticatedUser

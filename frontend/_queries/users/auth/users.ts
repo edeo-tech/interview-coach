@@ -16,7 +16,10 @@ import {
     LoginResponse,
     AuthenticatedUser,
     UpdateUserProfile,
-    SubscriptionDetails
+    SubscriptionDetails,
+    AppleLoginBody,
+    ThirdPartyLoginResponse,
+    GoogleLoginBody
 } from '@/_interfaces/users/users';
 
 // hooks
@@ -79,10 +82,15 @@ export const useRegister = () =>
 }
 
 // login query
-export const useLogin = () =>
+export const useLogin = ({
+    posthogIdentify,
+    posthogCapture,
+}: {
+    posthogIdentify?: (userId: string, properties?: Record<string, any>) => void;
+    posthogCapture?: (eventName: string, properties?: Record<string, any>) => void;
+}) =>
 {
     const queryClient = useQueryClient();
-    const { posthogIdentify, posthogCapture } = usePosthogSafely();
 
     return useMutation({
         mutationFn: async (body: LoginUser) => (await usersAuthApi.login(body)).data,
@@ -101,6 +109,86 @@ export const useLogin = () =>
     });
 }
 
+// Google login query
+export const useGoogleLogin = ({
+    posthogIdentify,
+    posthogCapture,
+}: {
+    posthogIdentify: (userId: string, properties?: Record<string, any>) => void;
+    posthogCapture: (eventName: string, properties?: Record<string, any>) => void;
+}) =>
+    {
+        const queryClient = useQueryClient();
+    
+        return useMutation({
+            mutationFn: async (body: GoogleLoginBody) => {
+                console.log("🔑 GOOGLE_LOGIN: Starting Google login API call");
+                console.log("🔑 GOOGLE_LOGIN: Request body:", { ...body, token: 'REDACTED' });
+                const result = await usersAuthApi.googleLogin(body);
+                console.log("🔑 GOOGLE_LOGIN: API call successful, status:", result.status);
+                console.log("🔑 GOOGLE_LOGIN: Response data structure:", Object.keys(result.data));
+                return result.data;
+            },
+            onSuccess: async (response: ThirdPartyLoginResponse) =>
+            {
+                console.log("🔑 GOOGLE_LOGIN: Success handler called");
+                console.log("🔑 GOOGLE_LOGIN: Response sign_up flag:", response.sign_up);
+                console.log("🔑 GOOGLE_LOGIN: Response user ID:", response.user?.id);
+                
+                const destination = response.sign_up ? '/(app)/(signup-steps)/take-profile-picture' : '/(app)/(tabs)/home';
+                console.log("🔑 GOOGLE_LOGIN: Determined destination:", destination);
+                
+                try {
+                    await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture);
+                    console.log("🔑 GOOGLE_LOGIN: Post login logic completed successfully");
+                    
+                    if(Platform.OS !== 'web') {
+                        const eventType = response.sign_up ? 'sign_up' : 'sign_in';
+                        console.log("🔑 GOOGLE_LOGIN: Capturing posthog event:", eventType);
+                        posthogCapture(eventType, { type: 'google' });
+                    }
+                } catch (error) {
+                    console.error("🚨 GOOGLE_LOGIN: Error in post login logic:", error);
+                    throw error;
+                }
+            },
+            onError: (error: any) =>
+            {
+                console.error("🚨 GOOGLE_LOGIN: Error in Google login mutation");
+                console.error("🚨 GOOGLE_LOGIN: Error details:", error);
+                console.error("🚨 GOOGLE_LOGIN: Error response:", error.response?.data);
+                const errorMessage = error.response?.data?.detail || 'Google login failed. Please try again.';
+                console.error('🚨 GOOGLE_LOGIN: Final error message:', errorMessage);
+            }
+        });
+    }
+    
+    // Apple login query
+    export const useAppleLogin = ({
+        posthogIdentify,
+        posthogCapture,
+    }: {
+        posthogIdentify: (userId: string, properties?: Record<string, any>) => void;
+        posthogCapture: (eventName: string, properties?: Record<string, any>) => void;
+    }) =>
+    {
+        const queryClient = useQueryClient();
+    
+        return useMutation({
+            mutationFn: async (body: AppleLoginBody) => (await usersAuthApi.appleLogin(body)).data,
+            onSuccess: async (response: ThirdPartyLoginResponse) =>
+            {
+                await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture);
+                if(Platform.OS !== 'web') posthogCapture(response.sign_up ? 'sign_up' : 'sign_in', { type: 'apple' });
+            },
+            onError: (error: any) =>
+            {
+                const errorMessage = error.response?.data?.detail || 'Apple login failed. Please try again.';
+                console.error('Error logging in with Apple:', errorMessage);
+            }
+        });
+    }
+
 // check auth query
 export const useCheckAuth = () =>
 {
@@ -109,11 +197,11 @@ export const useCheckAuth = () =>
         queryFn: async () => (await usersAuthApi.checkAuth()).data,
         staleTime: Infinity,
         retry: false,
-        onError: (error: any) => {
-            // If auth check fails, clear cookies and redirect to login
-            clearAllCookies();
-            router.replace('/(auth)/landing');
-        }
+        // onError: (error: any) => {
+        //     // If auth check fails, clear cookies and redirect to login
+        //     clearAllCookies();
+        //     router.replace('/(auth)/landing');
+        // }
     });
 }
 
@@ -181,9 +269,6 @@ export const useSubscriptionDetails = () =>
         queryKey: ['subscription'],
         queryFn: async () => (await usersAuthApi.getSubscriptionDetails()).data,
         staleTime: 5 * 60 * 1000, // 5 minutes
-        retry: 1,
-        onError: (error: any) => {
-            console.error('Error fetching subscription details:', error);
-        }
+        retry: 1
     });
 }
