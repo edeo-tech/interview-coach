@@ -82,7 +82,7 @@ const CVUpload = () => {
 
   const handleProgressComplete = () => {
     setShowProgressModal(false);
-    router.back();
+    router.push('/cv-profile');
   };
 
   const handleDelete = () => {
