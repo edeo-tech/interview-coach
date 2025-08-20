@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator, StyleSheet, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import CVUploadProgress from '../../../components/CVUploadProgress';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCV, useUploadCV, useDeleteCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
@@ -13,6 +14,7 @@ const CVUpload = () => {
   const uploadMutation = useUploadCV();
   const deleteMutation = useDeleteCV();
   const [uploadProgress, setUploadProgress] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const { posthogScreen, posthogCapture } = usePosthogSafely();
 
   useFocusEffect(
@@ -42,6 +44,7 @@ const CVUpload = () => {
       }
 
       setUploadProgress(true);
+      setShowProgressModal(true);
 
       const formData = new FormData();
       formData.append('file', {
@@ -59,18 +62,13 @@ const CVUpload = () => {
         is_replacement: !!currentCV
       });
       
-      Alert.alert(
-        'Success!', 
-        'Your CV has been uploaded and processed successfully.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
-      
     } catch (error: any) {
       console.error('Upload error:', error);
+      setShowProgressModal(false);
       posthogCapture('cv_upload_failed', {
         source: 'cv_upload_page',
         error_message: error.response?.data?.detail || error.message,
-        file_type: file.mimeType || 'unknown',
+        file_type: file?.mimeType || 'unknown',
         is_replacement: !!currentCV
       });
       Alert.alert(
@@ -80,6 +78,11 @@ const CVUpload = () => {
     } finally {
       setUploadProgress(false);
     }
+  };
+
+  const handleProgressComplete = () => {
+    setShowProgressModal(false);
+    router.back();
   };
 
   const handleDelete = () => {
@@ -207,23 +210,16 @@ const CVUpload = () => {
           
           <TouchableOpacity
             onPress={handleUpload}
-            disabled={uploadMutation.isPending || uploadProgress}
+            disabled={uploadProgress}
             style={[
               styles.uploadArea,
-              (uploadMutation.isPending || uploadProgress) && styles.uploadAreaDisabled
+              uploadProgress && styles.uploadAreaDisabled
             ]}
           >
-            {uploadMutation.isPending || uploadProgress ? (
-              <ActivityIndicator size="large" color="#F59E0B" />
-            ) : (
-              <Ionicons name="cloud-upload" size={48} color="#F59E0B" />
-            )}
+            <Ionicons name="cloud-upload" size={48} color="#F59E0B" />
             
             <Text style={styles.uploadText}>
-              {uploadMutation.isPending || uploadProgress 
-                ? 'Processing CV...' 
-                : 'Choose file to upload'
-              }
+              Choose file to upload
             </Text>
             
             <Text style={styles.uploadSubtext}>
@@ -275,6 +271,16 @@ const CVUpload = () => {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Progress Modal */}
+      <Modal
+        visible={showProgressModal}
+        transparent={true}
+        animationType="fade"
+        statusBarTranslucent={true}
+      >
+        <CVUploadProgress onComplete={handleProgressComplete} />
+      </Modal>
     </SafeAreaView>
     </ChatGPTBackground>
   );
