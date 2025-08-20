@@ -7,7 +7,9 @@ import {
   TouchableOpacity, 
   ActivityIndicator,
   Alert,
-  ScrollView 
+  ScrollView,
+  Modal,
+  Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -40,6 +42,7 @@ const Paywall = () => {
   const [isLoadingOfferings, setIsLoadingOfferings] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isPopularModalVisible, setIsPopularModalVisible] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -232,6 +235,16 @@ const Paywall = () => {
           {isPopular && (
             <View style={styles.popularBadge}>
               <Text style={styles.popularText}>Most Popular</Text>
+              <TouchableOpacity
+                style={styles.infoIcon}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  setIsPopularModalVisible(true);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="information-circle" size={16} color="#ffffff" />
+              </TouchableOpacity>
             </View>
           )}
           {savingsPercentage && savingsPercentage > 0 && (
@@ -254,6 +267,36 @@ const Paywall = () => {
         </Text> */}
       </View>
     </TouchableOpacity>
+  );
+
+  // Popular Info Modal Component
+  const PopularInfoModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={isPopularModalVisible}
+      onRequestClose={() => setIsPopularModalVisible(false)}
+    >
+      <Pressable 
+        style={styles.modalOverlay}
+        onPress={() => setIsPopularModalVisible(false)}
+      >
+        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setIsPopularModalVisible(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="close" size={20} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.modalMessage}>
+            73.2% of users secure the role in under 2 weeks
+          </Text>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 
   if (isLoadingOfferings) {
@@ -375,6 +418,9 @@ const Paywall = () => {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Popular Info Modal */}
+        <PopularInfoModal />
       </SafeAreaView>
     </ChatGPTBackground>
   );
@@ -505,11 +551,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   popularText: {
     color: '#ffffff',
     fontSize: Platform.OS === 'ios' ? 12 : 10,
     fontWeight: 'bold',
+  },
+  infoIcon: {
+    marginLeft: 2,
   },
   savingsBadge: {
     position: 'absolute',
@@ -559,6 +611,49 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '500',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: '#1f2937',
+    borderRadius: 16,
+    padding: 12,
+    width: '100%',
+    maxWidth: 280,
+    shadowColor: '#1f2937',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    flex: 1,
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#ffffff',
+    lineHeight: 24,
+    textAlign: 'center',
+    paddingHorizontal: 32,
+    paddingBottom: 16,
   },
 });
 
