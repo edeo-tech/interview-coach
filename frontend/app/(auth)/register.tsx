@@ -198,7 +198,7 @@ const Register = () => {
 
 
           {/* Footer */}
-          <View style={styles.footer}>
+          {/* <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account?</Text>
             <TouchableOpacity 
               style={styles.linkButton}
@@ -207,7 +207,7 @@ const Register = () => {
               <Text style={styles.linkText}>Sign In</Text>
               <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </ChatGPTBackground>
