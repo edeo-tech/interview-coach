@@ -33,7 +33,7 @@ const Register = () => {
   });
   
   const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess } = useRegister();
-  const { mutate: login, isPending: loginLoading } = useLogin({posthogIdentify, posthogCapture});
+  const { mutate: login, isPending: loginLoading } = useLogin({posthogIdentify, posthogCapture, isFromRegistration: true});
 
   useEffect(() => {
     if (registerError) {
