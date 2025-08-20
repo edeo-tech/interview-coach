@@ -74,6 +74,10 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
   const burstAnim = useState(new Animated.Value(0))[0];
   const ringAnim = useState(new Animated.Value(0))[0];
   
+  // Stage transition animations
+  const stageTextOpacity = useState(new Animated.Value(1))[0];
+  const stageIconOpacity = useState(new Animated.Value(1))[0];
+  
   // Burst particles
   const [burstParticles] = useState(() => 
     Array.from({ length: 12 }, (_, i) => ({
@@ -126,10 +130,40 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
       const stageProgress = (stageIndex + 1) / UPLOAD_STAGES.length;
       const targetProgress = stageProgress * 100;
 
-      setCurrentStageIndex(stageIndex);
-      
-      // Haptic feedback for stage transition
-      impactAsync(ImpactFeedbackStyle.Light);
+      // Animate stage transition
+      Animated.parallel([
+        // Fade out current content
+        Animated.timing(stageTextOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(stageIconOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Update stage after fade out
+        setCurrentStageIndex(stageIndex);
+        
+        // Haptic feedback for stage transition
+        impactAsync(ImpactFeedbackStyle.Light);
+        
+        // Fade in new content
+        Animated.parallel([
+          Animated.timing(stageTextOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(stageIconOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
 
       // Animate to this stage's progress
       Animated.timing(progressAnim, {
@@ -361,29 +395,31 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
             />
           </Svg>
           
-          {/* Burst Particles */}
-          {burstParticles.map((particle) => (
-            <Animated.View
-              key={particle.id}
-              style={[
-                styles.burstParticle,
-                {
-                  transform: [
-                    { translateX: particle.translateX },
-                    { translateY: particle.translateY },
-                    { scale: particle.scale },
-                    { rotate: `${particle.rotation}deg` },
-                  ],
-                  opacity: particle.opacity,
-                }
-              ]}
-            >
-              <LinearGradient
-                colors={['#8b5cf6', '#ec4899']}
-                style={styles.particleGradient}
-              />
-            </Animated.View>
-          ))}
+          {/* Burst Particles - Centered on progress circle */}
+          <View style={styles.burstContainer}>
+            {burstParticles.map((particle) => (
+              <Animated.View
+                key={particle.id}
+                style={[
+                  styles.burstParticle,
+                  {
+                    transform: [
+                      { translateX: particle.translateX },
+                      { translateY: particle.translateY },
+                      { scale: particle.scale },
+                      { rotate: `${particle.rotation}deg` },
+                    ],
+                    opacity: particle.opacity,
+                  }
+                ]}
+              >
+                <LinearGradient
+                  colors={['#8b5cf6', '#ec4899']}
+                  style={styles.particleGradient}
+                />
+              </Animated.View>
+            ))}
+          </View>
           
           {/* Center content */}
           <View style={styles.centerContent}>
@@ -400,7 +436,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
                 <Ionicons name="checkmark" size={60} color="#10b981" />
               </Animated.View>
             ) : (
-              <View style={styles.iconContainer}>
+              <Animated.View style={[styles.iconContainer, { opacity: stageIconOpacity }]}>
                 <Ionicons 
                   name={currentStage?.icon as any} 
                   size={52} 
@@ -409,20 +445,20 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
                 <Text style={styles.progressText}>
                   {Math.round(progress)}%
                 </Text>
-              </View>
+              </Animated.View>
             )}
           </View>
         </Animated.View>
 
         {/* Stage Information */}
-        <View style={styles.stageInfo}>
+        <Animated.View style={[styles.stageInfo, { opacity: stageTextOpacity }]}>
           <Text style={styles.stageTitle}>
             {isComplete ? '✨ Success!' : currentStage?.title}
           </Text>
           <Text style={styles.stageSubtitle}>
             {isComplete ? 'Your CV has been processed successfully' : currentStage?.subtitle}
           </Text>
-        </View>
+        </Animated.View>
 
         {/* Stage Indicators */}
         <View style={styles.stageIndicators}>
@@ -502,6 +538,13 @@ const styles = StyleSheet.create({
   },
   svg: {
     position: 'absolute',
+  },
+  burstContainer: {
+    position: 'absolute',
+    width: 240,
+    height: 240,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   burstParticle: {
     position: 'absolute',
