@@ -38,7 +38,6 @@ export const usePremiumCheck = (): PremiumCheckResult => {
     const showPaywall = () => {
       // This could be enhanced to use a navigation context or router
       // For now, we'll assume the caller handles navigation
-      console.log('Redirect to paywall screen');
     };
 
     return {

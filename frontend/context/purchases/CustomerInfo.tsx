@@ -32,7 +32,6 @@ export const CustomerInfoProvider = ({ children }: { children: React.ReactNode }
         }
         catch(error)
         {
-            if(debugMode) console.log(error);
             setError(true);
         }
         setRefresh(false);
