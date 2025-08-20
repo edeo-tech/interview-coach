@@ -45,6 +45,8 @@ module.exports = {
             "expo-router",
           "expo-secure-store",
           "expo-localization",  
+          "expo-tracking-transparency",
+          "expo-apple-authentication",
           "@livekit/react-native-expo-plugin",
           "@config-plugins/react-native-webrtc",
           [
