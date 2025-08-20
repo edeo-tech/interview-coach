@@ -5,6 +5,9 @@ import { Platform } from 'react-native';
 // cookies
 import { getUserId } from '@/_api/cookies';
 
+// hooks
+import useSecureStore from '@/hooks/secure-store/useSecureStore';
+
 // interfaces
 import { 
     AuthenticatedUser, 
@@ -94,8 +97,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
         if((!auth?.id || authError) && segments[0] === '(app)')
         {
             const userId = await getUserId();
-            if(userId && !authError) router.replace(`/(auth)/welcome-back?userId=${userId}`);
-            else router.replace('/(auth)/landing');
+            const { getItem } = useSecureStore();
+            
+            // Check if we have user metadata stored (returning user)
+            const storedUserName = await getItem('user_name');
+            
+            if(userId && storedUserName && !authError) {
+                // Returning user - go to login screen
+                router.replace('/(auth)/login');
+            } else {
+                // New user - go to welcome screen
+                router.replace('/(auth)/welcome');
+            }
         }
     }
 

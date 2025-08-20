@@ -122,7 +122,11 @@ const Paywall = () => {
           source
         });
         showToast('Welcome to Premium! 🎉', 'success');
-        router.back();
+        if (source === 'onboarding') {
+          router.replace('/(app)/(tabs)/home');
+        } else {
+          router.back();
+        }
       } else {
         throw new Error('Purchase completed but premium not activated');
       }
@@ -163,7 +167,11 @@ const Paywall = () => {
         setCustomerInfo(customerInfo);
         posthogCapture('paywall_restore_success', { source });
         showToast('Premium access restored!', 'success');
-        router.back();
+        if (source === 'onboarding') {
+          router.replace('/(app)/(tabs)/home');
+        } else {
+          router.back();
+        }
       } else {
         posthogCapture('paywall_restore_no_purchases', { source });
         Alert.alert(
@@ -335,7 +343,13 @@ const Paywall = () => {
           {/* Close button */}
           <TouchableOpacity
             style={styles.closeButton}
-            onPress={() => router.back()}
+            onPress={() => {
+              if (source === 'onboarding') {
+                router.replace('/(app)/(tabs)/home');
+              } else {
+                router.back();
+              }
+            }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="close" size={20} color="rgba(255,255,255,0.3)" />

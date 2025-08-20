@@ -19,14 +19,11 @@ import { GlassStyles } from '../../constants/GlassStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegister, useLogin } from '@/_queries/users/auth/users';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
-import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
-import AppleSignIn from '../../components/(auth)/AppleSignIn';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loginErrorMessage, setLoginErrorMessage] = useState('');
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture, posthogIdentify } = usePosthogSafely();
@@ -60,12 +57,6 @@ const Register = () => {
     }
   }, [registerSuccess, posthogCapture, email, login, password]);
 
-  useEffect(() => {
-    if (loginErrorMessage) {
-      showToast(loginErrorMessage, 'error');
-      setLoginErrorMessage('');
-    }
-  }, [loginErrorMessage, showToast]);
 
   const handleRegister = () => {
     // Validation
@@ -205,28 +196,13 @@ const Register = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Social Sign-in Section */}
-          <View style={styles.socialSignInContainer}>
-            <View style={styles.dividerContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.divider} />
-            </View>
-            
-            <GoogleSignIn setLoginErrorMessage={setLoginErrorMessage} />
-            <AppleSignIn setLoginErrorMessage={setLoginErrorMessage} />
-            
-            {loginErrorMessage ? (
-              <Text style={styles.errorText}>{loginErrorMessage}</Text>
-            ) : null}
-          </View>
 
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account?</Text>
             <TouchableOpacity 
               style={styles.linkButton}
-              onPress={() => router.replace('/(auth)/login')}
+              onPress={() => router.replace('/(auth)/welcome')}
             >
               <Text style={styles.linkText}>Sign In</Text>
               <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
@@ -411,32 +387,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textDecorationLine: 'underline',
-  },
-  socialSignInContainer: {
-    marginBottom: 32,
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  dividerText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    fontWeight: '500',
-    marginHorizontal: 16,
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 12,
-    paddingHorizontal: 16,
   },
 });
 

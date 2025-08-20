@@ -24,6 +24,7 @@ import {
 
 // hooks
 import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
+import useSecureStore from '@/hooks/secure-store/useSecureStore';
 
 
 
@@ -33,13 +34,21 @@ const post_login_logic = async (
     queryClient: QueryClient,
     router: Router,
     posthogIdentify?: (userId: string, properties?: Record<string, any>) => void,
-    posthogCapture?: (eventName: string, properties?: Record<string, any>) => void
+    posthogCapture?: (eventName: string, properties?: Record<string, any>) => void,
+    signInType?: 'email' | 'google' | 'apple'
 ) =>
 {
     // Set tokens in secure storage
     await setAccessToken(response.tokens.access_token);
     await setRefreshToken(response.tokens.refresh_token);
     await setUserId(response.user.id);
+    
+    // Store user metadata for returning users
+    const { setItem } = useSecureStore();
+    await setItem('user_name', response.user.name);
+    if (signInType) {
+        await setItem('last_sign_in_type', signInType);
+    }
 
     if(Platform.OS !== 'web')
     {
@@ -63,8 +72,15 @@ const post_login_logic = async (
         posthogCapture('sign_in', { type: 'password' });
     }
 
-    // Navigate to home screen after successful login
-    router.replace('/(app)/(tabs)/home');
+    // Check if we're in onboarding flow by looking at current route
+    // If coming from welcome/register, go to onboarding CV upload
+    // Otherwise go to home
+    const currentRoute = router.canGoBack() ? 'onboarding' : 'normal';
+    if (currentRoute === 'onboarding') {
+        router.replace('/(onboarding)/cv-upload');
+    } else {
+        router.replace('/(app)/(tabs)/home');
+    }
 }
 
 
@@ -96,7 +112,7 @@ export const useLogin = ({
         mutationFn: async (body: LoginUser) => (await usersAuthApi.login(body)).data,
         onSuccess: async (response: LoginResponse) => {
             try {
-                await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture);
+                await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture, 'email');
             } catch (error) {
                 console.error('Error in post_login_logic:', error);
                 throw error; // This will cause the mutation to be marked as failed
@@ -139,7 +155,7 @@ export const useGoogleLogin = ({
                 console.log("🔑 GOOGLE_LOGIN: Determined destination:", destination);
                 
                 try {
-                    await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture);
+                    await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture, 'google');
                     console.log("🔑 GOOGLE_LOGIN: Post login logic completed successfully");
                     
                     if(Platform.OS !== 'web') {
@@ -178,7 +194,7 @@ export const useGoogleLogin = ({
             mutationFn: async (body: AppleLoginBody) => (await usersAuthApi.appleLogin(body)).data,
             onSuccess: async (response: ThirdPartyLoginResponse) =>
             {
-                await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture);
+                await post_login_logic(response, queryClient, router, posthogIdentify, posthogCapture, 'apple');
                 if(Platform.OS !== 'web') posthogCapture(response.sign_up ? 'sign_up' : 'sign_in', { type: 'apple' });
             },
             onError: (error: any) =>
@@ -212,10 +228,15 @@ export const useLogout = () =>
 
     return useMutation({ 
         mutationFn: async () => await usersAuthApi.logout(),
-        onSuccess: () =>
+        onSuccess: async () =>
         {
             queryClient.clear();
             clearAllCookies();
+            
+            // Clear user metadata
+            const { deleteItem } = useSecureStore();
+            await deleteItem('user_name');
+            await deleteItem('last_sign_in_type');
         },
         onError: (error) =>
         {

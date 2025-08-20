@@ -71,11 +71,11 @@ const AppleSignIn = ({
             }}
         >
             <View style={styles.iconContainer}>
-                <Ionicons name="logo-apple" size={22} color="#000000" />
+                <Ionicons name="logo-apple" size={22} color="#ffffff" />
             </View>
             {
                 appleLoginLoading ? (
-                    <ActivityIndicator size="small" color="#1F1F1F" />
+                    <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                     <Text style={styles.signupOptionButtonText}>Continue with Apple</Text>
                 )
@@ -88,19 +88,19 @@ export default AppleSignIn;
 const styles = StyleSheet.create({
     signupOptionButton: {
         borderRadius: 12,
-        borderWidth: 2,
-        borderColor: Colors.dark.text,
-        borderStyle: 'dashed',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
         flexDirection: 'row',
         alignItems: 'center',
-        paddingLeft: '17%',
+        justifyContent: 'center',
+        paddingHorizontal: 16,
         gap: 12,
         width: '100%',
         height: 56,
-        backgroundColor: Colors.dark.background,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
         ...Platform.select({
             ios: {
-                shadowColor: Colors.dark.text,
+                shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 4,
@@ -111,10 +111,12 @@ const styles = StyleSheet.create({
         }),
     },
     signupOptionButtonText: {
-        color: '#1F1F1F',
+        color: '#ffffff',
         fontSize: 16,
         fontWeight: '600',
-        fontFamily: 'Orbitron_600SemiBold',
+        flex: 1,
+        textAlign: 'center',
+        marginLeft: -36, // Offset for icon to center text
     },
     iconContainer: {
         width: 24,
