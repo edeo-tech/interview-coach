@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Circle } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
+import ChatGPTBackground from './ChatGPTBackground';
+import { GlassStyles, GlassTextColors } from '../constants/GlassStyles';
+import useHapticsSafely from '../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle, NotificationFeedbackType } from 'expo-haptics';
 
 interface UploadStage {
   id: string;
@@ -57,6 +63,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const { impactAsync, notificationAsync } = useHapticsSafely();
   
   // Animation values
   const progressAnim = useState(new Animated.Value(0))[0];
@@ -64,6 +71,20 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
   const fadeAnim = useState(new Animated.Value(1))[0];
   const scaleAnim = useState(new Animated.Value(1))[0];
   const successAnim = useState(new Animated.Value(0))[0];
+  const burstAnim = useState(new Animated.Value(0))[0];
+  const ringAnim = useState(new Animated.Value(0))[0];
+  
+  // Burst particles
+  const [burstParticles] = useState(() => 
+    Array.from({ length: 12 }, (_, i) => ({
+      id: i,
+      scale: new Animated.Value(0),
+      translateX: new Animated.Value(0),
+      translateY: new Animated.Value(0),
+      opacity: new Animated.Value(0),
+      rotation: (i * 30), // 30 degrees apart
+    }))
+  );
 
   useEffect(() => {
     startProgressAnimation();
@@ -106,6 +127,9 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
       const targetProgress = stageProgress * 100;
 
       setCurrentStageIndex(stageIndex);
+      
+      // Haptic feedback for stage transition
+      impactAsync(ImpactFeedbackStyle.Light);
 
       // Animate to this stage's progress
       Animated.timing(progressAnim, {
@@ -137,6 +161,9 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
     // Stop pulse animation
     pulseAnim.stopAnimation();
     
+    // Success haptic feedback
+    notificationAsync(NotificationFeedbackType.Success);
+    
     // Success animation sequence
     Animated.sequence([
       // Scale up the circle
@@ -146,12 +173,28 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
         easing: Easing.out(Easing.back(1.7)),
         useNativeDriver: true,
       }),
-      // Scale back to normal
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
+      // Scale back to normal and trigger burst
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        // Trigger burst animation
+        Animated.timing(burstAnim, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        // Ring expansion
+        Animated.timing(ringAnim, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
       // Show success checkmark
       Animated.timing(successAnim, {
         toValue: 1,
@@ -159,98 +202,201 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
         easing: Easing.out(Easing.back(1.7)),
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      // Wait a moment then call onComplete
-      setTimeout(() => {
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 500,
+    ]).start();
+    
+    // Animate burst particles
+    const particleAnimations = burstParticles.map((particle, index) => {
+      const angle = (particle.rotation * Math.PI) / 180;
+      const distance = 80;
+      const endX = Math.cos(angle) * distance;
+      const endY = Math.sin(angle) * distance;
+      
+      return Animated.parallel([
+        Animated.timing(particle.scale, {
+          toValue: 1,
+          duration: 300,
+          delay: index * 50,
+          easing: Easing.out(Easing.back(1.7)),
           useNativeDriver: true,
-        }).start(() => {
-          onComplete();
-        });
-      }, 1500);
+        }),
+        Animated.timing(particle.translateX, {
+          toValue: endX,
+          duration: 600,
+          delay: index * 50,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(particle.translateY, {
+          toValue: endY,
+          duration: 600,
+          delay: index * 50,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(particle.opacity, {
+          toValue: 1,
+          duration: 300,
+          delay: index * 50,
+          useNativeDriver: true,
+        }),
+      ]);
     });
+    
+    Animated.parallel(particleAnimations).start();
+    
+    // Fade out particles
+    setTimeout(() => {
+      const fadeOutAnimations = burstParticles.map((particle, index) => 
+        Animated.timing(particle.opacity, {
+          toValue: 0,
+          duration: 400,
+          delay: index * 30,
+          useNativeDriver: true,
+        })
+      );
+      Animated.parallel(fadeOutAnimations).start();
+    }, 800);
+    
+    // Wait a moment then call onComplete
+    setTimeout(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => {
+        onComplete();
+      });
+    }, 2000);
   };
 
   const currentStage = UPLOAD_STAGES[currentStageIndex];
-  const circumference = 2 * Math.PI * 90; // radius = 90
+  const circumference = 2 * Math.PI * 100; // radius = 100
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <View style={styles.content}>
+    <View style={styles.container}>
+      {/* Dark background overlay */}
+      <View style={styles.darkOverlay} />
+      
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        {/* Burst Ring Effect */}
+        <Animated.View 
+          style={[
+            styles.burstRing,
+            {
+              transform: [
+                { scale: ringAnim },
+              ],
+              opacity: Animated.subtract(1, ringAnim),
+            }
+          ]}
+        >
+          <LinearGradient
+            colors={['rgba(139, 92, 246, 0.6)', 'rgba(236, 72, 153, 0.4)', 'rgba(245, 158, 11, 0.2)']}
+            style={styles.ringGradient}
+          />
+        </Animated.View>
+
         {/* Progress Circle */}
-        <View style={styles.progressContainer}>
-          <Animated.View 
-            style={[
-              styles.progressCircle,
-              {
-                transform: [
-                  { scale: Animated.multiply(scaleAnim, pulseAnim) }
-                ]
-              }
-            ]}
-          >
-            <Svg width={200} height={200} style={styles.svg}>
-              {/* Background circle */}
-              <Circle
-                cx="100"
-                cy="100"
-                r="90"
-                stroke="rgba(255,255,255,0.1)"
-                strokeWidth="8"
-                fill="none"
+        <Animated.View 
+          style={[
+            styles.progressCircle,
+            {
+              transform: [
+                { scale: Animated.multiply(scaleAnim, pulseAnim) }
+              ]
+            }
+          ]}
+        >
+          <Svg width={240} height={240} style={styles.svg}>
+            <Defs>
+              <SvgLinearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <Stop offset="0%" stopColor="#8b5cf6" stopOpacity="1" />
+                <Stop offset="50%" stopColor="#ec4899" stopOpacity="1" />
+                <Stop offset="100%" stopColor="#f59e0b" stopOpacity="1" />
+              </SvgLinearGradient>
+            </Defs>
+            {/* Background circle */}
+            <Circle
+              cx="120"
+              cy="120"
+              r="100"
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="12"
+              fill="none"
+            />
+            {/* Progress circle */}
+            <Circle
+              cx="120"
+              cy="120"
+              r="100"
+              stroke="url(#progressGradient)"
+              strokeWidth="12"
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              transform="rotate(-90 120 120)"
+            />
+          </Svg>
+          
+          {/* Burst Particles */}
+          {burstParticles.map((particle) => (
+            <Animated.View
+              key={particle.id}
+              style={[
+                styles.burstParticle,
+                {
+                  transform: [
+                    { translateX: particle.translateX },
+                    { translateY: particle.translateY },
+                    { scale: particle.scale },
+                    { rotate: `${particle.rotation}deg` },
+                  ],
+                  opacity: particle.opacity,
+                }
+              ]}
+            >
+              <LinearGradient
+                colors={['#8b5cf6', '#ec4899']}
+                style={styles.particleGradient}
               />
-              {/* Progress circle */}
-              <Circle
-                cx="100"
-                cy="100"
-                r="90"
-                stroke="#8b5cf6"
-                strokeWidth="8"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                transform="rotate(-90 100 100)"
-              />
-            </Svg>
-            
-            {/* Center content */}
-            <View style={styles.centerContent}>
-              {isComplete ? (
-                <Animated.View 
-                  style={[
-                    styles.successIcon,
-                    {
-                      transform: [{ scale: successAnim }],
-                      opacity: successAnim,
-                    }
-                  ]}
-                >
-                  <Ionicons name="checkmark" size={60} color="#10b981" />
-                </Animated.View>
-              ) : (
-                <>
-                  <Ionicons 
-                    name={currentStage?.icon as any} 
-                    size={48} 
-                    color="#8b5cf6" 
-                  />
-                  <Text style={styles.progressText}>
-                    {Math.round(progress)}%
-                  </Text>
-                </>
-              )}
-            </View>
-          </Animated.View>
-        </View>
+            </Animated.View>
+          ))}
+          
+          {/* Center content */}
+          <View style={styles.centerContent}>
+            {isComplete ? (
+              <Animated.View 
+                style={[
+                  styles.successIcon,
+                  {
+                    transform: [{ scale: successAnim }],
+                    opacity: successAnim,
+                  }
+                ]}
+              >
+                <Ionicons name="checkmark" size={60} color="#10b981" />
+              </Animated.View>
+            ) : (
+              <View style={styles.iconContainer}>
+                <Ionicons 
+                  name={currentStage?.icon as any} 
+                  size={52} 
+                  color="#8b5cf6" 
+                />
+                <Text style={styles.progressText}>
+                  {Math.round(progress)}%
+                </Text>
+              </View>
+            )}
+          </View>
+        </Animated.View>
 
         {/* Stage Information */}
         <View style={styles.stageInfo}>
           <Text style={styles.stageTitle}>
-            {isComplete ? 'Success!' : currentStage?.title}
+            {isComplete ? '✨ Success!' : currentStage?.title}
           </Text>
           <Text style={styles.stageSubtitle}>
             {isComplete ? 'Your CV has been processed successfully' : currentStage?.subtitle}
@@ -282,99 +428,135 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
             <Text style={styles.infoText}>Usually takes 10-15 seconds</Text>
           </View>
         </View>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  },
+  darkOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   content: {
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 320,
-  },
-  progressContainer: {
-    marginBottom: 40,
-  },
-  progressCircle: {
-    width: 200,
-    height: 200,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 24,
+    gap: 40,
+  },
+  burstRing: {
+    position: 'absolute',
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 160,
+  },
+  progressCircle: {
+    width: 240,
+    height: 240,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
   },
   svg: {
     position: 'absolute',
   },
+  burstParticle: {
+    position: 'absolute',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  particleGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
   centerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   progressText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700',
-    marginTop: 8,
+    marginTop: 16,
   },
   successIcon: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderRadius: 40,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: '#10b981',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stageInfo: {
     alignItems: 'center',
-    marginBottom: 32,
   },
   stageTitle: {
     color: '#ffffff',
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
   },
   stageSubtitle: {
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 16,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   stageIndicators: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 32,
+    gap: 12,
+    alignItems: 'center',
   },
   stageIndicator: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   stageIndicatorActive: {
     backgroundColor: '#8b5cf6',
   },
   stageIndicatorCurrent: {
     backgroundColor: '#ffffff',
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 4,
   },
   additionalInfo: {
-    gap: 12,
+    flexDirection: 'row',
+    gap: 24,
     alignItems: 'center',
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   infoText: {
-    color: '#9ca3af',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 13,
   },
 });
 
