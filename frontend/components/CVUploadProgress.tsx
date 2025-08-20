@@ -334,35 +334,36 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
       />
       
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Burst Ring Effect */}
-        <Animated.View 
-          style={[
-            styles.burstRing,
-            {
-              transform: [
-                { scale: ringAnim },
-              ],
-              opacity: Animated.subtract(1, ringAnim),
-            }
-          ]}
-        >
-          <LinearGradient
-            colors={['rgba(139, 92, 246, 0.6)', 'rgba(236, 72, 153, 0.4)', 'rgba(245, 158, 11, 0.2)']}
-            style={styles.ringGradient}
-          />
-        </Animated.View>
-
         {/* Progress Circle */}
-        <Animated.View 
-          style={[
-            styles.progressCircle,
-            {
-              transform: [
-                { scale: Animated.multiply(scaleAnim, pulseAnim) }
-              ]
-            }
-          ]}
-        >
+        <View style={styles.progressContainer}>
+          {/* Burst Ring Effect - Positioned relative to progress circle */}
+          <Animated.View 
+            style={[
+              styles.burstRing,
+              {
+                transform: [
+                  { scale: ringAnim },
+                ],
+                opacity: Animated.subtract(1, ringAnim),
+              }
+            ]}
+          >
+            <LinearGradient
+              colors={['rgba(139, 92, 246, 0.6)', 'rgba(236, 72, 153, 0.4)', 'rgba(245, 158, 11, 0.2)']}
+              style={styles.ringGradient}
+            />
+          </Animated.View>
+
+          <Animated.View 
+            style={[
+              styles.progressCircle,
+              {
+                transform: [
+                  { scale: Animated.multiply(scaleAnim, pulseAnim) }
+                ]
+              }
+            ]}
+          >
           <Svg width={240} height={240} style={styles.svg}>
             <Defs>
               <SvgLinearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -448,17 +449,20 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
               </Animated.View>
             )}
           </View>
-        </Animated.View>
+          </Animated.View>
+        </View>
 
-        {/* Stage Information */}
-        <Animated.View style={[styles.stageInfo, { opacity: stageTextOpacity }]}>
-          <Text style={styles.stageTitle}>
-            {isComplete ? '✨ Success!' : currentStage?.title}
-          </Text>
-          <Text style={styles.stageSubtitle}>
-            {isComplete ? 'Your CV has been processed successfully' : currentStage?.subtitle}
-          </Text>
-        </Animated.View>
+        {/* Stage Information - Fixed positioning */}
+        <View style={styles.stageInfoContainer}>
+          <Animated.View style={[styles.stageInfo, { opacity: stageTextOpacity }]}>
+            <Text style={styles.stageTitle}>
+              {isComplete ? '✨ Success!' : currentStage?.title}
+            </Text>
+            <Text style={styles.stageSubtitle}>
+              {isComplete ? 'Your CV has been processed successfully' : currentStage?.subtitle}
+            </Text>
+          </Animated.View>
+        </View>
 
         {/* Stage Indicators */}
         <View style={styles.stageIndicators}>
@@ -516,6 +520,11 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 40,
   },
+  progressContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   burstRing: {
     position: 'absolute',
     width: 320,
@@ -523,6 +532,8 @@ const styles = StyleSheet.create({
     borderRadius: 160,
     alignItems: 'center',
     justifyContent: 'center',
+    top: -40, // Center on progress circle
+    left: -40,
   },
   ringGradient: {
     width: '100%',
@@ -576,8 +587,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  stageInfoContainer: {
+    height: 80, // Fixed container height
+    width: '100%',
+    position: 'relative',
+  },
   stageInfo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   stageTitle: {
     color: '#ffffff',
@@ -585,12 +607,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
+    height: 34, // Fixed height instead of minHeight
+    lineHeight: 34,
   },
   stageSubtitle: {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 16,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22, // Reduced from 24 to fit better
+    height: 44, // Fixed height for exactly 2 lines
+    width: 280, // Fixed width instead of maxWidth
+    paddingHorizontal: 20,
   },
   stageIndicators: {
     flexDirection: 'row',
