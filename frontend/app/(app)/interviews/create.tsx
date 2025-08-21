@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,9 @@ export default function CreateInterview() {
   const [interviewType, setInterviewType] = useState<InterviewType>('technical');
   const [jobUrl, setJobUrl] = useState('');
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const jobUrlInputRef = useRef<TextInput>(null);
+  const keyboardAnimValue = useRef(new Animated.Value(0)).current;
   
   const { data: currentCV, isLoading: cvLoading } = useCV();
   const uploadCV = useUploadCV();
@@ -38,6 +41,25 @@ export default function CreateInterview() {
       setCurrentStep('job');
     }
   }, [currentCV, currentStep]);
+
+  // Animate keyboard appearance when job step loads
+  useEffect(() => {
+    if (currentStep === 'job') {
+      const timer = setTimeout(() => {
+        setShowKeyboard(true);
+        Animated.timing(keyboardAnimValue, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          // Focus the input after animation completes
+          jobUrlInputRef.current?.focus();
+        });
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, keyboardAnimValue]);
 
 
   const handleCVFileSelect = async () => {
@@ -231,9 +253,23 @@ export default function CreateInterview() {
               </Text>
             </View>
 
-            {/* URL Input */}
-            <View style={styles.section}>
+            {/* URL Input - with animation */}
+            <Animated.View 
+              style={[
+                styles.section,
+                {
+                  opacity: keyboardAnimValue,
+                  transform: [{
+                    translateY: keyboardAnimValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [50, 0],
+                    }),
+                  }],
+                }
+              ]}
+            >
               <TextInput
+                ref={jobUrlInputRef}
                 style={styles.urlInput}
                 placeholder="Paste job posting URL (LinkedIn, Indeed, etc.)"
                 placeholderTextColor="#6b7280"
@@ -245,27 +281,43 @@ export default function CreateInterview() {
                 }}
                 autoCapitalize="none"
                 autoCorrect={false}
+                keyboardAppearance="dark"
+                editable={showKeyboard}
               />
-            </View>
+            </Animated.View>
 
-            {/* Submit Button */}
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={isLoading || !jobUrl.trim()}
+            {/* Submit Button - with animation */}
+            <Animated.View
               style={[
-                styles.submitButton,
-                (isLoading || !jobUrl.trim()) && styles.submitButtonDisabled
+                {
+                  opacity: keyboardAnimValue,
+                  transform: [{
+                    translateY: keyboardAnimValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [50, 0],
+                    }),
+                  }],
+                }
               ]}
             >
-              {isLoading ? (
-                <ActivityIndicator color="#F59E0B" />
-              ) : (
-                <>
-                  <Ionicons name="add-circle" size={24} color="white" />
-                  <Text style={styles.submitText}>Create Interview</Text>
-                </>
-              )}
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSubmit}
+                disabled={isLoading || !jobUrl.trim() || !showKeyboard}
+                style={[
+                  styles.submitButton,
+                  (isLoading || !jobUrl.trim() || !showKeyboard) && styles.submitButtonDisabled
+                ]}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#F59E0B" />
+                ) : (
+                  <>
+                    <Ionicons name="add-circle" size={24} color="white" />
+                    <Text style={styles.submitText}>Create Interview</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </Animated.View>
           </>
         )}
         </ScrollView>
