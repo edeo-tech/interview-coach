@@ -7,14 +7,19 @@ interface SplashTransitionProps {
 
 const SplashTransition: React.FC<SplashTransitionProps> = ({ onTransitionComplete }) => {
   const [fadeAnim] = useState(new Animated.Value(1));
+  
+  console.log('🟡 TRANSITION: SplashTransition component mounted');
 
   useEffect(() => {
+    console.log('🟡 TRANSITION: Starting fade timer');
     const timer = setTimeout(() => {
+      console.log('🟡 TRANSITION: Starting fade animation');
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 500,
         useNativeDriver: true,
       }).start(() => {
+        console.log('🟢 TRANSITION: Fade animation complete');
         onTransitionComplete();
       });
     }, 3000); // Changed from 200ms to 3000ms (3 seconds)
