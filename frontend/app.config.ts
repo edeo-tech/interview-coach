@@ -31,7 +31,8 @@ module.exports = {
         },
         android: {
             splash: {
-                image: "./assets/images/SPLASH.png",
+                image: "./assets/images/FinalAppIconTransparent.png",
+                resizeMode: "cover",
                 backgroundColor: "#151a31",
                 fade: true,
             },
