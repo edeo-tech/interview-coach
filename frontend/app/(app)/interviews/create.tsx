@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, Animated } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, Animated, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import JobLinkProgress from '../../../components/JobLinkProgress';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
@@ -18,6 +19,7 @@ export default function CreateInterview() {
   const [jobUrl, setJobUrl] = useState('');
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const jobUrlInputRef = useRef<TextInput>(null);
   const keyboardAnimValue = useRef(new Animated.Value(0)).current;
   
@@ -132,6 +134,9 @@ export default function CreateInterview() {
       return;
     }
 
+    // Show progress modal immediately
+    setShowProgressModal(true);
+
     try {
       const result = await createFromURL.mutateAsync({
         job_url: cleanedUrl,
@@ -146,10 +151,14 @@ export default function CreateInterview() {
       });
       
       console.log('Interview created from URL:', result.data);
-      Alert.alert('Success', 'Interview created successfully!', [
-        { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
-      ]);
+      
+      // Store the result for navigation after progress completes
+      (window as any).pendingInterviewResult = result.data;
+      
     } catch (error: any) {
+      // Hide progress modal on error
+      setShowProgressModal(false);
+      
       posthogCapture('interview_creation_failed', {
         method: 'url',
         error_message: error.response?.data?.detail || error.message,
@@ -157,6 +166,24 @@ export default function CreateInterview() {
       });
       Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
     }
+  };
+
+  const handleProgressComplete = () => {
+    // Navigate to the interview details page
+    const result = (window as any).pendingInterviewResult;
+    if (result) {
+      router.push(`/interviews/${result.id}/details` as any);
+      // Clean up the stored result
+      delete (window as any).pendingInterviewResult;
+    } else {
+      // Fallback: navigate back to home
+      router.push('/home');
+    }
+    
+    // Delay modal close to prevent UI flash
+    setTimeout(() => {
+      setShowProgressModal(false);
+    }, 100);
   };
 
   return (
@@ -322,6 +349,16 @@ export default function CreateInterview() {
         )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Progress Modal */}
+      <Modal
+        visible={showProgressModal}
+        transparent={true}
+        animationType="fade"
+        statusBarTranslucent={true}
+      >
+        <JobLinkProgress onComplete={handleProgressComplete} />
+      </Modal>
     </SafeAreaView>
     </ChatGPTBackground>
   );
