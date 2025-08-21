@@ -11,7 +11,6 @@ type SplashScreenContextType = {
   setShowTransition: (show: boolean) => void;
   authRoutingReady: boolean;
   setAuthRoutingReady: (ready: boolean) => void;
-  setTransitionRendered: (rendered: boolean) => void;
 };
 
 const SplashScreenContext = createContext<SplashScreenContextType | undefined>(undefined);
@@ -21,44 +20,29 @@ export const SplashScreenProvider = ({ children }: { children: React.ReactNode }
   const [readyToHideSplashScreen, setReadyToHideSplashScreen] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
   const [authRoutingReady, setAuthRoutingReady] = useState(false);
-  const [transitionRendered, setTransitionRendered] = useState(false);
 
   const hideSplashScreen = async () => {
     try {
-      console.log('🟡 SPLASH: About to hide native splash screen');
       await SplashScreen.hideAsync();
-      console.log('🟢 SPLASH: Native splash screen hidden');
     } catch (error) {
-      console.error('🔴 SPLASH: Error hiding splash screen:', error);
+      console.error('Error hiding splash screen:', error);
     }
   };
 
   // Check when both fonts and auth routing are ready
   useEffect(() => {
-    console.log('🟡 SPLASH: Checking readiness - fonts:', fontsLoaded, 'auth:', authRoutingReady);
     if (fontsLoaded && authRoutingReady) {
-      console.log('🟢 SPLASH: Both fonts and auth ready - setting ready to hide splash');
       setReadyToHideSplashScreen(true);
     }
   }, [fontsLoaded, authRoutingReady]);
 
-  // First stage: Show transition component
+  // Automatically hide splash screen and show transition when ready
   useEffect(() => {
-    if (readyToHideSplashScreen && !showTransition) {
-      console.log('🟡 SPLASH: Ready to hide splash - showing transition first');
+    if (readyToHideSplashScreen) {
+      hideSplashScreen();
       setShowTransition(true);
     }
-  }, [readyToHideSplashScreen, showTransition]);
-
-  // Second stage: Hide splash after transition is rendered
-  useEffect(() => {
-    if (showTransition && transitionRendered) {
-      console.log('🟡 SPLASH: Transition rendered, now hiding splash screen');
-      setTimeout(() => {
-        hideSplashScreen();
-      }, 100); // Small delay to ensure transition is fully rendered
-    }
-  }, [showTransition, transitionRendered]);
+  }, [readyToHideSplashScreen]);
 
   return (
     <SplashScreenContext.Provider
@@ -72,7 +56,6 @@ export const SplashScreenProvider = ({ children }: { children: React.ReactNode }
         setShowTransition,
         authRoutingReady,
         setAuthRoutingReady,
-        setTransitionRendered,
       }}
     >
       {children}
