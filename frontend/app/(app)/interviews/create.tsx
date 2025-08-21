@@ -5,7 +5,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import * as DocumentPicker from 'expo-document-picker';
-import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../../_queries/interviews/interviews';
+import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
@@ -14,19 +14,16 @@ type InterviewType = 'technical' | 'behavioral' | 'leadership' | 'sales';
 
 export default function CreateInterview() {
   const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
-  const [inputType, setInputType] = useState<'url' | 'file'>('url');
   const [interviewType, setInterviewType] = useState<InterviewType>('technical');
   const [jobUrl, setJobUrl] = useState('');
-  const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   
   const { data: currentCV, isLoading: cvLoading } = useCV();
   const uploadCV = useUploadCV();
   const createFromURL = useCreateInterviewFromURL();
-  const createFromFile = useCreateInterviewFromFile();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   
-  const isLoading = createFromURL.isPending || createFromFile.isPending || uploadCV.isPending;
+  const isLoading = createFromURL.isPending || uploadCV.isPending;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -42,21 +39,6 @@ export default function CreateInterview() {
     }
   }, [currentCV, currentStep]);
 
-  const handleFileSelect = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'text/plain', 'application/msword', 
-               'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setSelectedFile(result.assets[0]);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to select file');
-    }
-  };
 
   const handleCVFileSelect = async () => {
     try {
@@ -116,81 +98,42 @@ export default function CreateInterview() {
   };
 
   const handleSubmit = async () => {
-    if (inputType === 'url') {
-      if (!jobUrl.trim()) {
-        Alert.alert('Error', 'Please enter a job posting URL');
-        return;
-      }
+    if (!jobUrl.trim()) {
+      Alert.alert('Error', 'Please enter a job posting URL');
+      return;
+    }
 
-      // Validate the URL using our improved validation
-      const { url: cleanedUrl, isValid } = cleanJobUrl(jobUrl);
-      if (!isValid) {
-        Alert.alert('Error', 'Please enter a valid URL');
-        return;
-      }
+    // Validate the URL using our improved validation
+    const { url: cleanedUrl, isValid } = cleanJobUrl(jobUrl);
+    if (!isValid) {
+      Alert.alert('Error', 'Please enter a valid URL');
+      return;
+    }
 
-      try {
-        const result = await createFromURL.mutateAsync({
-          job_url: cleanedUrl,
-          interview_type: interviewType,
-        });
-        
-        posthogCapture('interview_created', {
-          method: 'url',
-          has_cv: !!currentCV,
-          job_url_domain: new URL(cleanedUrl).hostname,
-          interview_type: interviewType
-        });
-        
-        console.log('Interview created from URL:', result.data);
-        Alert.alert('Success', 'Interview created successfully!', [
-          { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
-        ]);
-      } catch (error: any) {
-        posthogCapture('interview_creation_failed', {
-          method: 'url',
-          error_message: error.response?.data?.detail || error.message,
-          interview_type: interviewType
-        });
-        Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
-      }
-    } else {
-      if (!selectedFile) {
-        Alert.alert('Error', 'Please select a job description file');
-        return;
-      }
-
-      try {
-        const formData = new FormData();
-        formData.append('file', {
-          uri: selectedFile.uri,
-          type: selectedFile.mimeType || 'application/octet-stream',
-          name: selectedFile.name,
-        } as any);
-
-        const result = await createFromFile.mutateAsync(formData, interviewType);
-        
-        posthogCapture('interview_created', {
-          method: 'file',
-          has_cv: !!currentCV,
-          file_type: selectedFile.mimeType || 'unknown',
-          file_size_kb: selectedFile.size ? Math.round(selectedFile.size / 1024) : null,
-          interview_type: interviewType
-        });
-        
-        console.log('Interview created from file:', result.data);
-        Alert.alert('Success', 'Interview created successfully!', [
-          { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
-        ]);
-      } catch (error: any) {
-        posthogCapture('interview_creation_failed', {
-          method: 'file',
-          error_message: error.response?.data?.detail || error.message,
-          file_type: selectedFile.mimeType || 'unknown',
-          interview_type: interviewType
-        });
-        Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from file');
-      }
+    try {
+      const result = await createFromURL.mutateAsync({
+        job_url: cleanedUrl,
+        interview_type: interviewType,
+      });
+      
+      posthogCapture('interview_created', {
+        method: 'url',
+        has_cv: !!currentCV,
+        job_url_domain: new URL(cleanedUrl).hostname,
+        interview_type: interviewType
+      });
+      
+      console.log('Interview created from URL:', result.data);
+      Alert.alert('Success', 'Interview created successfully!', [
+        { text: 'OK', onPress: () => router.push(`/interviews/${result.data.id}/details` as any) }
+      ]);
+    } catch (error: any) {
+      posthogCapture('interview_creation_failed', {
+        method: 'url',
+        error_message: error.response?.data?.detail || error.message,
+        interview_type: interviewType
+      });
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
     }
   };
 
@@ -281,155 +224,37 @@ export default function CreateInterview() {
         {/* Job Details Step */}
         {currentStep === 'job' && (
           <>
-            {/* CV Status Display */}
-            {currentCV && (
-              <View style={styles.cvStatusCard}>
-                <View style={styles.cvStatusHeader}>
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  <Text style={styles.cvStatusTitle}>Your CV</Text>
-                </View>
-                <Text style={styles.cvStatusDescription}>
-                  {currentCV.skills.length} skills • {currentCV.experience_years} years experience
-                </Text>
-              </View>
-            )}
-
-            {/* Interview Type Selector */}
+            {/* Instructions */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Interview Type</Text>
-              <View style={styles.interviewTypeContainer}>
-                <TouchableOpacity
-                  onPress={() => setInterviewType('technical')}
-                  style={[styles.interviewTypeButton, styles.interviewTypeButtonWide, interviewType === 'technical' && styles.interviewTypeButtonActive]}
-                >
-                  <Ionicons 
-                    name="chatbubble-ellipses" 
-                    size={20} 
-                    color={interviewType === 'technical' ? '#ffffff' : '#9ca3af'} 
-                  />
-                  <Text style={[styles.interviewTypeText, interviewType === 'technical' && styles.interviewTypeTextActive]}>
-                    Interview Screening Call
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  onPress={() => setInterviewType('sales')}
-                  style={[styles.interviewTypeButton, styles.interviewTypeButtonWide, interviewType === 'sales' && styles.interviewTypeButtonActive]}
-                >
-                  <Ionicons 
-                    name="trending-up" 
-                    size={20} 
-                    color={interviewType === 'sales' ? '#ffffff' : '#9ca3af'} 
-                  />
-                  <Text style={[styles.interviewTypeText, interviewType === 'sales' && styles.interviewTypeTextActive]}>
-                    Mock Sales Call
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              
-              {/* Description based on interview type */}
-              <View style={styles.typeDescriptionContainer}>
-                {interviewType === 'technical' && (
-                  <Text style={styles.typeDescription}>
-                    Practice for your initial screening interview with technical, behavioral, and leadership questions tailored to your role
-                  </Text>
-                )}
-                {interviewType === 'sales' && (
-                  <Text style={styles.typeDescription}>
-                    🎯 <Text style={styles.typeDescriptionBold}>Mock sales call simulation</Text> - You'll act as the salesperson pitching to a prospect. Practice discovery, objection handling, and closing techniques.
-                  </Text>
-                )}
-              </View>
+              <Text style={styles.instructionText}>
+                Please provide the URL link to the job you're interviewing for. This will help us create a tailored interview experience.
+              </Text>
             </View>
 
-            {/* Input Type Selector */}
-        <View style={styles.inputTypeContainer}>
-          <TouchableOpacity
-            onPress={() => setInputType('url')}
-            style={[styles.inputTypeButton, inputType === 'url' && styles.inputTypeButtonActive]}
-          >
-            <Ionicons 
-              name="link" 
-              size={20} 
-              color={inputType === 'url' ? '#ffffff' : '#9ca3af'} 
-            />
-            <Text style={[styles.inputTypeText, inputType === 'url' && styles.inputTypeTextActive]}>
-              Job URL
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setInputType('file')}
-            style={[styles.inputTypeButton, inputType === 'file' && styles.inputTypeButtonActive]}
-          >
-            <Ionicons 
-              name="document-text" 
-              size={20} 
-              color={inputType === 'file' ? '#ffffff' : '#9ca3af'} 
-            />
-            <Text style={[styles.inputTypeText, inputType === 'file' && styles.inputTypeTextActive]}>
-              Upload File
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* URL Input */}
-        {inputType === 'url' && (
-          <View style={styles.section}>
-            <TextInput
-              style={styles.urlInput}
-              placeholder="Paste job posting URL (LinkedIn, Indeed, etc.)"
-              placeholderTextColor="#6b7280"
-              value={jobUrl}
-              onChangeText={(text) => {
-                // Extract URL from pasted text (handles LinkedIn shares, etc.)
-                const extractedUrl = extractUrlFromText(text);
-                setJobUrl(extractedUrl);
-              }}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-        )}
-
-        {/* File Upload */}
-        {inputType === 'file' && (
-          <View style={styles.section}>
-            <TouchableOpacity
-              onPress={handleFileSelect}
-              style={styles.fileButton}
-            >
-              {selectedFile ? (
-                <View style={styles.selectedFileContainer}>
-                  <Ionicons name="document-attach" size={24} color="#10b981" />
-                  <View style={styles.fileInfo}>
-                    <Text style={styles.fileName}>{selectedFile.name}</Text>
-                    <Text style={styles.fileSize}>
-                      {selectedFile.size ? `${(selectedFile.size / 1024).toFixed(1)} KB` : 'Size unknown'}
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => setSelectedFile(null)}>
-                    <Ionicons name="close-circle" size={24} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={styles.uploadPrompt}>
-                  <Ionicons name="cloud-upload" size={32} color="#9ca3af" />
-                  <Text style={styles.uploadText}>Select job description file</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
-
+            {/* URL Input */}
+            <View style={styles.section}>
+              <TextInput
+                style={styles.urlInput}
+                placeholder="Paste job posting URL (LinkedIn, Indeed, etc.)"
+                placeholderTextColor="#6b7280"
+                value={jobUrl}
+                onChangeText={(text) => {
+                  // Extract URL from pasted text (handles LinkedIn shares, etc.)
+                  const extractedUrl = extractUrlFromText(text);
+                  setJobUrl(extractedUrl);
+                }}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
 
             {/* Submit Button */}
             <TouchableOpacity
               onPress={handleSubmit}
-              disabled={isLoading || (inputType === 'url' ? !jobUrl.trim() : !selectedFile)}
+              disabled={isLoading || !jobUrl.trim()}
               style={[
                 styles.submitButton,
-                (isLoading || (inputType === 'url' ? !jobUrl.trim() : !selectedFile)) && styles.submitButtonDisabled
+                (isLoading || !jobUrl.trim()) && styles.submitButtonDisabled
               ]}
             >
               {isLoading ? (
@@ -441,14 +266,6 @@ export default function CreateInterview() {
                 </>
               )}
             </TouchableOpacity>
-
-            {/* Info Box */}
-            <View style={styles.infoBox}>
-              <Ionicons name="information-circle" size={20} color="#60a5fa" />
-              <Text style={styles.infoText}>
-                Our AI will analyze the job posting and create a personalized mock interview based on the role requirements and your CV.
-              </Text>
-            </View>
           </>
         )}
         </ScrollView>
@@ -667,5 +484,11 @@ const styles = StyleSheet.create({
   typeDescriptionBold: {
     fontWeight: 'bold',
     color: '#F59E0B',
+  },
+  instructionText: {
+    color: '#d1d5db',
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'left',
   },
 });
