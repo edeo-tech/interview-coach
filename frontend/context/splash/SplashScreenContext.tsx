@@ -7,10 +7,6 @@ type SplashScreenContextType = {
   hideSplashScreen: () => Promise<void>;
   readyToHideSplashScreen: boolean;
   setReadyToHideSplashScreen: (ready: boolean) => void;
-  showTransition: boolean;
-  setShowTransition: (show: boolean) => void;
-  authRoutingReady: boolean;
-  setAuthRoutingReady: (ready: boolean) => void;
 };
 
 const SplashScreenContext = createContext<SplashScreenContextType | undefined>(undefined);
@@ -18,8 +14,6 @@ const SplashScreenContext = createContext<SplashScreenContextType | undefined>(u
 export const SplashScreenProvider = ({ children }: { children: React.ReactNode }) => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [readyToHideSplashScreen, setReadyToHideSplashScreen] = useState(false);
-  const [showTransition, setShowTransition] = useState(false);
-  const [authRoutingReady, setAuthRoutingReady] = useState(false);
 
   const hideSplashScreen = async () => {
     try {
@@ -29,20 +23,19 @@ export const SplashScreenProvider = ({ children }: { children: React.ReactNode }
     }
   };
 
-  // Check when both fonts and auth routing are ready
+  // Automatically hide splash screen when both fonts are loaded and we're ready
   useEffect(() => {
-    if (fontsLoaded && authRoutingReady) {
-      setReadyToHideSplashScreen(true);
-    }
-  }, [fontsLoaded, authRoutingReady]);
-
-  // Automatically hide splash screen and show transition when ready
-  useEffect(() => {
-    if (readyToHideSplashScreen) {
+    if (fontsLoaded && readyToHideSplashScreen) {
       hideSplashScreen();
-      setShowTransition(true);
     }
-  }, [readyToHideSplashScreen]);
+  }, [fontsLoaded, readyToHideSplashScreen]);
+
+  useEffect(() => {
+    // Signal that we're ready to hide the splash screen
+    setTimeout(() => {
+        setReadyToHideSplashScreen(true);
+    }, 1000);
+}, []);
 
   return (
     <SplashScreenContext.Provider
@@ -52,10 +45,6 @@ export const SplashScreenProvider = ({ children }: { children: React.ReactNode }
         hideSplashScreen,
         readyToHideSplashScreen,
         setReadyToHideSplashScreen,
-        showTransition,
-        setShowTransition,
-        authRoutingReady,
-        setAuthRoutingReady,
       }}
     >
       {children}

@@ -25,9 +25,6 @@ import Purchases from 'react-native-purchases';
 // hooks
 import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
 
-// context
-import { useSplashScreen } from '@/context/splash/SplashScreenContext';
-
 
 type AuthContextType = {
     auth: AuthenticatedUser | undefined;
@@ -45,7 +42,6 @@ type AuthContextType = {
     appleLogin: (body: AppleLoginBody) => void;
     appleLoginLoading: boolean;
     appleLoginErrorMessage: string;
-    routingReady: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,7 +51,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
     const segments = useSegments();
     const router = useRouter();
     const { posthogCapture, posthogIdentify } = usePosthogSafely();
-    const { setAuthRoutingReady } = useSplashScreen();
     
     const { data: auth, isLoading: authLoading, error: authError } = useCheckAuth();
     const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess } = useLogin({posthogIdentify, posthogCapture});
@@ -74,7 +69,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
     const [loginErrorMessage, setLoginErrorMessage] = useState('');
     const [googleLoginErrorMessage, setGoogleLoginErrorMessage] = useState('');
     const [appleLoginErrorMessage, setAppleLoginErrorMessage] = useState('');
-    const [routingReady, setRoutingReady] = useState(false);
 
 
     useEffect(() =>
@@ -123,9 +117,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
         // Skip navigation logic if we're still loading auth
         if (authLoading) return;
         navigate();
-        // Mark routing as ready once we've processed the initial auth state
-        setRoutingReady(true);
-        setAuthRoutingReady(true);
     }, [auth, authLoading, authError, segments]);
 
     useEffect(() =>
@@ -166,7 +157,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
                 appleLogin,
                 appleLoginLoading,
                 appleLoginErrorMessage,
-                routingReady,
             }}>
             {children}
         </AuthContext.Provider>
