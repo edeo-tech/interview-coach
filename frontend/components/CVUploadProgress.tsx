@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageInfoContainer: {
-    height: 80, // Fixed container height
+    height: 82, // Increased from 80 to 82 to accommodate larger title height
     width: '100%',
     position: 'relative',
   },
@@ -594,8 +594,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
-    height: 34, // Fixed height instead of minHeight
-    lineHeight: 34,
+    height: 36, // Increased from 34 to 36 to prevent text clipping
+    lineHeight: 36,
   },
   stageSubtitle: {
     color: 'rgba(255, 255, 255, 0.7)',
