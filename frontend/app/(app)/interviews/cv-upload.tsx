@@ -195,25 +195,25 @@ const CVUpload = () => {
           ) : null}
 
           {/* Main Upload Area */}
-          <View style={styles.uploadContainer}>
+          <View style={currentCV ? styles.uploadContainerWithCV : styles.uploadContainer}>
             <TouchableOpacity
               onPress={handleUpload}
               disabled={uploadProgress}
               style={[
-                styles.uploadArea,
+                currentCV ? styles.uploadAreaCompact : styles.uploadArea,
                 uploadProgress && styles.uploadAreaDisabled
               ]}
             >
               <View style={styles.uploadIconContainer}>
-                <Ionicons name="cloud-upload" size={64} color="#8b5cf6" />
+                <Ionicons name="cloud-upload" size={currentCV ? 48 : 64} color="#8b5cf6" />
               </View>
               
-              <Text style={styles.uploadTitle}>
+              <Text style={currentCV ? styles.uploadTitleCompact : styles.uploadTitle}>
                 {currentCV ? 'Replace your CV' : 'Upload your CV'}
               </Text>
               
-              <Text style={styles.uploadSubtitle}>
-                Get personalized interview questions based on your experience
+              <Text style={currentCV ? styles.uploadSubtitleCompact : styles.uploadSubtitle}>
+                {currentCV ? 'Upload a new CV to replace the current one' : 'Get personalized interview questions based on your experience'}
               </Text>
               
               <View style={styles.uploadButton}>
@@ -358,6 +358,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 40,
   },
+  uploadContainerWithCV: {
+    marginTop: 0,
+    marginBottom: 32,
+  },
   uploadArea: {
     backgroundColor: 'rgba(55, 65, 81, 0.6)',
     borderWidth: 2,
@@ -369,11 +373,22 @@ const styles = StyleSheet.create({
     minHeight: 320,
     justifyContent: 'center',
   },
+  uploadAreaCompact: {
+    backgroundColor: 'rgba(55, 65, 81, 0.6)',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    minHeight: 240,
+    justifyContent: 'center',
+  },
   uploadAreaDisabled: {
     opacity: 0.5,
   },
   uploadIconContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   uploadTitle: {
     color: '#ffffff',
@@ -382,6 +397,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 12,
   },
+  uploadTitleCompact: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   uploadSubtitle: {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 16,
@@ -389,6 +411,14 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     lineHeight: 22,
     maxWidth: 280,
+  },
+  uploadSubtitleCompact: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+    maxWidth: 260,
   },
   uploadButton: {
     backgroundColor: '#8b5cf6',

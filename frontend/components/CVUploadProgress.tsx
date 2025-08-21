@@ -293,16 +293,14 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
     
     // Wait a moment then call onComplete - extended timing for celebration
     setTimeout(() => {
-      // Call onComplete before fade out to prevent UI flash
-      onComplete();
-      
-      // Fade out after navigation begins
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 500,
         useNativeDriver: true,
-      }).start();
-    }, 3000);
+      }).start(() => {
+        onComplete();
+      });
+    }, 2500);
   };
 
   const currentStage = UPLOAD_STAGES[currentStageIndex];
