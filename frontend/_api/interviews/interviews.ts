@@ -54,6 +54,7 @@ export interface StartAttemptResponse {
 export interface InterviewWithAttempts {
   interview: Interview;
   attempts: InterviewAttempt[];
+  interview_type: 'technical' | 'behavioral' | 'leadership' | 'sales';
 }
 
 export interface AttemptsCountResponse {

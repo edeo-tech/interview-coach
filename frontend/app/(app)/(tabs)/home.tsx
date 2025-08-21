@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingTop: 20,
+    paddingTop: Platform.OS === 'android' ? 66 : 20,
     paddingBottom: 24,
   },
   headerText: {
@@ -371,11 +371,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 24,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      }
+    }),
   },
   createCard: {
     flexDirection: 'row',

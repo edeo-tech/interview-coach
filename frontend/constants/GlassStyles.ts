@@ -1,6 +1,7 @@
 // Enhanced glassmorphic styles with improved accessibility
 // These styles provide better visibility against the new colorful background
 // while maintaining the glassmorphic aesthetic and ensuring good text contrast
+import { Platform } from 'react-native';
 
 export const GlassStyles = {
   // Primary container - most common use case
@@ -45,11 +46,14 @@ export const GlassStyles = {
     borderColor: 'rgba(255, 255, 255, 0.15)', // Increased from 0.08
     borderRadius: 16,
     overflow: 'hidden' as const,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      }
+    }),
   },
 
   // Status colors - success, warning, error with improved visibility
