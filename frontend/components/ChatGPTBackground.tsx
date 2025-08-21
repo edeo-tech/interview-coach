@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 200,
     transform: [{ rotate: '20deg' }],
-    opacity: 0.6,
+    opacity: Platform.OS === 'android' ? 0.4 : 0.6,
   },
   prism2: {
     bottom: '25%',
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 150,
     transform: [{ rotate: '-30deg' }],
-    opacity: 0.4,
+    opacity: Platform.OS === 'android' ? 0.2 : 0.4,
   },
   prism3: {
     top: '60%',
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 100,
     transform: [{ rotate: '45deg' }],
-    opacity: 0.5,
+    opacity: Platform.OS === 'android' ? 0.3 : 0.5,
   },
   prismGradient: {
     flex: 1,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    opacity: 0.7,
+    opacity: Platform.OS === 'android' ? 0.5 : 0.7,
   },
   darkSectionTop: {
     position: 'absolute',
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     right: '30%',
     height: '35%',
     transform: [{ rotate: '-8deg' }],
-    opacity: 0.8,
+    opacity: Platform.OS === 'android' ? 0.6 : 0.8,
   },
   darkSectionBottom: {
     position: 'absolute',
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     right: -30,
     height: '40%',
     transform: [{ rotate: '12deg' }],
-    opacity: 0.75,
+    opacity: Platform.OS === 'android' ? 0.55 : 0.75,
   },
   brightAccent: {
     position: 'absolute',
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 60,
     transform: [{ rotate: '-15deg' }],
-    opacity: 0.7,
+    opacity: Platform.OS === 'android' ? 0.5 : 0.7,
   },
   brightAccent2: {
     top: '50%',
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 80,
     transform: [{ rotate: '25deg' }],
-    opacity: 0.6,
+    opacity: Platform.OS === 'android' ? 0.4 : 0.6,
   },
   accentGradient: {
     flex: 1,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    opacity: 0.8,
+    opacity: Platform.OS === 'android' ? 0.6 : 0.8,
   },
   blurOverlayGlass: {
     position: 'absolute',
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 0.5,
+    zIndex: 0,
   },
   content: {
     flex: 1,

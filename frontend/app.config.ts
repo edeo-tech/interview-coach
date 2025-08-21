@@ -2,16 +2,17 @@ module.exports = {
     expo: {
         name: "Nextround",
         slug: "interview-coach",
-        version: "1.0.1",
+        version: "1.0.2",
         orientation: "portrait",
         icon: "./assets/images/FinalAppIcon.png",
         scheme: "nextround",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
         splash: {
-            image: "./assets/images/SPLASH.png",
-            resizeMode: "contain",
+            image: "./assets/images/splash_real.png",
+            resizeMode: "cover",
             backgroundColor: "#151a31",
+            fade: true,
         },
         ios: {
             supportsTablet: true,
@@ -32,6 +33,7 @@ module.exports = {
             splash: {
                 image: "./assets/images/SPLASH.png",
                 backgroundColor: "#151a31",
+                fade: true,
             },
             package: "com.interviewcoach.app",
             // googleServicesFile: "./google-services.json",
