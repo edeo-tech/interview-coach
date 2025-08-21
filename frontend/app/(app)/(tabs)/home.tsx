@@ -10,8 +10,8 @@ import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
 
 export default function Home() {
-  const { data: interviews, isLoading: interviewsLoading } = useInterviews();
   const { data: cv } = useCV();
+  const { data: interviews, isLoading: interviewsLoading } = useInterviews(!!cv);
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
 
@@ -89,17 +89,19 @@ export default function Home() {
           </View>
         </View>
 
-        {/* Quick Action: Create New Interview (card style) */}
-        <TouchableOpacity onPress={handleCreateNewInterview} style={styles.createCard}>
-          <View style={styles.createCardLeft}>
-            <Ionicons name="add" size={24} color="#ffffff" />
-          </View>
-          <View style={styles.createCardRight}>
-            <Text style={styles.createCardTitle}>Create new interview</Text>
-          </View>
-        </TouchableOpacity>
+        {/* Quick Action: Create New Interview (only show when user has existing interviews) */}
+        {interviews && interviews.length > 0 && (
+          <TouchableOpacity onPress={handleCreateNewInterview} style={styles.createCard}>
+            <View style={styles.createCardLeft}>
+              <Ionicons name="add" size={24} color="#ffffff" />
+            </View>
+            <View style={styles.createCardRight}>
+              <Text style={styles.createCardTitle}>Create new interview</Text>
+            </View>
+          </TouchableOpacity>
+        )}
 
-        {/* CV Status */}
+        {/* CV Status - Only show when contextually relevant */}
         {!cv && (
           <View style={[styles.statusCard, styles.warningCard]}>
             <View style={styles.statusHeader}>
@@ -124,37 +126,41 @@ export default function Home() {
           </View>
         )}
 
-        {cv && (
-          <View style={[styles.statusCard, styles.successCard]}>
-            <View style={styles.statusHeader}>
-              <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <Text style={styles.successTitle}>Your CV</Text>
-            </View>
-            <Text style={styles.statusDescription}> 
-              {cv.skills.length} skills • {cv.experience_years} years experience
-            </Text>
-          </View>
-        )}
-
         {/* Recent Interviews */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Recent Interviews
           </Text>
           
-          {interviewsLoading ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>Loading interviews...</Text>
-            </View>
-          ) : !interviews || interviews.length === 0 ? (
+          {!cv || interviewsLoading ? (
             <View style={styles.emptyState}>
               <Ionicons name="chatbubble-outline" size={48} color="#6b7280" />
               <Text style={styles.emptyStateTitle}>
                 No interviews yet
               </Text>
               <Text style={styles.emptyStateSubtitle}>
-                Start your first mock interview to begin practicing
+                {!cv ? 'Upload your CV first, then tap the + button above to create your first interview' : 'Loading your interviews...'}
               </Text>
+            </View>
+          ) : !interviews || interviews.length === 0 ? (
+            <View style={styles.enhancedEmptyState}>
+              <View style={styles.emptyStateIcon}>
+                <Ionicons name="rocket-outline" size={52} color="#8b5cf6" />
+              </View>
+              <Text style={styles.emptyStateTitle}>
+                Ready to practice?
+              </Text>
+              <Text style={styles.emptyStateSubtitle}>
+                Create your first mock interview to start improving your skills
+              </Text>
+              <View style={styles.ctaContainer}>
+                <View style={styles.ctaArrow}>
+                  <Ionicons name="arrow-up" size={20} color="#8b5cf6" />
+                </View>
+                <Text style={styles.ctaText}>
+                  Tap the + button above to get started
+                </Text>
+              </View>
             </View>
           ) : (
             interviews.map((interview) => (
@@ -293,11 +299,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 14,
   },
-  successCard: {
-    ...GlassStyles.success,
-    borderWidth: 1,
-    borderRadius: 14,
-  },
   statusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -305,12 +306,6 @@ const styles = StyleSheet.create({
   },
   warningTitle: {
     color: '#fbbf24',
-    fontWeight: '600',
-    fontSize: 16,
-    marginLeft: 10,
-  },
-  successTitle: {
-    color: '#10b981',
     fontWeight: '600',
     fontSize: 16,
     marginLeft: 10,
@@ -347,6 +342,44 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     marginTop: 4,
+  },
+  enhancedEmptyState: {
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+    marginTop: 4,
+  },
+  emptyStateIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  ctaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  ctaArrow: {
+    marginRight: 8,
+  },
+  ctaText: {
+    color: '#a855f7',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   emptyStateText: {
     color: '#9ca3af',
