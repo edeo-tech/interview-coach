@@ -293,14 +293,16 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
     
     // Wait a moment then call onComplete - extended timing for celebration
     setTimeout(() => {
+      // Call onComplete before fade out to prevent UI flash
+      onComplete();
+      
+      // Fade out after navigation begins
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 500,
+        duration: 300,
         useNativeDriver: true,
-      }).start(() => {
-        onComplete();
-      });
-    }, 3500);
+      }).start();
+    }, 3000);
   };
 
   const currentStage = UPLOAD_STAGES[currentStageIndex];
@@ -464,19 +466,6 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
           </Animated.View>
         </View>
 
-        {/* Stage Indicators */}
-        <View style={styles.stageIndicators}>
-          {UPLOAD_STAGES.map((stage, index) => (
-            <View
-              key={stage.id}
-              style={[
-                styles.stageIndicator,
-                index <= currentStageIndex && styles.stageIndicatorActive,
-                index === currentStageIndex && !isComplete && styles.stageIndicatorCurrent,
-              ]}
-            />
-          ))}
-        </View>
 
         {/* Additional Info */}
         <View style={styles.additionalInfo}>
@@ -618,28 +607,6 @@ const styles = StyleSheet.create({
     height: 44, // Fixed height for exactly 2 lines
     width: 280, // Fixed width instead of maxWidth
     paddingHorizontal: 20,
-  },
-  stageIndicators: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-  },
-  stageIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  stageIndicatorActive: {
-    backgroundColor: '#8b5cf6',
-  },
-  stageIndicatorCurrent: {
-    backgroundColor: '#ffffff',
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 4,
   },
   additionalInfo: {
     flexDirection: 'row',
