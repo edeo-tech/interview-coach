@@ -27,7 +27,7 @@ const GoogleSignIn = ({
     const { posthogCapture } = usePosthogSafely();
 
     const redirectUri = makeRedirectUri({
-        scheme: 'com.interview-coach.app',
+        scheme: Platform.OS === 'ios' ? 'com.interview-coach.app' : 'com.interviewcoach.app',
         path: '/(auth)/register',
     });
 

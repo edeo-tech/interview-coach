@@ -2,7 +2,7 @@ module.exports = {
     expo: {
         name: "Nextround",
         slug: "interview-coach",
-        version: "1.0.2",
+        version: "1.0.1",
         orientation: "portrait",
         icon: "./assets/images/FinalAppIcon.png",
         scheme: "nextround",
