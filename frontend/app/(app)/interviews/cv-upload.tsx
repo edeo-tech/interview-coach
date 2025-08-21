@@ -81,8 +81,13 @@ const CVUpload = () => {
   };
 
   const handleProgressComplete = () => {
-    setShowProgressModal(false);
-    router.push('/cv-profile');
+    // Navigate immediately to prevent any intermediate screens
+    router.push('/interviews/create');
+    
+    // Delay modal close to prevent UI flash
+    setTimeout(() => {
+      setShowProgressModal(false);
+    }, 100);
   };
 
   const handleDelete = () => {
