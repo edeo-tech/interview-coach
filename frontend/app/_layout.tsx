@@ -13,7 +13,7 @@ import {
 import {
     SpaceGrotesk_600SemiBold,
 } from '@expo-google-fonts/space-grotesk';
-import { SplashScreen } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -40,6 +40,10 @@ export function ErrorBoundary(props: any) {
 }
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.setOptions({
+    fade: true,
+    duration: 500
+});
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
