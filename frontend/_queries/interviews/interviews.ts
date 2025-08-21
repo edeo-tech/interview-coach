@@ -12,13 +12,14 @@ export const interviewKeys = {
 };
 
 // Hooks
-export const useInterviews = () => {
+export const useInterviews = (enabled: boolean = true) => {
   return useQuery({
     queryKey: interviewKeys.lists(),
     queryFn: async () => {
       const response = await interviewsApi.list();
       return response.data;
     },
+    enabled,
   });
 };
 
