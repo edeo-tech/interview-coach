@@ -81,8 +81,13 @@ const CVUpload = () => {
   };
 
   const handleProgressComplete = () => {
-    setShowProgressModal(false);
-    router.push('/cv-profile');
+    // Navigate immediately to prevent any intermediate screens
+    router.push('/interviews/create');
+    
+    // Delay modal close to prevent UI flash
+    setTimeout(() => {
+      setShowProgressModal(false);
+    }, 100);
   };
 
   const handleDelete = () => {
@@ -129,159 +134,126 @@ const CVUpload = () => {
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>CV Management</Text>
+          <Text style={styles.headerTitle}>Upload CV</Text>
         </View>
 
-        {/* Current CV Status */}
-        {cvLoading ? (
-          <View style={styles.loadingCard}>
-            <ActivityIndicator size="small" color="#F59E0B" />
-            <Text style={styles.loadingText}>Loading CV information...</Text>
-          </View>
-        ) : currentCV ? (
-          <View style={styles.cvCard}>
-            <View style={styles.cvCardHeader}>
-              <Text style={styles.cvCardTitle}>Current CV</Text>
-              <View style={styles.activeStatus}>
-                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                <Text style={styles.activeText}>Active</Text>
-              </View>
+        <View style={styles.content}>
+          {/* Current CV Status - Only show if CV exists */}
+          {cvLoading ? (
+            <View style={styles.loadingCard}>
+              <ActivityIndicator size="small" color="#F59E0B" />
+              <Text style={styles.loadingText}>Loading CV information...</Text>
             </View>
-            
-            <View style={styles.cvInfo}>
-              <View style={styles.cvInfoItem}>
-                <Ionicons name="briefcase" size={16} color="#9ca3af" />
-                <Text style={styles.cvInfoText}>
-                  {currentCV.experience_years} years experience
-                </Text>
+          ) : currentCV ? (
+            <View style={styles.cvCard}>
+              <View style={styles.cvCardHeader}>
+                <Text style={styles.cvCardTitle}>Current CV</Text>
+                <View style={styles.activeStatus}>
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Text style={styles.activeText}>Active</Text>
+                </View>
               </View>
               
-              <View style={styles.cvInfoItem}>
-                <Ionicons name="code" size={16} color="#9ca3af" />
-                <Text style={[styles.cvInfoText, styles.cvInfoTextWrap]}>
-                  {currentCV.skills.length > 0 
-                    ? formatSkills(currentCV.skills)
-                    : 'Skills not specified'
-                  }
-                </Text>
+              <View style={styles.cvInfo}>
+                <View style={styles.cvInfoItem}>
+                  <Ionicons name="briefcase" size={16} color="#9ca3af" />
+                  <Text style={styles.cvInfoText}>
+                    {currentCV.experience_years} years experience
+                  </Text>
+                </View>
+                
+                <View style={styles.cvInfoItem}>
+                  <Ionicons name="code" size={16} color="#9ca3af" />
+                  <Text style={[styles.cvInfoText, styles.cvInfoTextWrap]}>
+                    {currentCV.skills.length > 0 
+                      ? formatSkills(currentCV.skills)
+                      : 'Skills not specified'
+                    }
+                  </Text>
+                </View>
+                
+                <View style={styles.cvInfoItem}>
+                  <Ionicons name="calendar" size={16} color="#9ca3af" />
+                  <Text style={styles.cvInfoText}>
+                    Uploaded {new Date(currentCV.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
               </View>
-              
-              <View style={styles.cvInfoItem}>
-                <Ionicons name="calendar" size={16} color="#9ca3af" />
-                <Text style={styles.cvInfoText}>
-                  Uploaded {new Date(currentCV.created_at).toLocaleDateString()}
-                </Text>
-              </View>
-            </View>
 
+              <TouchableOpacity
+                onPress={handleDelete}
+                disabled={deleteMutation.isPending}
+                style={styles.deleteButton}
+              >
+                <Ionicons name="trash" size={16} color="#ef4444" />
+                <Text style={styles.deleteButtonText}>
+                  {deleteMutation.isPending ? 'Deleting...' : 'Delete CV'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+
+          {/* Main Upload Area */}
+          <View style={currentCV ? styles.uploadContainerWithCV : styles.uploadContainer}>
             <TouchableOpacity
-              onPress={handleDelete}
-              disabled={deleteMutation.isPending}
-              style={styles.deleteButton}
+              onPress={handleUpload}
+              disabled={uploadProgress}
+              style={[
+                currentCV ? styles.uploadAreaCompact : styles.uploadArea,
+                uploadProgress && styles.uploadAreaDisabled
+              ]}
             >
-              <Ionicons name="trash" size={16} color="#ef4444" />
-              <Text style={styles.deleteButtonText}>
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete CV'}
+              <View style={styles.uploadIconContainer}>
+                <Ionicons name="cloud-upload" size={currentCV ? 48 : 64} color="#8b5cf6" />
+              </View>
+              
+              <Text style={currentCV ? styles.uploadTitleCompact : styles.uploadTitle}>
+                {currentCV ? 'Replace your CV' : 'Upload your CV'}
+              </Text>
+              
+              <Text style={currentCV ? styles.uploadSubtitleCompact : styles.uploadSubtitle}>
+                {currentCV ? 'Upload a new CV to replace the current one' : 'Get personalized interview questions based on your experience'}
+              </Text>
+              
+              <View style={styles.uploadButton}>
+                <Text style={styles.uploadButtonText}>Choose file</Text>
+              </View>
+              
+              <Text style={styles.formatHint}>
+                PDF, DOC, DOCX, or TXT • Max 5MB
               </Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.noCvCard}>
-            <Ionicons name="document-outline" size={48} color="#6b7280" />
-            <Text style={styles.noCvTitle}>No CV Uploaded</Text>
-            <Text style={styles.noCvSubtitle}>
-              Upload your CV to get personalized interview questions
-            </Text>
-          </View>
-        )}
 
-        {/* Upload Section */}
-        <View style={styles.uploadCard}>
-          <Text style={styles.uploadTitle}>
-            {currentCV ? 'Replace CV' : 'Upload CV'}
-          </Text>
-          
-          <TouchableOpacity
-            onPress={handleUpload}
-            disabled={uploadProgress}
-            style={[
-              styles.uploadArea,
-              uploadProgress && styles.uploadAreaDisabled
-            ]}
-          >
-            <Ionicons name="cloud-upload" size={48} color="#F59E0B" />
-            
-            <Text style={styles.uploadText}>
-              Choose file to upload
-            </Text>
-            
-            <Text style={styles.uploadSubtext}>
-              PDF, DOC, DOCX, or TXT files (max 5MB)
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Supported Formats */}
-        <View style={styles.formatsCard}>
-          <Text style={styles.formatsTitle}>Supported Formats</Text>
-          <View style={styles.formatsList}>
-            {[
-              { type: 'PDF', desc: 'Portable Document Format', icon: 'document-text' },
-              { type: 'DOC/DOCX', desc: 'Microsoft Word Document', icon: 'document' },
-              { type: 'TXT', desc: 'Plain Text File', icon: 'document-outline' }
-            ].map((format) => (
-              <View key={format.type} style={styles.formatItem}>
-                <Ionicons name={format.icon as any} size={20} color="#9ca3af" />
-                <View style={styles.formatInfo}>
-                  <Text style={styles.formatType}>{format.type}</Text>
-                  <Text style={styles.formatDesc}>{format.desc}</Text>
-                </View>
-              </View>
-            ))}
+          {/* Trust Indicators */}
+          <View style={styles.trustIndicators}>
+            <View style={styles.trustItem}>
+              <Ionicons name="shield-checkmark" size={16} color="#10b981" />
+              <Text style={styles.trustText}>Secure & Private</Text>
+            </View>
+            <View style={styles.trustItem}>
+              <Ionicons name="time" size={16} color="#8b5cf6" />
+              <Text style={styles.trustText}>Processed in seconds</Text>
+            </View>
           </View>
         </View>
 
-        {/* Tips */}
-        <View style={styles.tipsCard}>
-          <Text style={styles.tipsTitle}>💡 Tips for best results</Text>
-          <View style={styles.tipsList}>
-            <Text style={styles.tipText}>• Use a well-formatted, recent CV</Text>
-            <Text style={styles.tipText}>• Include specific skills and technologies</Text>
-            <Text style={styles.tipText}>• List your work experience clearly</Text>
-            <Text style={styles.tipText}>• Avoid images or complex formatting</Text>
-          </View>
-        </View>
-
-        {/* Privacy Notice */}
-        <View style={styles.privacyCard}>
-          <View style={styles.privacyHeader}>
-            <Ionicons name="shield-checkmark" size={16} color="#10b981" />
-            <Text style={styles.privacyTitle}>Privacy Protected</Text>
-          </View>
-          <Text style={styles.privacyText}>
-            Your CV is processed securely and used only to personalize your interview experience. 
-            We don't share your information with third parties.
-          </Text>
-        </View>
-      </ScrollView>
-
-      {/* Progress Modal */}
-      <Modal
-        visible={showProgressModal}
-        transparent={true}
-        animationType="fade"
-        statusBarTranslucent={true}
-      >
-        <CVUploadProgress onComplete={handleProgressComplete} />
-      </Modal>
-    </SafeAreaView>
+        {/* Progress Modal */}
+        <Modal
+          visible={showProgressModal}
+          transparent={true}
+          animationType="fade"
+          statusBarTranslucent={true}
+        >
+          <CVUploadProgress onComplete={handleProgressComplete} />
+        </Modal>
+      </View>
     </ChatGPTBackground>
   );
 };
@@ -294,45 +266,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   backButton: {
     marginRight: 16,
   },
   headerTitle: {
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   loadingCard: {
-    backgroundColor: '#374151',
-    borderRadius: 12,
+    backgroundColor: 'rgba(55, 65, 81, 0.8)',
+    borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    backdropFilter: 'blur(10px)',
   },
   loadingText: {
     color: '#9ca3af',
     marginTop: 8,
+    fontSize: 16,
   },
   cvCard: {
-    backgroundColor: '#374151',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
+    backgroundColor: 'rgba(55, 65, 81, 0.8)',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 24,
+    backdropFilter: 'blur(10px)',
   },
   cvCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   cvCardTitle: {
     color: '#ffffff',
@@ -349,7 +327,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   cvInfo: {
-    gap: 12,
+    gap: 16,
   },
   cvInfoItem: {
     flexDirection: 'row',
@@ -357,7 +335,8 @@ const styles = StyleSheet.create({
   },
   cvInfoText: {
     color: '#d1d5db',
-    marginLeft: 8,
+    marginLeft: 12,
+    fontSize: 15,
   },
   cvInfoTextWrap: {
     flex: 1,
@@ -366,9 +345,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(153, 27, 27, 0.3)',
     borderColor: 'rgba(239, 68, 68, 0.5)',
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -377,129 +356,107 @@ const styles = StyleSheet.create({
     color: '#ef4444',
     marginLeft: 8,
     fontWeight: '600',
+    fontSize: 16,
   },
-  noCvCard: {
-    backgroundColor: '#374151',
-    borderRadius: 12,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 20,
+  uploadContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    marginVertical: 40,
   },
-  noCvTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
-  },
-  noCvSubtitle: {
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  uploadCard: {
-    backgroundColor: '#374151',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-  },
-  uploadTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+  uploadContainerWithCV: {
+    marginTop: 0,
+    marginBottom: 32,
   },
   uploadArea: {
+    backgroundColor: 'rgba(55, 65, 81, 0.6)',
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: '#4b5563',
-    borderRadius: 8,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 20,
+    padding: 48,
+    alignItems: 'center',
+    minHeight: 320,
+    justifyContent: 'center',
+  },
+  uploadAreaCompact: {
+    backgroundColor: 'rgba(55, 65, 81, 0.6)',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 20,
     padding: 32,
     alignItems: 'center',
+    minHeight: 240,
+    justifyContent: 'center',
   },
   uploadAreaDisabled: {
     opacity: 0.5,
   },
-  uploadText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  uploadSubtext: {
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  formatsCard: {
-    backgroundColor: '#374151',
-    borderRadius: 12,
-    padding: 20,
+  uploadIconContainer: {
     marginBottom: 20,
   },
-  formatsTitle: {
+  uploadTitle: {
+    color: '#ffffff',
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  uploadTitleCompact: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  uploadSubtitle: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+    maxWidth: 280,
+  },
+  uploadSubtitleCompact: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+    maxWidth: 260,
+  },
+  uploadButton: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  uploadButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 16,
   },
-  formatsList: {
-    gap: 12,
+  formatHint: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 14,
+    textAlign: 'center',
   },
-  formatItem: {
+  trustIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 32,
+    paddingTop: 20,
+  },
+  trustItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
-  formatInfo: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  formatType: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  formatDesc: {
-    color: '#9ca3af',
+  trustText: {
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
-  },
-  tipsCard: {
-    backgroundColor: 'rgba(30, 64, 175, 0.2)',
-    borderColor: 'rgba(59, 130, 246, 0.3)',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 20,
-  },
-  tipsTitle: {
-    color: '#60a5fa',
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  tipsList: {
-    gap: 4,
-  },
-  tipText: {
-    color: '#bfdbfe',
-    fontSize: 14,
-  },
-  privacyCard: {
-    backgroundColor: '#374151',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 32,
-  },
-  privacyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  privacyTitle: {
-    color: '#10b981',
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  privacyText: {
-    color: '#d1d5db',
-    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

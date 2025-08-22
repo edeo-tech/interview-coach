@@ -1,19 +1,25 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform, Image, ActivityIndicator, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
 import { useInterviews } from '../../../_queries/interviews/interviews';
-import { useCV } from '../../../_queries/interviews/cv';
+import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
+import CVUploadProgress from '../../../components/CVUploadProgress';
 
 export default function Home() {
   const { data: cv } = useCV();
   const { data: interviews, isLoading: interviewsLoading } = useInterviews(!!cv);
+  const uploadMutation = useUploadCV();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  
+  const [uploadProgress, setUploadProgress] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -66,6 +72,76 @@ export default function Home() {
     }
   };
 
+  const handleUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
+        copyToCacheDirectory: true
+      });
+      
+      if (result.canceled) {
+        return;
+      }
+
+      const file = result.assets[0];
+      
+      // Validate file size (max 5MB)
+      if (file.size && file.size > 5 * 1024 * 1024) {
+        Alert.alert('File Too Large', 'Please select a file smaller than 5MB.');
+        return;
+      }
+
+      setUploadProgress(true);
+      setShowProgressModal(true);
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: file.uri,
+        type: file.mimeType || 'application/pdf',
+        name: file.name || 'cv.pdf',
+      } as any);
+      
+      await uploadMutation.mutateAsync(formData);
+      
+      posthogCapture('cv_upload_success', {
+        source: 'home_embedded',
+        file_type: file.mimeType || 'unknown',
+        file_size_kb: file.size ? Math.round(file.size / 1024) : null,
+        is_first_upload: true
+      });
+      
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      setShowProgressModal(false);
+      posthogCapture('cv_upload_failed', {
+        source: 'home_embedded',
+        error_message: error.response?.data?.detail || error.message,
+        file_type: file?.mimeType || 'unknown'
+      });
+      Alert.alert(
+        'Upload Error', 
+        error.response?.data?.detail || 'Failed to upload CV. Please try again.'
+      );
+    } finally {
+      setUploadProgress(false);
+    }
+  };
+
+  const handleProgressComplete = () => {
+    // Navigate directly to interview creation - seamless onboarding flow
+    posthogCapture('cv_upload_onboarding_complete', {
+      source: 'home_embedded'
+    });
+    
+    // Navigate immediately, then close modal to prevent flash
+    router.push('/interviews/create');
+    
+    // Delay modal close to prevent brief home screen flash
+    setTimeout(() => {
+      setShowProgressModal(false);
+    }, 100);
+  };
+
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
@@ -101,28 +177,49 @@ export default function Home() {
           </TouchableOpacity>
         )}
 
-        {/* CV Status - Only show when contextually relevant */}
+        {/* CV Upload - Embedded for seamless onboarding */}
         {!cv && (
-          <View style={[styles.statusCard, styles.warningCard]}>
-            <View style={styles.statusHeader}>
-              <Ionicons name="warning" size={20} color="#fbbf24" />
-              <Text style={styles.warningTitle}>CV Required</Text>
-            </View>
-            <Text style={styles.statusDescription}>
-              Upload your CV to get personalized interview questions and feedback.
-            </Text>
-            <TouchableOpacity 
-              onPress={() => {
-                posthogCapture('navigate_to_cv_upload', {
-                  source: 'home',
-                  has_existing_cv: false
-                });
-                router.push('/interviews/cv-upload');
-              }}
-              style={styles.statusAction}
+          <View style={styles.uploadContainer}>
+            <TouchableOpacity
+              onPress={handleUpload}
+              disabled={uploadProgress}
+              style={[
+                styles.uploadArea,
+                uploadProgress && styles.uploadAreaDisabled
+              ]}
             >
-              <Text style={styles.warningAction}>Upload CV →</Text>
+              <View style={styles.uploadIconContainer}>
+                <Ionicons name="cloud-upload" size={48} color="#8b5cf6" />
+              </View>
+              
+              <Text style={styles.uploadTitle}>
+                Upload your CV to get started
+              </Text>
+              
+              <Text style={styles.uploadSubtitle}>
+                Get personalized interview questions based on your experience
+              </Text>
+              
+              <View style={styles.uploadButton}>
+                <Text style={styles.uploadButtonText}>Choose file</Text>
+              </View>
+              
+              <Text style={styles.formatHint}>
+                PDF, DOC, DOCX, or TXT • Max 5MB
+              </Text>
             </TouchableOpacity>
+            
+            {/* Trust Indicators */}
+            <View style={styles.trustIndicators}>
+              <View style={styles.trustItem}>
+                <Ionicons name="shield-checkmark" size={14} color="#10b981" />
+                <Text style={styles.trustText}>Secure & Private</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <Ionicons name="time" size={14} color="#8b5cf6" />
+                <Text style={styles.trustText}>Processed in seconds</Text>
+              </View>
+            </View>
           </View>
         )}
 
@@ -223,6 +320,15 @@ export default function Home() {
         </View>
       </ScrollView>
 
+      {/* Progress Modal */}
+      <Modal
+        visible={showProgressModal}
+        transparent={true}
+        animationType="fade"
+        statusBarTranslucent={true}
+      >
+        <CVUploadProgress onComplete={handleProgressComplete} />
+      </Modal>
     </View>
     </ChatGPTBackground>
   );
@@ -241,7 +347,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingTop: 20,
+    paddingTop: Platform.OS === 'android' ? 66 : 20,
     paddingBottom: 24,
   },
   headerText: {
@@ -265,11 +371,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 24,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      }
+    }),
   },
   createCard: {
     flexDirection: 'row',
@@ -292,36 +401,6 @@ const styles = StyleSheet.create({
   createCardTitle: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  warningCard: {
-    ...GlassStyles.warning,
-    borderWidth: 1,
-    borderRadius: 14,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  warningTitle: {
-    color: '#fbbf24',
-    fontWeight: '600',
-    fontSize: 16,
-    marginLeft: 10,
-  },
-  statusDescription: {
-    color: '#d1d5db',
-    fontSize: 15,
-    lineHeight: 20,
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  statusAction: {
-    marginTop: 12,
-  },
-  warningAction: {
-    color: '#fbbf24',
     fontWeight: '600',
   },
 
@@ -509,6 +588,74 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 16,
+  },
+
+  // Embedded CV Upload Styles
+  uploadContainer: {
+    marginBottom: 32,
+  },
+  uploadArea: {
+    backgroundColor: 'rgba(55, 65, 81, 0.6)',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  uploadAreaDisabled: {
+    opacity: 0.5,
+  },
+  uploadIconContainer: {
+    marginBottom: 16,
+  },
+  uploadTitle: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  uploadSubtitle: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+    maxWidth: 250,
+  },
+  uploadButton: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  uploadButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  formatHint: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  trustIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+  },
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  trustText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
+    fontWeight: '500',
   },
 
 });

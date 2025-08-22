@@ -27,7 +27,7 @@ const GoogleSignIn = ({
     const { posthogCapture } = usePosthogSafely();
 
     const redirectUri = makeRedirectUri({
-        scheme: 'com.interview-coach.app',
+        scheme: Platform.OS === 'ios' ? 'com.interview-coach.app' : 'com.interviewcoach.app',
         path: '/(auth)/register',
     });
 
@@ -125,9 +125,6 @@ const styles = StyleSheet.create({
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 4,
-            },
-            android: {
-                elevation: 2,
             }
         }),
     },

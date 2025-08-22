@@ -32,8 +32,8 @@ const Register = () => {
     posthogScreen('auth_register');
   });
   
-  const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess } = useRegister();
   const { mutate: login, isPending: loginLoading } = useLogin({posthogIdentify, posthogCapture, isFromRegistration: true});
+  const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess, reset: resetRegister } = useRegister();
 
   useEffect(() => {
     if (registerError) {
@@ -43,8 +43,9 @@ const Register = () => {
         email_domain: email.split('@')[1] || 'unknown'
       });
       showToast(errorMessage, 'error');
+      resetRegister();
     }
-  }, [registerError, posthogCapture, email]);
+  }, [registerError, posthogCapture, email, showToast, resetRegister]);
 
   useEffect(() => {
     if (registerSuccess) {
@@ -54,8 +55,9 @@ const Register = () => {
       showToast('Registration successful! Logging you in...', 'success');
       // Auto-login after successful registration
       login({ email, password });
+      resetRegister();
     }
-  }, [registerSuccess, posthogCapture, email, login, password]);
+  }, [registerSuccess, posthogCapture, email, login, password, showToast, resetRegister]);
 
 
   const handleRegister = () => {
@@ -326,11 +328,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+      }
+    }),
   },
   buttonDisabled: {
     opacity: 0.6,

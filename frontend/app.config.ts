@@ -2,7 +2,7 @@ module.exports = {
     expo: {
         name: "nextround",
         slug: "interview-coach",
-        version: "1.0.2",
+        version: "1.0.1",
         orientation: "portrait",
         icon: "./assets/images/FinalAppIcon.png",
         scheme: "nextround",
@@ -31,7 +31,8 @@ module.exports = {
         },
         android: {
             splash: {
-                image: "./assets/images/SPLASH.png",
+                image: "./assets/images/FinalAppIconTransparent.png",
+                resizeMode: "cover",
                 backgroundColor: "#151a31",
                 fade: true,
             },

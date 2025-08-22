@@ -9,7 +9,7 @@ import { GlassStyles, GlassTextColors } from '../constants/GlassStyles';
 import useHapticsSafely from '../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle, NotificationFeedbackType } from 'expo-haptics';
 
-interface UploadStage {
+interface JobAnalysisStage {
   id: string;
   title: string;
   subtitle: string;
@@ -17,49 +17,49 @@ interface UploadStage {
   duration: number; // in milliseconds
 }
 
-const UPLOAD_STAGES: UploadStage[] = [
+const JOB_ANALYSIS_STAGES: JobAnalysisStage[] = [
   {
-    id: 'uploading',
-    title: 'Uploading document',
-    subtitle: 'Securely transferring your CV',
-    icon: 'cloud-upload-outline',
-    duration: 1500,
-  },
-  {
-    id: 'scanning',
-    title: 'Scanning content',
-    subtitle: 'Reading and extracting text',
-    icon: 'scan-outline',
+    id: 'fetching',
+    title: 'Finding job posting',
+    subtitle: 'Retrieving job details from the web',
+    icon: 'search-outline',
     duration: 2000,
   },
   {
     id: 'analyzing',
-    title: 'Understanding experience',
-    subtitle: 'Analyzing your skills and background',
+    title: 'Understanding requirements',
+    subtitle: 'Analyzing role responsibilities and skills',
     icon: 'analytics-outline',
     duration: 2500,
   },
   {
-    id: 'processing',
-    title: 'Building your profile',
-    subtitle: 'Creating personalized interview questions',
-    icon: 'construct-outline',
-    duration: 2000,
+    id: 'researching',
+    title: 'Researching company',
+    subtitle: 'Learning about interview process and values',
+    icon: 'business-outline',
+    duration: 2800,
   },
   {
-    id: 'finalizing',
-    title: 'Finalizing setup',
-    subtitle: 'Preparing your interview experience',
-    icon: 'checkmark-circle-outline',
-    duration: 1000,
+    id: 'mapping',
+    title: 'Mapping interview stages',
+    subtitle: 'Identifying typical interview steps',
+    icon: 'map-outline',
+    duration: 2200,
+  },
+  {
+    id: 'building',
+    title: 'Creating mock process',
+    subtitle: 'Building your personalized experience',
+    icon: 'construct-outline',
+    duration: 1500,
   },
 ];
 
-interface CVUploadProgressProps {
+interface JobLinkProgressProps {
   onComplete: () => void;
 }
 
-const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
+const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -119,15 +119,15 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
     let stageIndex = 0;
     
     const animateStage = () => {
-      if (stageIndex >= UPLOAD_STAGES.length) {
+      if (stageIndex >= JOB_ANALYSIS_STAGES.length) {
         // All stages complete - trigger success animation
         setIsComplete(true);
         triggerSuccessAnimation();
         return;
       }
 
-      const stage = UPLOAD_STAGES[stageIndex];
-      const stageProgress = (stageIndex + 1) / UPLOAD_STAGES.length;
+      const stage = JOB_ANALYSIS_STAGES[stageIndex];
+      const stageProgress = (stageIndex + 1) / JOB_ANALYSIS_STAGES.length;
       const targetProgress = stageProgress * 100;
 
       // Animate stage transition
@@ -303,30 +303,30 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
     }, 2500);
   };
 
-  const currentStage = UPLOAD_STAGES[currentStageIndex];
+  const currentStage = JOB_ANALYSIS_STAGES[currentStageIndex];
   const circumference = 2 * Math.PI * 100; // radius = 100
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <View style={styles.container}>
-      {/* Subtle gradient background */}
+      {/* Subtle gradient background - slightly different colors for job flow */}
       <LinearGradient
         colors={[
-          '#0F0A1F', // Very dark purple
-          '#1A0B2B', // Dark purple-blue
-          '#0F1419', // Dark slate
+          '#0F1A0F', // Very dark green-black
+          '#1A0B2B', // Dark purple-blue (consistent)
+          '#0F1419', // Dark slate (consistent)
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradientBackground}
       />
       
-      {/* Subtle accent streaks */}
+      {/* Subtle accent streaks - adjusted for job theme */}
       <LinearGradient
         colors={[
-          'rgba(139, 92, 246, 0.08)',
-          'rgba(236, 72, 153, 0.05)',
-          'rgba(245, 158, 11, 0)',
+          'rgba(34, 197, 94, 0.08)', // Green accent for "growth/opportunity"
+          'rgba(139, 92, 246, 0.05)', // Purple accent (consistent)
+          'rgba(245, 158, 11, 0)', // Amber fade (consistent)
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0.7 }}
@@ -349,7 +349,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
             ]}
           >
             <LinearGradient
-              colors={['rgba(139, 92, 246, 0.6)', 'rgba(236, 72, 153, 0.4)', 'rgba(245, 158, 11, 0.2)']}
+              colors={['rgba(34, 197, 94, 0.6)', 'rgba(139, 92, 246, 0.4)', 'rgba(245, 158, 11, 0.2)']}
               style={styles.ringGradient}
             />
           </Animated.View>
@@ -366,9 +366,9 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
           >
           <Svg width={240} height={240} style={styles.svg}>
             <Defs>
-              <SvgLinearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <Stop offset="0%" stopColor="#8b5cf6" stopOpacity="1" />
-                <Stop offset="50%" stopColor="#ec4899" stopOpacity="1" />
+              <SvgLinearGradient id="jobProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <Stop offset="0%" stopColor="#22c55e" stopOpacity="1" />
+                <Stop offset="50%" stopColor="#8b5cf6" stopOpacity="1" />
                 <Stop offset="100%" stopColor="#f59e0b" stopOpacity="1" />
               </SvgLinearGradient>
             </Defs>
@@ -386,7 +386,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
               cx="120"
               cy="120"
               r="100"
-              stroke="url(#progressGradient)"
+              stroke="url(#jobProgressGradient)"
               strokeWidth="12"
               fill="none"
               strokeLinecap="round"
@@ -415,7 +415,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
                 ]}
               >
                 <LinearGradient
-                  colors={['#8b5cf6', '#ec4899']}
+                  colors={['#22c55e', '#8b5cf6']}
                   style={styles.particleGradient}
                 />
               </Animated.View>
@@ -434,14 +434,14 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
                   }
                 ]}
               >
-                <Ionicons name="checkmark" size={60} color="#10b981" />
+                <Ionicons name="checkmark" size={60} color="#22c55e" />
               </Animated.View>
             ) : (
               <Animated.View style={[styles.iconContainer, { opacity: stageIconOpacity }]}>
                 <Ionicons 
                   name={currentStage?.icon as any} 
                   size={52} 
-                  color="#8b5cf6" 
+                  color="#22c55e" 
                 />
                 <Text style={styles.progressText}>
                   {Math.round(progress)}%
@@ -455,27 +455,15 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
         {/* Stage Information - Fixed positioning */}
         <View style={styles.stageInfoContainer}>
           <Animated.View style={[styles.stageInfo, { opacity: stageTextOpacity }]}>
-            <Text style={styles.stageTitle}>
-              {isComplete ? '✨ Success!' : currentStage?.title}
+            <Text style={styles.stageTitle} numberOfLines={1} ellipsizeMode="tail">
+              {isComplete ? '🎯 Ready to interview!' : currentStage?.title}
             </Text>
-            <Text style={styles.stageSubtitle}>
-              {isComplete ? 'Your CV has been processed successfully' : currentStage?.subtitle}
+            <Text style={styles.stageSubtitle} numberOfLines={2} ellipsizeMode="tail">
+              {isComplete ? 'Your personalized mock interview process is ready' : currentStage?.subtitle}
             </Text>
           </Animated.View>
         </View>
 
-
-        {/* Additional Info */}
-        <View style={styles.additionalInfo}>
-          <View style={styles.infoItem}>
-            <Ionicons name="shield-checkmark" size={16} color="#10b981" />
-            <Text style={styles.infoText}>Securely encrypted</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Ionicons name="time" size={16} color="#8b5cf6" />
-            <Text style={styles.infoText}>Usually takes 10-15 seconds</Text>
-          </View>
-        </View>
       </Animated.View>
     </View>
   );
@@ -504,8 +492,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
-    gap: 40,
+    paddingHorizontal: 20, // Reduced horizontal padding to give text more room
+    paddingVertical: 24,
+    gap: 36, // Slightly reduced gap to make room for taller text
   },
   progressContainer: {
     position: 'relative',
@@ -575,51 +564,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageInfoContainer: {
-    height: 82, // Increased from 80 to 82 to accommodate larger title height
+    height: 100, // Increased height to accommodate longer text
     width: '100%',
     position: 'relative',
+    paddingHorizontal: 16, // Reduced to give more text space
   },
   stageInfo: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    right: 0,
+    left: 16, // Account for parent padding
+    right: 16, // Account for parent padding
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stageTitle: {
     color: '#ffffff',
-    fontSize: 28,
+    fontSize: 24, // Further reduced to ensure all titles fit
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 8,
-    height: 36, // Increased from 34 to 36 to prevent text clipping
-    lineHeight: 36,
+    marginBottom: 6, // Reduced margin
+    height: 36, // Increased height to prevent cutoff
+    lineHeight: 30, // Reduced line height for better fit
+    paddingHorizontal: 4,
   },
   stageSubtitle: {
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 16,
+    fontSize: 15, // Slightly reduced
     textAlign: 'center',
-    lineHeight: 22, // Reduced from 24 to fit better
-    height: 44, // Fixed height for exactly 2 lines
-    width: 280, // Fixed width instead of maxWidth
-    paddingHorizontal: 20,
-  },
-  additionalInfo: {
-    flexDirection: 'row',
-    gap: 24,
-    alignItems: 'center',
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  infoText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 13,
+    lineHeight: 20, // Reduced line height
+    height: 50, // Increased height for 2+ lines
+    paddingHorizontal: 4,
   },
 });
 
-export default CVUploadProgress;
+export default JobLinkProgress;

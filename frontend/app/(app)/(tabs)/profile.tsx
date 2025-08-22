@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
+import { useToast } from '@/components/Toast';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
@@ -51,7 +52,8 @@ const MenuItem = ({ icon, label, onPress }: any) => (
 );
 
 export default function Profile() {
-    const { auth, logout, logoutLoading } = useAuth();
+    const { auth, logout, logoutLoading, logoutSuccess, logoutErrorMessage, clearLogoutError, resetLogout } = useAuth();
+    const { showToast } = useToast();
     const router = useRouter();
     const { data: interviews } = useInterviews();
     const { data: currentCV } = useCV();
@@ -64,6 +66,14 @@ export default function Profile() {
             posthogScreen('profile');
         }, [posthogScreen])
     );
+
+    // Handle logout error
+    useEffect(() => {
+        if (logoutErrorMessage) {
+            showToast(logoutErrorMessage, 'error');
+            clearLogoutError();
+        }
+    }, [logoutErrorMessage, showToast, clearLogoutError]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -172,6 +182,7 @@ export default function Profile() {
                                 user_rank: user.rank
                             });
                             await logout();
+                            showToast('Logged out successfully', 'info');
                             router.replace('/(auth)/login');
                         } catch (error) {
                             console.error('Logout error:', error);
@@ -571,11 +582,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 20,
-        shadowColor: '#F59E0B',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#F59E0B',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+            }
+        }),
     },
     cvLeft: {
         width: 56,

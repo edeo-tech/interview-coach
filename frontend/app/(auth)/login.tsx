@@ -29,7 +29,7 @@ const Login = () => {
   const [userName, setUserName] = useState('');
   const [lastSignInType, setLastSignInType] = useState<string | null>(null);
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
-  const { login, loginLoading, loginSuccess } = useAuth();
+  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError } = useAuth();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -63,15 +63,16 @@ const Login = () => {
         email_domain: email.split('@')[1] || 'unknown'
       });
       showToast(loginErrorMessage, 'error');
+      clearLoginError();
     }
-  }, [loginErrorMessage, posthogCapture, email]);
+  }, [loginErrorMessage, posthogCapture, email, showToast, clearLoginError]);
 
   useEffect(() => {
     if (loginSuccess) {
-      showToast('Login successful!', 'success');
+      showToast('Login successful!', 'info');
       // Navigation is handled in the login mutation's onSuccess callback
     }
-  }, [loginSuccess]);
+  }, [loginSuccess, showToast]);
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -293,11 +294,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+      }
+    }),
   },
   buttonDisabled: {
     opacity: 0.6,

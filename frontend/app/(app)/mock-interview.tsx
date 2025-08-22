@@ -1147,11 +1147,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         position: 'absolute',
         left: 0,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 8,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8
+            }
+        }),
     },
     declineButton: {
         width: 80,
@@ -1161,11 +1164,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         transform: [{ rotate: '135deg' }],
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 8,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+            }
+        }),
     },
     // iPhone-style Active Call Styles
     activeCallContainer: {
@@ -1207,11 +1213,14 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: 'rgba(245, 158, 11, 0.3)',
         marginBottom: 24,
-        shadowColor: '#F59E0B',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.2,
-        shadowRadius: 16,
-        elevation: 16,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#F59E0B',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.2,
+                shadowRadius: 16,
+            }
+        }),
     },
     activeCallAvatarImage: {
         width: 160,
