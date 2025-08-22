@@ -8,12 +8,14 @@ interface OnboardingProgressProps {
   currentStep: number;
   totalSteps: number;
   onBack?: () => void;
+  icon_name?: string;
 }
 
 const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ 
   currentStep, 
   totalSteps,
-  onBack 
+  onBack,
+  icon_name
 }) => {
   // Goal-weighted progress calculation
   // Early steps get more weight to encourage users
@@ -35,7 +37,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Ionicons name="arrow-back" size={24} color="#ffffff" />
+        <Ionicons name={icon_name as any || "arrow-back"} size={24} color="#ffffff" />
       </TouchableOpacity>
       
       <View style={styles.progressContainer}>

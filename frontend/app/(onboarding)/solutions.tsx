@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { router } from 'expo-router';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 
 const OnboardingSolutions = () => {
@@ -9,25 +10,32 @@ const OnboardingSolutions = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <OnboardingProgress currentStep={4} totalSteps={8} />
-      
-      <View style={styles.content}>
-        <Text style={styles.screenTitle}>Solutions</Text>
-      </View>
+    <ChatGPTBackground style={styles.gradient}>
+      <View style={styles.container}>
+        <OnboardingProgress currentStep={4} totalSteps={8} />
+        
+        <View style={styles.content}>
+          <Text style={styles.screenTitle}>Solutions</Text>
+        </View>
 
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ChatGPTBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 32 : 16,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
   },
   content: {
     flex: 1,

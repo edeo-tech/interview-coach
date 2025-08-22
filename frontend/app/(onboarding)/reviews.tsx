@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { router } from 'expo-router';
 import * as StoreReview from 'expo-store-review';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 
@@ -39,25 +40,32 @@ const OnboardingReviews = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <OnboardingProgress currentStep={8} totalSteps={8} />
-      
-      <View style={styles.content}>
-        <Text style={styles.screenTitle}>User Reviews</Text>
-      </View>
+    <ChatGPTBackground style={styles.gradient}>
+      <View style={styles.container}>
+        <OnboardingProgress currentStep={8} totalSteps={8} />
+        
+        <View style={styles.content}>
+          <Text style={styles.screenTitle}>User Reviews</Text>
+        </View>
 
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ChatGPTBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 32 : 16,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
   },
   content: {
     flex: 1,
