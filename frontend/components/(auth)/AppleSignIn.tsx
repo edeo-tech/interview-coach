@@ -10,23 +10,11 @@ import Colors from '@/constants/Colors';
 import { useAuth } from '@/context/authentication/AuthContext';
 import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
 
-const AppleSignIn = ({
-    setLoginErrorMessage,
-}: {
-    setLoginErrorMessage: (errorMessage: string) => void;
-}) =>
+const AppleSignIn = () =>
 {
     const { appleLogin, appleLoginErrorMessage, appleLoginLoading } = useAuth();
     const { posthogCapture } = usePosthogSafely();
 
-    useEffect(() =>
-    {
-        if(appleLoginErrorMessage)
-        {
-            console.log("🔴 APPLE_SIGNIN: Error message received:", appleLoginErrorMessage);
-            setLoginErrorMessage(appleLoginErrorMessage);
-        }
-    }, [appleLoginErrorMessage]);
 
     const handleAppleSignIn = async () =>
     {
@@ -52,7 +40,7 @@ const AppleSignIn = ({
             if (error.code === 'ERR_CANCELED') {
                 console.log("🔵 APPLE_SIGNIN: User cancelled Apple sign-in");
             } else {
-                setLoginErrorMessage('Apple sign-in failed. Please try again.');
+                console.log("🔴 APPLE_SIGNIN: Non-cancellation error, will be handled by AuthContext");
             }
         }
     }

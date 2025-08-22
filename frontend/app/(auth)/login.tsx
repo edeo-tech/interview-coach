@@ -28,8 +28,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [userName, setUserName] = useState('');
   const [lastSignInType, setLastSignInType] = useState<string | null>(null);
-  const [loginErrorMessage, setLoginErrorMessage] = useState('');
-  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError } = useAuth();
+  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError, googleLoginErrorMessage, appleLoginErrorMessage, clearGoogleLoginError, clearAppleLoginError } = useAuth();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -73,6 +72,20 @@ const Login = () => {
       // Navigation is handled in the login mutation's onSuccess callback
     }
   }, [loginSuccess, showToast]);
+
+  useEffect(() => {
+    if (googleLoginErrorMessage) {
+      showToast(googleLoginErrorMessage, 'error');
+      clearGoogleLoginError();
+    }
+  }, [googleLoginErrorMessage, showToast, clearGoogleLoginError]);
+
+  useEffect(() => {
+    if (appleLoginErrorMessage) {
+      showToast(appleLoginErrorMessage, 'error');
+      clearAppleLoginError();
+    }
+  }, [appleLoginErrorMessage, showToast, clearAppleLoginError]);
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -181,20 +194,17 @@ const Login = () => {
                 {lastSignInType === 'google' && (
                   <Text style={styles.lastUsedLabel}>Last used</Text>
                 )}
-                <GoogleSignIn setLoginErrorMessage={setLoginErrorMessage} />
+                <GoogleSignIn />
               </View>
               
               <View style={lastSignInType === 'apple' ? styles.lastUsedContainer : {}}>
                 {lastSignInType === 'apple' && (
                   <Text style={styles.lastUsedLabel}>Last used</Text>
                 )}
-                <AppleSignIn setLoginErrorMessage={setLoginErrorMessage} />
+                <AppleSignIn />
               </View>
             </View>
             
-            {loginErrorMessage ? (
-              <Text style={styles.errorText}>{loginErrorMessage}</Text>
-            ) : null}
           </View>
 
           {/* Footer */}

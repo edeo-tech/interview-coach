@@ -17,11 +17,7 @@ const EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_I
 const EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB;
 
 
-const GoogleSignIn = ({
-    setLoginErrorMessage,
-}: {
-    setLoginErrorMessage: (errorMessage: string) => void;
-}) =>
+const GoogleSignIn = () =>
 {
     const { googleLogin, googleLoginErrorMessage, googleLoginLoading } = useAuth();
     const { posthogCapture } = usePosthogSafely();
@@ -44,14 +40,6 @@ const GoogleSignIn = ({
         handleGoogleSignIn();
     }, [response]);
 
-    useEffect(() =>
-    {
-        if(googleLoginErrorMessage)
-        {
-            console.log("🔴 GOOGLE_SIGNIN: Error message received:", googleLoginErrorMessage);
-            setLoginErrorMessage(googleLoginErrorMessage);
-        }
-    }, [googleLoginErrorMessage]);
 
     const handleGoogleSignIn = async () =>
     {
