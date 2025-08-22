@@ -273,6 +273,35 @@ async def delete_account(
     else:
         raise HTTPException(status_code=500, detail='Failed to delete account')
 
+class UpdatePushTokenBody(BaseModel):
+    expo_push_token: str = Field(..., description='The Expo push token for notifications')
+
+@router.patch('/push-token', response_description='Update user push notification token')
+@error_decorator
+async def update_push_token(
+    req: Request,
+    body: UpdatePushTokenBody,
+    user_id: str = Depends(auth.auth_wrapper)
+) -> JSONResponse:
+    """Update the user's Expo push notification token"""
+    
+    # Update the push token in the database
+    updated_user = await _db_actions.updateDocument(
+        req=req,
+        collection_name='users',
+        BaseModel=User,
+        document_id=user_id,
+        expo_notification_token=body.expo_push_token
+    )
+    
+    if updated_user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    
+    return JSONResponse(
+        status_code=200,
+        content={"message": "Push token updated successfully"}
+    )
+
 @router.get('/subscription', response_description='Get user subscription details')
 @error_decorator
 async def get_user_subscription(

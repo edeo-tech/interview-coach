@@ -21,6 +21,7 @@ import * as Updates from 'expo-updates';
 import Purchases from 'react-native-purchases';
 import { PostHogProvider } from 'posthog-react-native';
 import { ErrorBoundary as ExpoErrorBoundary } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 
 import Middleware from './Middleware';
 import { setBackgroundColorAsync } from 'expo-navigation-bar';
@@ -45,6 +46,15 @@ SplashScreen.setOptions({
     duration: 500
 });
 SplashScreen.preventAutoHideAsync();
+
+// Configure notification handler
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+    }),
+});
 
 const queryClient = new QueryClient();
 
