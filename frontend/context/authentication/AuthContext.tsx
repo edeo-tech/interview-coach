@@ -49,6 +49,7 @@ type AuthContextType = {
     clearAppleLoginError: () => void;
     clearLogoutError: () => void;
     resetLogout: () => void;
+    resetLogin: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
     const { posthogCapture, posthogIdentify } = usePosthogSafely();
     
     const { data: auth, isLoading: authLoading, error: authError } = useCheckAuth();
-    const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess } = useLogin({posthogIdentify, posthogCapture});
+    const { mutate: login, isPending: loginLoading, error: loginError, isSuccess: loginSuccess, reset: resetLogin } = useLogin({posthogIdentify, posthogCapture});
     const { mutate: logout, isPending: logoutLoading, error: logoutError, isSuccess: logoutSuccess, reset: resetLogout } = useLogout();
     const {
         mutate: googleLogin,
@@ -103,6 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
             setLogoutErrorMessage(errorMessage);
         }
     }, [loginError, googleLoginError, appleLoginError, logoutError]);
+
 
     const navigate = async () =>
     {
@@ -182,6 +184,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
                 clearAppleLoginError,
                 clearLogoutError,
                 resetLogout,
+                resetLogin,
             }}>
             {children}
         </AuthContext.Provider>
