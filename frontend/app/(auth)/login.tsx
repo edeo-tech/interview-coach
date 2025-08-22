@@ -23,7 +23,8 @@ import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError } = useAuth();
+  const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
+  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError, resetLogin } = useAuth();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -44,11 +45,16 @@ const Login = () => {
   }, [loginErrorMessage, posthogCapture, email, showToast, clearLoginError]);
 
   useEffect(() => {
-    if (loginSuccess) {
+    if (loginSuccess && hasAttemptedLogin) {
       showToast('Login successful!', 'info');
+      resetLogin();
+      setHasAttemptedLogin(false);
       // Navigation is handled in the login mutation's onSuccess callback
+    } else if (loginSuccess && !hasAttemptedLogin) {
+      // This is stale state from a previous login, clear it without showing toast
+      resetLogin();
     }
-  }, [loginSuccess, showToast]);
+  }, [loginSuccess, hasAttemptedLogin, showToast, resetLogin]);
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -65,6 +71,7 @@ const Login = () => {
     posthogCapture('login_attempted', {
       email_domain: email.split('@')[1] || 'unknown'
     });
+    setHasAttemptedLogin(true);
     login({ email, password });
   };
 
