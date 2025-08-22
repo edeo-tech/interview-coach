@@ -61,8 +61,8 @@ const Welcome = () => {
     // Step 1: Logo moves up
     console.log('🔄 Step 1: Logo moving up...');
     Animated.timing(logoTranslateY, {
-      toValue: -40,
-      duration: 1000,
+      toValue: -20,
+      duration: 800,
       useNativeDriver: true,
     }).start((finished) => {
       console.log('✅ Logo animation finished:', finished);
@@ -73,7 +73,7 @@ const Welcome = () => {
       console.log('🔄 Step 2: Text appearing...');
       Animated.timing(textOpacity, {
         toValue: 1,
-        duration: 1000,
+        duration: 800,
         useNativeDriver: true,
       }).start((finished) => {
         console.log('✅ Text animation finished:', finished);
@@ -90,7 +90,7 @@ const Welcome = () => {
       }).start((finished) => {
         console.log('✅ Button animation finished:', finished);
       });
-    }, 2000);
+    }, 1600);
   };
 
 
@@ -142,7 +142,7 @@ const Welcome = () => {
             ]}
           >
             <Text style={styles.messageText}>
-              Get to the nextround
+              Get to the <Text style={styles.brandText}>nextround</Text>
             </Text>
           </Animated.View>
 
@@ -165,24 +165,25 @@ const Welcome = () => {
             </TouchableOpacity>
           </Animated.View>
 
-          {/* Subtle login link */}
-          <Animated.View 
-            style={[
-              styles.loginContainer,
-              {
-                opacity: buttonOpacity
-              }
-            ]}
-          >
-            <TouchableOpacity 
-              style={styles.loginLink} 
-              onPress={() => router.push('/(auth)/login')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.loginLinkText}>Already have an account?</Text>
-            </TouchableOpacity>
-          </Animated.View>
         </View>
+
+        {/* Subtle login link at bottom */}
+        <Animated.View 
+          style={[
+            styles.loginContainer,
+            {
+              opacity: buttonOpacity
+            }
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.loginLink} 
+            onPress={() => router.push('/(auth)/login')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.loginLinkText}>Already have an account?</Text>
+          </TouchableOpacity>
+        </Animated.View>
 
         {/* Bottom Sheet Modal */}
         <Modal
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
   // Logo section
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 16,
   },
   logoImage: {
     width: 120,
@@ -277,14 +278,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   messageText: {
-    fontSize: 32,
-    lineHeight: 40,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '300',
     fontFamily: 'SpaceGrotesk',
-    letterSpacing: -0.01,
-    color: '#FFFFFF',
+    letterSpacing: 1,
+    color: '#FFFFFF', // White for "Get to the"
     textAlign: 'center',
     maxWidth: 320,
+  },
+  brandText: {
+    color: '#A855F7', // Purple for "nextround"
+    lineHeight: 60,
+    fontSize: 48,
+    fontWeight: '800',
   },
   
   // Button section
@@ -327,6 +333,10 @@ const styles = StyleSheet.create({
   loginContainer: {
     alignItems: 'center',
     paddingHorizontal: 24,
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
   },
   loginLink: {
     paddingVertical: 16,
