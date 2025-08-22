@@ -11,7 +11,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassStyles } from '../../constants/GlassStyles';
 import { useAuth } from '@/context/authentication/AuthContext';
@@ -28,7 +27,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [userName, setUserName] = useState('');
   const [lastSignInType, setLastSignInType] = useState<string | null>(null);
-  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError, googleLoginErrorMessage, appleLoginErrorMessage, clearGoogleLoginError, clearAppleLoginError } = useAuth();
+  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError, googleLoginErrorMessage, appleLoginErrorMessage, clearGoogleLoginError, clearAppleLoginError, resetLogin } = useAuth();
+  const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -67,11 +67,16 @@ const Login = () => {
   }, [loginErrorMessage, posthogCapture, email, showToast, clearLoginError]);
 
   useEffect(() => {
-    if (loginSuccess) {
+    if (loginSuccess && hasAttemptedLogin) {
       showToast('Login successful!', 'info');
+      resetLogin();
+      setHasAttemptedLogin(false);
       // Navigation is handled in the login mutation's onSuccess callback
+    } else if (loginSuccess && !hasAttemptedLogin) {
+      // This is stale state from a previous login, clear it without showing toast
+      resetLogin();
     }
-  }, [loginSuccess, showToast]);
+  }, [loginSuccess, hasAttemptedLogin, showToast, resetLogin]);
 
   useEffect(() => {
     if (googleLoginErrorMessage) {
@@ -102,6 +107,7 @@ const Login = () => {
     posthogCapture('login_attempted', {
       email_domain: email.split('@')[1] || 'unknown'
     });
+    setHasAttemptedLogin(true);
     login({ email, password });
   };
 
