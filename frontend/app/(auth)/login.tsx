@@ -23,7 +23,7 @@ import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loginLoading, loginErrorMessage, loginSuccess } = useAuth();
+  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError } = useAuth();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -39,15 +39,16 @@ const Login = () => {
         email_domain: email.split('@')[1] || 'unknown'
       });
       showToast(loginErrorMessage, 'error');
+      clearLoginError();
     }
-  }, [loginErrorMessage, posthogCapture, email]);
+  }, [loginErrorMessage, posthogCapture, email, showToast, clearLoginError]);
 
   useEffect(() => {
     if (loginSuccess) {
-      showToast('Login successful!', 'success');
+      showToast('Login successful!', 'info');
       // Navigation is handled in the login mutation's onSuccess callback
     }
-  }, [loginSuccess]);
+  }, [loginSuccess, showToast]);
 
   const handleLogin = () => {
     if (!email || !password) {

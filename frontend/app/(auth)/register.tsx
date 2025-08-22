@@ -35,7 +35,7 @@ const Register = () => {
     posthogScreen('auth_register');
   });
   
-  const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess } = useRegister();
+  const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess, reset: resetRegister } = useRegister();
   const { mutate: login, isPending: loginLoading } = useLogin({posthogIdentify, posthogCapture});
 
   useEffect(() => {
@@ -46,8 +46,9 @@ const Register = () => {
         email_domain: email.split('@')[1] || 'unknown'
       });
       showToast(errorMessage, 'error');
+      resetRegister();
     }
-  }, [registerError, posthogCapture, email]);
+  }, [registerError, posthogCapture, email, showToast, resetRegister]);
 
   useEffect(() => {
     if (registerSuccess) {
@@ -57,8 +58,9 @@ const Register = () => {
       showToast('Registration successful! Logging you in...', 'success');
       // Auto-login after successful registration
       login({ email, password });
+      resetRegister();
     }
-  }, [registerSuccess, posthogCapture, email, login, password]);
+  }, [registerSuccess, posthogCapture, email, login, password, showToast, resetRegister]);
 
   useEffect(() => {
     if (loginErrorMessage) {
