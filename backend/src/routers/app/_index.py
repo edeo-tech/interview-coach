@@ -3,9 +3,11 @@ from fastapi import APIRouter
 from routers.app.users._index import router as users_router
 from routers.app.interviews._index import router as interviews_router
 from routers.app.payments.stripe import router as payments_router
+from routers.app.jobs import router as jobs_router
 
 router = APIRouter()
 
 router.include_router(users_router, prefix='/users', tags=['users'])
+router.include_router(jobs_router, prefix='/jobs', tags=['jobs'])
 router.include_router(interviews_router, prefix='/interviews', tags=['interviews'])
 router.include_router(payments_router, prefix='/payments', tags=['payments'])

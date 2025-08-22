@@ -2,10 +2,15 @@ from fastapi import Request, HTTPException
 from typing import Optional, Dict, List, Any
 import re
 import json
+from datetime import datetime, timezone
+from bson import ObjectId
 
 from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument
 from models.interviews.interviews import Interview
+from models.interviews.interview_types import InterviewType
 from services.job_processing_service import JobProcessingService
+from crud._generic.model_mappings import get_db_for_model
+from utils.mongo_helpers import serialize_mongo_document
 
 async def create_interview_from_url(
     req: Request,
@@ -343,3 +348,45 @@ def _convert_job_data_to_text(job_data: Dict[str, Any]) -> str:
             sections.append(f"• {benefit}")
     
     return '\n'.join(sections)
+
+
+async def create_interview_for_job(
+    req: Request,
+    job_id: str,
+    user_id: str,
+    interview_type: InterviewType,
+    stage_order: int,
+    difficulty: str = "mid",
+    focus_areas: List[str] = None
+) -> Interview:
+    """Create an interview linked to a job"""
+    
+    interview = Interview(
+        job_id=job_id,
+        user_id=user_id,
+        interview_type=interview_type,
+        stage_order=stage_order,
+        status="pending",
+        difficulty=difficulty,
+        focus_areas=focus_areas or [],
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    # Save the interview using generic CRUD
+    return await createDocument(req, "interviews", Interview, interview)
+
+
+async def get_job_interviews(req: Request, job_id: str) -> List[Interview]:
+    """Get all interviews for a job"""
+    return await getMultipleDocuments(
+        req, 
+        "interviews", 
+        Interview, 
+        job_id=job_id,
+        order_by="stage_order"
+    )
+
+
+async def update_interview_status(req: Request, interview_id: str, status: str) -> Optional[Interview]:
+    """Update interview status"""
+    return await updateDocument(req, "interviews", Interview, interview_id, status=status)

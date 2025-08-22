@@ -166,6 +166,19 @@ async def get_interview_details(
     interview_dict = interview.model_dump()
     interview_dict['_id'] = str(interview.id)
     
+    # If this interview is linked to a job, get job details for backward compatibility
+    if hasattr(interview, 'job_id') and interview.job_id:
+        from crud.jobs import get_job
+        job = await get_job(req, interview.job_id)
+        if job:
+            # Add job details to interview for backward compatibility
+            interview_dict['company'] = job.company
+            interview_dict['role_title'] = job.role_title
+            interview_dict['company_logo_url'] = job.company_logo_url
+            interview_dict['location'] = job.location
+            interview_dict['employment_type'] = job.employment_type
+            interview_dict['experience_level'] = job.experience_level
+    
     attempts_data = []
     for attempt in attempts:
         attempt_dict = attempt.model_dump()

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import { useInterviews } from '../../../_queries/interviews/interviews';
+import { useUserJobs } from '../../../_queries/jobs/jobs';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
@@ -13,7 +13,7 @@ import CVUploadProgress from '../../../components/CVUploadProgress';
 
 export default function Home() {
   const { data: cv } = useCV();
-  const { data: interviews, isLoading: interviewsLoading } = useInterviews(!!cv);
+  const { data: jobs, isLoading: jobsLoading } = useUserJobs(10);
   const uploadMutation = useUploadCV();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -28,21 +28,21 @@ export default function Home() {
     }, [posthogScreen])
   );
 
-  const handleCreateNewInterview = () => {
-    posthogCapture('navigate_to_create_interview', {
+  const handleCreateNewJob = () => {
+    posthogCapture('navigate_to_create_job', {
       source: 'home',
       has_cv: !!cv,
-      total_existing_interviews: interviews?.length || 0
+      total_existing_jobs: jobs?.length || 0
     });
     router.push('/interviews/create');
   };
 
-  const handleInterviewPress = (interviewId: string) => {
-    posthogCapture('view_interview_details', {
+  const handleJobPress = (jobId: string) => {
+    posthogCapture('view_job_details', {
       source: 'home',
-      interview_id: interviewId
+      job_id: jobId
     });
-    router.push(`/interviews/${interviewId}/details` as any);
+    router.push(`/jobs/${jobId}` as any);
   };
 
   const formatDate = (dateString: string) => {
@@ -63,13 +63,12 @@ export default function Home() {
     }
   };
 
-  const getInterviewTypeIcon = (type: string) => {
-    switch (type) {
-      case 'technical': return 'code';
-      case 'behavioral': return 'people';
-      case 'leadership': return 'trending-up';
-      default: return 'chatbubble';
-    }
+  const getJobProgressColor = (stagesCompleted: number, totalStages: number) => {
+    const progress = stagesCompleted / totalStages;
+    if (progress === 0) return '#6b7280';
+    if (progress < 0.5) return '#f59e0b';
+    if (progress < 1) return '#3b82f6';
+    return '#10b981';
   };
 
   const handleUpload = async () => {
@@ -158,21 +157,21 @@ export default function Home() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Your interviews</Text>
+            <Text style={styles.headerTitle}>Your jobs</Text>
             <Text style={styles.headerSubtitle}>
               Practice with AI-powered mock interviews
             </Text>
           </View>
         </View>
 
-        {/* Quick Action: Create New Interview (only show when user has existing interviews) */}
-        {interviews && interviews.length > 0 && (
-          <TouchableOpacity onPress={handleCreateNewInterview} style={styles.createCard}>
+        {/* Quick Action: Create New Job (only show when user has existing jobs) */}
+        {jobs && jobs.length > 0 && (
+          <TouchableOpacity onPress={handleCreateNewJob} style={styles.createCard}>
             <View style={styles.createCardLeft}>
               <Ionicons name="add" size={24} color="#ffffff" />
             </View>
             <View style={styles.createCardRight}>
-              <Text style={styles.createCardTitle}>Create new interview</Text>
+              <Text style={styles.createCardTitle}>Create new job</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -223,23 +222,23 @@ export default function Home() {
           </View>
         )}
 
-        {/* Recent Interviews */}
+        {/* Recent Jobs */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Recent Interviews
+            Recent Jobs
           </Text>
           
-          {!cv || interviewsLoading ? (
+          {!cv || jobsLoading ? (
             <View style={styles.emptyState}>
               <Ionicons name="chatbubble-outline" size={48} color="#6b7280" />
               <Text style={styles.emptyStateTitle}>
-                No interviews yet
+                No jobs yet
               </Text>
               <Text style={styles.emptyStateSubtitle}>
-                {!cv ? 'Upload your CV first, then tap the + button above to create your first interview' : 'Loading your interviews...'}
+                {!cv ? 'Upload your CV first, then tap the + button above to track your first job' : 'Loading your jobs...'}
               </Text>
             </View>
-          ) : !interviews || interviews.length === 0 ? (
+          ) : !jobs || jobs.length === 0 ? (
             <View style={styles.enhancedEmptyState}>
               <View style={styles.emptyStateIcon}>
                 <Ionicons name="rocket-outline" size={52} color="#8b5cf6" />
@@ -248,7 +247,7 @@ export default function Home() {
                 Ready to practice?
               </Text>
               <Text style={styles.emptyStateSubtitle}>
-                Create your first mock interview to start improving your skills
+                Add your first job application to start practicing interviews
               </Text>
               <View style={styles.ctaContainer}>
                 <View style={styles.ctaArrow}>
@@ -260,60 +259,73 @@ export default function Home() {
               </View>
             </View>
           ) : (
-            interviews.map((interview) => (
+            jobs.map((job) => (
               <TouchableOpacity
-                key={interview.id}
-                onPress={() => handleInterviewPress(interview.id)}
+                key={job._id}
+                onPress={() => handleJobPress(job._id)}
                 style={styles.interviewCard}
               >
-                                 <View style={styles.interviewCardContent}>
-                   <View style={styles.cardLeftAccent}>
-                     {interview.company_logo_url ? (
-                       <Image 
-                         source={{ uri: interview.company_logo_url }}
-                         style={styles.companyLogo}
-                         onError={() => {
-                           // Fallback handled by conditional rendering
-                         }}
-                       />
-                     ) : (
-                       <Ionicons 
-                         name={getInterviewTypeIcon(interview.interview_type) as any}
-                         size={28} 
-                         color="#ffffff" 
-                       />
-                     )}
-                   </View>
-                   
-                   <View style={styles.interviewCardMain}>
-                     <Text style={styles.interviewTitle}>
-                       {interview.role_title}
-                     </Text>
-                     
-                                           <View style={styles.interviewCompany}>
-                        <Ionicons name="business-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
-                        <Text style={styles.companyText} numberOfLines={1}>
-                          {interview.company.length > 30 ? interview.company.substring(0, 30) + '...' : interview.company}
+                <View style={styles.interviewCardContent}>
+                  <View style={styles.cardLeftAccent}>
+                    {job.company_logo_url ? (
+                      <Image 
+                        source={{ uri: job.company_logo_url }}
+                        style={styles.companyLogo}
+                        onError={() => {
+                          // Fallback handled by conditional rendering
+                        }}
+                      />
+                    ) : (
+                      <Ionicons 
+                        name="briefcase-outline"
+                        size={28} 
+                        color="#ffffff" 
+                      />
+                    )}
+                  </View>
+                  
+                  <View style={styles.interviewCardMain}>
+                    <Text style={styles.interviewTitle}>
+                      {job.role_title}
+                    </Text>
+                    
+                    <View style={styles.interviewCompany}>
+                      <Ionicons name="business-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
+                      <Text style={styles.companyText} numberOfLines={1}>
+                        {job.company.length > 30 ? job.company.substring(0, 30) + '...' : job.company}
+                      </Text>
+                    </View>
+                    
+                    <View style={styles.interviewLocation}>
+                      <Ionicons name="location-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
+                      <Text style={styles.locationText} numberOfLines={1}>
+                        {(job.location || 'Remote').length > 40 ? (job.location || 'Remote').substring(0, 40) + '...' : (job.location || 'Remote')}
+                      </Text>
+                    </View>
+                    
+                    <View style={styles.progressContainer}>
+                      <View style={styles.progressRow}>
+                        <Text style={styles.progressText}>
+                          {job.stages_completed} / {job.interview_stages.length} interviews completed
+                        </Text>
+                        <Text style={styles.interviewDate}>
+                          {formatDate(job.created_at)}
                         </Text>
                       </View>
-                      
-                      <View style={styles.interviewLocation}>
-                        <Ionicons name="location-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
-                        <Text style={styles.locationText} numberOfLines={1}>
-                          {(interview.location || 'Remote').length > 40 ? (interview.location || 'Remote').substring(0, 40) + '...' : (interview.location || 'Remote')}
-                        </Text>
+                      <View style={styles.progressBar}>
+                        <View 
+                          style={[
+                            styles.progressFill,
+                            { 
+                              width: `${(job.stages_completed / job.interview_stages.length) * 100}%`,
+                              backgroundColor: getJobProgressColor(job.stages_completed, job.interview_stages.length)
+                            }
+                          ]} 
+                        />
                       </View>
-                     
-                     <View style={styles.interviewBottomRow}>
-                       <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) }]}>
-                         {interview.experience_level || interview.difficulty}
-                       </Text>
-                       <Text style={styles.interviewDate}>
-                         {formatDate(interview.created_at)}
-                       </Text>
-                     </View>
-                   </View>
-                 </View>
+                    </View>
+                  </View>
+                </View>
               </TouchableOpacity>
             ))
           )}
@@ -656,6 +668,30 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 12,
     fontWeight: '500',
+  },
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  progressText: {
+    color: '#9ca3af',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
   },
 
 });

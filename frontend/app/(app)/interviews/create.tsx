@@ -6,16 +6,14 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import JobLinkProgress from '../../../components/JobLinkProgress';
 import * as DocumentPicker from 'expo-document-picker';
-import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
+import { useCreateJobFromURL } from '../../../_queries/jobs/jobs';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
 
-type InterviewType = 'technical' | 'behavioral' | 'leadership' | 'sales';
 
-export default function CreateInterview() {
+export default function CreateJob() {
   const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
-  const [interviewType, setInterviewType] = useState<InterviewType>('technical');
   const [jobUrl, setJobUrl] = useState('');
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
@@ -25,7 +23,7 @@ export default function CreateInterview() {
   
   const { data: currentCV, isLoading: cvLoading } = useCV();
   const uploadCV = useUploadCV();
-  const createFromURL = useCreateInterviewFromURL();
+  const createFromURL = useCreateJobFromURL();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   
   const isLoading = createFromURL.isPending || uploadCV.isPending;
@@ -33,7 +31,7 @@ export default function CreateInterview() {
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'web') return;
-      posthogScreen('interview_create');
+      posthogScreen('job_create');
     }, [posthogScreen])
   );
 
@@ -140,41 +138,39 @@ export default function CreateInterview() {
     try {
       const result = await createFromURL.mutateAsync({
         job_url: cleanedUrl,
-        interview_type: interviewType,
       });
       
-      posthogCapture('interview_created', {
+      posthogCapture('job_created', {
         method: 'url',
         has_cv: !!currentCV,
-        job_url_domain: new URL(cleanedUrl).hostname,
-        interview_type: interviewType
+        job_url_domain: new URL(cleanedUrl).hostname
       });
       
-      console.log('Interview created from URL:', result.data);
+      console.log('Job created from URL:', result);
       
       // Store the result for navigation after progress completes
-      (window as any).pendingInterviewResult = result.data;
+      (window as any).pendingJobResult = result;
       
     } catch (error: any) {
       // Hide progress modal on error
       setShowProgressModal(false);
       
-      posthogCapture('interview_creation_failed', {
+      posthogCapture('job_creation_failed', {
         method: 'url',
         error_message: error.response?.data?.detail || error.message,
-        interview_type: interviewType
+        has_cv: !!currentCV
       });
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to create job from URL');
     }
   };
 
   const handleProgressComplete = () => {
-    // Navigate to the interview details page
-    const result = (window as any).pendingInterviewResult;
-    if (result) {
-      router.push(`/interviews/${result.id}/details` as any);
+    // Navigate to the job details page
+    const result = (window as any).pendingJobResult;
+    if (result && result.job) {
+      router.push(`/jobs/${result.job._id}` as any);
       // Clean up the stored result
-      delete (window as any).pendingInterviewResult;
+      delete (window as any).pendingJobResult;
     } else {
       // Fallback: navigate back to home
       router.push('/home');
@@ -215,7 +211,7 @@ export default function CreateInterview() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
             {currentStep === 'cv' ? 'Upload Your CV' : 
-             currentCV ? 'Job Details' : 'Create New Interview'}
+             currentCV ? 'Job Details' : 'Add New Job'}
           </Text>
         </View>
 
@@ -340,7 +336,7 @@ export default function CreateInterview() {
                 ) : (
                   <>
                     <Ionicons name="add-circle" size={24} color="white" />
-                    <Text style={styles.submitText}>Create Interview</Text>
+                    <Text style={styles.submitText}>Create Job</Text>
                   </>
                 )}
               </TouchableOpacity>
