@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
 import { router } from 'expo-router';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-function CustomTabBar({ state, descriptors, navigation }) {
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     return (
         <View style={styles.tabBar}>
             <BlurView tint="dark" intensity={30} style={styles.blurView}>
@@ -21,7 +22,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
                             });
 
                             if (!isFocused && !event.defaultPrevented) {
-                                navigation.navigate(route.name);
+                                navigation.navigate(route.name as never);
                             }
                         };
 
@@ -31,9 +32,10 @@ function CustomTabBar({ state, descriptors, navigation }) {
                                 onPress={onPress}
                                 style={styles.tab}
                             >
-                                {options.tabBarIcon({
+                                {options.tabBarIcon?.({
                                     color: isFocused ? '#F59E0B' : '#B3B3B3',
                                     size: 24,
+                                    focused: isFocused,
                                 })}
                                 <Text style={[
                                     styles.tabText,
@@ -127,7 +129,7 @@ const styles = StyleSheet.create({
     blurView: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: 'rgba(0,0,0,0.2)',
+        backgroundColor: Platform.OS === 'android' ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0.2)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -136,7 +138,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         height: 84,
-        paddingBottom: 8,
+        paddingBottom: Platform.OS === 'android' ? 0 : 8,
     },
     tabText: {
         fontSize: 12,
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.2)',
+        backgroundColor: Platform.OS === 'android' ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0.2)',
     },
     centerButtonInner: {
         width: 64,
@@ -168,16 +170,19 @@ const styles = StyleSheet.create({
         borderRadius: 32,
         borderWidth: 1,
         borderColor: 'rgba(245, 158, 11, 1)',
-        backgroundColor: 'rgba(245, 158, 11, 0.3)',
+        backgroundColor: Platform.OS === 'android' ? 'rgba(245, 158, 11, 1)' : 'rgba(245, 158, 11, 0.3)',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+            }
+        }),
     },
 });
