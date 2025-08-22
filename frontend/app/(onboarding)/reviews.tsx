@@ -1,9 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as StoreReview from 'expo-store-review';
-import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 
@@ -41,31 +39,25 @@ const OnboardingReviews = () => {
   };
 
   return (
-    <ChatGPTBackground style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
-        <OnboardingProgress currentStep={8} totalSteps={8} />
-        
-        <View style={styles.content}>
-          <Text style={styles.screenTitle}>User Reviews</Text>
-        </View>
+    <View style={styles.container}>
+      <OnboardingProgress currentStep={8} totalSteps={8} />
+      
+      <View style={styles.content}>
+        <Text style={styles.screenTitle}>User Reviews</Text>
+      </View>
 
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </ChatGPTBackground>
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+          <Text style={styles.continueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   content: {
     flex: 1,
