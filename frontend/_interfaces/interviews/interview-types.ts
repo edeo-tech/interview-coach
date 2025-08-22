@@ -1,0 +1,15 @@
+export enum InterviewType {
+  PhoneScreen = "Phone Screen",
+  InitialHRInterview = "Initial HR Interview",
+  MockSalesCall = "Mock Sales Call",
+  PresentationPitch = "Presentation Pitch",
+  TechnicalScreeningCall = "Technical Screening Call",
+  SystemDesignInterview = "System Design Interview",
+  PortfolioReview = "Portfolio Review",
+  CaseStudy = "Case Study",
+  BehavioralInterview = "Behavioral Interview",
+  ValuesInterview = "Values Interview",
+  TeamFitInterview = "Team Fit Interview",
+  InterviewWithBusinessPartnerClientStakeholder = "Interview with Business Partner / Client Stakeholder",
+  ExecutiveLeadershipRound = "Executive / Leadership Round",
+}
