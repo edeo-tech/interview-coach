@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,14 @@ import {
   Modal,
   Pressable,
   Platform,
+  Image,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
 import AppleSignIn from '../../components/(auth)/AppleSignIn';
@@ -23,12 +27,72 @@ const Welcome = () => {
   const { showToast } = useToast();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
 
+  // Animation values - Let's use useRef to ensure they persist
+  const logoTranslateY = React.useRef(new Animated.Value(0)).current;
+  const textOpacity = React.useRef(new Animated.Value(0)).current;
+  const buttonOpacity = React.useRef(new Animated.Value(0)).current;
+
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'web') return;
       posthogScreen('onboarding_welcome');
     }, [posthogScreen])
   );
+
+  useEffect(() => {
+    // Start animation sequence when component mounts
+    const timer = setTimeout(() => {
+      startAnimationSequence();
+    }, 300); // Small delay to ensure component is mounted
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const startAnimationSequence = () => {
+    console.log('🎬 Starting animation sequence...');
+    
+    // Reset all values to initial state
+    logoTranslateY.setValue(0);
+    textOpacity.setValue(0);
+    buttonOpacity.setValue(0);
+    
+    console.log('📍 Initial values set');
+
+    // Step 1: Logo moves up
+    console.log('🔄 Step 1: Logo moving up...');
+    Animated.timing(logoTranslateY, {
+      toValue: -40,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start((finished) => {
+      console.log('✅ Logo animation finished:', finished);
+    });
+
+    // Step 2: Text appears
+    setTimeout(() => {
+      console.log('🔄 Step 2: Text appearing...');
+      Animated.timing(textOpacity, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start((finished) => {
+        console.log('✅ Text animation finished:', finished);
+      });
+    }, 800);
+
+    // Step 3: Button appears
+    setTimeout(() => {
+      console.log('🔄 Step 3: Button appearing...');
+      Animated.timing(buttonOpacity, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start((finished) => {
+        console.log('✅ Button animation finished:', finished);
+      });
+    }, 2000);
+  };
+
 
   const handleGetStarted = () => {
     posthogCapture('onboarding_get_started_clicked');
@@ -52,50 +116,72 @@ const Welcome = () => {
     <ChatGPTBackground style={styles.gradient}>
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
-          {/* Logo and branding */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Ionicons name="chatbubble-ellipses" size={64} color="#F59E0B" />
-            </View>
-          </View>
+          {/* Animated Logo */}
+          <Animated.View 
+            style={[
+              styles.logoContainer,
+              {
+                transform: [{ translateY: logoTranslateY }]
+              }
+            ]}
+          >
+            <Image 
+              source={require('../../assets/images/FinalAppIconTransparent.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+          </Animated.View>
 
-          {/* Title and subtitle */}
-          <View style={styles.headerContainer}>
-            <Text style={styles.title}>Interview Coach</Text>
-            <Text style={styles.subtitle}>
-              Master your interviews with AI-powered practice sessions
+          {/* Animated Message */}
+          <Animated.View 
+            style={[
+              styles.messageContainer,
+              {
+                opacity: textOpacity
+              }
+            ]}
+          >
+            <Text style={styles.messageText}>
+              Get to the nextround
             </Text>
-          </View>
+          </Animated.View>
 
-          {/* Features */}
-          <View style={styles.featuresContainer}>
-            <View style={styles.featureItem}>
-              <Ionicons name="sparkles" size={24} color="#F59E0B" />
-              <Text style={styles.featureText}>Personalized interview questions</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="analytics" size={24} color="#F59E0B" />
-              <Text style={styles.featureText}>Real-time feedback & coaching</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="trophy" size={24} color="#F59E0B" />
-              <Text style={styles.featureText}>Track your progress & improve</Text>
-            </View>
-          </View>
-
-          {/* Get Started Button */}
-          <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
-            <Text style={styles.getStartedText}>Get Started</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-          </TouchableOpacity>
+          {/* Animated Button */}
+          <Animated.View 
+            style={[
+              styles.buttonContainer,
+              {
+                opacity: buttonOpacity
+              }
+            ]}
+          >
+            <TouchableOpacity 
+              style={styles.getStartedButton} 
+              onPress={handleGetStarted}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.getStartedText}>Start practicing now</Text>
+              <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            </TouchableOpacity>
+          </Animated.View>
 
           {/* Subtle login link */}
-          <TouchableOpacity 
-            style={styles.loginLink} 
-            onPress={() => router.push('/(auth)/login')}
+          <Animated.View 
+            style={[
+              styles.loginContainer,
+              {
+                opacity: buttonOpacity
+              }
+            ]}
           >
-            <Text style={styles.loginLinkText}>Already have an account?</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.loginLink} 
+              onPress={() => router.push('/(auth)/login')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.loginLinkText}>Already have an account?</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
         {/* Bottom Sheet Modal */}
@@ -109,36 +195,44 @@ const Welcome = () => {
             style={styles.modalOverlay} 
             onPress={() => setIsModalVisible(false)}
           >
+            <BlurView
+              intensity={80}
+              tint="dark"
+              style={styles.modalBlurOverlay}
+            />
             <Pressable 
               style={styles.modalContent} 
               onPress={(e) => e.stopPropagation()}
             >
-              <View style={styles.modalHandle} />
-              
-              <Text style={styles.modalTitle}>Create your account</Text>
-              <Text style={styles.modalSubtitle}>
-                Choose how you'd like to sign up
-              </Text>
-
-              <View style={styles.signInOptions}>
-                <GoogleSignIn setLoginErrorMessage={setLoginErrorMessage} />
-                <AppleSignIn setLoginErrorMessage={setLoginErrorMessage} />
+              <View style={styles.modalContainer}>
+                <View style={styles.modalHandle} />
                 
-                <View style={styles.dividerContainer}>
-                  <View style={styles.divider} />
-                  <Text style={styles.dividerText}>or</Text>
-                  <View style={styles.divider} />
-                </View>
+                <Text style={styles.modalTitle}>Create your account</Text>
+                <Text style={styles.modalSubtitle}>
+                  Choose how you'd like to sign up
+                </Text>
 
-                <TouchableOpacity 
-                  style={styles.emailButton} 
-                  onPress={handleEmailSignIn}
-                >
-                  <View style={styles.iconContainer}>
-                    <Ionicons name="mail" size={22} color="#F59E0B" />
+                <View style={styles.signInOptions}>
+                  <GoogleSignIn setLoginErrorMessage={setLoginErrorMessage} />
+                  <AppleSignIn setLoginErrorMessage={setLoginErrorMessage} />
+                  
+                  <View style={styles.dividerContainer}>
+                    <View style={styles.divider} />
+                    <Text style={styles.dividerText}>or</Text>
+                    <View style={styles.divider} />
                   </View>
-                  <Text style={styles.emailButtonText}>Continue with Email</Text>
-                </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.emailButton} 
+                    onPress={handleEmailSignIn}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.iconContainer}>
+                      <Ionicons name="mail" size={22} color="#F59E0B" />
+                    </View>
+                    <Text style={styles.emailButtonText}>Continue with Email</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </Pressable>
           </Pressable>
@@ -149,6 +243,7 @@ const Welcome = () => {
 };
 
 const styles = StyleSheet.create({
+  // Layout
   gradient: {
     flex: 1,
   },
@@ -158,98 +253,119 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 40,
   },
+  
+  // Logo section
   logoContainer: {
-    marginBottom: 32,
+    alignItems: 'center',
+    marginBottom: 40,
   },
-  logo: {
+  logoImage: {
     width: 120,
     height: 120,
-    borderRadius: 30,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+  },
+  
+  // Message section
+  messageContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
-  },
-  headerContainer: {
-    alignItems: 'center',
-    marginBottom: 48,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#9ca3af',
-    textAlign: 'center',
-    lineHeight: 26,
-    paddingHorizontal: 20,
-  },
-  featuresContainer: {
-    marginBottom: 48,
-    width: '100%',
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  featureText: {
-    color: '#ffffff',
-    fontSize: 16,
-    marginLeft: 16,
-  },
-  getStartedButton: {
-    backgroundColor: '#F59E0B',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
+    marginBottom: 60,
     paddingHorizontal: 32,
-    borderRadius: 12,
+  },
+  messageText: {
+    fontSize: 32,
+    lineHeight: 40,
+    fontWeight: '700',
+    fontFamily: 'SpaceGrotesk',
+    letterSpacing: -0.01,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    maxWidth: 320,
+  },
+  
+  // Button section
+  buttonContainer: {
     width: '100%',
+    paddingHorizontal: 24,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+  },
+  
+  // Primary CTA button
+  getStartedButton: {
+    width: '100%',
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Slightly opaque purple
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 24,
+    shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)',
   },
   getStartedText: {
+    fontSize: 18, // Design system typography.button.large
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
     color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
     marginRight: 8,
   },
+  
+  // Login section
+  loginContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
   loginLink: {
-    paddingVertical: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
   loginLinkText: {
-    color: '#9ca3af',
-    fontSize: 14,
-    textDecorationLine: 'underline',
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.65)',
+    textAlign: 'center',
   },
+  
+  // Modal styling
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
+  modalBlurOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   modalContent: {
-    backgroundColor: '#1f2937',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.20)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    paddingTop: 12,
-    maxHeight: '70%',
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 44 : 32,
+    paddingTop: 16,
+    maxHeight: '75%',
   },
   modalHandle: {
     width: 40,
@@ -260,18 +376,26 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 24, // Design system typography.heading.h2
+    lineHeight: 30,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
+    letterSpacing: -0.005,
+    color: '#FFFFFF', // Design system text.primary
     textAlign: 'center',
     marginBottom: 8,
   },
   modalSubtitle: {
-    fontSize: 16,
-    color: '#9ca3af',
+    fontSize: 16, // Design system typography.body.medium
+    lineHeight: 24,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.70)', // Design system text.tertiary
     textAlign: 'center',
     marginBottom: 32,
   },
+  
+  // Sign in options
   signInOptions: {
     gap: 12,
   },
@@ -283,31 +407,37 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)', // Glass border color
   },
   dividerText: {
-    color: '#9ca3af',
-    fontSize: 14,
+    fontSize: 14, // Design system typography.label.medium
+    lineHeight: 18,
     fontWeight: '500',
+    fontFamily: 'Inter',
+    letterSpacing: 0.01,
+    color: 'rgba(255, 255, 255, 0.55)', // Design system text.muted
     marginHorizontal: 16,
   },
   emailButton: {
-    borderRadius: 12,
+    height: 56, // Design system buttonHeight.large
+    borderRadius: 12, // Design system borderRadius.md
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.5)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
     gap: 12,
     width: '100%',
-    height: 56,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
   },
   emailButtonText: {
-    color: '#F59E0B',
-    fontSize: 16,
+    fontSize: 16, // Design system typography.button.medium
+    lineHeight: 20,
     fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
+    color: '#F59E0B',
     flex: 1,
     textAlign: 'center',
     marginLeft: -36, // Offset for icon to center text
