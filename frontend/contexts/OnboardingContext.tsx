@@ -12,6 +12,7 @@ interface OnboardingData {
   nervousness: string;
   strongestSkill: string;
   successVision: string;
+  worstCaseScenario: string;
 }
 
 interface OnboardingContextType {
@@ -32,6 +33,7 @@ const initialData: OnboardingData = {
   nervousness: '',
   strongestSkill: '',
   successVision: '',
+  worstCaseScenario: '',
 };
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);

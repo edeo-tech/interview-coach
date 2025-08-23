@@ -24,7 +24,7 @@ const StrongestSkill = () => {
   const handleContinue = () => {
     if (selectedSkill) {
       updateData('strongestSkill', selectedSkill);
-      router.push('/(onboarding)/success-vision');
+      router.push('/(onboarding)/worst-case-scenario');
     }
   };
 
@@ -35,9 +35,9 @@ const StrongestSkill = () => {
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 10: Strongest Skill</Text>
+            <Text style={styles.screenTitle}>Screen 10: Weakest Skill</Text>
             <Text style={styles.subtitle}>
-              Which skill do you want to feel strongest in during interviews?
+              Which skill do you feel least confident about in interviews?
             </Text>
             
             <View style={styles.skillsGrid}>
