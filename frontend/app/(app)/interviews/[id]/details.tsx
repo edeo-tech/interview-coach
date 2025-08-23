@@ -9,6 +9,45 @@ import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
+import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
+
+const getInterviewTypeDisplayName = (type: string): string => {
+  const displayNames: Record<string, string> = {
+    [InterviewType.PhoneScreen]: 'Phone Screen',
+    [InterviewType.InitialHRInterview]: 'HR Interview',
+    [InterviewType.MockSalesCall]: 'Sales Call',
+    [InterviewType.PresentationPitch]: 'Presentation',
+    [InterviewType.TechnicalScreeningCall]: 'Technical Screen',
+    [InterviewType.SystemDesignInterview]: 'System Design',
+    [InterviewType.PortfolioReview]: 'Portfolio Review',
+    [InterviewType.CaseStudy]: 'Case Study',
+    [InterviewType.BehavioralInterview]: 'Behavioral',
+    [InterviewType.ValuesInterview]: 'Values Interview',
+    [InterviewType.TeamFitInterview]: 'Team Fit',
+    [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: 'Stakeholder Interview',
+    [InterviewType.ExecutiveLeadershipRound]: 'Executive Round',
+  };
+  return displayNames[type] || type;
+};
+
+const getInterviewTypeIcon = (type: string): string => {
+  const iconMap: Record<string, string> = {
+    [InterviewType.PhoneScreen]: 'call',
+    [InterviewType.InitialHRInterview]: 'people',
+    [InterviewType.MockSalesCall]: 'megaphone',
+    [InterviewType.PresentationPitch]: 'easel',
+    [InterviewType.TechnicalScreeningCall]: 'code',
+    [InterviewType.SystemDesignInterview]: 'git-network',
+    [InterviewType.PortfolioReview]: 'images',
+    [InterviewType.CaseStudy]: 'document-text',
+    [InterviewType.BehavioralInterview]: 'chatbubbles',
+    [InterviewType.ValuesInterview]: 'heart',
+    [InterviewType.TeamFitInterview]: 'people-circle',
+    [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: 'business',
+    [InterviewType.ExecutiveLeadershipRound]: 'trending-up',
+  };
+  return iconMap[type] || 'chatbubble';
+};
 
 export default function InterviewDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -243,6 +282,20 @@ export default function InterviewDetails() {
               <Ionicons name="location-outline" size={16} color="#9ca3af" />
               <Text style={styles.location}>{interview.location || 'Remote'}</Text>
             </View>
+            
+            {/* Interview Type */}
+            {interview.interview_type && (
+              <View style={styles.interviewTypeRow}>
+                <Ionicons 
+                  name={getInterviewTypeIcon(interview.interview_type) as any} 
+                  size={16} 
+                  color="#8b5cf6" 
+                />
+                <Text style={styles.interviewType}>
+                  {getInterviewTypeDisplayName(interview.interview_type)}
+                </Text>
+              </View>
+            )}
           </View>
           
           <View style={styles.cardDivider} />
@@ -406,6 +459,17 @@ const styles = StyleSheet.create({
   location: {
     color: '#d1d5db',
     fontSize: 15,
+  },
+  interviewTypeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  interviewType: {
+    color: '#8b5cf6',
+    fontSize: 15,
+    fontWeight: '600',
   },
   cardDivider: {
     height: 1,
