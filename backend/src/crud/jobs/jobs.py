@@ -7,7 +7,7 @@ from models.interviews import Interview
 from models.interviews.interview_types import InterviewType
 from services.job_processing_service import JobProcessingService
 from services.interview_stage_service import InterviewStageService
-from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument
+from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, SortDirection
 from crud.interviews.interviews import create_interview_for_job
 
 
@@ -161,7 +161,8 @@ async def get_job_with_interviews(req: Request, job_id: str) -> Optional[Dict[st
         "interviews", 
         Interview, 
         job_id=job_id,
-        order_by="stage_order"
+        order_by="stage_order",
+        order_direction=SortDirection.ASCENDING
     )
     
     return {

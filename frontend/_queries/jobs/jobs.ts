@@ -63,8 +63,12 @@ export const useStartJobInterviewAttempt = () => {
     mutationFn: ({ jobId, interviewId }: { jobId: string; interviewId: string }) => 
       jobsApi.startJobInterviewAttempt(jobId, interviewId),
     onSuccess: (data, variables) => {
+      // Invalidate job details to update interview status
       queryClient.invalidateQueries({ queryKey: ['jobs', variables.jobId] });
+      // Invalidate interview details
       queryClient.invalidateQueries({ queryKey: ['interviews', variables.interviewId] });
+      // Invalidate interview attempts for this interview
+      queryClient.invalidateQueries({ queryKey: ['interview-attempts', variables.interviewId] });
     },
     onError: (error: any) => {
       console.error('Error starting interview attempt:', error);

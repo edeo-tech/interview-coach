@@ -108,6 +108,8 @@ export const useFinishAttempt = () => {
     onSuccess: (_, { interviewId }) => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.detail(interviewId) });
       queryClient.invalidateQueries({ queryKey: interviewKeys.attemptsCount(interviewId) });
+      // Also invalidate jobs to update progress
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
     },
   });
 };

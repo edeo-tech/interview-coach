@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timezone
 from bson import ObjectId
 
-from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument
+from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, SortDirection
 from models.interviews.interviews import Interview
 from models.interviews.interview_types import InterviewType
 from services.job_processing_service import JobProcessingService
@@ -383,7 +383,8 @@ async def get_job_interviews(req: Request, job_id: str) -> List[Interview]:
         "interviews", 
         Interview, 
         job_id=job_id,
-        order_by="stage_order"
+        order_by="stage_order",
+        order_direction=SortDirection.ASCENDING
     )
 
 

@@ -42,11 +42,22 @@ async def create_job_url(
     # Get the created interviews for the response
     job_with_interviews = await get_job_with_interviews(req, str(job.id))
     
+    # Ensure _id is included in the job response
+    job_dict = job_with_interviews["job"].model_dump()
+    job_dict['_id'] = str(job_with_interviews["job"].id)
+    
+    # Ensure _id is included in each interview
+    interviews_data = []
+    for interview in job_with_interviews["interviews"]:
+        interview_dict = interview.model_dump()
+        interview_dict['_id'] = str(interview.id)
+        interviews_data.append(interview_dict)
+    
     return JSONResponse(
         status_code=201,
         content=jsonable_encoder({
-            "job": job_with_interviews["job"].model_dump(),
-            "interviews": [i.model_dump() for i in job_with_interviews["interviews"]]
+            "job": job_dict,
+            "interviews": interviews_data
         })
     )
 
@@ -85,11 +96,22 @@ async def create_job_file(
     # Get the created interviews for the response
     job_with_interviews = await get_job_with_interviews(req, str(job.id))
     
+    # Ensure _id is included in the job response
+    job_dict = job_with_interviews["job"].model_dump()
+    job_dict['_id'] = str(job_with_interviews["job"].id)
+    
+    # Ensure _id is included in each interview
+    interviews_data = []
+    for interview in job_with_interviews["interviews"]:
+        interview_dict = interview.model_dump()
+        interview_dict['_id'] = str(interview.id)
+        interviews_data.append(interview_dict)
+    
     return JSONResponse(
         status_code=201,
         content=jsonable_encoder({
-            "job": job_with_interviews["job"].model_dump(),
-            "interviews": [i.model_dump() for i in job_with_interviews["interviews"]]
+            "job": job_dict,
+            "interviews": interviews_data
         })
     )
 

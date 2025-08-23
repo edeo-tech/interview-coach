@@ -61,35 +61,8 @@ export default function JobDetails() {
   const startAttempt = useStartJobInterviewAttempt();
 
   const handleInterviewPress = (interview: JobInterview) => {
-    if (interview.status === 'pending') {
-      // Start the interview
-      Alert.alert(
-        'Start Interview',
-        `Are you ready to begin your ${getInterviewTypeDisplayName(interview.interview_type)} practice?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Start', 
-            onPress: async () => {
-              try {
-                const result = await startAttempt.mutateAsync({ 
-                  jobId: id, 
-                  interviewId: interview._id 
-                });
-                
-                // Navigate to interview details
-                router.push(`/interviews/${interview._id}/details` as any);
-              } catch (error) {
-                Alert.alert('Error', 'Failed to start interview');
-              }
-            }
-          }
-        ]
-      );
-    } else {
-      // Navigate to interview details
-      router.push(`/interviews/${interview._id}/details` as any);
-    }
+    // Always navigate to interview details screen
+    router.push(`/interviews/${interview._id}/details` as any);
   };
 
   if (isLoading) {
