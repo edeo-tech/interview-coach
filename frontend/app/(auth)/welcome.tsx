@@ -183,6 +183,14 @@ const Welcome = () => {
           >
             <Text style={styles.loginLinkText}>Already have an account?</Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.loginLink, { marginTop: 8 }]} 
+            onPress={() => router.push('/(onboarding)/cv-upload')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.loginLinkText, { color: '#F59E0B' }]}>Test Onboarding Flow</Text>
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Bottom Sheet Modal */}
@@ -210,7 +218,7 @@ const Welcome = () => {
                 
                 <Text style={styles.modalTitle}>Create your account</Text>
                 <Text style={styles.modalSubtitle}>
-                  Choose how you'd like to sign up
+                  Takes 2 mins to personalize your roadmap
                 </Text>
 
                 <View style={styles.signInOptions}>

@@ -6,60 +6,60 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 
-const OnboardingJobRole = () => {
+const StrongestSkill = () => {
   const { data, updateData } = useOnboarding();
-  const [selectedIndustry, setSelectedIndustry] = useState(data.industry);
+  const [selectedSkill, setSelectedSkill] = useState(data.strongestSkill);
 
-  const industries = [
-    { id: 'technology', name: 'Technology', icon: 'laptop-outline' },
-    { id: 'marketing', name: 'Marketing', icon: 'trending-up-outline' },
-    { id: 'sales', name: 'Sales', icon: 'handshake-outline' },
-    { id: 'finance', name: 'Finance', icon: 'calculator-outline' },
-    { id: 'healthcare', name: 'Healthcare', icon: 'medical-outline' },
-    { id: 'education', name: 'Education', icon: 'school-outline' },
-    { id: 'consulting', name: 'Consulting', icon: 'business-outline' },
-    { id: 'other', name: 'Other', icon: 'help-circle-outline' },
+  const skills = [
+    { id: 'communication', name: 'Communication & Storytelling', icon: 'chatbubbles-outline' },
+    { id: 'technical', name: 'Technical Knowledge', icon: 'code-slash-outline' },
+    { id: 'problem-solving', name: 'Problem Solving', icon: 'bulb-outline' },
+    { id: 'leadership', name: 'Leadership & Teamwork', icon: 'people-outline' },
+    { id: 'analytical', name: 'Analytical Thinking', icon: 'analytics-outline' },
+    { id: 'creativity', name: 'Creativity & Innovation', icon: 'color-palette-outline' },
+    { id: 'adaptability', name: 'Adaptability', icon: 'refresh-outline' },
+    { id: 'presentation', name: 'Presentation Skills', icon: 'easel-outline' },
   ];
 
   const handleContinue = () => {
-    if (selectedIndustry) {
-      updateData('industry', selectedIndustry);
-      router.push('/(onboarding)/industry-struggle');
+    if (selectedSkill) {
+      updateData('strongestSkill', selectedSkill);
+      router.push('/(onboarding)/success-vision');
     }
   };
 
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={6} totalSteps={17} />
+        <OnboardingProgress currentStep={10} totalSteps={17} />
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 6: Select Industry</Text>
+            <Text style={styles.screenTitle}>Screen 10: Strongest Skill</Text>
             <Text style={styles.subtitle}>
-              Which industry are you applying in? We'll tailor advice and prep to this field.
+              Which skill do you want to feel strongest in during interviews?
             </Text>
             
-            <View style={styles.industryGrid}>
-              {industries.map((industry) => (
+            <View style={styles.skillsGrid}>
+              {skills.map((skill) => (
                 <TouchableOpacity
-                  key={industry.id}
+                  key={skill.id}
                   style={[
-                    styles.industryCard,
-                    selectedIndustry === industry.id && styles.industryCardSelected
+                    styles.skillCard,
+                    selectedSkill === skill.id && styles.skillCardSelected
                   ]}
-                  onPress={() => setSelectedIndustry(industry.id)}
+                  onPress={() => setSelectedSkill(skill.id)}
                 >
                   <Ionicons 
-                    name={industry.icon as any} 
-                    size={32} 
-                    color={selectedIndustry === industry.id ? '#F59E0B' : 'rgba(255, 255, 255, 0.7)'} 
+                    name={skill.icon as any} 
+                    size={28} 
+                    color={selectedSkill === skill.id ? '#F59E0B' : 'rgba(255, 255, 255, 0.7)'} 
                   />
                   <Text style={[
-                    styles.industryText,
-                    selectedIndustry === industry.id && styles.industryTextSelected
+                    styles.skillText,
+                    selectedSkill === skill.id && styles.skillTextSelected
                   ]}>
-                    {industry.name}
+                    {skill.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -69,9 +69,9 @@ const OnboardingJobRole = () => {
 
         <View style={styles.bottomContainer}>
           <TouchableOpacity 
-            style={[styles.continueButton, !selectedIndustry && styles.continueButtonDisabled]} 
+            style={[styles.continueButton, !selectedSkill && styles.continueButtonDisabled]} 
             onPress={handleContinue}
-            disabled={!selectedIndustry}
+            disabled={!selectedSkill}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
@@ -112,35 +112,30 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     lineHeight: 22,
   },
-  industryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  skillsGrid: {
     gap: 12,
-    justifyContent: 'space-between',
   },
-  industryCard: {
-    width: '48%',
+  skillCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
     padding: 20,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 100,
-    justifyContent: 'center',
   },
-  industryCardSelected: {
+  skillCardSelected: {
     backgroundColor: 'rgba(245, 158, 11, 0.15)',
     borderColor: '#F59E0B',
   },
-  industryText: {
+  skillText: {
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 8,
+    flex: 1,
   },
-  industryTextSelected: {
+  skillTextSelected: {
     color: '#F59E0B',
   },
   bottomContainer: {
@@ -172,4 +167,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnboardingJobRole;
+export default StrongestSkill;

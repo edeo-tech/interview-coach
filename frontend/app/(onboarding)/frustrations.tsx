@@ -6,60 +6,60 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 
-const OnboardingJobRole = () => {
+const Frustrations = () => {
   const { data, updateData } = useOnboarding();
-  const [selectedIndustry, setSelectedIndustry] = useState(data.industry);
+  const [selectedFrustration, setSelectedFrustration] = useState(data.frustration);
 
-  const industries = [
-    { id: 'technology', name: 'Technology', icon: 'laptop-outline' },
-    { id: 'marketing', name: 'Marketing', icon: 'trending-up-outline' },
-    { id: 'sales', name: 'Sales', icon: 'handshake-outline' },
-    { id: 'finance', name: 'Finance', icon: 'calculator-outline' },
-    { id: 'healthcare', name: 'Healthcare', icon: 'medical-outline' },
-    { id: 'education', name: 'Education', icon: 'school-outline' },
-    { id: 'consulting', name: 'Consulting', icon: 'business-outline' },
-    { id: 'other', name: 'Other', icon: 'help-circle-outline' },
+  const frustrations = [
+    { id: 'blank-mind', name: 'My mind goes blank under pressure', icon: 'help-circle-outline' },
+    { id: 'rambling', name: 'I ramble and lose focus', icon: 'chatbubbles-outline' },
+    { id: 'weak-examples', name: 'My examples feel weak or irrelevant', icon: 'document-text-outline' },
+    { id: 'no-questions', name: 'I never have good questions to ask', icon: 'help-outline' },
+    { id: 'salary-negotiation', name: 'I\'m terrible at salary discussions', icon: 'cash-outline' },
+    { id: 'confidence', name: 'I don\'t project confidence', icon: 'sad-outline' },
+    { id: 'reading-room', name: 'I can\'t read the room or interviewer', icon: 'eye-outline' },
+    { id: 'follow-up', name: 'I don\'t know what to do after interviews', icon: 'time-outline' },
   ];
 
   const handleContinue = () => {
-    if (selectedIndustry) {
-      updateData('industry', selectedIndustry);
-      router.push('/(onboarding)/industry-struggle');
+    if (selectedFrustration) {
+      updateData('frustration', selectedFrustration);
+      router.push('/(onboarding)/problems');
     }
   };
 
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={6} totalSteps={17} />
+        <OnboardingProgress currentStep={11} totalSteps={17} />
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 6: Select Industry</Text>
+            <Text style={styles.screenTitle}>Screen 11: Most Frustrating Part</Text>
             <Text style={styles.subtitle}>
-              Which industry are you applying in? We'll tailor advice and prep to this field.
+              What's the most frustrating part of interviews for you?
             </Text>
             
-            <View style={styles.industryGrid}>
-              {industries.map((industry) => (
+            <View style={styles.frustrationsContainer}>
+              {frustrations.map((frustration) => (
                 <TouchableOpacity
-                  key={industry.id}
+                  key={frustration.id}
                   style={[
-                    styles.industryCard,
-                    selectedIndustry === industry.id && styles.industryCardSelected
+                    styles.frustrationCard,
+                    selectedFrustration === frustration.id && styles.frustrationCardSelected
                   ]}
-                  onPress={() => setSelectedIndustry(industry.id)}
+                  onPress={() => setSelectedFrustration(frustration.id)}
                 >
                   <Ionicons 
-                    name={industry.icon as any} 
-                    size={32} 
-                    color={selectedIndustry === industry.id ? '#F59E0B' : 'rgba(255, 255, 255, 0.7)'} 
+                    name={frustration.icon as any} 
+                    size={24} 
+                    color={selectedFrustration === frustration.id ? '#F59E0B' : 'rgba(255, 255, 255, 0.7)'} 
                   />
                   <Text style={[
-                    styles.industryText,
-                    selectedIndustry === industry.id && styles.industryTextSelected
+                    styles.frustrationText,
+                    selectedFrustration === frustration.id && styles.frustrationTextSelected
                   ]}>
-                    {industry.name}
+                    {frustration.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -69,9 +69,9 @@ const OnboardingJobRole = () => {
 
         <View style={styles.bottomContainer}>
           <TouchableOpacity 
-            style={[styles.continueButton, !selectedIndustry && styles.continueButtonDisabled]} 
+            style={[styles.continueButton, !selectedFrustration && styles.continueButtonDisabled]} 
             onPress={handleContinue}
-            disabled={!selectedIndustry}
+            disabled={!selectedFrustration}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
@@ -112,35 +112,30 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     lineHeight: 22,
   },
-  industryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  frustrationsContainer: {
     gap: 12,
-    justifyContent: 'space-between',
   },
-  industryCard: {
-    width: '48%',
+  frustrationCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
     padding: 20,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 100,
-    justifyContent: 'center',
   },
-  industryCardSelected: {
+  frustrationCardSelected: {
     backgroundColor: 'rgba(245, 158, 11, 0.15)',
     borderColor: '#F59E0B',
   },
-  industryText: {
+  frustrationText: {
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 8,
+    flex: 1,
   },
-  industryTextSelected: {
+  frustrationTextSelected: {
     color: '#F59E0B',
   },
   bottomContainer: {
@@ -172,4 +167,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnboardingJobRole;
+export default Frustrations;

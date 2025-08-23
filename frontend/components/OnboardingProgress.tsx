@@ -20,8 +20,12 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   // Goal-weighted progress calculation
   // Early steps get more weight to encourage users
   const calculateProgress = () => {
-    const weights = [0.2, 0.35, 0.5, 0.65, 0.75, 0.85, 0.95, 1.0];
-    return weights[Math.min(currentStep - 1, weights.length - 1)];
+    // Updated weights for 17 total steps with better distribution
+    const weights = [
+      0.05, 0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48, 0.54, 0.60, 
+      0.66, 0.72, 0.78, 0.84, 0.90, 0.96, 1.0
+    ];
+    return weights[Math.min(currentStep - 1, weights.length - 1)] || 0;
   };
 
   const progress = calculateProgress();
