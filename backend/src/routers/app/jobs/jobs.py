@@ -206,7 +206,7 @@ async def start_job_interview_attempt(
         await update_interview_status(req, interview_id, "active")
     
     # Create attempt record
-    attempt = await create_attempt(req, interview_id)
+    attempt = await create_attempt(req, interview_id, interview.job_id, interview.user_id)
     
     return JSONResponse(
         status_code=200,

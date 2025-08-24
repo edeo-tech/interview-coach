@@ -248,7 +248,7 @@ async def start_interview_attempt(
     print(f"   - Interview details: {interview.role_title} at {interview.company}")
     
     # Create attempt record (frontend handles ElevenLabs entirely)
-    attempt = await create_attempt(req, interview_id)
+    attempt = await create_attempt(req, interview_id, interview.job_id, interview.user_id)
 
     print(f"   ✅ SUCCESS: Started attempt with ID: {attempt.id}")
     return JSONResponse(

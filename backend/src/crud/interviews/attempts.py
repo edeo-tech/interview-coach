@@ -5,13 +5,17 @@ from datetime import datetime, timezone, timedelta
 from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument
 from models.interviews.attempts import InterviewAttempt, InterviewFeedback
 
-async def create_attempt(req: Request, interview_id: str) -> InterviewAttempt:
+async def create_attempt(req: Request, interview_id: str, job_id: str, user_id: str) -> InterviewAttempt:
     """Create a new interview attempt"""
     print(f"\n🚀 [ATTEMPT] Creating new interview attempt:")
     print(f"   - Interview ID: {interview_id}")
+    print(f"   - Job ID: {job_id}")
+    print(f"   - User ID: {user_id}")
     
     attempt_data = InterviewAttempt(
         interview_id=interview_id,
+        job_id=job_id,
+        user_id=user_id,
         status="active",
         transcript=[],
         duration_seconds=0,
@@ -178,6 +182,9 @@ async def update_attempt_with_webhook_data(
 async def create_feedback(
     req: Request,
     attempt_id: str,
+    interview_id: str,
+    job_id: str,
+    user_id: str,
     overall_score: int,
     strengths: List[str],
     improvement_areas: List[str],
@@ -187,6 +194,9 @@ async def create_feedback(
     """Create feedback for an interview attempt"""
     print(f"\n📝 [FEEDBACK] Creating interview feedback:")
     print(f"   - Attempt ID: {attempt_id}")
+    print(f"   - Interview ID: {interview_id}")
+    print(f"   - Job ID: {job_id}")
+    print(f"   - User ID: {user_id}")
     print(f"   - Overall Score: {overall_score}/100")
     print(f"   - Strengths: {len(strengths)} items")
     print(f"   - Improvement Areas: {len(improvement_areas)} items")
@@ -194,6 +204,9 @@ async def create_feedback(
     
     feedback_data = InterviewFeedback(
         attempt_id=attempt_id,
+        interview_id=interview_id,
+        job_id=job_id,
+        user_id=user_id,
         overall_score=overall_score,
         strengths=strengths,
         improvement_areas=improvement_areas,

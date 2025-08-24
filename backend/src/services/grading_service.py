@@ -50,6 +50,9 @@ class InterviewGradingService:
                 await create_feedback(
                     req,
                     attempt_id,
+                    attempt['interview_id'],
+                    interview.get('job_id', ''),
+                    interview['user_id'],
                     overall_score=default_feedback["overall_score"],
                     strengths=default_feedback["strengths"],
                     improvement_areas=default_feedback["improvement_areas"],
@@ -73,6 +76,9 @@ class InterviewGradingService:
                 await create_feedback(
                     req,
                     attempt_id,
+                    attempt['interview_id'],
+                    interview.get('job_id', ''),
+                    interview['user_id'],
                     overall_score=default_feedback["overall_score"],
                     strengths=default_feedback["strengths"],
                     improvement_areas=default_feedback["improvement_areas"],
@@ -112,6 +118,9 @@ class InterviewGradingService:
             await create_feedback(
                 req,
                 attempt_id,
+                interview['id'],
+                interview.get('job_id', ''),
+                interview['user_id'],
                 overall_score=feedback_data["overall_score"],
                 strengths=feedback_data["strengths"],
                 improvement_areas=feedback_data["improvement_areas"],
@@ -130,6 +139,16 @@ class InterviewGradingService:
             import traceback
             traceback.print_exc()
             
+            # Try to get interview data if not already loaded
+            try:
+                if 'attempt' not in locals():
+                    attempt = await self._get_attempt_data(req, attempt_id)
+                if 'interview' not in locals():
+                    interview = await self._get_interview_data(req, attempt['interview_id'])
+            except:
+                print(f"   ❌ Could not load interview data for fallback")
+                return {"error": "Failed to grade interview and could not create fallback"}
+            
             # Create default feedback and still save it
             default_feedback = await self._create_fallback_feedback(attempt_id, interview)
             
@@ -137,6 +156,9 @@ class InterviewGradingService:
                 await create_feedback(
                     req,
                     attempt_id,
+                    attempt['interview_id'],
+                    interview.get('job_id', ''),
+                    interview['user_id'],
                     overall_score=default_feedback["overall_score"],
                     strengths=default_feedback["strengths"],
                     improvement_areas=default_feedback["improvement_areas"],
