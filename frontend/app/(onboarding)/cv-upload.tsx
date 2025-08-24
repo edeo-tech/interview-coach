@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
@@ -16,34 +16,31 @@ const ProfileCardIntro = () => {
         <OnboardingProgress currentStep={3} totalSteps={17} />
         
         <View style={styles.content}>
+          {/* Simple icon - following welcome screen approach */}
           <View style={styles.iconContainer}>
-            <Ionicons name="person-circle-outline" size={64} color="#A855F7" />
+            <Image 
+              source={require('../../assets/images/FinalAppIconTransparent.png')}
+              style={styles.iconImage}
+              resizeMode="contain"
+            />
           </View>
           
-          <Text style={styles.screenTitle}>Let's build your profile</Text>
+          {/* Typography following design system hierarchy */}
+          <Text style={styles.titleMain}>Let's build your</Text>
+          <Text style={styles.titleBrand}>profile</Text>
+          
           <Text style={styles.subtitle}>
-            We'll build your personal interview prep plan.
+            We'll create a personalized interview prep plan tailored just for you.
           </Text>
-          
-          <View style={styles.featuresList}>
-            <View style={styles.featureItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.featureText}>Personalized to your industry</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.featureText}>Tailored to your experience level</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.featureText}>Focused on your weak points</Text>
-            </View>
-          </View>
         </View>
 
         <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueButtonText}>Let's start building</Text>
+          <TouchableOpacity 
+            style={styles.primaryButton} 
+            onPress={handleContinue}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.primaryButtonText}>Let's start building</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
@@ -53,75 +50,99 @@ const ProfileCardIntro = () => {
 };
 
 const styles = StyleSheet.create({
+  // Layout - following welcome screen structure
   gradient: {
     flex: 1,
   },
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    backgroundColor: 'transparent',
   },
   content: {
     flex: 1,
+    paddingHorizontal: 24, // Design system screenPadding
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
   },
+  
+  // Icon section - simplified like welcome screen
   iconContainer: {
-    marginBottom: 24,
     alignItems: 'center',
+    marginBottom: 16, // Reduced spacing for better flow
   },
-  screenTitle: {
+  iconImage: {
+    width: 80,  // Smaller than welcome screen for hierarchy
+    height: 80,
+  },
+  
+  // Typography - following new design system
+  titleMain: {
+    // Design system title style (like "Get to the")
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: '300',
+    fontFamily: 'SpaceGrotesk',
+    letterSpacing: 1,
+    color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 16,
+    lineHeight: 36,
+  },
+  titleBrand: {
+    // Design system hero style (like "nextround")
+    fontSize: 48,
+    fontWeight: '800',
+    fontFamily: 'SpaceGrotesk',
+    lineHeight: 60,
+    color: '#A855F7', // Brand purple
+    textAlign: 'center',
+    marginBottom: 60, // Design system xxl spacing
   },
   subtitle: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
-  },
-  featuresList: {
-    gap: 16,
-    alignSelf: 'stretch',
-    maxWidth: 280,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  featureText: {
+    // Design system supporting text
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    flex: 1,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    lineHeight: 24,
+    color: 'rgba(255, 255, 255, 0.70)', // Design system text.tertiary
+    textAlign: 'center',
+    maxWidth: 320, // Design system maxContentWidth
+    paddingHorizontal: 32,
   },
+  
+  // Button section - exact welcome screen style
   bottomContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    width: '100%',
+    paddingHorizontal: 24,
+    marginBottom: 24,
   },
-  continueButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    paddingVertical: 18,
+  primaryButton: {
+    // Exact style from welcome screen
+    width: '100%',
+    height: 56,
+    borderRadius: 28, // Perfect pill shape
+    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Subtle purple fill
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    paddingHorizontal: 24,
+    shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)', // Purple border
   },
-  continueButtonText: {
-    color: '#ffffff',
+  primaryButtonText: {
+    // Design system button typography
     fontSize: 18,
-    fontWeight: '700',
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
+    color: '#FFFFFF',
+    marginRight: 8,
   },
 });
 
