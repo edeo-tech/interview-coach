@@ -1,28 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform, Image, ActivityIndicator, Modal } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
 import { useUserJobs } from '../../../_queries/jobs/jobs';
-import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
-import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
-import CVUploadProgress from '../../../components/CVUploadProgress';
 
 export default function Home() {
-  const { data: cv } = useCV();
   const { data: jobs, isLoading: jobsLoading } = useUserJobs(10);
-  const uploadMutation = useUploadCV();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
-  const { impactAsync, selectionAsync } = useHapticsSafely();
-  
-  const [uploadProgress, setUploadProgress] = useState(false);
-  const [showProgressModal, setShowProgressModal] = useState(false);
+  const { selectionAsync } = useHapticsSafely();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -31,19 +22,8 @@ export default function Home() {
     }, [posthogScreen])
   );
 
-  const handleCreateNewJob = () => {
-    // Medium impact for creating new job - important action
-    impactAsync(ImpactFeedbackStyle.Medium);
-    posthogCapture('navigate_to_create_job', {
-      source: 'home',
-      has_cv: !!cv,
-      total_existing_jobs: jobs?.length || 0
-    });
-    router.push('/interviews/create');
-  };
 
   const handleJobPress = (jobId: string) => {
-    // Selection haptic for job cards
     selectionAsync();
     posthogCapture('view_job_details', {
       source: 'home',
@@ -78,77 +58,6 @@ export default function Home() {
     return '#10b981';
   };
 
-  const handleUpload = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
-        copyToCacheDirectory: true
-      });
-      
-      if (result.canceled) {
-        return;
-      }
-
-      const file = result.assets[0];
-      
-      // Validate file size (max 5MB)
-      if (file.size && file.size > 5 * 1024 * 1024) {
-        Alert.alert('File Too Large', 'Please select a file smaller than 5MB.');
-        return;
-      }
-
-      // Medium impact for CV upload - important profile action
-      impactAsync(ImpactFeedbackStyle.Medium);
-      setUploadProgress(true);
-      setShowProgressModal(true);
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri: file.uri,
-        type: file.mimeType || 'application/pdf',
-        name: file.name || 'cv.pdf',
-      } as any);
-      
-      await uploadMutation.mutateAsync(formData);
-      
-      posthogCapture('cv_upload_success', {
-        source: 'home_embedded',
-        file_type: file.mimeType || 'unknown',
-        file_size_kb: file.size ? Math.round(file.size / 1024) : null,
-        is_first_upload: true
-      });
-      
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      setShowProgressModal(false);
-      posthogCapture('cv_upload_failed', {
-        source: 'home_embedded',
-        error_message: error.response?.data?.detail || error.message,
-        file_type: file?.mimeType || 'unknown'
-      });
-      Alert.alert(
-        'Upload Error', 
-        error.response?.data?.detail || 'Failed to upload CV. Please try again.'
-      );
-    } finally {
-      setUploadProgress(false);
-    }
-  };
-
-  const handleProgressComplete = () => {
-    // Navigate directly to interview creation - seamless onboarding flow
-    posthogCapture('cv_upload_onboarding_complete', {
-      source: 'home_embedded'
-    });
-    
-    // Navigate immediately, then close modal to prevent flash
-    router.push('/interviews/create');
-    
-    // Delay modal close to prevent brief home screen flash
-    setTimeout(() => {
-      setShowProgressModal(false);
-    }, 100);
-  };
 
   return (
     <ChatGPTBackground style={styles.gradient}>
@@ -166,104 +75,30 @@ export default function Home() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Your jobs</Text>
+            <Text style={styles.headerTitle}>Recent jobs</Text>
             <Text style={styles.headerSubtitle}>
-              Practice with AI-powered mock interviews
+              Your recent job applications
             </Text>
           </View>
         </View>
 
-        {/* Quick Action: Create New Job (only show when user has existing jobs) */}
-        {jobs && jobs.length > 0 && (
-          <TouchableOpacity onPress={handleCreateNewJob} style={styles.createCard}>
-            <View style={styles.createCardLeft}>
-              <Ionicons name="add" size={24} color="#ffffff" />
-            </View>
-            <View style={styles.createCardRight}>
-              <Text style={styles.createCardTitle}>Create new job</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* CV Upload - Embedded for seamless onboarding */}
-        {!cv && (
-          <View style={styles.uploadContainer}>
-            <TouchableOpacity
-              onPress={handleUpload}
-              disabled={uploadProgress}
-              style={[
-                styles.uploadArea,
-                uploadProgress && styles.uploadAreaDisabled
-              ]}
-            >
-              <View style={styles.uploadIconContainer}>
-                <Ionicons name="cloud-upload" size={48} color="#8b5cf6" />
-              </View>
-              
-              <Text style={styles.uploadTitle}>
-                Upload your CV to get started
-              </Text>
-              
-              <Text style={styles.uploadSubtitle}>
-                Get personalized interview questions based on your experience
-              </Text>
-              
-              <View style={styles.uploadButton}>
-                <Text style={styles.uploadButtonText}>Choose file</Text>
-              </View>
-              
-              <Text style={styles.formatHint}>
-                PDF, DOC, DOCX, or TXT • Max 5MB
-              </Text>
-            </TouchableOpacity>
-            
-            {/* Trust Indicators */}
-            <View style={styles.trustIndicators}>
-              <View style={styles.trustItem}>
-                <Ionicons name="shield-checkmark" size={14} color="#10b981" />
-                <Text style={styles.trustText}>Secure & Private</Text>
-              </View>
-              <View style={styles.trustItem}>
-                <Ionicons name="time" size={14} color="#8b5cf6" />
-                <Text style={styles.trustText}>Processed in seconds</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* Recent Jobs */}
+        {/* Jobs List */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Recent Jobs
-          </Text>
-          
-          {!cv || jobsLoading ? (
+          {jobsLoading ? (
             <View style={styles.emptyState}>
-              <Ionicons name="chatbubble-outline" size={48} color="#6b7280" />
+              <Text style={styles.emptyStateTitle}>
+                Loading your jobs...
+              </Text>
+            </View>
+          ) : !jobs || jobs.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="briefcase-outline" size={48} color="#6b7280" />
               <Text style={styles.emptyStateTitle}>
                 No jobs yet
               </Text>
               <Text style={styles.emptyStateSubtitle}>
-                {!cv ? 'Upload your CV first, then tap the + button above to track your first job' : 'Loading your jobs...'}
+                Your recent job applications will appear here
               </Text>
-            </View>
-          ) : !jobs || jobs.length === 0 ? (
-            <View style={styles.enhancedEmptyState}>
-              <View style={styles.emptyStateIcon}>
-                <Ionicons name="rocket-outline" size={52} color="#8b5cf6" />
-              </View>
-              <Text style={styles.emptyStateTitle}>
-                Ready to practice?
-              </Text>
-              <Text style={styles.emptyStateSubtitle}>
-                Add your first job application to start practicing interviews
-              </Text>
-              <TouchableOpacity onPress={handleCreateNewJob} style={styles.ctaButton}>
-                <Text style={styles.ctaButtonText}>
-                  Create job
-                </Text>
-                <Ionicons name="add" size={18} color="#ffffff" />
-              </TouchableOpacity>
             </View>
           ) : (
             jobs.map((job) => (
@@ -338,16 +173,6 @@ export default function Home() {
           )}
         </View>
       </ScrollView>
-
-      {/* Progress Modal */}
-      <Modal
-        visible={showProgressModal}
-        transparent={true}
-        animationType="fade"
-        statusBarTranslucent={true}
-      >
-        <CVUploadProgress onComplete={handleProgressComplete} />
-      </Modal>
     </View>
     </ChatGPTBackground>
   );
@@ -385,43 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
-  statusCard: {
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      }
-    }),
-  },
-  createCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    ...GlassStyles.card,
-  },
-  createCardLeft: {
-    width: 56,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...GlassStyles.interactive,
-  },
-  createCardRight: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  createCardTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
 
   section: {
     marginBottom: 24,
@@ -440,59 +228,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     marginTop: 4,
-  },
-  enhancedEmptyState: {
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    marginTop: 4,
-  },
-  emptyStateIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  ctaContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-  },
-  ctaArrow: {
-    marginRight: 8,
-  },
-  ctaText: {
-    color: '#a855f7',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    backgroundColor: '#8b5cf6',
-    borderRadius: 12,
-    gap: 8,
-  },
-  ctaButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   emptyStateText: {
     color: '#9ca3af',
@@ -624,73 +359,6 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  // Embedded CV Upload Styles
-  uploadContainer: {
-    marginBottom: 32,
-  },
-  uploadArea: {
-    backgroundColor: 'rgba(55, 65, 81, 0.6)',
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    borderRadius: 20,
-    padding: 32,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  uploadAreaDisabled: {
-    opacity: 0.5,
-  },
-  uploadIconContainer: {
-    marginBottom: 16,
-  },
-  uploadTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  uploadSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
-    maxWidth: 250,
-  },
-  uploadButton: {
-    backgroundColor: '#8b5cf6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 16,
-  },
-  uploadButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  formatHint: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  trustIndicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-  },
-  trustItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  trustText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 12,
-    fontWeight: '500',
-  },
   progressContainer: {
     marginTop: 8,
   },
