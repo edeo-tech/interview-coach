@@ -59,9 +59,18 @@ export const createJobFromFile = async (formData: FormData): Promise<JobWithInte
   return response.data;
 };
 
-export const getUserJobs = async (limit: number = 10): Promise<Job[]> => {
+export interface PaginatedJobsResponse {
+  jobs: Job[];
+  has_more: boolean;
+  total_count: number;
+  current_page_size: number;
+  page_number: number;
+  page_size: number;
+}
+
+export const getUserJobs = async (pageSize: number = 10, pageNumber: number = 1): Promise<PaginatedJobsResponse> => {
   const response = await protectedApi.get('/app/jobs/', {
-    params: { limit },
+    params: { page_size: pageSize, page_number: pageNumber },
   });
   return response.data;
 };

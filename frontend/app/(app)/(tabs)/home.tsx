@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Image, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,10 +10,32 @@ import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
 
 export default function Home() {
-  const { data: jobs, isLoading: jobsLoading } = useUserJobs(10);
+  const { 
+    data: jobsData, 
+    isLoading: jobsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useUserJobs(10);
+  
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { selectionAsync } = useHapticsSafely();
+  
+  // Flatten the paginated data - extract jobs from each page
+  const jobs = jobsData?.pages.flatMap(page => page.jobs) || [];
+  
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+  
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom;
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -66,6 +88,12 @@ export default function Home() {
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         keyboardDismissMode="on-drag"
+        onScroll={({ nativeEvent }) => {
+          if (isCloseToBottom(nativeEvent)) {
+            handleLoadMore();
+          }
+        }}
+        scrollEventThrottle={400}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingBottom: insets.bottom + 100,
@@ -146,14 +174,9 @@ export default function Home() {
                     </View>
                     
                     <View style={styles.progressContainer}>
-                      <View style={styles.progressRow}>
-                        <Text style={styles.progressText}>
-                          {job.stages_completed} / {job.interview_stages.length} interviews completed
-                        </Text>
-                        <Text style={styles.interviewDate}>
-                          {formatDate(job.created_at)}
-                        </Text>
-                      </View>
+                      <Text style={styles.progressText}>
+                        {job.stages_completed} / {job.interview_stages.length} interviews completed
+                      </Text>
                       <View style={styles.progressBar}>
                         <View 
                           style={[
@@ -165,11 +188,22 @@ export default function Home() {
                           ]} 
                         />
                       </View>
+                      <Text style={styles.interviewDate}>
+                        {formatDate(job.created_at)}
+                      </Text>
                     </View>
                   </View>
                 </View>
               </TouchableOpacity>
             ))
+          )}
+          
+          {/* Loading more indicator */}
+          {isFetchingNextPage && (
+            <View style={styles.loadingMore}>
+              <ActivityIndicator size="small" color="#8b5cf6" />
+              <Text style={styles.loadingMoreText}>Loading more jobs...</Text>
+            </View>
           )}
         </View>
       </ScrollView>
@@ -362,26 +396,34 @@ const styles = StyleSheet.create({
   progressContainer: {
     marginTop: 8,
   },
-  progressRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
   progressText: {
     color: '#9ca3af',
     fontSize: 12,
     fontWeight: '500',
+    marginBottom: 6,
   },
   progressBar: {
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 2,
     overflow: 'hidden',
+    marginBottom: 6,
   },
   progressFill: {
     height: '100%',
     borderRadius: 2,
+  },
+  loadingMore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  loadingMoreText: {
+    color: '#8b5cf6',
+    fontSize: 14,
+    fontWeight: '500',
   },
 
 });

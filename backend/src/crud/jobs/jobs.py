@@ -7,7 +7,7 @@ from models.interviews import Interview
 from models.interviews.interview_types import InterviewType
 from services.job_processing_service import JobProcessingService
 from services.interview_stage_service import InterviewStageService
-from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, SortDirection
+from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, countDocuments, SortDirection
 from crud.interviews.interviews import create_interview_for_job
 
 
@@ -131,16 +131,29 @@ async def get_job(req: Request, job_id: str) -> Optional[Job]:
     return await getDocument(req, "jobs", Job, _id=job_id)
 
 
-async def get_user_jobs(req: Request, user_id: str, limit: int = 10) -> List[Job]:
-    """Get all jobs for a user"""
-    return await getMultipleDocuments(
+async def get_user_jobs(req: Request, user_id: str, limit: int = 10, skip: int = 0) -> Dict[str, Any]:
+    """Get all jobs for a user with pagination metadata"""
+    # Get the jobs
+    jobs = await getMultipleDocuments(
         req, 
         "jobs", 
         Job, 
         user_id=user_id, 
         order_by="created_at",
-        limit=limit
+        limit=limit,
+        skip=skip
     )
+    
+    # Get total count to determine if there are more pages
+    total_count = await countDocuments(req, "jobs", Job, user_id=user_id)
+    has_more = (skip + len(jobs)) < total_count
+    
+    return {
+        "jobs": jobs,
+        "has_more": has_more,
+        "total_count": total_count,
+        "current_page_size": len(jobs)
+    }
 
 
 async def update_job(req: Request, job_id: str, **kwargs) -> Optional[Job]:

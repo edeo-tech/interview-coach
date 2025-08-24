@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
 import * as jobsApi from '../../_api/jobs/jobs';
@@ -36,11 +36,20 @@ export const useCreateJobFromFile = () => {
   });
 };
 
-// Get user jobs
-export const useUserJobs = (limit: number = 10) => {
-  return useQuery({
-    queryKey: ['jobs', 'list', limit],
-    queryFn: () => jobsApi.getUserJobs(limit),
+// Get user jobs with infinite loading
+export const useUserJobs = (pageSize: number = 10) => {
+  return useInfiniteQuery({
+    queryKey: ['jobs', 'list', pageSize],
+    queryFn: ({ pageParam = 1 }) => jobsApi.getUserJobs(pageSize, pageParam),
+    getNextPageParam: (lastPage) => {
+      // Use the has_more boolean from the backend to determine if there's a next page
+      if (!lastPage.has_more) {
+        return undefined;
+      }
+      // Simply return the next page number
+      return lastPage.page_number + 1;
+    },
+    initialPageParam: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

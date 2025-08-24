@@ -121,21 +121,31 @@ async def create_job_file(
 async def list_user_jobs(
     req: Request,
     user_id: str = Depends(auth.auth_wrapper),
-    limit: int = 10
+    page_size: int = 10,
+    page_number: int = 1
 ):
-    """Get all jobs for the current user"""
-    jobs = await get_user_jobs(req, user_id, limit)
+    """Get all jobs for the current user with pagination"""
+    # Calculate skip from page number (page 1 = skip 0, page 2 = skip 10, etc.)
+    skip = (page_number - 1) * page_size
+    jobs_result = await get_user_jobs(req, user_id, page_size, skip)
     
-    # Convert to dicts and ensure _id is included
+    # Convert jobs to dicts and ensure _id is included
     jobs_data = []
-    for job in jobs:
+    for job in jobs_result["jobs"]:
         job_dict = job.model_dump()
         job_dict['_id'] = str(job.id)
         jobs_data.append(job_dict)
     
     return JSONResponse(
         status_code=200,
-        content=jsonable_encoder(jobs_data)
+        content=jsonable_encoder({
+            "jobs": jobs_data,
+            "has_more": jobs_result["has_more"],
+            "total_count": jobs_result["total_count"],
+            "current_page_size": jobs_result["current_page_size"],
+            "page_number": page_number,
+            "page_size": page_size
+        })
     )
 
 
