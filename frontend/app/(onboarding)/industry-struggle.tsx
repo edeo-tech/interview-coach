@@ -8,7 +8,7 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 
 const IndustryStruggle = () => {
   const { data, updateData } = useOnboarding();
-  const [strugglesApply, setStrugglesApply] = useState<boolean | null>(data.strugglesApply);
+  const [strugglesApply, setStrugglesApply] = useState<boolean | null>(null);
 
   const getIndustryStruggles = (industry: string) => {
     const struggles = {
@@ -26,7 +26,7 @@ const IndustryStruggle = () => {
 
   const handleContinue = () => {
     if (strugglesApply !== null) {
-      updateData('strugglesApply', strugglesApply);
+      // We don't need to store this anymore, just continue to next screen
       router.push('/(onboarding)/past-outcomes');
     }
   };

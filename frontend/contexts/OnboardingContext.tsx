@@ -4,15 +4,10 @@ interface OnboardingData {
   name: string;
   age: string;
   industry: string;
-  strugglesApply: boolean;
   hasFailed: boolean;
-  mainBlocker: string;
-  preparationLevel: string;
-  frustration: string;
-  nervousness: string;
-  strongestSkill: string;
-  successVision: string;
-  worstCaseScenario: string;
+  preparationRating: number;
+  communicationRating: number;
+  nervesRating: number;
 }
 
 interface OnboardingContextType {
@@ -25,15 +20,10 @@ const initialData: OnboardingData = {
   name: '',
   age: '',
   industry: '',
-  strugglesApply: false,
   hasFailed: false,
-  mainBlocker: '',
-  preparationLevel: '',
-  frustration: '',
-  nervousness: '',
-  strongestSkill: '',
-  successVision: '',
-  worstCaseScenario: '',
+  preparationRating: 0,
+  communicationRating: 0,
+  nervesRating: 0,
 };
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);

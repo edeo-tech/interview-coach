@@ -13,12 +13,9 @@ const PastOutcomes = () => {
   const handleContinue = () => {
     if (hasFailed !== null) {
       updateData('hasFailed', hasFailed);
-      // Route to different screens based on answer
-      if (hasFailed) {
-        router.push('/(onboarding)/vulnerability-failed');
-      } else {
-        router.push('/(onboarding)/vulnerability-confident');
-      }
+      // Route to Screen 9 (preparation rating) regardless of answer
+      // The hasFailed value will be used for dual framing in subsequent screens
+      router.push('/(onboarding)/preparation-rating');
     }
   };
 

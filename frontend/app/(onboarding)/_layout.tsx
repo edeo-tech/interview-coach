@@ -20,13 +20,9 @@ const OnboardingLayout = () => {
         <Stack.Screen name="job-role" /> {/* Industry Selection - Screen 6 */}
         <Stack.Screen name="industry-struggle" /> {/* Industry Struggle - Screen 7 */}
         <Stack.Screen name="past-outcomes" /> {/* Past Interview Outcomes - Screen 8 */}
-        <Stack.Screen name="vulnerability-failed" /> {/* Vulnerability Failed - Screen 9a */}
-        <Stack.Screen name="vulnerability-confident" /> {/* Vulnerability Confident - Screen 9b */}
-        <Stack.Screen name="preparation-level" /> {/* Preparation Level - Screen 10a */}
-        <Stack.Screen name="strongest-skill" /> {/* Weakest Skill - Screen 10b */}
-        <Stack.Screen name="frustrations" /> {/* Frustrations - Screen 11a */}
-        <Stack.Screen name="success-vision" /> {/* Success Vision - Screen 11b */}
-        <Stack.Screen name="worst-case-scenario" /> {/* Worst Case Scenario - Screen 11c */}
+        <Stack.Screen name="preparation-rating" /> {/* Preparation Rating - Screen 9 */}
+        <Stack.Screen name="communication-rating" /> {/* Communication Rating - Screen 10 */}
+        <Stack.Screen name="nerves-rating" /> {/* Nerves Rating - Screen 11 */}
         <Stack.Screen name="problems" /> {/* Analyzing - Screen 12 */}
         <Stack.Screen name="solutions" /> {/* Problem Validation - Screen 13 */}
         <Stack.Screen name="demo" /> {/* Solution Framing - Screen 14 */}
