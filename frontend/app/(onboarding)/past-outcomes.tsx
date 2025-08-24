@@ -21,15 +21,16 @@ const PastOutcomes = () => {
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <View style={styles.container}>
-        <OnboardingProgress currentStep={8} totalSteps={17} />
-        
-        <View style={styles.content}>
+      <View style={styles.assessmentOverlay}>
+        <View style={styles.container}>
+          <OnboardingProgress currentStep={8} totalSteps={17} />
+          
+          <View style={styles.content}>
           <View style={styles.iconContainer}>
             <Ionicons name="help-circle-outline" size={64} color="#A855F7" />
           </View>
           
-          <Text style={styles.screenTitle}>Screen 8: Past Interview Outcomes</Text>
+          <Text style={styles.screenTitle}>Have you interviewed before?</Text>
           <Text style={styles.questionText}>
             Have you ever failed to progress in a hiring process before?
           </Text>
@@ -93,6 +94,7 @@ const PastOutcomes = () => {
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
+        </View>
       </View>
     </ChatGPTBackground>
   );
@@ -102,6 +104,10 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+  assessmentOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+  },
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'ios' ? 32 : 16,
@@ -110,39 +116,51 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    maxWidth: 460,
+    alignSelf: 'center',
   },
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
+    padding: 16,
+    backgroundColor: 'rgba(168, 85, 247, 0.1)',
+    borderRadius: 20,
+    alignSelf: 'center',
+    width: 96,
+    height: 96,
+    justifyContent: 'center',
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '700',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+    letterSpacing: 0.5,
   },
   questionText: {
-    fontSize: 20,
-    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 28,
+    marginBottom: 36,
+    lineHeight: 26,
+    fontWeight: '500',
   },
   optionContainer: {
-    gap: 16,
+    gap: 14,
   },
   optionButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   optionButtonSelected: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderColor: 'rgba(245, 158, 11, 0.8)',
+    transform: [{ scale: 1.02 }],
   },
   optionContent: {
     flexDirection: 'row',

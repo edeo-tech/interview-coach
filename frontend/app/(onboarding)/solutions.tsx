@@ -160,12 +160,13 @@ const ProblemValidation = () => {
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <View style={styles.container}>
-        <OnboardingProgress currentStep={13} totalSteps={17} />
-        
-        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.resultsOverlay}>
+        <View style={styles.container}>
+          <OnboardingProgress currentStep={13} totalSteps={17} />
+          
+          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 13: Problem Validation</Text>
+            <Text style={styles.screenTitle}>Here's what we found</Text>
             
             <View style={styles.insightContainer}>
               <Text style={styles.insightText}>
@@ -192,6 +193,7 @@ const ProblemValidation = () => {
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
+        </View>
       </View>
     </ChatGPTBackground>
   );
@@ -201,67 +203,90 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+  resultsOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+  },
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    paddingTop: Platform.OS === 'ios' ? 28 : 12,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 12,
   },
   scrollContent: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: 28,
+    paddingVertical: 24,
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '800',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    letterSpacing: 0.8,
   },
   insightContainer: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 32,
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    borderRadius: 20,
+    padding: 32,
+    marginBottom: 40,
+    borderWidth: 2,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
   },
   insightText: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center',
-    lineHeight: 26,
-  },
-  highlightText: {
-    color: '#F59E0B',
-    fontWeight: '700',
-  },
-  comparisonContainer: {
-    marginBottom: 24,
-  },
-  comparisonTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 20,
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 20,
+    lineHeight: 30,
+    fontWeight: '600',
+  },
+  highlightText: {
+    color: '#FCD34D',
+    fontWeight: '800',
+    textDecorationLine: 'underline',
+    textDecorationColor: 'rgba(252, 211, 77, 0.5)',
+  },
+  comparisonContainer: {
+    marginBottom: 32,
+  },
+  comparisonTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 28,
+    letterSpacing: 0.5,
   },
   comparisonRow: {
-    gap: 16,
+    gap: 20,
   },
   comparisonCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    marginBottom: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   preparedCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    shadowColor: '#10B981',
+    shadowOpacity: 0.2,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -286,27 +311,32 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   bottomContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 28,
+    paddingBottom: 24,
+    paddingTop: 16,
   },
   continueButton: {
     backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    paddingVertical: 18,
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 32,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    gap: 12,
+    shadowColor: '#F59E0B',
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(252, 211, 77, 0.3)',
   },
   continueButtonText: {
     color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 });
 

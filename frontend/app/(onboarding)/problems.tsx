@@ -77,7 +77,7 @@ const AnalyzingScreen = () => {
           </View>
           
           <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
-            <Text style={styles.screenTitle}>Screen 12: Analyzing</Text>
+            <Text style={styles.screenTitle}>Analyzing your responses...</Text>
             <Text style={styles.analysisText}>
               {analysisSteps[currentStep]?.text || 'Analyzing...'}
             </Text>

@@ -45,11 +45,12 @@ const CommunicationRating = () => {
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <View style={styles.container}>
+      <View style={styles.assessmentOverlay}>
+        <View style={styles.container}>
         <OnboardingProgress currentStep={10} totalSteps={17} />
         
         <View style={styles.content}>
-          <Text style={styles.screenTitle}>Screen 10: {framing.title}</Text>
+          <Text style={styles.screenTitle}>{framing.title}</Text>
           
           <View style={styles.problemContainer}>
             <View style={styles.iconContainer}>
@@ -113,6 +114,7 @@ const CommunicationRating = () => {
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
+        </View>
       </View>
     </ChatGPTBackground>
   );
@@ -122,6 +124,10 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+  assessmentOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+  },
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'ios' ? 32 : 16,
@@ -129,8 +135,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 20,
+    maxWidth: 480,
+    alignSelf: 'center',
   },
   screenTitle: {
     fontSize: 28,

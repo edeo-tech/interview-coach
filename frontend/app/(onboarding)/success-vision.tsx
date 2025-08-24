@@ -63,7 +63,7 @@ const SuccessVision = () => {
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 11: Success Vision</Text>
+            <Text style={styles.screenTitle}>Picture yourself succeeding</Text>
             <Text style={styles.subtitle}>
               What would a successful interview look like for you?
             </Text>

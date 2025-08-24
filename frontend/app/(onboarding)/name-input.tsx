@@ -27,7 +27,7 @@ const NameInput = () => {
             <Ionicons name="person-outline" size={48} color="#A855F7" />
           </View>
           
-          <Text style={styles.screenTitle}>Screen 4: What's your name?</Text>
+          <Text style={styles.screenTitle}>What's your name?</Text>
           <Text style={styles.subtitle}>
             We'll use this to personalize your experience
           </Text>

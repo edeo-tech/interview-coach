@@ -35,7 +35,7 @@ const OnboardingJobRole = () => {
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 6: Select Industry</Text>
+            <Text style={styles.screenTitle}>What industry are you in?</Text>
             <Text style={styles.subtitle}>
               Which industry are you applying in? We'll tailor advice and prep to this field.
             </Text>

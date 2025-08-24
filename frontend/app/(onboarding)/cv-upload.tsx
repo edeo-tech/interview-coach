@@ -20,7 +20,7 @@ const ProfileCardIntro = () => {
             <Ionicons name="person-circle-outline" size={64} color="#A855F7" />
           </View>
           
-          <Text style={styles.screenTitle}>Screen 3: Profile Card Intro</Text>
+          <Text style={styles.screenTitle}>Let's build your profile</Text>
           <Text style={styles.subtitle}>
             We'll build your personal interview prep plan.
           </Text>

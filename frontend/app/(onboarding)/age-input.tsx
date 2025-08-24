@@ -29,7 +29,7 @@ const AgeInput = () => {
             <Ionicons name="calendar-outline" size={48} color="#A855F7" />
           </View>
           
-          <Text style={styles.screenTitle}>Screen 5: What's your age?</Text>
+          <Text style={styles.screenTitle}>What's your age?</Text>
           <Text style={styles.subtitle}>
             Thanks, {data.name}. We'll tailor this to you.
           </Text>

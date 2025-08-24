@@ -31,7 +31,7 @@ const PreparationLevel = () => {
         <OnboardingProgress currentStep={10} totalSteps={17} />
         
         <View style={styles.content}>
-          <Text style={styles.screenTitle}>Screen 10: Preparation Level</Text>
+          <Text style={styles.screenTitle}>How prepared do you feel?</Text>
           <Text style={styles.subtitle}>
             On a scale of 1-5, how prepared did you feel?
           </Text>

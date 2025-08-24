@@ -17,7 +17,7 @@ const ReassuranceDataProof = () => {
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 15: Reassurance & Data Proof</Text>
+            <Text style={styles.screenTitle}>You're in good hands</Text>
             
             <View style={styles.statContainer}>
               <View style={styles.statCircle}>

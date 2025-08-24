@@ -37,7 +37,7 @@ const SolutionFraming = () => {
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 14: Solution Framing</Text>
+            <Text style={styles.screenTitle}>Here's how we'll help</Text>
             
             <View style={styles.chainContainer}>
               <View style={styles.chainStep}>

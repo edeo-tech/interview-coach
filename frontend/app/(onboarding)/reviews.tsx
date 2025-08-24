@@ -90,7 +90,7 @@ const OnboardingReviews = () => {
         <OnboardingProgress currentStep={16} totalSteps={17} />
         
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.screenTitle}>Screen 16: Social Proof</Text>
+          <Text style={styles.screenTitle}>Join thousands who got hired</Text>
           <Text style={styles.subtitle}>
             Thousands of job seekers across Marketing, Tech, Sales trust Nextround to get ahead.
           </Text>

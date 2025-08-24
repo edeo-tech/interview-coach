@@ -40,7 +40,7 @@ const IndustryStruggle = () => {
         <OnboardingProgress currentStep={7} totalSteps={17} />
         
         <View style={styles.content}>
-          <Text style={styles.screenTitle}>Screen 7: Industry Struggle Validation</Text>
+          <Text style={styles.screenTitle}>Does this sound familiar?</Text>
           <Text style={styles.subtitle}>
             Most people in {industryName} struggle with:
           </Text>

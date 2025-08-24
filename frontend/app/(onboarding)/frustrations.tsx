@@ -35,7 +35,7 @@ const Frustrations = () => {
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>Screen 11: Most Frustrating Part</Text>
+            <Text style={styles.screenTitle}>What frustrated you most?</Text>
             <Text style={styles.subtitle}>
               What's the most frustrating part of interviews for you?
             </Text>
