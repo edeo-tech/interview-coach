@@ -1,21 +1,34 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
-import { router } from 'expo-router';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Image, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ChatGPTBackground from '../../components/ChatGPTBackground';
-import OnboardingProgress from '../../components/OnboardingProgress';
+import { useFocusEffect } from '@react-navigation/native';
+import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
+import OnboardingLayout from '../../components/OnboardingLayout';
 
 const ProfileCardIntro = () => {
+  const { contentTranslateX, contentOpacity, navigateWithTransition, animateIn } = useOnboardingNavigation();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      animateIn();
+    }, [])
+  );
+
   const handleContinue = () => {
-    router.push('/(onboarding)/name-input');
+    navigateWithTransition('/(onboarding)/name-input');
   };
 
   return (
-    <ChatGPTBackground style={styles.gradient}>
-      <View style={styles.container}>
-        <OnboardingProgress currentStep={3} totalSteps={17} />
-        
-        <View style={styles.content}>
+    <OnboardingLayout currentStep={3} totalSteps={17}>
+      <Animated.View 
+        style={[
+          styles.content,
+          {
+            transform: [{ translateX: contentTranslateX }],
+            opacity: contentOpacity,
+          }
+        ]}
+      >
           {/* Simple icon - following welcome screen approach */}
           <View style={styles.iconContainer}>
             <Image 
@@ -32,8 +45,6 @@ const ProfileCardIntro = () => {
           <Text style={styles.subtitle}>
             We'll create a personalized interview prep plan tailored just for you.
           </Text>
-        </View>
-
         <View style={styles.bottomContainer}>
           <TouchableOpacity 
             style={styles.primaryButton} 
@@ -44,27 +55,19 @@ const ProfileCardIntro = () => {
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
-      </View>
-    </ChatGPTBackground>
+      </Animated.View>
+    </OnboardingLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  // Layout - following welcome screen structure
-  gradient: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
   content: {
     flex: 1,
     paddingHorizontal: 24, // Design system screenPadding
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 20,
-    paddingBottom: 40,
+    paddingBottom: 20,
   },
   
   // Icon section - simplified like welcome screen
@@ -110,11 +113,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   
-  // Button section - exact welcome screen style
+  // Button section - exact welcome screen style  
   bottomContainer: {
     width: '100%',
     paddingHorizontal: 24,
-    marginBottom: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30, // Better spacing from bottom
   },
   primaryButton: {
     // Exact style from welcome screen

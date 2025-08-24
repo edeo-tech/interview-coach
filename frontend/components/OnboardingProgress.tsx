@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,6 +29,35 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   };
 
   const progress = calculateProgress();
+  
+  // Calculate previous step's progress for smooth transitions
+  const calculatePreviousProgress = () => {
+    if (currentStep <= 1) return 0;
+    const weights = [
+      0.05, 0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48, 0.54, 0.60, 
+      0.66, 0.72, 0.78, 0.84, 0.90, 0.96, 1.0
+    ];
+    return weights[Math.min(currentStep - 2, weights.length - 1)] || 0;
+  };
+
+  const previousProgress = calculatePreviousProgress();
+  
+  // Initialize animated value with previous progress to create smooth transition
+  const progressWidth = useRef(new Animated.Value(previousProgress * 100)).current;
+
+  // Animate progress bar when component mounts or currentStep changes
+  useEffect(() => {
+    // Small delay to ensure smooth transition after navigation
+    const timer = setTimeout(() => {
+      Animated.timing(progressWidth, {
+        toValue: progress * 100,
+        duration: 800, // Smooth 800ms animation
+        useNativeDriver: false, // Width animations require layout animations
+      }).start();
+    }, 100); // 100ms delay for smoother visual transition
+
+    return () => clearTimeout(timer);
+  }, [progress]);
 
   const handleBack = () => {
     if (onBack) {
@@ -46,12 +75,18 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
       
       <View style={styles.progressContainer}>
         <View style={styles.progressBackground}>
-          <LinearGradient
-            colors={['#F59E0B', '#F97316', '#EA580C']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.progressFill, { width: `${progress * 100}%` }]}
-          />
+          <Animated.View style={[styles.progressFill, { width: progressWidth.interpolate({
+            inputRange: [0, 100],
+            outputRange: ['0%', '100%'],
+            extrapolate: 'clamp'
+          }) }]}>
+            <LinearGradient
+              colors={['#F59E0B', '#F97316', '#EA580C']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradient}
+            />
+          </Animated.View>
         </View>
       </View>
     </View>
@@ -87,6 +122,10 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
+    borderRadius: 4,
+  },
+  gradient: {
+    flex: 1,
     borderRadius: 4,
   },
 });

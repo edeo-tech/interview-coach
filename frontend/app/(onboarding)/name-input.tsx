@@ -1,28 +1,41 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
-import { router } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ChatGPTBackground from '../../components/ChatGPTBackground';
-import OnboardingProgress from '../../components/OnboardingProgress';
+import { useFocusEffect } from '@react-navigation/native';
+import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
+import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 
 const NameInput = () => {
   const { data, updateData } = useOnboarding();
   const [name, setName] = useState(data.name);
+  const { contentTranslateX, contentOpacity, navigateWithTransition, animateIn } = useOnboardingNavigation();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      animateIn();
+    }, [])
+  );
 
   const handleContinue = () => {
     if (name.trim()) {
       updateData('name', name.trim());
-      router.push('/(onboarding)/age-input');
+      navigateWithTransition('/(onboarding)/age-input');
     }
   };
 
   return (
-    <ChatGPTBackground style={styles.gradient}>
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <OnboardingProgress currentStep={4} totalSteps={17} />
-        
-        <View style={styles.content}>
+    <OnboardingLayout currentStep={4} totalSteps={17}>
+      <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <Animated.View 
+          style={[
+            styles.content,
+            {
+              transform: [{ translateX: contentTranslateX }],
+              opacity: contentOpacity,
+            }
+          ]}
+        >
           <View style={styles.iconContainer}>
             <Ionicons name="person-outline" size={48} color="#A855F7" />
           </View>
@@ -44,8 +57,6 @@ const NameInput = () => {
               autoFocus={true}
             />
           </View>
-        </View>
-
         <View style={styles.bottomContainer}>
           <TouchableOpacity 
             style={[styles.continueButton, !name.trim() && styles.continueButtonDisabled]} 
@@ -56,25 +67,23 @@ const NameInput = () => {
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
+        </Animated.View>
       </KeyboardAvoidingView>
-    </ChatGPTBackground>
+    </OnboardingLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  gradient: {
+  keyboardContainer: {
     flex: 1,
-  },
-  container: {
-    flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   iconContainer: {
     marginBottom: 24,

@@ -10,7 +10,7 @@ const OnboardingLayout = () => {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'slide_from_right',
+          animation: 'none',
           contentStyle: styles.stackContent,
         }}
       >
