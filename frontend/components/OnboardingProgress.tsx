@@ -9,35 +9,60 @@ interface OnboardingProgressProps {
   totalSteps: number;
   onBack?: () => void;
   icon_name?: string;
+  shouldShowProgress?: boolean;
 }
 
 const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ 
   currentStep, 
   totalSteps,
   onBack,
-  icon_name
+  icon_name,
+  shouldShowProgress = true
 }) => {
-  // Goal-weighted progress calculation
-  // Early steps get more weight to encourage users
+  // Progress calculation for screens 3-12 only (cv-upload to problems/analyzing)
+  // Screen 3 (cv-upload) = 0%, Screen 12 (problems) = 100%
   const calculateProgress = () => {
-    // Updated weights for 17 total steps with better distribution
+    // Only show progress for steps 3-12 (cv-upload to analyzing screen)
+    if (currentStep < 3) return 0; // Before cv-upload
+    if (currentStep > 12) return 1; // After analyzing screen
+    
+    // Map steps 3-12 to progress 0-100%
+    // Step 3 = 0%, Step 12 = 100%
+    const progressStep = currentStep - 3; // Convert to 0-9 range
+    const totalProgressSteps = 9; // Steps 3-12 = 10 steps (0-9)
+    
+    // Weighted progress for better UX - early steps get more weight
     const weights = [
-      0.05, 0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48, 0.54, 0.60, 
-      0.66, 0.72, 0.78, 0.84, 0.90, 0.96, 1.0
+      0.0,   // Step 3 (cv-upload) = 0%
+      0.15,  // Step 4 (name-input) = 15%
+      0.25,  // Step 5 (age-input) = 25%
+      0.35,  // Step 6 (job-role) = 35%
+      0.45,  // Step 7 (industry-struggle) = 45%
+      0.55,  // Step 8 (past-outcomes) = 55%
+      0.65,  // Step 9 (preparation-rating) = 65%
+      0.75,  // Step 10 (communication-rating) = 75%
+      0.85,  // Step 11 (nerves-rating) = 85%
+      1.0    // Step 12 (problems/analyzing) = 100%
     ];
-    return weights[Math.min(currentStep - 1, weights.length - 1)] || 0;
+    
+    return weights[progressStep] || 0;
   };
 
   const progress = calculateProgress();
   
   // Calculate previous step's progress for smooth transitions
   const calculatePreviousProgress = () => {
-    if (currentStep <= 1) return 0;
+    if (currentStep <= 3) return 0;
+    if (currentStep > 12) return 1;
+    
+    const previousStep = currentStep - 1;
+    const progressStep = previousStep - 3;
+    
     const weights = [
-      0.05, 0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48, 0.54, 0.60, 
-      0.66, 0.72, 0.78, 0.84, 0.90, 0.96, 1.0
+      0.0, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1.0
     ];
-    return weights[Math.min(currentStep - 2, weights.length - 1)] || 0;
+    
+    return weights[progressStep] || 0;
   };
 
   const previousProgress = calculatePreviousProgress();
@@ -67,28 +92,33 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     }
   };
 
+  // Don't show progress bar for screens after analyzing (step 12)
+  const showProgressBar = shouldShowProgress && currentStep <= 12;
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
         <Ionicons name={icon_name as any || "arrow-back"} size={24} color="#ffffff" />
       </TouchableOpacity>
       
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBackground}>
-          <Animated.View style={[styles.progressFill, { width: progressWidth.interpolate({
-            inputRange: [0, 100],
-            outputRange: ['0%', '100%'],
-            extrapolate: 'clamp'
-          }) }]}>
-            <LinearGradient
-              colors={['#F59E0B', '#F97316', '#EA580C']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradient}
-            />
-          </Animated.View>
+      {showProgressBar && (
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBackground}>
+            <Animated.View style={[styles.progressFill, { width: progressWidth.interpolate({
+              inputRange: [0, 100],
+              outputRange: ['0%', '100%'],
+              extrapolate: 'clamp'
+            }) }]}>
+              <LinearGradient
+                colors={['#F59E0B', '#F97316', '#EA580C']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradient}
+              />
+            </Animated.View>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 };
