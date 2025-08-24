@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useToast } from '@/components/Toast';
@@ -44,11 +44,11 @@ const getScoreIconAndColor = (score: number | null | string) => {
 };
 
 const MenuItem = ({ icon, label, onPress }: any) => (
-    <Pressable style={styles.menuItem} onPress={onPress}>
+    <TouchableOpacity style={styles.menuItem} onPress={onPress}>
         <Ionicons name={icon} size={24} color="#6B7280" />
         <Text style={styles.menuLabel}>{label}</Text>
         <Ionicons name="chevron-forward" size={20} color="#6B7280" />
-    </Pressable>
+    </TouchableOpacity>
 );
 
 export default function Profile() {
@@ -339,14 +339,14 @@ export default function Profile() {
                 </View>
             </View>
 
-            <Pressable 
+            <TouchableOpacity 
                 style={[styles.logoutButton, logoutLoading && styles.logoutButtonDisabled]} 
                 onPress={handleLogout} 
                 disabled={logoutLoading}
             >
                 <Ionicons name="log-out-outline" size={20} color="#EF4444" />
                 <Text style={styles.logoutText}>{logoutLoading ? 'Logging Out...' : 'Log Out'}</Text>
-            </Pressable>
+            </TouchableOpacity>
 
             <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
         </ScrollView>

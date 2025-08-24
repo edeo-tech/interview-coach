@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -270,7 +270,7 @@ export default function AttemptGradingScreen() {
       </BlurredSection>
 
       {/* View Transcript Section */}
-      <Pressable 
+      <TouchableOpacity 
         style={[styles.transcriptCard, !data && styles.transcriptCardDisabled]}
         onPress={() => {
           if (data) {
@@ -298,7 +298,7 @@ export default function AttemptGradingScreen() {
           </View>
           <Ionicons name="chevron-forward" size={20} color={data ? "#F59E0B" : "#6B7280"} />
         </View>
-      </Pressable>
+      </TouchableOpacity>
     </ScrollView>
   );
 
@@ -308,12 +308,12 @@ export default function AttemptGradingScreen() {
         <View style={styles.header}>
           {/* Only show back button if coming from details (not from interview) */}
           {is_from_interview !== 'true' && (
-            <Pressable 
+            <TouchableOpacity 
               style={styles.backButton} 
               onPress={() => router.back()}
             >
               <Ionicons name="arrow-back" size={24} color="#fff" />
-            </Pressable>
+            </TouchableOpacity>
           )}
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
@@ -333,7 +333,7 @@ export default function AttemptGradingScreen() {
         {/* Only show footer button if coming from interview */}
         {is_from_interview === 'true' && (
           <View style={styles.footer}>
-            <Pressable 
+            <TouchableOpacity 
               style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
               onPress={() => {
                 if (data) {
@@ -347,7 +347,7 @@ export default function AttemptGradingScreen() {
                 Practice Again & Improve
               </Text>
               <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
-            </Pressable>
+            </TouchableOpacity>
           </View>
         )}
       </View>

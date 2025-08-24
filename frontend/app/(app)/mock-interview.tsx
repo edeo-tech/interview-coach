@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Image, Animated, PanResponder, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Animated, PanResponder, Dimensions, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -631,12 +631,12 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         {callState === 'active' && (
                             <>
                                 <View style={styles.callControls}>
-                                    <Pressable
+                                    <TouchableOpacity
                                         style={[styles.callControlButton, styles.endCallButton]}
                                         onPress={() => endInterview(conversation)}
                                     >
                                         <Ionicons name="call" size={28} color="#fff" />
-                                    </Pressable>
+                                    </TouchableOpacity>
                                 </View>
                                 
                                 <Text style={styles.statusText}>
@@ -646,12 +646,12 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         )}
 
                         {callState === 'ended' && (
-                            <Pressable
+                            <TouchableOpacity
                                 style={styles.backToMenuButton}
                                 onPress={() => router.back()}
                             >
                                 <Text style={styles.backToMenuText}>Back to Interview Details</Text>
-                            </Pressable>
+                            </TouchableOpacity>
                         )}
                     </View>
                 </ChatGPTBackground>
