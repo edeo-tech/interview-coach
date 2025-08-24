@@ -10,6 +10,7 @@ import { useCreateJobFromURL } from '../../../_queries/jobs/jobs';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
+import { useToast } from '../../../components/Toast';
 
 
 export default function CreateJob() {
@@ -25,6 +26,7 @@ export default function CreateJob() {
   const uploadCV = useUploadCV();
   const createFromURL = useCreateJobFromURL();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { showToast } = useToast();
   
   const isLoading = createFromURL.isPending || uploadCV.isPending;
 
@@ -78,7 +80,7 @@ export default function CreateJob() {
         setSelectedCVFile(result.assets[0]);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to select CV file');
+      showToast('Unable to select CV file. Please try again.', 'error');
     }
   };
 
@@ -102,9 +104,8 @@ export default function CreateJob() {
         file_type: selectedCVFile.mimeType || 'unknown',
         file_size_kb: selectedCVFile.size ? Math.round(selectedCVFile.size / 1024) : null
       });
-      Alert.alert('Success!', 'Your CV has been uploaded successfully.', [
-        { text: 'Continue', onPress: () => setCurrentStep('job') }
-      ]);
+      showToast('CV uploaded successfully', 'success');
+      setCurrentStep('job');
       
     } catch (error: any) {
       posthogCapture('cv_upload_failed', {
@@ -112,10 +113,7 @@ export default function CreateJob() {
         error_message: error.response?.data?.detail || error.message,
         file_type: selectedCVFile.mimeType || 'unknown'
       });
-      Alert.alert(
-        'Upload Error', 
-        error.response?.data?.detail || 'Failed to upload CV. Please try again.'
-      );
+      showToast('Problem uploading CV. Please try again.', 'error');
     }
   };
 
@@ -160,7 +158,7 @@ export default function CreateJob() {
         error_message: error.response?.data?.detail || error.message,
         has_cv: !!currentCV
       });
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to create job from URL');
+      showToast('Unable to process job link. Please try again.', 'error');
     }
   };
 

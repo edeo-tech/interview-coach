@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useStartAttempt, useFinishAttempt, useAddTranscript } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
+import { useToast } from '../../../../components/Toast';
 
 const InterviewSession = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,6 +21,7 @@ const InterviewSession = () => {
   const finishAttemptMutation = useFinishAttempt();
   const addTranscriptMutation = useAddTranscript();
   const { posthogScreen } = usePosthogSafely();
+  const { showToast } = useToast();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -48,10 +50,7 @@ const InterviewSession = () => {
       simulateInterview();
       
     } catch (error: any) {
-      Alert.alert(
-        'Error', 
-        error.response?.data?.detail || 'Failed to start interview session'
-      );
+      showToast('Unable to start interview session. Please try again.', 'error');
       router.back();
     }
   };
@@ -120,10 +119,7 @@ const InterviewSession = () => {
 
       router.replace(`/interviews/${id}/results?attemptId=${attemptId}`);
     } catch (error: any) {
-      Alert.alert(
-        'Error', 
-        error.response?.data?.detail || 'Failed to end interview session'
-      );
+      showToast('Problem ending interview session. Please try again.', 'error');
     }
   };
 

@@ -104,7 +104,7 @@ const Settings = () => {
         },
         onError: (error) => {
           console.error('Update name error:', error);
-          Alert.alert('Error', 'Failed to update name. Please try again.');
+          showToast('Problem updating your name. Please try again.', 'error');
           setName(auth?.name || '');
           setIsEditingName(false);
         }
@@ -136,7 +136,7 @@ const Settings = () => {
               },
               onError: (error) => {
                 console.error('Delete account error:', error);
-                Alert.alert('Error', 'Failed to delete account. Please try again.');
+                showToast('Unable to delete account. Please try again.', 'error');
               }
             });
           },

@@ -72,7 +72,6 @@ export const useStartJobInterviewAttempt = () => {
     },
     onError: (error: any) => {
       console.error('Error starting interview attempt:', error);
-      Alert.alert('Error', 'Failed to start interview attempt');
     },
   });
 };

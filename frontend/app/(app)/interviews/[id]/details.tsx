@@ -10,6 +10,7 @@ import { useInterview, useStartAttempt, useInterviewAttemptsCount } from '../../
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
 import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
+import { useToast } from '../../../../components/Toast';
 
 const getInterviewTypeDisplayName = (type: string): string => {
   const displayNames: Record<string, string> = {
@@ -57,6 +58,7 @@ export default function InterviewDetails() {
   const { posthogScreen } = usePosthogSafely();
   const [attemptGrades, setAttemptGrades] = useState<{[key: string]: number}>({});
   const { canRetryInterview, isPaywallEnabled } = useInterviewRetryCheck();
+  const { showToast } = useToast();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -216,7 +218,7 @@ export default function InterviewDetails() {
         }
       });
     } catch (error: any) {
-      Alert.alert('Error', 'Failed to start interview');
+      showToast('Unable to start interview. Please try again.', 'error');
     }
   };
 
