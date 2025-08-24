@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
 
 const BlurredSection = ({ 
@@ -37,7 +39,11 @@ const BlurredSection = ({
             <Text style={blurredStyles.upgradeMessage}>
               Upgrade to Premium to see detailed feedback and scores
             </Text>
-            <TouchableOpacity onPress={onUpgradePress} style={blurredStyles.upgradeButton}>
+            <TouchableOpacity onPress={() => {
+              // Heavy impact for upgrade action - critical premium action
+              useHapticsSafely().impactAsync(ImpactFeedbackStyle.Heavy);
+              onUpgradePress?.();
+            }} style={blurredStyles.upgradeButton}>
               <Text style={blurredStyles.upgradeButtonText}>Upgrade Now</Text>
             </TouchableOpacity>
           </View>
@@ -102,6 +108,7 @@ export default function AttemptGradingScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
   const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
 
   const [pollCount, setPollCount] = useState(0);
@@ -274,6 +281,8 @@ export default function AttemptGradingScreen() {
         style={[styles.transcriptCard, !data && styles.transcriptCardDisabled]}
         onPress={() => {
           if (data) {
+            // Light impact for viewing transcript - secondary action
+            impactAsync(ImpactFeedbackStyle.Light);
             router.push({ 
               pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
               params: { id, attemptId, is_from_interview: 'false' } 
@@ -310,7 +319,11 @@ export default function AttemptGradingScreen() {
           {is_from_interview !== 'true' && (
             <TouchableOpacity 
               style={styles.backButton} 
-              onPress={() => router.back()}
+              onPress={() => {
+                // Light impact for navigation back - minor action
+                impactAsync(ImpactFeedbackStyle.Light);
+                router.back();
+              }}
             >
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
@@ -337,6 +350,8 @@ export default function AttemptGradingScreen() {
               style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
               onPress={() => {
                 if (data) {
+                  // Medium impact for practice again - important motivational action
+                  impactAsync(ImpactFeedbackStyle.Medium);
                   router.replace('/(app)/(tabs)/home');
                 }
               }}

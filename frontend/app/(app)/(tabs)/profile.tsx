@@ -8,6 +8,8 @@ import { useInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
 import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
 
@@ -44,7 +46,11 @@ const getScoreIconAndColor = (score: number | null | string) => {
 };
 
 const MenuItem = ({ icon, label, onPress }: any) => (
-    <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <TouchableOpacity style={styles.menuItem} onPress={() => {
+        // Light impact for menu navigation - minor action
+        useHapticsSafely().impactAsync(ImpactFeedbackStyle.Light);
+        onPress();
+    }}>
         <Ionicons name={icon} size={24} color="#6B7280" />
         <Text style={styles.menuLabel}>{label}</Text>
         <Ionicons name="chevron-forward" size={20} color="#6B7280" />
@@ -59,6 +65,7 @@ export default function Profile() {
     const { data: currentCV } = useCV();
     const { data: userStats } = useUserStats();
     const { posthogScreen, posthogCapture } = usePosthogSafely();
+    const { impactAsync, selectionAsync } = useHapticsSafely();
 
     useFocusEffect(
         React.useCallback(() => {
@@ -221,6 +228,8 @@ export default function Profile() {
                 <TouchableOpacity 
                     style={styles.cvContainer} 
                     onPress={() => {
+                        // Medium impact for CV upload - important profile action
+                        impactAsync(ImpactFeedbackStyle.Medium);
                         posthogCapture('navigate_to_cv_upload', {
                             source: 'profile',
                             has_existing_cv: !!currentCV
@@ -280,7 +289,11 @@ export default function Profile() {
                         interviews.slice(0, 5).map((interview) => (
                             <TouchableOpacity
                                 key={interview.id}
-                                onPress={() => handleInterviewPress(interview.id)}
+                                onPress={() => {
+                                    // Selection haptic for interview history items
+                                    selectionAsync();
+                                    handleInterviewPress(interview.id);
+                                }}
                                 style={styles.interviewItem}
                             >
                                 <View style={styles.interviewIcon}>
@@ -341,7 +354,11 @@ export default function Profile() {
 
             <TouchableOpacity 
                 style={[styles.logoutButton, logoutLoading && styles.logoutButtonDisabled]} 
-                onPress={handleLogout} 
+                onPress={() => {
+                    // Heavy impact for logout - critical destructive action
+                    impactAsync(ImpactFeedbackStyle.Heavy);
+                    handleLogout();
+                }} 
                 disabled={logoutLoading}
             >
                 <Ionicons name="log-out-outline" size={20} color="#EF4444" />

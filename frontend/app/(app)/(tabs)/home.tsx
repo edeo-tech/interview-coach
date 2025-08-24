@@ -7,6 +7,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useUserJobs } from '../../../_queries/jobs/jobs';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
 import CVUploadProgress from '../../../components/CVUploadProgress';
@@ -17,6 +19,7 @@ export default function Home() {
   const uploadMutation = useUploadCV();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { impactAsync, selectionAsync } = useHapticsSafely();
   
   const [uploadProgress, setUploadProgress] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
@@ -29,6 +32,8 @@ export default function Home() {
   );
 
   const handleCreateNewJob = () => {
+    // Medium impact for creating new job - important action
+    impactAsync(ImpactFeedbackStyle.Medium);
     posthogCapture('navigate_to_create_job', {
       source: 'home',
       has_cv: !!cv,
@@ -38,6 +43,8 @@ export default function Home() {
   };
 
   const handleJobPress = (jobId: string) => {
+    // Selection haptic for job cards
+    selectionAsync();
     posthogCapture('view_job_details', {
       source: 'home',
       job_id: jobId
@@ -90,6 +97,8 @@ export default function Home() {
         return;
       }
 
+      // Medium impact for CV upload - important profile action
+      impactAsync(ImpactFeedbackStyle.Medium);
       setUploadProgress(true);
       setShowProgressModal(true);
 

@@ -3,11 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Animated, 
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useCV } from '../../_queries/interviews/cv';
 import { useStartAttempt, useAddTranscript, useFinishAttempt, useInterview } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -99,6 +101,7 @@ export default function MockInterview() {
     const [duration, setDuration] = useState(0);
     const [interviewNotes, setInterviewNotes] = useState<string[]>([]);
     const { posthogScreen, posthogCapture } = usePosthogSafely();
+    const { impactAsync } = useHapticsSafely();
     
     // Fetch user data and CV
     const { auth } = useAuth();
@@ -633,7 +636,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                 <View style={styles.callControls}>
                                     <TouchableOpacity
                                         style={[styles.callControlButton, styles.endCallButton]}
-                                        onPress={() => endInterview(conversation)}
+                                        onPress={() => {
+                                            // Heavy impact for ending interview - critical action
+                                            impactAsync(ImpactFeedbackStyle.Heavy);
+                                            endInterview(conversation);
+                                        }}
                                     >
                                         <Ionicons name="call" size={28} color="#fff" />
                                     </TouchableOpacity>
@@ -648,7 +655,11 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         {callState === 'ended' && (
                             <TouchableOpacity
                                 style={styles.backToMenuButton}
-                                onPress={() => router.back()}
+                                onPress={() => {
+                                    // Light impact for navigation back - minor action
+                                    impactAsync(ImpactFeedbackStyle.Light);
+                                    router.back();
+                                }}
                             >
                                 <Text style={styles.backToMenuText}>Back to Interview Details</Text>
                             </TouchableOpacity>

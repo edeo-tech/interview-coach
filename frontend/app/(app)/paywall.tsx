@@ -16,6 +16,8 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import Purchases, { PurchasesOffering, PurchasesPackage, CustomerInfo } from 'react-native-purchases';
 import { useToast } from '../../components/Toast';
 import { useCustomerInfo } from '../../context/purchases/CustomerInfo';
@@ -32,6 +34,7 @@ interface OfferingCardProps {
 
 const Paywall = () => {
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { impactAsync, notificationAsync } = useHapticsSafely();
   const { showToast } = useToast();
   const { setCustomerInfo } = useCustomerInfo();
   const params = useLocalSearchParams();
@@ -221,7 +224,11 @@ const Paywall = () => {
         styles.offeringCard,
         isSelected && styles.offeringCardSelected
       ]}
-      onPress={onSelect}
+      onPress={() => {
+        // Medium impact for subscription plan selection - important choice
+        useHapticsSafely().impactAsync(ImpactFeedbackStyle.Medium);
+        onSelect();
+      }}
       activeOpacity={0.8}
     >
       <View style={styles.offeringCardContent}>
@@ -239,6 +246,8 @@ const Paywall = () => {
                 style={styles.infoIcon}
                 onPress={(e) => {
                   e.stopPropagation();
+                  // Light impact for info button - minor action
+                  impactAsync(ImpactFeedbackStyle.Light);
                   setIsPopularModalVisible(true);
                 }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -285,7 +294,11 @@ const Paywall = () => {
           <View style={styles.modalHeader}>
             <TouchableOpacity
               style={styles.modalCloseButton}
-              onPress={() => setIsPopularModalVisible(false)}
+              onPress={() => {
+                // Light impact for modal close - minor action
+                impactAsync(ImpactFeedbackStyle.Light);
+                setIsPopularModalVisible(false);
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name="close" size={20} color="#6b7280" />
@@ -335,7 +348,11 @@ const Paywall = () => {
           {/* Close button */}
           <TouchableOpacity
             style={styles.closeButton}
-            onPress={() => router.back()}
+            onPress={() => {
+              // Light impact for navigation back - minor action
+              impactAsync(ImpactFeedbackStyle.Light);
+              router.back();
+            }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="close" size={20} color="rgba(255,255,255,0.3)" />
@@ -396,7 +413,11 @@ const Paywall = () => {
               styles.continueButton,
               (isPurchasing || !selectedPackage) && styles.continueButtonDisabled
             ]}
-            onPress={handlePurchase}
+            onPress={() => {
+              // Heavy impact for purchase - critical financial action
+              impactAsync(ImpactFeedbackStyle.Heavy);
+              handlePurchase();
+            }}
             disabled={isPurchasing || !selectedPackage}
           >
             {isPurchasing ? (
@@ -408,7 +429,11 @@ const Paywall = () => {
 
           <TouchableOpacity
             style={styles.restoreButton}
-            onPress={handleRestore}
+            onPress={() => {
+              // Medium impact for restore - important but not critical
+              impactAsync(ImpactFeedbackStyle.Medium);
+              handleRestore();
+            }}
             disabled={isRestoring || isPurchasing}
           >
             {isRestoring ? (
