@@ -247,7 +247,7 @@ async def update_profile(
     
     # Return updated user data (excluding sensitive fields)
     user_dict = updated_user.model_dump(
-        exclude={'password', 'expo_notification_token', 'device_os', 'stripe_customer_id', 'stripe_subscription_id'},
+        exclude={'password', 'expo_notification_token', 'device_os'}, # 'stripe_customer_id', 'stripe_subscription_id'},
         exclude_none=True
     )
     

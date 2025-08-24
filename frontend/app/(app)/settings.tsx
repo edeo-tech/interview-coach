@@ -79,6 +79,14 @@ const Settings = () => {
   const handleUpdateName = () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Name cannot be empty');
+      setName(auth?.name || '');
+      setIsEditingName(false);
+      return;
+    }
+
+    // Only update if the name has actually changed
+    if (name.trim() === auth?.name) {
+      setIsEditingName(false);
       return;
     }
 
@@ -98,9 +106,14 @@ const Settings = () => {
           console.error('Update name error:', error);
           Alert.alert('Error', 'Failed to update name. Please try again.');
           setName(auth?.name || '');
+          setIsEditingName(false);
         }
       }
     );
+  };
+
+  const handleNameBlur = () => {
+    handleUpdateName();
   };
 
   const handleDeleteAccount = () => {
@@ -234,27 +247,12 @@ const Settings = () => {
                     placeholder="Enter your name"
                     placeholderTextColor="#6b7280"
                     onSubmitEditing={handleUpdateName}
+                    onBlur={handleNameBlur}
                     autoFocus
                   />
-                  <TouchableOpacity
-                    onPress={handleUpdateName}
-                    disabled={updatePending}
-                  >
-                    {updatePending ? (
-                      <ActivityIndicator size="small" color="#F59E0B" />
-                    ) : (
-                      <Ionicons name="checkmark" size={20} color="#10b981" />
-                    )}
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setIsEditingName(false);
-                      setName(auth?.name || '');
-                    }}
-                    style={{ marginLeft: 8 }}
-                  >
-                    <Ionicons name="close" size={20} color="#ef4444" />
-                  </TouchableOpacity>
+                  {updatePending && (
+                    <ActivityIndicator size="small" color="#F59E0B" style={{ marginLeft: 8 }} />
+                  )}
                 </View>
               ) : (
                 <TouchableOpacity
