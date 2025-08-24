@@ -79,7 +79,7 @@ const post_login_logic = async (
     // Navigate based on whether this is a new user or returning user
     if (isNewUser) {
         // First-time login after registration - start onboarding
-        router.replace('/(onboarding)/cv-upload');
+        router.replace('/(onboarding)/profile-setup');
     } else {
         // Returning user - go directly to home
         router.replace('/(app)/(tabs)/home');

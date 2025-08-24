@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView, Animated } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -9,13 +8,7 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 const NameInput = () => {
   const { data, updateData } = useOnboarding();
   const [name, setName] = useState(data.name);
-  const { contentTranslateX, contentOpacity, navigateWithTransition, animateIn } = useOnboardingNavigation();
-
-  useFocusEffect(
-    React.useCallback(() => {
-      animateIn();
-    }, [])
-  );
+  const { navigateWithTransition } = useOnboardingNavigation();
 
   const handleContinue = () => {
     if (name.trim()) {
@@ -27,15 +20,7 @@ const NameInput = () => {
   return (
     <OnboardingLayout currentStep={4} totalSteps={17}>
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Animated.View 
-          style={[
-            styles.content,
-            {
-              transform: [{ translateX: contentTranslateX }],
-              opacity: contentOpacity,
-            }
-          ]}
-        >
+        <View style={styles.content}>
           <View style={styles.iconContainer}>
             <Ionicons name="person-outline" size={48} color="#A855F7" />
           </View>
@@ -67,7 +52,7 @@ const NameInput = () => {
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
-        </Animated.View>
+        </View>
       </KeyboardAvoidingView>
     </OnboardingLayout>
   );

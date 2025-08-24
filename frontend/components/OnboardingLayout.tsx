@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import ChatGPTBackground from './ChatGPTBackground';
 import OnboardingProgress from './OnboardingProgress';
 
@@ -21,13 +21,14 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   showBackButton = false,
   onBackPress
 }) => {
+  const navigation = useNavigation();
   // Animation for content sliding
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
 
   useFocusEffect(
     React.useCallback(() => {
-      // Animate content sliding in from right
+      // For the old OnboardingLayout - just animate in from right
       contentTranslateX.setValue(SCREEN_WIDTH);
       contentOpacity.setValue(0);
 
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   },
   persistentHeader: {
     paddingTop: Platform.OS === 'ios' ? 20 : 20,
-    paddingHorizontal: 24,
+    // Remove padding - OnboardingProgress handles its own padding
   },
   animatedContent: {
     flex: 1,

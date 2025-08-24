@@ -1,10 +1,12 @@
 import { useRef } from 'react';
 import { Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const useOnboardingNavigation = () => {
+  const navigation = useNavigation();
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
 
@@ -27,10 +29,16 @@ export const useOnboardingNavigation = () => {
     });
   };
 
-  const animateIn = () => {
-    // Reset position for new content
-    contentTranslateX.setValue(SCREEN_WIDTH);
-    contentOpacity.setValue(0);
+  const animateIn = (direction: 'forward' | 'back' = 'forward') => {
+    if (direction === 'back') {
+      // For back navigation, slide in from left or no animation
+      contentTranslateX.setValue(-SCREEN_WIDTH);
+      contentOpacity.setValue(0);
+    } else {
+      // For forward navigation, slide in from right
+      contentTranslateX.setValue(SCREEN_WIDTH);
+      contentOpacity.setValue(0);
+    }
 
     // Slide in animation
     Animated.parallel([
@@ -47,10 +55,17 @@ export const useOnboardingNavigation = () => {
     ]).start();
   };
 
+  const animateInInstantly = () => {
+    // For back navigation - just appear without animation
+    contentTranslateX.setValue(0);
+    contentOpacity.setValue(1);
+  };
+
   return {
     contentTranslateX,
     contentOpacity,
     navigateWithTransition,
     animateIn,
+    animateInInstantly,
   };
 };

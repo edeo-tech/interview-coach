@@ -186,7 +186,7 @@ const Welcome = () => {
           
           <TouchableOpacity 
             style={[styles.loginLink, { marginTop: 8 }]} 
-            onPress={() => router.push('/(onboarding)/cv-upload')}
+            onPress={() => router.push('/(onboarding)/profile-setup')}
             activeOpacity={0.7}
           >
             <Text style={[styles.loginLinkText, { color: '#F59E0B' }]}>Test Onboarding Flow</Text>

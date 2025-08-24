@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView, Animated } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -9,13 +8,7 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 const AgeInput = () => {
   const { data, updateData } = useOnboarding();
   const [age, setAge] = useState(data.age);
-  const { contentTranslateX, contentOpacity, navigateWithTransition, animateIn } = useOnboardingNavigation();
-
-  useFocusEffect(
-    React.useCallback(() => {
-      animateIn();
-    }, [])
-  );
+  const { navigateWithTransition } = useOnboardingNavigation();
 
   const handleContinue = () => {
     if (age.trim() && !isNaN(Number(age)) && Number(age) > 0) {
@@ -29,15 +22,7 @@ const AgeInput = () => {
   return (
     <OnboardingLayout currentStep={5} totalSteps={17}>
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Animated.View 
-          style={[
-            styles.content,
-            {
-              transform: [{ translateX: contentTranslateX }],
-              opacity: contentOpacity,
-            }
-          ]}
-        >
+        <View style={styles.content}>
           <View style={styles.iconContainer}>
             <Ionicons name="calendar-outline" size={48} color="#A855F7" />
           </View>
@@ -69,7 +54,7 @@ const AgeInput = () => {
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
-        </Animated.View>
+        </View>
       </KeyboardAvoidingView>
     </OnboardingLayout>
   );

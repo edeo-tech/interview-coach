@@ -14,9 +14,10 @@ const OnboardingLayout = () => {
           contentStyle: styles.stackContent,
         }}
       >
-        <Stack.Screen name="cv-upload" /> {/* Profile Card Intro - Screen 3 */}
-        <Stack.Screen name="name-input" /> {/* Name Input - Screen 4 */}
-        <Stack.Screen name="age-input" /> {/* Age Input - Screen 5 */}
+        <Stack.Screen name="profile-setup" /> {/* Unified Profile Setup - Screens 3-5 */}
+        <Stack.Screen name="cv-upload" /> {/* Old Profile Card Intro - Screen 3 (deprecated) */}
+        <Stack.Screen name="name-input" /> {/* Old Name Input - Screen 4 (deprecated) */}
+        <Stack.Screen name="age-input" /> {/* Old Age Input - Screen 5 (deprecated) */}
         <Stack.Screen name="job-role" /> {/* Industry Selection - Screen 6 */}
         <Stack.Screen name="industry-struggle" /> {/* Industry Struggle - Screen 7 */}
         <Stack.Screen name="past-outcomes" /> {/* Past Interview Outcomes - Screen 8 */}

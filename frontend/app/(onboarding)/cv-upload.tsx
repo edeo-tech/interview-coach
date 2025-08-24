@@ -1,18 +1,11 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Image, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 
 const ProfileCardIntro = () => {
-  const { contentTranslateX, contentOpacity, navigateWithTransition, animateIn } = useOnboardingNavigation();
-
-  useFocusEffect(
-    React.useCallback(() => {
-      animateIn();
-    }, [])
-  );
+  const { navigateWithTransition } = useOnboardingNavigation();
 
   const handleContinue = () => {
     navigateWithTransition('/(onboarding)/name-input');
@@ -20,42 +13,35 @@ const ProfileCardIntro = () => {
 
   return (
     <OnboardingLayout currentStep={3} totalSteps={17}>
-      <Animated.View 
-        style={[
-          styles.content,
-          {
-            transform: [{ translateX: contentTranslateX }],
-            opacity: contentOpacity,
-          }
-        ]}
-      >
-          {/* Simple icon - following welcome screen approach */}
-          <View style={styles.iconContainer}>
-            <Image 
-              source={require('../../assets/images/FinalAppIconTransparent.png')}
-              style={styles.iconImage}
-              resizeMode="contain"
-            />
-          </View>
-          
-          {/* Typography following design system hierarchy */}
-          <Text style={styles.titleMain}>Let's build your</Text>
-          <Text style={styles.titleBrand}>profile</Text>
-          
-          <Text style={styles.subtitle}>
-            We'll create a personalized interview prep plan tailored just for you.
-          </Text>
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity 
-            style={styles.primaryButton} 
-            onPress={handleContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.primaryButtonText}>Let's start building</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-          </TouchableOpacity>
+      <View style={styles.content}>
+        {/* Simple icon - following welcome screen approach */}
+        <View style={styles.iconContainer}>
+          <Image 
+            source={require('../../assets/images/FinalAppIconTransparent.png')}
+            style={styles.iconImage}
+            resizeMode="contain"
+          />
         </View>
-      </Animated.View>
+        
+        {/* Typography following design system hierarchy */}
+        <Text style={styles.titleMain}>Let's build your</Text>
+        <Text style={styles.titleBrand}>profile</Text>
+        
+        <Text style={styles.subtitle}>
+          We'll create a personalized interview prep plan tailored just for you.
+        </Text>
+      </View>
+
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity 
+          style={styles.primaryButton} 
+          onPress={handleContinue}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.primaryButtonText}>Let's start building</Text>
+          <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
     </OnboardingLayout>
   );
 };

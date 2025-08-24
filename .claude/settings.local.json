@@ -21,7 +21,8 @@
       "Bash(python -m pytest --version)",
       "Bash(pip3 list:*)",
       "Bash(python3:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npx react-native start:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
