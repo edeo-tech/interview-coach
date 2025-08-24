@@ -258,14 +258,12 @@ export default function Home() {
               <Text style={styles.emptyStateSubtitle}>
                 Add your first job application to start practicing interviews
               </Text>
-              <View style={styles.ctaContainer}>
-                <View style={styles.ctaArrow}>
-                  <Ionicons name="arrow-up" size={20} color="#8b5cf6" />
-                </View>
-                <Text style={styles.ctaText}>
-                  Tap the + button above to get started
+              <TouchableOpacity onPress={handleCreateNewJob} style={styles.ctaButton}>
+                <Text style={styles.ctaButtonText}>
+                  Create job
                 </Text>
-              </View>
+                <Ionicons name="add" size={18} color="#ffffff" />
+              </TouchableOpacity>
             </View>
           ) : (
             jobs.map((job) => (
@@ -480,6 +478,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    backgroundColor: '#8b5cf6',
+    borderRadius: 12,
+    gap: 8,
+  },
+  ctaButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   emptyStateText: {
     color: '#9ca3af',
