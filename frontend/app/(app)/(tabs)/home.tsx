@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
+import BrandfetchLogo from '../../../components/BrandfetchLogo';
 
 export default function Home() {
   const { 
@@ -31,7 +32,7 @@ export default function Home() {
     }
   };
   
-  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: { layoutMeasurement: any, contentOffset: any, contentSize: any }) => {
     const paddingToBottom = 20;
     return layoutMeasurement.height + contentOffset.y >=
       contentSize.height - paddingToBottom;
@@ -137,21 +138,15 @@ export default function Home() {
               >
                 <View style={styles.interviewCardContent}>
                   <View style={styles.cardLeftAccent}>
-                    {job.company_logo_url ? (
-                      <Image 
-                        source={{ uri: job.company_logo_url }}
-                        style={styles.companyLogo}
-                        onError={() => {
-                          // Fallback handled by conditional rendering
-                        }}
-                      />
-                    ) : (
-                      <Ionicons 
-                        name="briefcase-outline"
-                        size={28} 
-                        color="#ffffff" 
-                      />
-                    )}
+                    <BrandfetchLogo
+                      identifierType={job.brandfetch_identifier_type}
+                      identifierValue={job.brandfetch_identifier_value}
+                      fallbackUrl={job.company_logo_url}
+                      size={32}
+                      imageStyle={styles.companyLogo}
+                      fallbackIconColor="#ffffff"
+                      fallbackIconName="briefcase-outline"
+                    />
                   </View>
                   
                   <View style={styles.interviewCardMain}>
@@ -189,7 +184,7 @@ export default function Home() {
                         />
                       </View>
                       <Text style={styles.interviewDate}>
-                        {formatDate(job.created_at)}
+                        Created {formatDate(job.created_at)}
                       </Text>
                     </View>
                   </View>

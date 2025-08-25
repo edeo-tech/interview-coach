@@ -2,7 +2,7 @@ from fastapi import Request
 from typing import Optional, List, Dict
 from datetime import datetime, timezone, timedelta
 
-from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument
+from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, countDocuments
 from models.interviews.attempts import InterviewAttempt, InterviewFeedback
 
 async def create_attempt(req: Request, interview_id: str, job_id: str, user_id: str) -> InterviewAttempt:
@@ -42,6 +42,28 @@ async def get_interview_attempts(req: Request, interview_id: str) -> List[Interv
         interview_id=interview_id,
         order_by="started_at"
     )
+
+async def get_interview_attempts_paginated(req: Request, interview_id: str, limit: int = 10, skip: int = 0) -> Dict[str, any]:
+    """Get paginated attempts for a specific interview with metadata"""
+    # Get the attempts
+    attempts = await getMultipleDocuments(
+        req, "interview_attempts", InterviewAttempt,
+        interview_id=interview_id,
+        order_by="started_at",
+        limit=limit,
+        skip=skip
+    )
+    
+    # Get total count to determine if there are more pages
+    total_count = await countDocuments(req, "interview_attempts", InterviewAttempt, interview_id=interview_id)
+    has_more = (skip + len(attempts)) < total_count
+    
+    return {
+        "attempts": attempts,
+        "has_more": has_more,
+        "total_count": total_count,
+        "current_page_size": len(attempts)
+    }
 
 async def update_attempt(req: Request, attempt_id: str, **kwargs) -> Optional[InterviewAttempt]:
     """Update an interview attempt"""

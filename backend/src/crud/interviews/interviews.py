@@ -361,19 +361,32 @@ async def create_interview_for_job(
 ) -> Interview:
     """Create an interview linked to a job"""
     
-    interview = Interview(
-        job_id=job_id,
-        user_id=user_id,
-        interview_type=interview_type,
-        stage_order=stage_order,
-        status="pending",
-        difficulty=difficulty,
-        focus_areas=focus_areas or [],
-        created_at=datetime.now(timezone.utc)
-    )
+    print(f"Creating interview for job {job_id}: type={interview_type.value}, stage={stage_order}, difficulty={difficulty}")
     
-    # Save the interview using generic CRUD
-    return await createDocument(req, "interviews", Interview, interview)
+    try:
+        interview = Interview(
+            job_id=job_id,
+            user_id=user_id,
+            interview_type=interview_type,
+            stage_order=stage_order,
+            status="pending",
+            difficulty=difficulty,
+            focus_areas=focus_areas or [],
+            created_at=datetime.now(timezone.utc)
+        )
+        
+        print(f"Interview object created with focus areas: {focus_areas or []}")
+        
+        # Save the interview using generic CRUD
+        print("Saving interview to database")
+        created_interview = await createDocument(req, "interviews", Interview, interview)
+        
+        print(f"Successfully created interview with ID: {created_interview.id}")
+        return created_interview
+        
+    except Exception as e:
+        print(f"Failed to create interview for job {job_id}: {str(e)}")
+        raise
 
 
 async def get_job_interviews(req: Request, job_id: str) -> List[Interview]:

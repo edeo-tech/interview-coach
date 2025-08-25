@@ -10,6 +10,8 @@ class Job(MongoBaseModel):
     company: str
     role_title: str
     company_logo_url: Optional[str] = None
+    brandfetch_identifier_type: Optional[str] = None  # "domain" or "brandId"
+    brandfetch_identifier_value: Optional[str] = None
     location: str = ""
     employment_type: str = "full-time"
     experience_level: str = "mid"  # junior/mid/senior/lead/principal

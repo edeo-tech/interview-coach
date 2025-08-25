@@ -6,6 +6,8 @@ export interface Job {
   company: string;
   role_title: string;
   company_logo_url?: string;
+  brandfetch_identifier_type?: string;
+  brandfetch_identifier_value?: string;
   location: string;
   employment_type: string;
   experience_level: string;

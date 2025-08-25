@@ -9,6 +9,7 @@ from services.job_processing_service import JobProcessingService
 from services.interview_stage_service import InterviewStageService
 from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, countDocuments, SortDirection
 from crud.interviews.interviews import create_interview_for_job
+from crud.companies import get_or_create_company_info
 
 
 async def create_job_from_url(
@@ -18,14 +19,41 @@ async def create_job_from_url(
 ) -> Job:
     """Create a new job and its interview stages from a job posting URL"""
     
+    print(f"Starting job creation from URL for user {user_id}: {job_url}")
+    
     # Process the job URL to extract details
+    print(f"Initializing JobProcessingService to process URL: {job_url}")
     job_processor = JobProcessingService()
     try:
+        print(f"Processing job URL content...")
         job_data = await job_processor.process_job_url(job_url)
+        print(f"Successfully processed job URL. Company: {job_data.get('company', 'N/A')}, Role: {job_data.get('role_title', 'N/A')}")
+    except Exception as e:
+        print(f"Failed to process job URL {job_url}: {str(e)}")
+        raise
     finally:
         await job_processor.close()
+        print("JobProcessingService client closed")
+    
+    # Get or create company info with Brandfetch identifiers
+    # Note: We don't use the job URL as company website since job postings can be on platforms like LinkedIn
+    print(f"Getting or creating company info for: {job_data['company']} (using company name only)")
+    try:
+        brandfetch_info = await get_or_create_company_info(
+            req,
+            job_data["company"],
+            None  # Don't pass job URL as company website - use company name only
+        )
+        if brandfetch_info:
+            print(f"Retrieved Brandfetch info: {brandfetch_info[0]}={brandfetch_info[1]}")
+        else:
+            print(f"No Brandfetch info found for company: {job_data['company']}")
+    except Exception as e:
+        print(f"Error getting company info for {job_data['company']}: {str(e)}")
+        brandfetch_info = None
     
     # Create the job record
+    print("Creating job record with extracted data")
     job = Job(
         user_id=user_id,
         company=job_data["company"],
@@ -42,28 +70,62 @@ async def create_job_from_url(
         created_at=datetime.now(timezone.utc)
     )
     
+    # Add Brandfetch identifiers if found
+    if brandfetch_info:
+        job.brandfetch_identifier_type = brandfetch_info[0]
+        job.brandfetch_identifier_value = brandfetch_info[1]
+        print(f"Added Brandfetch identifiers to job record")
+    else:
+        print("No Brandfetch identifiers to add - will use fallback logo handling")
+    
     # Determine interview stages
-    interview_stages = InterviewStageService.determine_interview_stages(job_data)
-    job.interview_stages = interview_stages
+    print("Determining interview stages for job")
+    try:
+        interview_stages = InterviewStageService.determine_interview_stages(job_data)
+        job.interview_stages = interview_stages
+        print(f"Determined {len(interview_stages)} interview stages: {[stage.value for stage in interview_stages]}")
+    except Exception as e:
+        print(f"Error determining interview stages: {str(e)}")
+        raise
     
     # Save the job using generic CRUD
-    created_job = await createDocument(req, "jobs", Job, job)
+    print("Saving job to database")
+    try:
+        created_job = await createDocument(req, "jobs", Job, job)
+        print(f"Successfully created job with ID: {created_job.id}")
+    except Exception as e:
+        print(f"Failed to save job to database: {str(e)}")
+        raise
     
     # Create interview records for each stage
-    for index, stage in enumerate(interview_stages):
-        difficulty = InterviewStageService.get_stage_difficulty(stage, job.experience_level)
-        focus_areas = InterviewStageService.get_stage_focus_areas(stage, job_data)
+    print(f"Creating {len(interview_stages)} interview records")
+    try:
+        for index, stage in enumerate(interview_stages):
+            print(f"Creating interview {index + 1}/{len(interview_stages)}: {stage.value}")
+            
+            difficulty = InterviewStageService.get_stage_difficulty(stage, job.experience_level)
+            focus_areas = InterviewStageService.get_stage_focus_areas(stage, job_data)
+            
+            print(f"Interview {index + 1} details - Difficulty: {difficulty}, Focus areas: {focus_areas}")
+            
+            await create_interview_for_job(
+                req=req,
+                job_id=str(created_job.id),
+                user_id=user_id,
+                interview_type=stage,
+                stage_order=index,
+                difficulty=difficulty,
+                focus_areas=focus_areas
+            )
+            
+            print(f"Successfully created interview {index + 1}: {stage.value}")
         
-        await create_interview_for_job(
-            req=req,
-            job_id=str(created_job.id),
-            user_id=user_id,
-            interview_type=stage,
-            stage_order=index,
-            difficulty=difficulty,
-            focus_areas=focus_areas
-        )
+        print(f"Successfully created all {len(interview_stages)} interview records")
+    except Exception as e:
+        print(f"Error creating interview records: {str(e)}")
+        raise
     
+    print(f"Job creation completed successfully. Job ID: {created_job.id}, Company: {job_data['company']}, Role: {job_data['role_title']}")
     return created_job
 
 
@@ -76,16 +138,48 @@ async def create_job_from_file(
 ) -> Job:
     """Create a new job and its interview stages from an uploaded file"""
     
+    print(f"Starting job creation from file for user {user_id}: {filename} ({content_type}, {len(file_content)} bytes)")
+    
     # Process the file to extract job details
+    print(f"Initializing JobProcessingService to process file: {filename}")
     job_processor = JobProcessingService()
     try:
+        print(f"Processing file content...")
         job_data = await job_processor.process_job_file(
             file_content, content_type, filename
         )
+        print(f"Successfully processed file. Company: {job_data.get('company', 'N/A')}, Role: {job_data.get('role_title', 'N/A')}")
+    except Exception as e:
+        print(f"Failed to process file {filename}: {str(e)}")
+        raise
     finally:
         await job_processor.close()
+        print("JobProcessingService client closed")
+    
+    # Get or create company info with Brandfetch identifiers
+    # Try to extract company website from job description metadata if available
+    company_website = job_data.get("job_description", {}).get("metadata", {}).get("company_website")
+    if company_website:
+        print(f"Getting or creating company info for: {job_data['company']} (found company website: {company_website})")
+    else:
+        print(f"Getting or creating company info for: {job_data['company']} (using company name only, no website found in job description)")
+    
+    try:
+        brandfetch_info = await get_or_create_company_info(
+            req,
+            job_data["company"],
+            company_website  # This will be None if not found in job description
+        )
+        if brandfetch_info:
+            print(f"Retrieved Brandfetch info: {brandfetch_info[0]}={brandfetch_info[1]}")
+        else:
+            print(f"No Brandfetch info found for company: {job_data['company']}")
+    except Exception as e:
+        print(f"Error getting company info for {job_data['company']}: {str(e)}")
+        brandfetch_info = None
     
     # Create the job record
+    print("Creating job record with extracted data from file")
     job = Job(
         user_id=user_id,
         company=job_data["company"],
@@ -101,28 +195,62 @@ async def create_job_from_file(
         created_at=datetime.now(timezone.utc)
     )
     
+    # Add Brandfetch identifiers if found
+    if brandfetch_info:
+        job.brandfetch_identifier_type = brandfetch_info[0]
+        job.brandfetch_identifier_value = brandfetch_info[1]
+        print(f"Added Brandfetch identifiers to job record")
+    else:
+        print("No Brandfetch identifiers to add - will use fallback logo handling")
+    
     # Determine interview stages
-    interview_stages = InterviewStageService.determine_interview_stages(job_data)
-    job.interview_stages = interview_stages
+    print("Determining interview stages for job")
+    try:
+        interview_stages = InterviewStageService.determine_interview_stages(job_data)
+        job.interview_stages = interview_stages
+        print(f"Determined {len(interview_stages)} interview stages: {[stage.value for stage in interview_stages]}")
+    except Exception as e:
+        print(f"Error determining interview stages: {str(e)}")
+        raise
     
     # Save the job using generic CRUD
-    created_job = await createDocument(req, "jobs", Job, job)
+    print("Saving job to database")
+    try:
+        created_job = await createDocument(req, "jobs", Job, job)
+        print(f"Successfully created job with ID: {created_job.id}")
+    except Exception as e:
+        print(f"Failed to save job to database: {str(e)}")
+        raise
     
     # Create interview records for each stage
-    for index, stage in enumerate(interview_stages):
-        difficulty = InterviewStageService.get_stage_difficulty(stage, job.experience_level)
-        focus_areas = InterviewStageService.get_stage_focus_areas(stage, job_data)
+    print(f"Creating {len(interview_stages)} interview records")
+    try:
+        for index, stage in enumerate(interview_stages):
+            print(f"Creating interview {index + 1}/{len(interview_stages)}: {stage.value}")
+            
+            difficulty = InterviewStageService.get_stage_difficulty(stage, job.experience_level)
+            focus_areas = InterviewStageService.get_stage_focus_areas(stage, job_data)
+            
+            print(f"Interview {index + 1} details - Difficulty: {difficulty}, Focus areas: {focus_areas}")
+            
+            await create_interview_for_job(
+                req=req,
+                job_id=str(created_job.id),
+                user_id=user_id,
+                interview_type=stage,
+                stage_order=index,
+                difficulty=difficulty,
+                focus_areas=focus_areas
+            )
+            
+            print(f"Successfully created interview {index + 1}: {stage.value}")
         
-        await create_interview_for_job(
-            req=req,
-            job_id=str(created_job.id),
-            user_id=user_id,
-            interview_type=stage,
-            stage_order=index,
-            difficulty=difficulty,
-            focus_areas=focus_areas
-        )
+        print(f"Successfully created all {len(interview_stages)} interview records")
+    except Exception as e:
+        print(f"Error creating interview records: {str(e)}")
+        raise
     
+    print(f"Job creation from file completed successfully. Job ID: {created_job.id}, Company: {job_data['company']}, Role: {job_data['role_title']}")
     return created_job
 
 

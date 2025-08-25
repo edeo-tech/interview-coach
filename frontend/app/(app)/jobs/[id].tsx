@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import BrandfetchLogo from '../../../components/BrandfetchLogo';
 import { useJobDetails, useStartJobInterviewAttempt } from '../../../_queries/jobs/jobs';
 import { InterviewType } from '../../../_interfaces/interviews/interview-types';
 import { JobInterview } from '../../../_interfaces/jobs/job';
@@ -113,12 +114,15 @@ export default function JobDetails() {
           {/* Job Info Card */}
           <View style={styles.jobCard}>
             <View style={styles.jobHeader}>
-              {job.company_logo_url && (
-                <Image 
-                  source={{ uri: job.company_logo_url }}
-                  style={styles.companyLogo}
-                />
-              )}
+              <BrandfetchLogo
+                identifierType={job.brandfetch_identifier_type}
+                identifierValue={job.brandfetch_identifier_value}
+                fallbackUrl={job.company_logo_url}
+                size={56}
+                style={styles.companyLogoContainer}
+                fallbackIconColor="#ffffff"
+                fallbackIconName="briefcase-outline"
+              />
               <View style={styles.jobHeaderText}>
                 <Text style={styles.roleTitle}>{job.role_title}</Text>
                 <Text style={styles.company}>{job.company}</Text>
@@ -287,12 +291,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  companyLogo: {
+  companyLogoContainer: {
     width: 56,
     height: 56,
     borderRadius: 12,
     backgroundColor: '#ffffff',
     marginRight: 16,
+    overflow: 'hidden',
   },
   jobHeaderText: {
     flex: 1,

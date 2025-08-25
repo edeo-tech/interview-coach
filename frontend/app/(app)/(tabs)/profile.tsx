@@ -61,7 +61,7 @@ export default function Profile() {
     const { auth, logout, logoutLoading, logoutSuccess, logoutErrorMessage, clearLogoutError, resetLogout } = useAuth();
     const { showToast } = useToast();
     const router = useRouter();
-    const { data: interviews } = useInterviews();
+    const { data: interviews } = useInterviews(5); // Only fetch 5 for profile display
     const { data: currentCV } = useCV();
     const { data: userStats } = useUserStats();
     const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -286,7 +286,7 @@ export default function Profile() {
                             <Text style={styles.emptyStateSubtext}>Start your first mock interview to see it here</Text>
                         </View>
                     ) : (
-                        interviews.slice(0, 5).map((interview) => (
+                        interviews.map((interview) => (
                             <TouchableOpacity
                                 key={interview.id}
                                 onPress={() => {

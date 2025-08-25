@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { interviewsApi, CreateInterviewFromURLRequest, Interview, InterviewWithAttempts, AttemptsCountResponse } from '../../_api/interviews/interviews';
 
 // Query keys
@@ -9,14 +9,15 @@ export const interviewKeys = {
   details: () => [...interviewKeys.all, 'detail'] as const,
   detail: (id: string) => [...interviewKeys.details(), id] as const,
   attemptsCount: (id: string) => [...interviewKeys.all, 'attempts-count', id] as const,
+  attemptsList: (id: string) => [...interviewKeys.all, 'attempts-list', id] as const,
 };
 
 // Hooks
-export const useInterviews = (enabled: boolean = true) => {
+export const useInterviews = (limit?: number, enabled: boolean = true) => {
   return useQuery({
-    queryKey: interviewKeys.lists(),
+    queryKey: [...interviewKeys.lists(), limit],
     queryFn: async () => {
-      const response = await interviewsApi.list();
+      const response = await interviewsApi.list(limit);
       return response.data;
     },
     enabled,
@@ -42,6 +43,27 @@ export const useInterviewAttemptsCount = (interviewId: string) => {
       return response.data;
     },
     enabled: !!interviewId,
+  });
+};
+
+export const useInterviewAttempts = (interviewId: string, pageSize: number = 10) => {
+  return useInfiniteQuery({
+    queryKey: [...interviewKeys.attemptsList(interviewId), pageSize],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await interviewsApi.getAttemptsPaginated(interviewId, pageSize, pageParam);
+      return response.data;
+    },
+    getNextPageParam: (lastPage) => {
+      // Use the has_more boolean from the backend to determine if there's a next page
+      if (!lastPage.has_more) {
+        return undefined;
+      }
+      // Simply return the next page number
+      return lastPage.page_number + 1;
+    },
+    initialPageParam: 1,
+    enabled: !!interviewId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
