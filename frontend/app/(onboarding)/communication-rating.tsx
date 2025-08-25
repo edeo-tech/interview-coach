@@ -45,25 +45,11 @@ const CommunicationRating = () => {
 
   return (
     <MorphingBackground mode="static" style={styles.gradient}>
-      <View style={styles.assessmentOverlay}>
-        <View style={styles.container}>
+      <View style={styles.container}>
         <OnboardingProgress currentStep={10} totalSteps={17} />
         
         <View style={styles.content}>
-          <Text style={styles.screenTitle}>{framing.title}</Text>
-          
-          <View style={styles.problemContainer}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="chatbubbles-outline" size={32} color="#F59E0B" />
-            </View>
-            <Text style={styles.problemDescription}>
-              {framing.description}
-            </Text>
-          </View>
-
-          <Text style={styles.questionText}>
-            {framing.question}
-          </Text>
+          <Text style={styles.screenTitle}>{framing.question}</Text>
 
           <View style={styles.ratingContainer}>
             {ratingLabels.map((rating) => (
@@ -75,46 +61,36 @@ const CommunicationRating = () => {
                 ]}
                 onPress={() => setSelectedRating(rating.value)}
               >
-                <View style={styles.ratingHeader}>
-                  <View style={[
+                <View style={[
+                  styles.numberContainer,
+                  selectedRating === rating.value && styles.numberContainerSelected
+                ]}>
+                  <Text style={[
                     styles.ratingNumber,
                     selectedRating === rating.value && styles.ratingNumberSelected
                   ]}>
-                    <Text style={[
-                      styles.ratingNumberText,
-                      selectedRating === rating.value && styles.ratingNumberTextSelected
-                    ]}>
-                      {rating.value}
-                    </Text>
-                  </View>
-                  <View style={styles.ratingTextContainer}>
-                    <Text style={[
-                      styles.ratingLabel,
-                      selectedRating === rating.value && styles.ratingLabelSelected
-                    ]}>
-                      {rating.label}
-                    </Text>
-                    <Text style={styles.ratingSublabel}>
-                      {rating.sublabel}
-                    </Text>
-                  </View>
+                    {rating.value}
+                  </Text>
                 </View>
+                <Text style={[
+                  styles.ratingLabel,
+                  selectedRating === rating.value && styles.ratingLabelSelected
+                ]}>
+                  {rating.label}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity 
-            style={[styles.continueButton, selectedRating === 0 && styles.continueButtonDisabled]} 
-            onPress={handleContinue}
-            disabled={selectedRating === 0}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-        </View>
+        <TouchableOpacity 
+          style={[styles.continueButton, selectedRating === 0 && styles.continueButtonDisabled]} 
+          onPress={handleContinue}
+          disabled={selectedRating === 0}
+        >
+          <Text style={styles.continueButtonText}>Continue</Text>
+          <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+        </TouchableOpacity>
       </View>
     </MorphingBackground>
   );
@@ -124,138 +100,115 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
-  assessmentOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-  },
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    backgroundColor: 'transparent',
+    justifyContent: 'space-between',
   },
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingVertical: 20,
-    maxWidth: 480,
-    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 100,
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  problemContainer: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
-  },
-  iconContainer: {
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  problemDescription: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  questionText: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
     color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 26,
+    textAlign: 'left',
+    lineHeight: 30,
+    marginBottom: 48,
+    paddingHorizontal: 8,
   },
   ratingContainer: {
-    gap: 12,
+    gap: 16,
+    width: '100%',
+    maxWidth: 320,
   },
   ratingButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 24,
+    height: 48,
+    paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   ratingButtonSelected: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderColor: '#A855F7',
   },
-  ratingHeader: {
-    flexDirection: 'row',
+  numberContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
-    gap: 16,
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  numberContainerSelected: {
+    backgroundColor: 'rgba(168, 85, 247, 0.25)',
   },
   ratingNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter',
   },
   ratingNumberSelected: {
-    backgroundColor: '#F59E0B',
-    borderColor: '#F59E0B',
-  },
-  ratingNumberText: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  ratingNumberTextSelected: {
-    color: '#ffffff',
-  },
-  ratingTextContainer: {
-    flex: 1,
+    color: '#A855F7',
   },
   ratingLabel: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(255, 255, 255, 1)',
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 2,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    lineHeight: 20,
+    flex: 1,
   },
   ratingLabelSelected: {
-    color: '#F59E0B',
-  },
-  ratingSublabel: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-  },
-  bottomContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    color: '#A855F7',
+    fontWeight: '600',
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    paddingVertical: 18,
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 34 : 20,
+    left: 24,
+    right: 24,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    paddingHorizontal: 24,
+    shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(245, 158, 11, 0.5)',
+    backgroundColor: 'rgba(168, 85, 247, 0.05)',
+    borderColor: 'rgba(169, 85, 247, 0.3)',
     shadowOpacity: 0,
   },
   continueButtonText: {
-    color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
+    color: '#FFFFFF',
+    marginRight: 8,
   },
 });
 

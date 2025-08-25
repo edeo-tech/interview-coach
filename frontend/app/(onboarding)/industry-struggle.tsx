@@ -61,11 +61,17 @@ const IndustryStruggle = () => {
               ]}
               onPress={() => setStrugglesApply(true)}
             >
-              <Ionicons 
-                name={strugglesApply === true ? "checkmark-circle" : "checkmark-circle-outline"} 
-                size={20} 
-                color={strugglesApply === true ? "#A855F7" : "rgba(255, 255, 255, 0.55)"} 
-              />
+              <View style={[
+                styles.numberContainer,
+                strugglesApply === true && styles.numberContainerSelected
+              ]}>
+                <Text style={[
+                  styles.optionNumber,
+                  strugglesApply === true && styles.optionNumberSelected
+                ]}>
+                  1
+                </Text>
+              </View>
               <Text style={[
                 styles.optionText,
                 strugglesApply === true && styles.optionTextSelected
@@ -81,11 +87,17 @@ const IndustryStruggle = () => {
               ]}
               onPress={() => setStrugglesApply(false)}
             >
-              <Ionicons 
-                name={strugglesApply === false ? "checkmark-circle" : "checkmark-circle-outline"} 
-                size={20} 
-                color={strugglesApply === false ? "#A855F7" : "rgba(255, 255, 255, 0.55)"} 
-              />
+              <View style={[
+                styles.numberContainer,
+                strugglesApply === false && styles.numberContainerSelected
+              ]}>
+                <Text style={[
+                  styles.optionNumber,
+                  strugglesApply === false && styles.optionNumberSelected
+                ]}>
+                  2
+                </Text>
+              </View>
               <Text style={[
                 styles.optionText,
                 strugglesApply === false && styles.optionTextSelected
@@ -172,19 +184,40 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.12)',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   optionButtonSelected: {
     backgroundColor: 'rgba(168, 85, 247, 0.15)',
     borderColor: '#A855F7',
   },
+  numberContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  numberContainerSelected: {
+    backgroundColor: 'rgba(168, 85, 247, 0.25)',
+  },
+  optionNumber: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+  },
+  optionNumberSelected: {
+    color: '#A855F7',
+  },
   optionText: {
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: 'rgba(255, 255, 255, 1)',
     fontSize: 16,
     fontWeight: '400',
     fontFamily: 'Inter',
-    marginLeft: 8,
     lineHeight: 20,
+    flex: 1,
   },
   optionTextSelected: {
     color: '#A855F7',
