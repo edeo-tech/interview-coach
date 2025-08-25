@@ -207,23 +207,23 @@ async def update_user_profile(req:Request, user_id:str, profile_data:UpdateUserP
     )
     
     # Update Stripe customer if email or name changed and we have a customer ID
-    if STRIPE_API_KEY and updated_user and updated_user.stripe_customer_id:
-        try:
-            stripe_update_data = {}
-            if profile_data.email:
-                stripe_update_data['email'] = profile_data.email
-            if profile_data.name:
-                stripe_update_data['name'] = profile_data.name
+    # if STRIPE_API_KEY and updated_user and updated_user.stripe_customer_id:
+    #     try:
+    #         stripe_update_data = {}
+    #         if profile_data.email:
+    #             stripe_update_data['email'] = profile_data.email
+    #         if profile_data.name:
+    #             stripe_update_data['name'] = profile_data.name
                 
-            if stripe_update_data:
-                stripe.Customer.modify(
-                    updated_user.stripe_customer_id,
-                    **stripe_update_data
-                )
-                logger.info(f"Updated Stripe customer {updated_user.stripe_customer_id} for user {user_id}")
-        except Exception as e:
-            logger.error(f"Failed to update Stripe customer for user {user_id}: {e}")
-            # Don't fail the request if Stripe update fails
+    #         if stripe_update_data:
+    #             stripe.Customer.modify(
+    #                 updated_user.stripe_customer_id,
+    #                 **stripe_update_data
+    #             )
+    #             logger.info(f"Updated Stripe customer {updated_user.stripe_customer_id} for user {user_id}")
+    #     except Exception as e:
+    #         logger.error(f"Failed to update Stripe customer for user {user_id}: {e}")
+    #         # Don't fail the request if Stripe update fails
     
     return updated_user
 

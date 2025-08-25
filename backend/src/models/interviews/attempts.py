@@ -4,6 +4,8 @@ from datetime import datetime
 
 class InterviewAttempt(MongoBaseModel):
     interview_id: str
+    job_id: str
+    user_id: str
     status: str  # active, completed, graded
     agent_id: Optional[str] = None
     conversation_id: Optional[str] = None  # ElevenLabs conversation ID
@@ -15,6 +17,9 @@ class InterviewAttempt(MongoBaseModel):
 
 class InterviewFeedback(MongoBaseModel):
     attempt_id: str
+    interview_id: str
+    job_id: str
+    user_id: str
     overall_score: int  # 0-100
     strengths: List[str] = []
     improvement_areas: List[str] = []

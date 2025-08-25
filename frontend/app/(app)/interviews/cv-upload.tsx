@@ -8,6 +8,7 @@ import CVUploadProgress from '../../../components/CVUploadProgress';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCV, useUploadCV, useDeleteCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import { useToast } from '../../../components/Toast';
 
 const CVUpload = () => {
   const { data: currentCV, isLoading: cvLoading } = useCV();
@@ -16,6 +17,7 @@ const CVUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { showToast } = useToast();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -71,10 +73,7 @@ const CVUpload = () => {
         file_type: file?.mimeType || 'unknown',
         is_replacement: !!currentCV
       });
-      Alert.alert(
-        'Upload Error', 
-        error.response?.data?.detail || 'Failed to upload CV. Please try again.'
-      );
+      showToast('Problem uploading CV. Please try again.', 'error');
     } finally {
       setUploadProgress(false);
     }
@@ -107,13 +106,13 @@ const CVUpload = () => {
                 had_skills_count: currentCV?.skills?.length || 0,
                 had_experience_years: currentCV?.experience_years || 0
               });
-              Alert.alert('Success', 'CV deleted successfully');
+              showToast('CV deleted successfully', 'success');
             } catch (error: any) {
               posthogCapture('cv_deletion_failed', {
                 source: 'cv_upload_page',
                 error_message: error.message
               });
-              Alert.alert('Error', 'Failed to delete CV');
+              showToast('Unable to delete CV. Please try again.', 'error');
             }
           }
         }

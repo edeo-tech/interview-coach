@@ -9,7 +9,7 @@ import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 
 const InterviewsHome = () => {
-  const { data: interviews, isLoading: interviewsLoading } = useInterviews();
+  const { data: interviews, isLoading: interviewsLoading } = useInterviews(); // No limit for full interviews list
   const { data: cv } = useCV();
   const { posthogScreen } = usePosthogSafely();
 

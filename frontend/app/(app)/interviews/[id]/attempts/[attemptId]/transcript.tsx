@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,11 +7,14 @@ import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import TranscriptView from '../../../../../../components/TranscriptView';
 import { useInterview } from '../../../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 export default function AttemptTranscriptScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, refetch } = useInterview(id);
   const { posthogScreen } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
   
   const [transcript, setTranscript] = useState<any[]>([]);
   const [hasTranscript, setHasTranscript] = useState(false);
@@ -75,9 +78,11 @@ export default function AttemptTranscriptScreen() {
     if (is_from_interview === 'true' && hasTranscript) {
       return (
         <View style={styles.footer}>
-          <Pressable 
+          <TouchableOpacity 
             style={styles.viewFeedbackButton}
             onPress={() => {
+              // Medium impact for viewing feedback - important action
+              impactAsync(ImpactFeedbackStyle.Medium);
               router.push({ 
                 pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
                 params: { id, attemptId } 
@@ -89,7 +94,7 @@ export default function AttemptTranscriptScreen() {
               View Feedback & Analysis
             </Text>
             <Ionicons name="arrow-forward" size={20} color="#fff" />
-          </Pressable>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -102,9 +107,13 @@ export default function AttemptTranscriptScreen() {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => {
+            // Light impact for navigation back - minor action
+            impactAsync(ImpactFeedbackStyle.Light);
+            router.back();
+          }}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
-          </Pressable>
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Interview Transcript</Text>
         </View>
         {renderContent()}

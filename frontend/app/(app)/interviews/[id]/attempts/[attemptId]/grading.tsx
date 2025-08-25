@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
 
 const BlurredSection = ({ 
@@ -37,7 +39,11 @@ const BlurredSection = ({
             <Text style={blurredStyles.upgradeMessage}>
               Upgrade to Premium to see detailed feedback and scores
             </Text>
-            <TouchableOpacity onPress={onUpgradePress} style={blurredStyles.upgradeButton}>
+            <TouchableOpacity onPress={() => {
+              // Heavy impact for upgrade action - critical premium action
+              useHapticsSafely().impactAsync(ImpactFeedbackStyle.Heavy);
+              onUpgradePress?.();
+            }} style={blurredStyles.upgradeButton}>
               <Text style={blurredStyles.upgradeButtonText}>Upgrade Now</Text>
             </TouchableOpacity>
           </View>
@@ -102,6 +108,7 @@ export default function AttemptGradingScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
   const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
 
   const [pollCount, setPollCount] = useState(0);
@@ -270,10 +277,12 @@ export default function AttemptGradingScreen() {
       </BlurredSection>
 
       {/* View Transcript Section */}
-      <Pressable 
+      <TouchableOpacity 
         style={[styles.transcriptCard, !data && styles.transcriptCardDisabled]}
         onPress={() => {
           if (data) {
+            // Light impact for viewing transcript - secondary action
+            impactAsync(ImpactFeedbackStyle.Light);
             router.push({ 
               pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
               params: { id, attemptId, is_from_interview: 'false' } 
@@ -298,7 +307,7 @@ export default function AttemptGradingScreen() {
           </View>
           <Ionicons name="chevron-forward" size={20} color={data ? "#F59E0B" : "#6B7280"} />
         </View>
-      </Pressable>
+      </TouchableOpacity>
     </ScrollView>
   );
 
@@ -308,12 +317,16 @@ export default function AttemptGradingScreen() {
         <View style={styles.header}>
           {/* Only show back button if coming from details (not from interview) */}
           {is_from_interview !== 'true' && (
-            <Pressable 
+            <TouchableOpacity 
               style={styles.backButton} 
-              onPress={() => router.back()}
+              onPress={() => {
+                // Light impact for navigation back - minor action
+                impactAsync(ImpactFeedbackStyle.Light);
+                router.back();
+              }}
             >
               <Ionicons name="arrow-back" size={24} color="#fff" />
-            </Pressable>
+            </TouchableOpacity>
           )}
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
@@ -333,10 +346,12 @@ export default function AttemptGradingScreen() {
         {/* Only show footer button if coming from interview */}
         {is_from_interview === 'true' && (
           <View style={styles.footer}>
-            <Pressable 
+            <TouchableOpacity 
               style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
               onPress={() => {
                 if (data) {
+                  // Medium impact for practice again - important motivational action
+                  impactAsync(ImpactFeedbackStyle.Medium);
                   router.replace('/(app)/(tabs)/home');
                 }
               }}
@@ -347,7 +362,7 @@ export default function AttemptGradingScreen() {
                 Practice Again & Improve
               </Text>
               <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
-            </Pressable>
+            </TouchableOpacity>
           </View>
         )}
       </View>

@@ -45,27 +45,36 @@ class JobProcessingService:
         """
         Process job posting from URL using OpenAI to extract structured data
         """
+        print(f"Starting job URL processing: {url}")
+        
         # Validate URL
+        print("Validating URL format")
         try:
             result = urlparse(url)
             if not all([result.scheme, result.netloc]):
                 raise ValueError("Invalid URL format")
-        except Exception:
+            print(f"URL validation passed: scheme={result.scheme}, netloc={result.netloc}")
+        except Exception as e:
+            print(f"URL validation failed for {url}: {str(e)}")
             raise HTTPException(status_code=400, detail="Invalid URL provided")
         
         try:
+            print("Calling OpenAI to fetch and process job posting content")
             # Use OpenAI to fetch and process the job posting
             job_data = await self._process_job_url_with_openai(url)
+            print(f"OpenAI processing completed. Extracted company: {job_data.get('company', 'N/A')}")
             
             # Validate the response
+            print("Validating extracted job data")
             await self._validate_job_data(job_data)
+            print(f"Job URL processing completed successfully for: {job_data.get('company', 'N/A')} - {job_data.get('role_title', 'N/A')}")
             
             return job_data
             
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Error processing job URL {url}: {str(e)}")
+            print(f"Error processing job URL {url}: {str(e)}")
             raise HTTPException(
                 status_code=500,
                 detail="Failed to process job posting. Please try uploading the job description as a file instead."
@@ -75,11 +84,17 @@ class JobProcessingService:
         """
         Process job description file using OpenAI vision/text capabilities
         """
+        print(f"Starting job file processing: {filename} ({content_type}, {len(file_content)} bytes)")
+        
         if not file_content:
+            print("Empty file content provided")
             raise HTTPException(status_code=400, detail="Empty file content")
         
         # File size validation (max 10MB)
+        file_size_mb = len(file_content) / (1024 * 1024)
+        print(f"File size: {file_size_mb:.2f} MB")
         if len(file_content) > 10 * 1024 * 1024:
+            print(f"File too large: {file_size_mb:.2f} MB (max 10 MB)")
             raise HTTPException(
                 status_code=400, 
                 detail="File too large. Maximum size is 10MB."
@@ -87,22 +102,32 @@ class JobProcessingService:
         
         try:
             # Convert file to processable format
+            print(f"Extracting content from {content_type} file")
             if content_type == 'application/pdf':
+                print("Processing PDF file")
                 text_content, images = await self._extract_pdf_content(file_content)
+                print(f"PDF extraction complete: {len(text_content)} chars text, {len(images)} images")
             elif content_type in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+                print("Processing Word document")
                 text_content = await self._extract_docx_content(file_content)
                 images = []
+                print(f"Word extraction complete: {len(text_content)} chars text")
             elif content_type == 'text/plain':
+                print("Processing plain text file")
                 text_content = file_content.decode('utf-8')
                 images = []
+                print(f"Text extraction complete: {len(text_content)} chars")
             else:
+                print(f"Unsupported file type: {content_type}")
                 raise HTTPException(
                     status_code=400,
                     detail="Unsupported file type. Please upload PDF, DOC, DOCX, or TXT files."
                 )
             
             # Validate extracted content
+            print(f"Validating extracted content: text={len(text_content.strip()) if text_content else 0} chars, images={len(images) if images else 0}")
             if not text_content.strip() and not images:
+                print("No readable content found in file")
                 raise HTTPException(
                     status_code=400,
                     detail="No readable content found in the file."
@@ -110,19 +135,25 @@ class JobProcessingService:
             
             # Process with OpenAI
             if images and len(images) > 0:
+                print(f"Processing with OpenAI Vision API (text + {len(images)} images)")
                 job_data = await self._process_job_with_vision(text_content, images)
             else:
+                print("Processing with OpenAI text-only API")
                 job_data = await self._process_job_with_text(text_content)
             
+            print(f"OpenAI processing completed. Extracted company: {job_data.get('company', 'N/A')}")
+            
             # Validate the response
+            print("Validating extracted job data")
             await self._validate_job_data(job_data)
+            print(f"Job file processing completed successfully for: {job_data.get('company', 'N/A')} - {job_data.get('role_title', 'N/A')}")
             
             return job_data
             
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Error processing job file {filename}: {str(e)}")
+            print(f"Error processing job file {filename}: {str(e)}")
             raise HTTPException(
                 status_code=500,
                 detail="Failed to process job description file."
@@ -132,16 +163,19 @@ class JobProcessingService:
         """Fetch URL content and use OpenAI to extract job data"""
         
         # First, scrape the website content
+        print(f"Scraping website content from: {url}")
         try:
             web_content = await self._scrape_url_content(url)
+            print(f"Successfully scraped {len(web_content)} characters from URL")
         except Exception as e:
-            logger.error(f"Failed to scrape URL {url}: {str(e)}")
+            print(f"Failed to scrape URL {url}: {str(e)}")
             raise HTTPException(
                 status_code=400,
                 detail="Failed to access the job posting URL. Please ensure the URL is correct and publicly accessible."
             )
         
         if not web_content.strip():
+            print(f"No content found at URL: {url}")
             raise HTTPException(
                 status_code=400,
                 detail="No content found at the provided URL. The page might be empty or require authentication."
@@ -461,7 +495,7 @@ Instructions:
         missing_fields = [field for field in required_fields if field not in job_data]
         
         if missing_fields:
-            logger.warning(f"Missing required fields in job data: {missing_fields}")
+            print(f"Missing required fields in job data: {missing_fields}")
             # Add defaults
             if 'company' not in job_data:
                 job_data['company'] = 'Unknown Company'
@@ -478,25 +512,13 @@ Instructions:
                     job_data.get('company', '')
                 )
                 if cleaned_title != job_data['role_title']:
-                    logger.info(f"Cleaned job title: '{job_data['role_title']}' -> '{cleaned_title}'")
+                    print(f"Cleaned job title: '{job_data['role_title']}' -> '{cleaned_title}'")
                     job_data['role_title'] = cleaned_title
             except Exception as e:
-                logger.warning(f"Failed to clean job title: {str(e)}")
+                print(f"Failed to clean job title: {str(e)}")
         
-        # Fetch company logo
-        if job_data.get('company'):
-            try:
-                logo_url = await self._fetch_company_logo(job_data['company'])
-                if logo_url:
-                    job_data['company_logo_url'] = logo_url
-                    logger.info(f"Added logo for {job_data['company']}: {logo_url}")
-                else:
-                    job_data['company_logo_url'] = None
-            except Exception as e:
-                logger.warning(f"Failed to fetch company logo: {str(e)}")
-                job_data['company_logo_url'] = None
-        else:
-            job_data['company_logo_url'] = None
+        # Logo will now be handled by Brandfetch service during job creation
+        job_data['company_logo_url'] = None
         
         # Ensure job_description is properly structured
         if not isinstance(job_data.get('job_description'), dict):
@@ -579,7 +601,7 @@ Cleaned title:"""
                     return cleaned_title
                     
         except Exception as e:
-            logger.warning(f"Failed to clean job title '{job_title}': {str(e)}")
+            print(f"Failed to clean job title '{job_title}': {str(e)}")
         
         # Fallback: basic cleaning without LLM
         return self._basic_job_title_cleanup(job_title)
@@ -616,10 +638,10 @@ Cleaned title:"""
         try:
             cached_logo = await self._get_company_logo_from_cache(company_name)
             if cached_logo:
-                logger.info(f"Found cached logo for {company_name}: {cached_logo}")
+                print(f"Found cached logo for {company_name}: {cached_logo}")
                 return cached_logo
         except Exception as e:
-            logger.warning(f"Failed to check logo cache for {company_name}: {str(e)}")
+            print(f"Failed to check logo cache for {company_name}: {str(e)}")
         
         # Try to fetch logo from external APIs
         return await self._fetch_logo_from_apis(company_name)
@@ -640,15 +662,15 @@ Cleaned title:"""
                 async with httpx.AsyncClient(timeout=10.0) as client:
                     response = await client.head(logo_url)
                     if response.status_code == 200:
-                        logger.info(f"Found Clearbit logo for {company_name}: {logo_url}")
+                        print(f"Found Clearbit logo for {company_name}: {logo_url}")
                         return logo_url
                         
         except Exception as e:
-            logger.debug(f"Clearbit logo fetch failed for {company_name}: {str(e)}")
+            print(f"Clearbit logo fetch failed for {company_name}: {str(e)}")
         
         # Could add more logo APIs here as fallbacks
         # For now, we'll return None if Clearbit doesn't have it
-        logger.debug(f"No logo found for company: {company_name}")
+        print(f"No logo found for company: {company_name}")
         return None
     
     async def _company_name_to_domain(self, company_name: str) -> Optional[str]:
@@ -736,7 +758,7 @@ Domain:"""
                     return domain
                     
         except Exception as e:
-            logger.debug(f"LLM domain conversion failed for {company_name}: {str(e)}")
+            print(f"LLM domain conversion failed for {company_name}: {str(e)}")
         
         return None
 
@@ -770,7 +792,7 @@ Domain:"""
                     
         except Exception as e:
             # If we can't query the database, just return None
-            logger.debug(f"Cache lookup failed for {company_name}: {str(e)}")
+            print(f"Cache lookup failed for {company_name}: {str(e)}")
         
         return None
 

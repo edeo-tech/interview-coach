@@ -1,23 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../components/ChatGPTBackground';
+import BrandfetchLogo from '../../../../components/BrandfetchLogo';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
-import { useInterview, useStartAttempt, useInterviewAttemptsCount } from '../../../../_queries/interviews/interviews';
+import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
+import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
+import { useToast } from '../../../../components/Toast';
+
+const getInterviewTypeDisplayName = (type: string): string => {
+  const displayNames: Record<string, string> = {
+    [InterviewType.PhoneScreen]: 'Phone Screen',
+    [InterviewType.InitialHRInterview]: 'HR Interview',
+    [InterviewType.MockSalesCall]: 'Sales Call',
+    [InterviewType.PresentationPitch]: 'Presentation',
+    [InterviewType.TechnicalScreeningCall]: 'Technical Screen',
+    [InterviewType.SystemDesignInterview]: 'System Design',
+    [InterviewType.PortfolioReview]: 'Portfolio Review',
+    [InterviewType.CaseStudy]: 'Case Study',
+    [InterviewType.BehavioralInterview]: 'Behavioral',
+    [InterviewType.ValuesInterview]: 'Values Interview',
+    [InterviewType.TeamFitInterview]: 'Team Fit',
+    [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: 'Stakeholder Interview',
+    [InterviewType.ExecutiveLeadershipRound]: 'Executive Round',
+  };
+  return displayNames[type] || type;
+};
+
+const getInterviewTypeIcon = (type: string): string => {
+  const iconMap: Record<string, string> = {
+    [InterviewType.PhoneScreen]: 'call',
+    [InterviewType.InitialHRInterview]: 'people',
+    [InterviewType.MockSalesCall]: 'megaphone',
+    [InterviewType.PresentationPitch]: 'easel',
+    [InterviewType.TechnicalScreeningCall]: 'code',
+    [InterviewType.SystemDesignInterview]: 'git-network',
+    [InterviewType.PortfolioReview]: 'images',
+    [InterviewType.CaseStudy]: 'document-text',
+    [InterviewType.BehavioralInterview]: 'chatbubbles',
+    [InterviewType.ValuesInterview]: 'heart',
+    [InterviewType.TeamFitInterview]: 'people-circle',
+    [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: 'business',
+    [InterviewType.ExecutiveLeadershipRound]: 'trending-up',
+  };
+  return iconMap[type] || 'chatbubble';
+};
 
 export default function InterviewDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: interviewData, isLoading, error } = useInterview(id);
-  const { data: attemptsData } = useInterviewAttemptsCount(id);
+  const { data: attemptsCountData } = useInterviewAttemptsCount(id);
+  const { 
+    data: attemptsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInterviewAttempts(id, 10);
   const startAttempt = useStartAttempt();
   const { posthogScreen } = usePosthogSafely();
   const [attemptGrades, setAttemptGrades] = useState<{[key: string]: number}>({});
   const { canRetryInterview, isPaywallEnabled } = useInterviewRetryCheck();
+  const { showToast } = useToast();
+  
+  // Flatten the paginated attempts data
+  const attempts = attemptsData?.pages.flatMap(page => page.attempts) || [];
 
   useFocusEffect(
     React.useCallback(() => {
@@ -149,10 +200,22 @@ export default function InterviewDetails() {
     );
   };
 
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+  
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom;
+  };
+
   const handleStartInterview = async () => {
     try {
       // Check if user can retry this interview
-      const hasExistingAttempts = attemptsData?.has_attempts || false;
+      const hasExistingAttempts = attemptsCountData?.has_attempts || false;
       const retryCheck = canRetryInterview(hasExistingAttempts);
       
       if (!retryCheck.canRetry && retryCheck.requiresUpgrade && isPaywallEnabled) {
@@ -177,7 +240,7 @@ export default function InterviewDetails() {
         }
       });
     } catch (error: any) {
-      Alert.alert('Error', 'Failed to start interview');
+      showToast('Unable to start interview. Please try again.', 'error');
     }
   };
 
@@ -210,12 +273,20 @@ export default function InterviewDetails() {
     );
   }
 
-  const { interview, attempts } = interviewData;
+  const { interview } = interviewData;
 
   return (
     <ChatGPTBackground style={styles.gradient}>
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        onScroll={({ nativeEvent }) => {
+          if (isCloseToBottom(nativeEvent)) {
+            handleLoadMore();
+          }
+        }}
+        scrollEventThrottle={400}
+      >
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
@@ -228,12 +299,15 @@ export default function InterviewDetails() {
         <View style={styles.jobCard}>
           <View style={styles.jobInfo}>
             <View style={styles.jobHeader}>
-              {interview.company_logo_url && (
-                <Image 
-                  source={{ uri: interview.company_logo_url }}
-                  style={styles.companyLogo}
-                />
-              )}
+              <BrandfetchLogo
+                identifierType={interview.brandfetch_identifier_type}
+                identifierValue={interview.brandfetch_identifier_value}
+                fallbackUrl={interview.company_logo_url}
+                size={48}
+                style={styles.companyLogoContainer}
+                fallbackIconColor="#ffffff"
+                fallbackIconName="briefcase-outline"
+              />
               <View style={styles.jobHeaderText}>
                 <Text style={styles.roleTitle}>{interview.role_title}</Text>
                 <Text style={styles.company}>{interview.company}</Text>
@@ -243,6 +317,20 @@ export default function InterviewDetails() {
               <Ionicons name="location-outline" size={16} color="#9ca3af" />
               <Text style={styles.location}>{interview.location || 'Remote'}</Text>
             </View>
+            
+            {/* Interview Type */}
+            {interview.interview_type && (
+              <View style={styles.interviewTypeRow}>
+                <Ionicons 
+                  name={getInterviewTypeIcon(interview.interview_type) as any} 
+                  size={16} 
+                  color="#8b5cf6" 
+                />
+                <Text style={styles.interviewType}>
+                  {getInterviewTypeDisplayName(interview.interview_type)}
+                </Text>
+              </View>
+            )}
           </View>
           
           <View style={styles.cardDivider} />
@@ -264,7 +352,7 @@ export default function InterviewDetails() {
               styles.integratedStartButtonText,
               startAttempt.isPending && styles.integratedStartButtonTextDisabled
             ]}>
-              {attemptsData?.has_attempts ? 'Retry Interview' : 'Start Mock Interview'}
+              {attemptsCountData?.has_attempts ? 'Retry Interview' : 'Start Mock Interview'}
             </Text>
             <Ionicons name="chevron-forward" size={16} color="#F43F5E" />
           </TouchableOpacity>
@@ -272,7 +360,9 @@ export default function InterviewDetails() {
 
         {/* Previous Attempts */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Previous Attempts ({attempts.length})</Text>
+          <Text style={styles.sectionTitle}>
+            Previous Attempts {attemptsData?.pages[0]?.total_count ? `(${attemptsData.pages[0].total_count})` : ''}
+          </Text>
           
           {attempts.length === 0 ? (
             <View style={styles.emptyState}>
@@ -287,6 +377,14 @@ export default function InterviewDetails() {
               {attempts.map((attempt, index) => (
                 <AttemptCard key={attempt.id} attempt={attempt} index={index} />
               ))}
+              
+              {/* Loading more indicator */}
+              {isFetchingNextPage && (
+                <View style={styles.loadingMore}>
+                  <ActivityIndicator size="small" color="#8b5cf6" />
+                  <Text style={styles.loadingMoreText}>Loading more attempts...</Text>
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -376,12 +474,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  companyLogo: {
+  companyLogoContainer: {
     width: 48,
     height: 48,
     borderRadius: 8,
     backgroundColor: '#ffffff',
     marginRight: 16,
+    overflow: 'hidden',
   },
   jobHeaderText: {
     flex: 1,
@@ -406,6 +505,17 @@ const styles = StyleSheet.create({
   location: {
     color: '#d1d5db',
     fontSize: 15,
+  },
+  interviewTypeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  interviewType: {
+    color: '#8b5cf6',
+    fontSize: 15,
+    fontWeight: '600',
   },
   cardDivider: {
     height: 1,
@@ -555,5 +665,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
     marginLeft: 12,
+  },
+  loadingMore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  loadingMoreText: {
+    color: '#8b5cf6',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
