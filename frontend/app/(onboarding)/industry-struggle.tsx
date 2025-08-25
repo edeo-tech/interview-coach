@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import ChatGPTBackground from '../../components/ChatGPTBackground';
+import MorphingBackground from '../../components/MorphingBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 
@@ -35,7 +35,7 @@ const IndustryStruggle = () => {
   const struggles = getIndustryStruggles(data.industry);
 
   return (
-    <ChatGPTBackground style={styles.gradient}>
+    <MorphingBackground mode="static" style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress currentStep={7} totalSteps={17} />
         
@@ -102,7 +102,7 @@ const IndustryStruggle = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </ChatGPTBackground>
+    </MorphingBackground>
   );
 };
 

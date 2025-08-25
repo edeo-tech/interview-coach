@@ -374,9 +374,9 @@ const styles = StyleSheet.create({
   },
   textInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
+    height: 48,
+    borderRadius: 24,
     paddingHorizontal: 20,
-    paddingVertical: 18,
     fontSize: 18,
     color: '#ffffff',
     textAlign: 'center',
@@ -389,9 +389,11 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 24,
     paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',
   },
   primaryButton: {
     width: '100%',
+    maxWidth: 320,
     height: 56,
     borderRadius: 28,
     backgroundColor: 'rgba(168, 85, 247, 0.15)',

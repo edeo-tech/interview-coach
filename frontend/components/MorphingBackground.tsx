@@ -8,7 +8,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface MorphingBackgroundProps {
   children: React.ReactNode;
   style?: any;
-  mode?: 'normal' | 'expanded';
+  mode?: 'normal' | 'expanded' | 'static';
   animationDuration?: number;
 }
 
@@ -66,38 +66,38 @@ export default function MorphingBackground({
       // Phase 1: Main crystal begins expansion (immediate) + fade other elements
       Animated.parallel([
         Animated.timing(prismTop, {
-          toValue: -SCREEN_HEIGHT * 0.15, // Move up more
+          toValue: SCREEN_HEIGHT * 0.15, // Keep purple normal
           duration: animationDuration * 1.2,
           useNativeDriver: false,
         }),
         Animated.timing(prismRight, {
-          toValue: -SCREEN_WIDTH * 0.15, // Extend further left
+          toValue: SCREEN_WIDTH * 0.1,   // Keep purple normal
           duration: animationDuration * 1.2,
           useNativeDriver: false,
         }),
         Animated.timing(prismWidth, {
-          toValue: SCREEN_WIDTH * 1.3,
+          toValue: 120,                  // Keep purple normal
           duration: animationDuration * 1.2,
           useNativeDriver: false,
         }),
         Animated.timing(prismHeight, {
-          toValue: SCREEN_HEIGHT * 1.3,
+          toValue: 200,                  // Keep purple normal
           duration: animationDuration * 1.2,
           useNativeDriver: false,
         }),
         Animated.timing(prismRotation, {
-          toValue: 8, // Gentle rotation
+          toValue: 20,                   // Keep purple normal
           duration: animationDuration * 1.2,
           useNativeDriver: false,
         }),
         Animated.timing(prismOpacity, {
-          toValue: 0.75, // Prominent but not overwhelming
+          toValue: Platform.OS === 'android' ? 0.4 : 0.6, // Keep purple subtle
           duration: animationDuration,
           useNativeDriver: false,
         }),
-        // Fade other static elements so animated ones become visible
+        // Fade other static elements so animated ones become visible - ENHANCED
         Animated.timing(otherElementsOpacity, {
-          toValue: 0.3, // Fade but don't completely hide
+          toValue: 0.15, // Fade much more for green/teal streak dominance - ENHANCED
           duration: animationDuration * 0.8,
           useNativeDriver: false,
         }),
@@ -152,80 +152,119 @@ export default function MorphingBackground({
         ]).start();
       }, 150);
       
-      // Phase 3: Accent elements migrate (more delay)
+      // Phase 3: Accent elements back to normal, prepare for streak expansion
       setTimeout(() => {
         Animated.parallel([
-          // Accent 1 flows toward bottom
+          // Accent 1 back to normal
           Animated.timing(accent1Top, {
-            toValue: SCREEN_HEIGHT * 0.75,
+            toValue: SCREEN_HEIGHT * 0.35,
             duration: animationDuration * 0.7,
             useNativeDriver: false,
           }),
           Animated.timing(accent1Left, {
-            toValue: SCREEN_WIDTH * 0.15,
+            toValue: SCREEN_WIDTH * 0.35,
             duration: animationDuration * 0.7,
             useNativeDriver: false,
           }),
           Animated.timing(accent1Scale, {
-            toValue: 0.6,
+            toValue: 1,
             duration: animationDuration * 0.7,
             useNativeDriver: false,
           }),
           
-          // Accent 2 flows toward top
+          // Accent 2 back to normal
           Animated.timing(accent2Top, {
-            toValue: SCREEN_HEIGHT * 0.25,
+            toValue: SCREEN_HEIGHT * 0.5,
             duration: animationDuration * 0.7,
             useNativeDriver: false,
           }),
           Animated.timing(accent2Right, {
-            toValue: SCREEN_WIDTH * 0.8,
+            toValue: SCREEN_WIDTH * 0.3,
             duration: animationDuration * 0.7,
             useNativeDriver: false,
           }),
           Animated.timing(accent2Scale, {
-            toValue: 0.5,
+            toValue: 1,
             duration: animationDuration * 0.7,
             useNativeDriver: false,
           }),
         ]).start();
       }, 300);
       
-      // Phase 4: Streaks adapt to new layout (final phase)
+      // Phase 4: GREEN/TEAL STREAK DOMINANCE (final phase)
       setTimeout(() => {
         Animated.parallel([
           Animated.timing(streak1Rotation, {
-            toValue: 25, // Flow around expanded crystal
+            toValue: 15, // Keep normal
             duration: animationDuration * 0.6,
             useNativeDriver: false,
           }),
           Animated.timing(streak1Scale, {
-            toValue: 0.8,
+            toValue: 1, // Keep normal
             duration: animationDuration * 0.6,
             useNativeDriver: false,
           }),
           Animated.timing(streak2Rotation, {
-            toValue: -25, // Complement the main crystal
+            toValue: -40, // Keep normal
             duration: animationDuration * 0.6,
             useNativeDriver: false,
           }),
           Animated.timing(streak2Scale, {
-            toValue: 0.7,
+            toValue: 1, // Keep normal
             duration: animationDuration * 0.6,
             useNativeDriver: false,
           }),
           Animated.timing(streak3Rotation, {
-            toValue: 50, // Flow naturally
+            toValue: 10, // Better coverage angle - GREEN/TEAL
             duration: animationDuration * 0.6,
             useNativeDriver: false,
           }),
           Animated.timing(streak3Scale, {
-            toValue: 0.6,
+            toValue: 3.2, // Refined expansion - professional glassmorphic
             duration: animationDuration * 0.6,
             useNativeDriver: false,
           }),
         ]).start();
       }, 450);
+    } else if (mode === 'static') {
+      // Set to final expanded state immediately without animation - GOLD DOMINANCE
+      prismTop.setValue(SCREEN_HEIGHT * 0.15);  // Keep purple prism normal
+      prismRight.setValue(SCREEN_WIDTH * 0.1);  
+      prismWidth.setValue(120);                 
+      prismHeight.setValue(200);                
+      prismRotation.setValue(20);
+      prismOpacity.setValue(Platform.OS === 'android' ? 0.4 : 0.6); // Keep purple subtle
+      
+      // Set other elements to their final positions - FADE MORE for green/teal dominance
+      otherElementsOpacity.setValue(0.15); // Much more faded for green/teal streak dominance
+      
+      // Secondary prisms
+      prism2Top.setValue(SCREEN_HEIGHT * 0.85);
+      prism2Left.setValue(SCREEN_WIDTH * 0.05);
+      prism2Scale.setValue(0.7);
+      prism2Rotation.setValue(-45);
+      
+      prism3Top.setValue(SCREEN_HEIGHT * 0.15);
+      prism3Right.setValue(SCREEN_WIDTH * 0.8);
+      prism3Scale.setValue(0.8);
+      prism3Rotation.setValue(60);
+      
+      // Accent elements back to normal
+      accent1Top.setValue(SCREEN_HEIGHT * 0.35);
+      accent1Left.setValue(SCREEN_WIDTH * 0.35);
+      accent1Scale.setValue(1);
+      
+      accent2Top.setValue(SCREEN_HEIGHT * 0.5);
+      accent2Right.setValue(SCREEN_WIDTH * 0.3);
+      accent2Scale.setValue(1);
+      
+      // Streaks - MAKE GREEN/TEAL DOMINANT
+      streak1Rotation.setValue(15);      // Keep normal
+      streak1Scale.setValue(1);          // Keep normal
+      streak2Rotation.setValue(-40);     // Keep normal  
+      streak2Scale.setValue(1);          // Keep normal
+      streak3Rotation.setValue(10);      // Adjust angle for better coverage
+      streak3Scale.setValue(3.2);        // Refined expansion - professional glassmorphic
     } else {
       // Return to normal state - reverse all animations
       Animated.parallel([
@@ -475,11 +514,20 @@ export default function MorphingBackground({
         ]}
       >
         <LinearGradient
-          colors={[
-            'rgba(6, 182, 212, 0.4)', // Cyan
-            'rgba(16, 185, 129, 0.3)', // Emerald
-            'rgba(16, 185, 129, 0)',
-          ]}
+          colors={
+            mode === 'expanded' || mode === 'static'
+              ? [
+                  'rgba(6, 182, 212, 0.25)', // Lighter cyan - professional
+                  'rgba(16, 185, 129, 0.2)', // Lighter emerald - professional
+                  'rgba(34, 197, 94, 0.15)', // Much lighter green - professional
+                  'rgba(16, 185, 129, 0.08)', // Barely visible fade - professional
+                ]
+              : [
+                  'rgba(6, 182, 212, 0.4)', // Cyan (normal state)
+                  'rgba(16, 185, 129, 0.3)', // Emerald
+                  'rgba(16, 185, 129, 0)',
+                ]
+          }
           start={{ x: 0.8, y: 0.6 }}
           end={{ x: 0.2, y: 1 }}
           style={{ flex: 1 }}
@@ -543,21 +591,11 @@ export default function MorphingBackground({
         ]}
       >
         <LinearGradient
-          colors={
-            mode === 'expanded'
-              ? [
-                  'rgba(168, 85, 247, 0.25)', // More prominent purple
-                  'rgba(124, 58, 237, 0.20)', // Rich purple
-                  'rgba(99, 102, 241, 0.15)', // Indigo
-                  'rgba(79, 70, 229, 0.10)', // Darker indigo
-                  'rgba(67, 56, 202, 0.05)', // Deep indigo
-                ]
-              : [
-                  'rgba(255, 255, 255, 0.12)',
-                  'rgba(255, 255, 255, 0.06)',
-                  'rgba(255, 255, 255, 0.02)',
-                ]
-          }
+          colors={[
+            'rgba(255, 255, 255, 0.12)',  // Keep purple prism normal in all modes
+            'rgba(255, 255, 255, 0.06)',
+            'rgba(255, 255, 255, 0.02)',
+          ]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.prismGradient}
@@ -577,8 +615,8 @@ export default function MorphingBackground({
             transform: [
               { 
                 rotate: prism2Rotation.interpolate({
-                  inputRange: [-30, -45],
-                  outputRange: ['-30deg', '-45deg'],
+                  inputRange: [-45, -30],
+                  outputRange: ['-45deg', '-30deg'],
                   extrapolate: 'clamp'
                 })
               },
@@ -658,8 +696,8 @@ export default function MorphingBackground({
       >
         <LinearGradient
           colors={[
-            'rgba(252, 180, 0, 0.6)', // Bright yellow-gold
-            'rgba(245, 158, 11, 0.4)', // Orange-gold
+            'rgba(252, 180, 0, 0.6)', // Bright yellow-gold (back to normal)
+            'rgba(245, 158, 11, 0.4)', // Orange-gold  
             'rgba(249, 115, 22, 0.3)', // Orange
           ]}
           start={{ x: 0, y: 0 }}
@@ -685,7 +723,7 @@ export default function MorphingBackground({
       >
         <LinearGradient
           colors={[
-            'rgba(168, 85, 247, 0.8)', // Bright purple
+            'rgba(168, 85, 247, 0.8)', // Bright purple (back to normal)
             'rgba(139, 92, 246, 0.6)', // Violet
             'rgba(236, 72, 153, 0.5)', // Pink
           ]}
@@ -723,6 +761,22 @@ export default function MorphingBackground({
         />
       </Animated.View>
       
+      {/* Green/teal dominance overlay for expanded/static modes */}
+      {(mode === 'expanded' || mode === 'static') && (
+        <View style={styles.tealDominanceOverlay}>
+          <LinearGradient
+            colors={[
+              'rgba(6, 182, 212, 0.03)',  // Extremely subtle cyan - professional
+              'rgba(16, 185, 129, 0.025)', // Extremely subtle emerald - professional
+              'rgba(34, 197, 94, 0.02)',  // Barely perceptible green - professional
+            ]}
+            start={{ x: 0.3, y: 0.1 }}
+            end={{ x: 0.7, y: 0.9 }}
+            style={styles.tealDominanceGradient}
+          />
+        </View>
+      )}
+
       {/* Frosted glass blur overlay */}
       <BlurView
         intensity={100}
@@ -870,5 +924,16 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     zIndex: 1,
+  },
+  tealDominanceOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0.5,
+  },
+  tealDominanceGradient: {
+    flex: 1,
   },
 });

@@ -143,41 +143,38 @@ const styles = StyleSheet.create({
   // Message content
   messageContainer: {
     alignItems: 'center',
-    maxWidth: 340,
+    maxWidth: 320,  // Design system standard
   },
   iconContainer: {
     marginBottom: 32,
     opacity: 0.8,
   },
   mainMessage: {
-    fontSize: 32,
+    fontSize: 28,        // Design system title size
     fontWeight: '300',
     fontFamily: 'SpaceGrotesk',
-    letterSpacing: 0.5,
+    letterSpacing: 1,    // Design system spacing
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 40,
+    lineHeight: 36,      // Design system line height
     marginBottom: 8,
   },
   highlightMessage: {
-    fontSize: 36,
-    fontWeight: '700',
+    fontSize: 48,        // Design system hero size
+    fontWeight: '800',   // Design system hero weight
     fontFamily: 'SpaceGrotesk',
-    letterSpacing: -0.5,
-    color: '#FFFFFF',
+    letterSpacing: 0,    // Design system hero spacing
+    color: '#A855F7',    // Design system brand purple
     textAlign: 'center',
-    lineHeight: 44,
+    lineHeight: 60,      // Design system hero line height
     marginBottom: 32,
-    textShadowColor: 'rgba(168, 85, 247, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
   },
   supportingText: {
     fontSize: 16,
     fontWeight: '400',
     fontFamily: 'Inter',
     lineHeight: 24,
-    color: 'rgba(255, 255, 255, 0.75)',
+    color: 'rgba(255, 255, 255, 0.70)',  // Design system tertiary text color
     textAlign: 'center',
     paddingHorizontal: 16,
   },
@@ -186,22 +183,24 @@ const styles = StyleSheet.create({
   bottomContainer: {
     paddingHorizontal: 24,
     paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',  // Center the button
   },
   continueButton: {
     width: '100%',
+    maxWidth: 320,                                      // Design system constraint
     height: 56,
-    borderRadius: 16, // Slightly more rounded for this screen
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 28,                                    // Design system pill shape
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',       // Design system purple background
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    borderColor: 'rgb(169, 85, 247)',                   // Design system purple border
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: 'rgba(168, 85, 247, 0.4)',
-    shadowOffset: { width: 0, height: 8 },
+    shadowColor: '#A855F7',                             // Design system purple shadow
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 16,
+    shadowRadius: 12,
     elevation: 8,
   },
   continueButtonText: {

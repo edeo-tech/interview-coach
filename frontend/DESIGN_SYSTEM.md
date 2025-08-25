@@ -193,7 +193,8 @@ layout: {
   
   // Component dimensions
   buttonHeight: 56,      // Standard from welcome screen
-  inputHeight: 56,       // Consistent with buttons
+  inputHeight: 48,       // Slightly shorter for visual hierarchy
+  componentMaxWidth: 320, // Consistent width for inputs, buttons, and content
   iconSize: 120,         // Logo size from welcome screen
   
   // Border radius - minimal options
@@ -214,6 +215,8 @@ layout: {
 ```typescript
 primaryButton: {
   // Exact style from welcome screen
+  width: '100%',
+  maxWidth: 320,                                      // Consistent with inputs and content
   height: 56,
   borderRadius: 28,                                    // Full pill shape
   backgroundColor: 'rgba(168, 85, 247, 0.15)',       // Subtle purple fill
@@ -255,16 +258,19 @@ secondaryButton: {
 ### Input Fields
 ```typescript
 input: {
-  height: 56,
-  borderRadius: 12,
+  width: '100%',
+  maxWidth: 320,                                      // Consistent with buttons and content
+  height: 48,                                         // Slightly shorter than buttons for hierarchy
+  borderRadius: 24,                                   // Pill shape (height/2)
   backgroundColor: 'rgba(255, 255, 255, 0.10)',
-  borderColor: 'rgba(255, 255, 255, 0.15)',
+  borderColor: 'rgba(255, 255, 255, 0.20)',
   borderWidth: 1,
-  paddingHorizontal: 16,
+  paddingHorizontal: 20,
   
-  fontSize: 16,
+  fontSize: 18,
   fontFamily: 'Inter',
   color: '#FFFFFF',
+  textAlign: 'center',
   
   focused: {
     borderColor: 'rgba(168, 85, 247, 0.4)',
