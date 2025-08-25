@@ -68,6 +68,49 @@ const IndustryStruggle = () => {
   const industryName = data.industry.charAt(0).toUpperCase() + data.industry.slice(1);
   const struggles = getIndustryStruggles(data.industry);
 
+  // Smart entrance animation - starts immediately on mount, no conflicts
+  React.useEffect(() => {
+    // Start content off-screen (right) and animate in quickly
+    contentTranslateX.setValue(SCREEN_WIDTH);
+    contentOpacity.setValue(0);
+    buttonOpacity.setValue(0);
+    buttonTranslateY.setValue(20);
+
+    // Immediate entrance animation - no delay, no conflicts
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(contentTranslateX, {
+          toValue: 0,
+          duration: 450, // Faster than exit animation
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Button animates in with slight delay for cascade effect
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(buttonOpacity, {
+            toValue: 1,
+            duration: 350,
+            useNativeDriver: true,
+          }),
+          Animated.timing(buttonTranslateY, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 150);
+    }, 50); // Very brief delay to let background settle
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <MorphingBackground mode="static" style={styles.gradient}>
       <View style={styles.container}>

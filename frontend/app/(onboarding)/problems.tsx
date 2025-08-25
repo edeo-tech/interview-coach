@@ -13,9 +13,34 @@ const AnalyzingScreen = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
   
-  // Screen-level animation values - only for exit animations
+  // Screen-level animation values - for both entrance and exit animations
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
+
+  // Smart entrance animation for the analyzing screen
+  React.useEffect(() => {
+    // Start content off-screen and animate in
+    contentTranslateX.setValue(SCREEN_WIDTH);
+    contentOpacity.setValue(0);
+
+    // Brief delay then animate in
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(contentTranslateX, {
+          toValue: 0,
+          duration: 450,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, []);
   
   const analysisSteps = [
     { text: 'Identifying your interview blockers...', icon: 'search-outline' },

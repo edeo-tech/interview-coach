@@ -12,11 +12,54 @@ const CommunicationRating = () => {
   const { data, updateData } = useOnboarding();
   const [selectedRating, setSelectedRating] = useState(data.communicationRating || 0);
 
-  // Animation values - only for exit animations
+  // Animation values - for both entrance and exit animations
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const buttonOpacity = useRef(new Animated.Value(1)).current;
   const buttonTranslateY = useRef(new Animated.Value(0)).current;
+
+  // Smart entrance animation - starts immediately on mount, no conflicts
+  React.useEffect(() => {
+    // Start content off-screen (right) and animate in quickly
+    contentTranslateX.setValue(SCREEN_WIDTH);
+    contentOpacity.setValue(0);
+    buttonOpacity.setValue(0);
+    buttonTranslateY.setValue(20);
+
+    // Immediate entrance animation - no delay, no conflicts
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(contentTranslateX, {
+          toValue: 0,
+          duration: 450, // Faster than exit animation
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Button animates in with slight delay for cascade effect
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(buttonOpacity, {
+            toValue: 1,
+            duration: 350,
+            useNativeDriver: true,
+          }),
+          Animated.timing(buttonTranslateY, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 150);
+    }, 50); // Very brief delay to let background settle
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleContinue = () => {
     if (selectedRating > 0) {
