@@ -1,21 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Platform, Animated } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import MorphingBackground from '../../components/MorphingBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const AnalyzingScreen = () => {
   const { data } = useOnboarding();
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
   
+  // Screen-level animation values for entrance/exit
+  const contentTranslateX = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+  
   const analysisSteps = [
     { text: 'Identifying your interview blockers...', icon: 'search-outline' },
     { text: `Finding best strategies for ${data.industry || 'your industry'}...`, icon: 'bulb-outline' },
     { text: 'Building your personal prep roadmap...', icon: 'map-outline' },
   ];
+
+  // Entrance animation when screen loads
+  useFocusEffect(
+    React.useCallback(() => {
+      // Start with content off-screen right
+      contentTranslateX.setValue(SCREEN_WIDTH);
+      contentOpacity.setValue(0);
+
+      // Animate content in from right
+      Animated.parallel([
+        Animated.timing(contentTranslateX, {
+          toValue: 0,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, [])
+  );
 
   useEffect(() => {
     const animateStep = (stepIndex: number) => {
@@ -41,7 +71,26 @@ const AnalyzingScreen = () => {
       setTimeout(() => animateStep(0), 500),
       setTimeout(() => animateStep(1), 2500),
       setTimeout(() => animateStep(2), 4500),
-      setTimeout(() => router.push('/(onboarding)/solutions'), 7000),
+      setTimeout(() => {
+        // Animate out before navigation
+        Animated.parallel([
+          Animated.timing(contentTranslateX, {
+            toValue: -SCREEN_WIDTH,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          // Navigate after animation completes
+          setTimeout(() => {
+            router.push('/(onboarding)/solutions');
+          }, 100);
+        });
+      }, 6400), // Start exit animation 600ms before original timeout
     ];
 
     return () => timeouts.forEach(clearTimeout);
@@ -52,7 +101,15 @@ const AnalyzingScreen = () => {
       <View style={styles.container}>
         <OnboardingProgress currentStep={12} totalSteps={17} />
         
-        <View style={styles.content}>
+        <Animated.View 
+          style={[
+            styles.content,
+            {
+              transform: [{ translateX: contentTranslateX }],
+              opacity: contentOpacity,
+            },
+          ]}
+        >
           <View style={styles.logoContainer}>
             <View style={styles.loadingContainer}>
               <Animated.View style={[styles.iconContainer, { opacity: fadeAnim }]}>
@@ -82,7 +139,7 @@ const AnalyzingScreen = () => {
               {analysisSteps[currentStep]?.text || 'Analyzing...'}
             </Text>
           </Animated.View>
-        </View>
+        </Animated.View>
       </View>
     </MorphingBackground>
   );

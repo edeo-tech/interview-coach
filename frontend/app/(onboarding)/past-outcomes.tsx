@@ -1,21 +1,97 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import MorphingBackground from '../../components/MorphingBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const PastOutcomes = () => {
   const { data, updateData } = useOnboarding();
   const [hasFailed, setHasFailed] = useState<boolean | null>(data.hasFailed);
 
+  // Animation values
+  const contentTranslateX = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+  const buttonOpacity = useRef(new Animated.Value(1)).current;
+  const buttonTranslateY = useRef(new Animated.Value(0)).current;
+
+  // Entrance animation when screen loads
+  useFocusEffect(
+    React.useCallback(() => {
+      // Start with content off-screen right
+      contentTranslateX.setValue(SCREEN_WIDTH);
+      contentOpacity.setValue(0);
+      buttonOpacity.setValue(0);
+      buttonTranslateY.setValue(30);
+
+      // Animate content in from right
+      Animated.parallel([
+        Animated.timing(contentTranslateX, {
+          toValue: 0,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Animate button in after content with delay
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(buttonOpacity, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(buttonTranslateY, {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 200);
+    }, [])
+  );
+
   const handleContinue = () => {
     if (hasFailed !== null) {
       updateData('hasFailed', hasFailed);
-      // Route to Screen 9 (preparation rating) regardless of answer
-      // The hasFailed value will be used for dual framing in subsequent screens
-      router.push('/(onboarding)/preparation-rating');
+      
+      // Animate out before navigation
+      Animated.parallel([
+        Animated.timing(contentTranslateX, {
+          toValue: -SCREEN_WIDTH,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonOpacity, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonTranslateY, {
+          toValue: 30,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Navigate after animation completes
+        setTimeout(() => {
+          router.push('/(onboarding)/preparation-rating');
+        }, 100);
+      });
     }
   };
 
@@ -24,7 +100,15 @@ const PastOutcomes = () => {
       <View style={styles.container}>
         <OnboardingProgress currentStep={8} totalSteps={17} />
         
-        <View style={styles.content}>
+        <Animated.View 
+          style={[
+            styles.content,
+            {
+              transform: [{ translateX: contentTranslateX }],
+              opacity: contentOpacity,
+            },
+          ]}
+        >
           <Text style={styles.screenTitle}>Have you interviewed before?</Text>
           
           <Text style={styles.subtitle}>
@@ -84,16 +168,26 @@ const PastOutcomes = () => {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
 
-        <TouchableOpacity 
+        <Animated.View
+          style={[
+            styles.continueButtonContainer,
+            {
+              opacity: buttonOpacity,
+              transform: [{ translateY: buttonTranslateY }],
+            },
+          ]}
+        >
+          <TouchableOpacity 
           style={[styles.continueButton, hasFailed === null && styles.continueButtonDisabled]} 
           onPress={handleContinue}
           disabled={hasFailed === null}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
-          <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-        </TouchableOpacity>
+            <Text style={styles.continueButtonText}>Continue</Text>
+            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     </MorphingBackground>
   );
@@ -188,11 +282,14 @@ const styles = StyleSheet.create({
     color: '#A855F7',
     fontWeight: '600',
   },
-  continueButton: {
+  continueButtonContainer: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 34 : 20,
     left: 24,
     right: 24,
+  },
+  continueButton: {
+    width: '100%',
     height: 56,
     borderRadius: 28,
     backgroundColor: 'rgba(168, 85, 247, 0.15)',
