@@ -212,13 +212,16 @@ const ProfileSetup = () => {
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.textInput}
-                placeholder="Enter your age"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                placeholder="25"
+                placeholderTextColor="rgba(255, 255, 255, 0.4)"
                 value={age}
                 onChangeText={setAge}
-                keyboardType="numeric"
+                keyboardType="number-pad"
                 autoFocus={true}
                 maxLength={2}
+                returnKeyType="done"
+                textContentType="none"
+                selectTextOnFocus={true}
               />
             </View>
           </View>
