@@ -19,11 +19,11 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   icon_name,
   shouldShowProgress = true
 }) => {
-  // Progress calculation for screens 3-12 only (cv-upload to problems/analyzing)
-  // Screen 3 (cv-upload) = 0%, Screen 12 (problems) = 100%
+  // Progress calculation for screens 3-12 only (profile-setup to problems/analyzing)
+  // Screen 3 (profile-setup) = 0%, Screen 12 (problems) = 100%
   const calculateProgress = () => {
-    // Only show progress for steps 3-12 (cv-upload to analyzing screen)
-    if (currentStep < 3) return 0; // Before cv-upload
+    // Only show progress for steps 3-12 (profile-setup to analyzing screen)
+    if (currentStep < 3) return 0; // Before profile-setup
     if (currentStep > 12) return 1; // After analyzing screen
     
     // Map steps 3-12 to progress 0-100%
@@ -33,16 +33,17 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     
     // Weighted progress for better UX - early steps get more weight
     const weights = [
-      0.0,   // Step 3 (cv-upload) = 0%
-      0.15,  // Step 4 (name-input) = 15%
-      0.25,  // Step 5 (age-input) = 25%
-      0.35,  // Step 6 (job-role) = 35%
-      0.45,  // Step 7 (industry-struggle) = 45%
-      0.55,  // Step 8 (past-outcomes) = 55%
-      0.65,  // Step 9 (preparation-rating) = 65%
-      0.75,  // Step 10 (communication-rating) = 75%
-      0.85,  // Step 11 (nerves-rating) = 85%
-      1.0    // Step 12 (problems/analyzing) = 100%
+      0.0,   // Step 3 (profile-setup-profile) = 0%
+      0.15,  // Step 4 (profile-setup-name) = 15%
+      0.25,  // Step 5 (profile-setup-age) = 25%
+      0.30,  // Step 6 (section-transition) = 30%
+      0.35,  // Step 7 (job-role) = 35%
+      0.45,  // Step 8 (industry-struggle) = 45%
+      0.55,  // Step 9 (past-outcomes) = 55%
+      0.65,  // Step 10 (preparation-rating) = 65%
+      0.75,  // Step 11 (communication-rating) = 75%
+      0.85,  // Step 12 (nerves-rating) = 85%
+      1.0    // Step 13 (problems/analyzing) = 100%
     ];
     
     return weights[progressStep] || 0;
@@ -59,7 +60,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     const progressStep = previousStep - 3;
     
     const weights = [
-      0.0, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1.0
+      0.0, 0.15, 0.25, 0.30, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1.0
     ];
     
     return weights[progressStep] || 0;

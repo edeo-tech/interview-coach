@@ -22,7 +22,9 @@
       "Bash(pip3 list:*)",
       "Bash(python3:*)",
       "WebSearch",
-      "Bash(npx react-native start:*)"
+      "Bash(npx react-native start:*)",
+      "Bash(npm start)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

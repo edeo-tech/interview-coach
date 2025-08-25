@@ -30,6 +30,8 @@ const ProfileSetup = () => {
   // Animation values
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
+  const buttonOpacity = useRef(new Animated.Value(1)).current;
+  const buttonTranslateY = useRef(new Animated.Value(0)).current;
 
   const getStepNumber = (step: Step): number => {
     switch (step) {
@@ -40,64 +42,93 @@ const ProfileSetup = () => {
     }
   };
 
-  const animateToStep = (direction: 'forward' | 'back') => {
+  const animateToStep = (direction: 'forward' | 'back', newStep: Step) => {
     const slideOutValue = direction === 'forward' ? -SCREEN_WIDTH : SCREEN_WIDTH;
     const slideInValue = direction === 'forward' ? SCREEN_WIDTH : -SCREEN_WIDTH;
 
-    // Slide out current content
+    // Animate out both content and button together
     Animated.parallel([
       Animated.timing(contentTranslateX, {
         toValue: slideOutValue,
-        duration: 300,
+        duration: 600,
         useNativeDriver: true,
       }),
       Animated.timing(contentOpacity, {
         toValue: 0,
-        duration: 250,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
         useNativeDriver: true,
       })
     ]).start(() => {
+      // NOW change the step after the content has animated out
+      setCurrentStep(newStep);
+      
       // Reset position for new content
       contentTranslateX.setValue(slideInValue);
+      buttonTranslateY.setValue(30);
       
-      // Slide in new content
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        })
-      ]).start();
+      // Add a brief pause before sliding in new content for a more relaxed feel
+      setTimeout(() => {
+        // Animate in content and button together with gentle timing
+        Animated.parallel([
+          Animated.timing(contentTranslateX, {
+            toValue: 0,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          // Button animates in slightly after content starts, creating a nice cascade
+          Animated.sequence([
+            Animated.delay(200),
+            Animated.parallel([
+              Animated.timing(buttonOpacity, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+              }),
+              Animated.timing(buttonTranslateY, {
+                toValue: 0,
+                duration: 600,
+                useNativeDriver: true,
+              })
+            ])
+          ])
+        ]).start();
+      }, 100);
     });
   };
 
   const handleNext = () => {
     if (currentStep === 'profile') {
-      setCurrentStep('name');
-      animateToStep('forward');
+      animateToStep('forward', 'name');
     } else if (currentStep === 'name' && name.trim()) {
       updateData('name', name.trim());
-      setCurrentStep('age');
-      animateToStep('forward');
+      animateToStep('forward', 'age');
     } else if (currentStep === 'age' && isValidAge) {
       updateData('age', age.trim());
-      // Navigate to next screen (job-role)
-      router.push('/(onboarding)/job-role');
+      // Navigate to section transition screen
+      router.push('/(onboarding)/section-transition');
     }
   };
 
   const handleBack = () => {
     if (currentStep === 'age') {
-      setCurrentStep('name');
-      animateToStep('back');
+      animateToStep('back', 'name');
     } else if (currentStep === 'name') {
-      setCurrentStep('profile');
-      animateToStep('back');
+      animateToStep('back', 'profile');
     } else {
       // Go back to previous screen
       router.back();
@@ -233,7 +264,15 @@ const ProfileSetup = () => {
             {renderContent()}
           </Animated.View>
 
-          <View style={styles.bottomContainer}>
+          <Animated.View 
+            style={[
+              styles.bottomContainer,
+              {
+                opacity: buttonOpacity,
+                transform: [{ translateY: buttonTranslateY }],
+              }
+            ]}
+          >
             <TouchableOpacity 
               style={[
                 styles.primaryButton, 
@@ -246,7 +285,7 @@ const ProfileSetup = () => {
               <Text style={styles.primaryButtonText}>{getButtonText()}</Text>
               <Ionicons name="arrow-forward" size={20} color="#ffffff" />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </KeyboardAvoidingView>
       </View>
     </ChatGPTBackground>

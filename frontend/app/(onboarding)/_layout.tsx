@@ -15,6 +15,7 @@ const OnboardingLayout = () => {
         }}
       >
         <Stack.Screen name="profile-setup" /> {/* Unified Profile Setup - Screens 3-5 */}
+        <Stack.Screen name="section-transition" /> {/* Section Transition - Screen 5.5 */}
         <Stack.Screen name="cv-upload" /> {/* Old Profile Card Intro - Screen 3 (deprecated) */}
         <Stack.Screen name="name-input" /> {/* Old Name Input - Screen 4 (deprecated) */}
         <Stack.Screen name="age-input" /> {/* Old Age Input - Screen 5 (deprecated) */}

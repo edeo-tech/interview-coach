@@ -31,7 +31,7 @@ const OnboardingJobRole = () => {
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={6} totalSteps={17} />
+        <OnboardingProgress currentStep={7} totalSteps={17} />
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
