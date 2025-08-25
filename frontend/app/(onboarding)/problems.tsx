@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import MorphingBackground from '../../components/MorphingBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -14,7 +13,7 @@ const AnalyzingScreen = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
   
-  // Screen-level animation values for entrance/exit
+  // Screen-level animation values - only for exit animations
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
   
@@ -23,29 +22,6 @@ const AnalyzingScreen = () => {
     { text: `Finding best strategies for ${data.industry || 'your industry'}...`, icon: 'bulb-outline' },
     { text: 'Building your personal prep roadmap...', icon: 'map-outline' },
   ];
-
-  // Entrance animation when screen loads
-  useFocusEffect(
-    React.useCallback(() => {
-      // Start with content off-screen right
-      contentTranslateX.setValue(SCREEN_WIDTH);
-      contentOpacity.setValue(0);
-
-      // Animate content in from right
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: 0,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, [])
-  );
 
   useEffect(() => {
     const animateStep = (stepIndex: number) => {

@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import MorphingBackground from '../../components/MorphingBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -13,52 +12,11 @@ const PreparationRating = () => {
   const { data, updateData } = useOnboarding();
   const [selectedRating, setSelectedRating] = useState(data.preparationRating || 0);
 
-  // Animation values
+  // Animation values - only for exit animations
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const buttonOpacity = useRef(new Animated.Value(1)).current;
   const buttonTranslateY = useRef(new Animated.Value(0)).current;
-
-  // Entrance animation when screen loads
-  useFocusEffect(
-    React.useCallback(() => {
-      // Start with content off-screen right
-      contentTranslateX.setValue(SCREEN_WIDTH);
-      contentOpacity.setValue(0);
-      buttonOpacity.setValue(0);
-      buttonTranslateY.setValue(30);
-
-      // Animate content in from right
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: 0,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Animate button in after content with delay
-      setTimeout(() => {
-        Animated.parallel([
-          Animated.timing(buttonOpacity, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonTranslateY, {
-            toValue: 0,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }, 200);
-    }, [])
-  );
 
   const handleContinue = () => {
     if (selectedRating > 0) {

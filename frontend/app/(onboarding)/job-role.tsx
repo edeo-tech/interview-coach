@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import MorphingBackground from '../../components/MorphingBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -13,7 +12,7 @@ const OnboardingJobRole = () => {
   const { data, updateData } = useOnboarding();
   const [selectedIndustry, setSelectedIndustry] = useState(data.industry);
 
-  // Animation values
+  // Animation values - only for exit animations
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const buttonOpacity = useRef(new Animated.Value(1)).current;
@@ -29,47 +28,6 @@ const OnboardingJobRole = () => {
     { id: 'consulting', name: 'Consulting', icon: 'business-outline' },
     { id: 'other', name: 'Other', icon: 'help-circle-outline' },
   ];
-
-  // Entrance animation when screen loads
-  useFocusEffect(
-    React.useCallback(() => {
-      // Start with content off-screen right
-      contentTranslateX.setValue(SCREEN_WIDTH);
-      contentOpacity.setValue(0);
-      buttonOpacity.setValue(0);
-      buttonTranslateY.setValue(30);
-
-      // Animate content in from right
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: 0,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Animate button in after content with delay
-      setTimeout(() => {
-        Animated.parallel([
-          Animated.timing(buttonOpacity, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonTranslateY, {
-            toValue: 0,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }, 200);
-    }, [])
-  );
 
   const handleContinue = () => {
     if (selectedIndustry) {
@@ -111,19 +69,20 @@ const OnboardingJobRole = () => {
       <View style={styles.container}>
         <OnboardingProgress currentStep={7} totalSteps={17} />
         
-        <Animated.View 
-          style={{
-            flex: 1,
-            transform: [{ translateX: contentTranslateX }],
-            opacity: contentOpacity,
-          }}
+        <ScrollView 
+          style={styles.scrollContent} 
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView 
-            style={styles.scrollContent} 
-            contentContainerStyle={styles.scrollContentContainer}
-            showsVerticalScrollIndicator={false}
+          <Animated.View 
+            style={[
+              styles.content,
+              {
+                transform: [{ translateX: contentTranslateX }],
+                opacity: contentOpacity,
+              },
+            ]}
           >
-            <View style={styles.content}>
             <Text style={styles.screenTitle}>What industry are you in?</Text>
             <Text style={styles.subtitle}>
               Which industry are you applying in? We'll tailor advice and prep to this field.
@@ -153,9 +112,8 @@ const OnboardingJobRole = () => {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
-          </ScrollView>
-        </Animated.View>
+          </Animated.View>
+        </ScrollView>
 
         <Animated.View 
           style={[
