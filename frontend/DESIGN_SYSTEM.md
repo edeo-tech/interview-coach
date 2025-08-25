@@ -338,20 +338,173 @@ animations: {
 }
 ```
 
+## 🎯 Onboarding & Selection Screen Patterns
+
+### Question/Selection Screen Layout
+Based on the refined "Does this sound familiar?" screen design:
+
+```typescript
+questionScreen: {
+  // Container - centered vertical layout
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'ios' ? 32 : 16,
+  },
+  
+  // Content - centered with bottom padding for floating button
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 100,
+  }
+}
+```
+
+### Text Hierarchy for Information Lists
+**DO:** Break long sentences into scannable bullet points
+**DON'T:** Use long comma-separated lists in paragraph form
+
+```typescript
+// Good - scannable list format
+listIntro: {
+  fontSize: 16,
+  fontWeight: '400',
+  fontFamily: 'Inter',
+  color: 'rgba(255, 255, 255, 0.70)',
+  textAlign: 'center',
+  lineHeight: 24,
+  marginBottom: 16,
+}
+
+listContainer: {
+  gap: 8,
+  marginBottom: 48,
+  alignItems: 'center',
+}
+
+listItem: {
+  fontSize: 16,
+  fontWeight: '400', 
+  fontFamily: 'Inter',
+  color: 'rgba(255, 255, 255, 0.85)', // Slightly brighter for readability
+  textAlign: 'center',
+  lineHeight: 22,
+}
+```
+
+### Pill-Shaped Selection Options
+Perfect for binary or multiple choice selections:
+
+```typescript
+selectionPill: {
+  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  borderRadius: 24,                    // Perfect pill shape
+  height: 48,                          // Consistent height
+  paddingHorizontal: 20,
+  borderWidth: 1,
+  borderColor: 'rgba(255, 255, 255, 0.12)',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',            // Center content
+  
+  // Selection state
+  selected: {
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderColor: '#A855F7',
+  }
+}
+
+selectionText: {
+  color: 'rgba(255, 255, 255, 0.70)',
+  fontSize: 16,
+  fontWeight: '400',
+  fontFamily: 'Inter',
+  marginLeft: 8,
+  lineHeight: 20,
+  
+  // Keep text concise (aim for 3-4 words max)
+  selected: {
+    color: '#A855F7',
+    fontWeight: '600',
+  }
+}
+```
+
+### Floating Action Button
+For screen completion actions:
+
+```typescript
+floatingButton: {
+  position: 'absolute',
+  bottom: Platform.OS === 'ios' ? 34 : 20,
+  left: 24,
+  right: 24,
+  height: 56,
+  borderRadius: 28,
+  backgroundColor: 'rgba(168, 85, 247, 0.15)',
+  borderWidth: 1,
+  borderColor: 'rgb(169, 85, 247)',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  shadowColor: '#A855F7',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 12,
+  elevation: 8,
+}
+```
+
+### Information Display Principles
+
+#### 1. Break Up Dense Text
+- **Before:** "Most Technology candidates struggle with Technical communication, System design questions, Coding under pressure."
+- **After:** 
+  ```
+  Most Technology candidates struggle with:
+  • Technical communication
+  • System design questions
+  • Coding under pressure
+  ```
+
+#### 2. Visual Hierarchy for Lists
+- Use intro text (70% opacity) to set context
+- Use bullet points (85% opacity) for better contrast and scannability
+- Keep generous spacing (8px between items)
+
+#### 3. Selection Option Guidelines
+- Keep text concise (3-4 words maximum)
+- Use pills for 2-4 options
+- Always center content within pills
+- Include icons for visual feedback
+
 ## 🎯 Implementation Notes
 
 ### Key Components to Replicate
-1. **ChatGPTBackground**: Always use as the base (never override)
+1. **MorphingBackground**: Always use as the base (never override)
 2. **Pill Buttons**: Perfect rounded buttons like welcome screen CTA
-3. **Modal Sheets**: Glass panels with top radius and handle
-4. **Centered Content**: Use welcome screen's content centering approach
-5. **Minimal Glass**: Only when absolutely necessary for grouping
+3. **Pill Selections**: 48px height pills for choices
+4. **Modal Sheets**: Glass panels with top radius and handle
+5. **Centered Content**: Use welcome screen's content centering approach
+6. **Floating Actions**: Absolute positioned buttons at bottom
+7. **Bullet Lists**: For digestible information display
+
+### Selection Screen Best Practices
+- **Center everything**: Title, content, and options should be centered
+- **Floating buttons**: Never use background containers, always float
+- **Scannable lists**: Break long text into bullet points
+- **Pill selections**: Use 48px height pills with centered content
+- **Generous spacing**: 48px between major sections
+- **Text contrast**: 85% opacity for important info, 70% for context
 
 ### What to Avoid
-- Complex color schemes (stick to white + purple + gold)
-- Heavy glass effects (keep them subtle)
-- Cramped layouts (follow welcome screen's generous spacing)
-- Unnecessary decorations (every element must have purpose)
-- Breaking the established button and modal patterns
+- Long comma-separated sentences (break into bullets)
+- Heavy containers around information (keep it minimal)
+- Cramped selection options (use proper pill height)
+- Background containers on action buttons (float them)
+- Complex layouts (keep centered and simple)
 
-This design system captures the essence of our perfect welcome screen - elegant, minimal, and focused on what matters most: helping users succeed in their interviews.
+This design system now includes patterns for clean, digestible information display and user selection interfaces that maintain our elegant, minimal aesthetic.

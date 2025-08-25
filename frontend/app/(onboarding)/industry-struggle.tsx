@@ -26,7 +26,6 @@ const IndustryStruggle = () => {
 
   const handleContinue = () => {
     if (strugglesApply !== null) {
-      // We don't need to store this anymore, just continue to next screen
       router.push('/(onboarding)/past-outcomes');
     }
   };
@@ -37,26 +36,22 @@ const IndustryStruggle = () => {
   return (
     <MorphingBackground mode="static" style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={7} totalSteps={17} />
+        <OnboardingProgress currentStep={8} totalSteps={17} />
         
         <View style={styles.content}>
           <Text style={styles.screenTitle}>Does this sound familiar?</Text>
+          
           <Text style={styles.subtitle}>
-            Most people in {industryName} struggle with:
+            Most {industryName} candidates struggle with:
           </Text>
           
           <View style={styles.strugglesContainer}>
             {struggles.map((struggle, index) => (
-              <View key={index} style={styles.struggleItem}>
-                <Ionicons name="alert-circle-outline" size={20} color="#F59E0B" />
-                <Text style={styles.struggleText}>{struggle}</Text>
-              </View>
+              <Text key={index} style={styles.struggleItem}>
+                • {struggle}
+              </Text>
             ))}
           </View>
-
-          <Text style={styles.questionText}>
-            Do you feel these apply to you?
-          </Text>
 
           <View style={styles.optionContainer}>
             <TouchableOpacity
@@ -66,11 +61,16 @@ const IndustryStruggle = () => {
               ]}
               onPress={() => setStrugglesApply(true)}
             >
+              <Ionicons 
+                name={strugglesApply === true ? "checkmark-circle" : "checkmark-circle-outline"} 
+                size={20} 
+                color={strugglesApply === true ? "#A855F7" : "rgba(255, 255, 255, 0.55)"} 
+              />
               <Text style={[
                 styles.optionText,
                 strugglesApply === true && styles.optionTextSelected
               ]}>
-                Yes, these resonate
+                Yes, I need help
               </Text>
             </TouchableOpacity>
 
@@ -81,26 +81,29 @@ const IndustryStruggle = () => {
               ]}
               onPress={() => setStrugglesApply(false)}
             >
+              <Ionicons 
+                name={strugglesApply === false ? "checkmark-circle" : "checkmark-circle-outline"} 
+                size={20} 
+                color={strugglesApply === false ? "#A855F7" : "rgba(255, 255, 255, 0.55)"} 
+              />
               <Text style={[
                 styles.optionText,
                 strugglesApply === false && styles.optionTextSelected
               ]}>
-                No, I'm confident here
+                No, I'm confident
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity 
-            style={[styles.continueButton, strugglesApply === null && styles.continueButtonDisabled]} 
-            onPress={handleContinue}
-            disabled={strugglesApply === null}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity 
+          style={[styles.continueButton, strugglesApply === null && styles.continueButtonDisabled]} 
+          onPress={handleContinue}
+          disabled={strugglesApply === null}
+        >
+          <Text style={styles.continueButtonText}>Continue</Text>
+          <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+        </TouchableOpacity>
       </View>
     </MorphingBackground>
   );
@@ -113,102 +116,113 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    backgroundColor: 'transparent',
+    justifyContent: 'space-between',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 100, // Space for floating button
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 16,
+    lineHeight: 30,
+    marginBottom: 24,
   },
   subtitle: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
-    marginBottom: 24,
     lineHeight: 24,
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
   strugglesContainer: {
-    gap: 12,
-    marginBottom: 32,
+    gap: 8,
+    marginBottom: 48,
+    alignItems: 'center',
   },
   struggleItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  struggleText: {
-    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: 16,
-    flex: 1,
-  },
-  questionText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center',
-    marginBottom: 24,
+    lineHeight: 22,
   },
   optionContainer: {
-    gap: 12,
+    gap: 16,
+    width: '100%',
+    maxWidth: 320,
   },
   optionButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-  },
-  optionButtonSelected: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderColor: '#F59E0B',
-  },
-  optionText: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  optionTextSelected: {
-    color: '#F59E0B',
-  },
-  bottomContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 24,
+    height: 48,
     paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  continueButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    paddingVertical: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+  },
+  optionButtonSelected: {
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderColor: '#A855F7',
+  },
+  optionText: {
+    color: 'rgba(255, 255, 255, 0.70)',
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    marginLeft: 8,
+    lineHeight: 20,
+  },
+  optionTextSelected: {
+    color: '#A855F7',
+    fontWeight: '600',
+  },
+  continueButton: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 34 : 20,
+    left: 24,
+    right: 24,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(245, 158, 11, 0.5)',
+    backgroundColor: 'rgba(168, 85, 247, 0.05)',
+    borderColor: 'rgba(169, 85, 247, 0.3)',
     shadowOpacity: 0,
   },
   continueButtonText: {
-    color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
+    color: '#FFFFFF',
+    marginRight: 8,
   },
 });
 
