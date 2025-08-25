@@ -12,31 +12,25 @@ const OnboardingJobRole = () => {
   const { data, updateData } = useOnboarding();
   const [selectedIndustry, setSelectedIndustry] = useState(data.industry);
 
-  // Animation values - for both entrance and exit animations
-  const contentTranslateX = useRef(new Animated.Value(0)).current;
-  const contentOpacity = useRef(new Animated.Value(1)).current;
-  const buttonOpacity = useRef(new Animated.Value(1)).current;
-  const buttonTranslateY = useRef(new Animated.Value(0)).current;
+  // Animation values - initialized in off-screen state to prevent double appearance
+  const contentTranslateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const buttonOpacity = useRef(new Animated.Value(0)).current;
+  const buttonTranslateY = useRef(new Animated.Value(20)).current;
 
-  // Smart entrance animation - starts immediately on mount, no conflicts
+  // Smart entrance animation - content already starts off-screen
   React.useEffect(() => {
-    // Start content off-screen (right) and animate in quickly
-    contentTranslateX.setValue(SCREEN_WIDTH);
-    contentOpacity.setValue(0);
-    buttonOpacity.setValue(0);
-    buttonTranslateY.setValue(20);
-
-    // Immediate entrance animation - no delay, no conflicts
+    // Brief delay then animate in (content already positioned off-screen)
     const timer = setTimeout(() => {
       Animated.parallel([
         Animated.timing(contentTranslateX, {
           toValue: 0,
-          duration: 450, // Faster than exit animation
+          duration: 380, // 450ms → 380ms
           useNativeDriver: true,
         }),
         Animated.timing(contentOpacity, {
           toValue: 1,
-          duration: 400,
+          duration: 340, // 400ms → 340ms
           useNativeDriver: true,
         }),
       ]).start();
@@ -46,17 +40,17 @@ const OnboardingJobRole = () => {
         Animated.parallel([
           Animated.timing(buttonOpacity, {
             toValue: 1,
-            duration: 350,
+            duration: 300, // 350ms → 300ms
             useNativeDriver: true,
           }),
           Animated.timing(buttonTranslateY, {
             toValue: 0,
-            duration: 400,
+            duration: 340, // 400ms → 340ms
             useNativeDriver: true,
           }),
         ]).start();
-      }, 150);
-    }, 50); // Very brief delay to let background settle
+      }, 120);
+    }, 50);
 
     return () => clearTimeout(timer);
   }, []);
@@ -80,22 +74,22 @@ const OnboardingJobRole = () => {
       Animated.parallel([
         Animated.timing(contentTranslateX, {
           toValue: -SCREEN_WIDTH,
-          duration: 600,
+          duration: 520, // 600ms → 520ms
           useNativeDriver: true,
         }),
         Animated.timing(contentOpacity, {
           toValue: 0,
-          duration: 500,
+          duration: 430, // 500ms → 430ms
           useNativeDriver: true,
         }),
         Animated.timing(buttonOpacity, {
           toValue: 0,
-          duration: 400,
+          duration: 350, // 400ms → 350ms
           useNativeDriver: true,
         }),
         Animated.timing(buttonTranslateY, {
           toValue: 30,
-          duration: 500,
+          duration: 430, // 500ms → 430ms
           useNativeDriver: true,
         }),
       ]).start(() => {

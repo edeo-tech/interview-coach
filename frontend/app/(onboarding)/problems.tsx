@@ -13,27 +13,23 @@ const AnalyzingScreen = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
   
-  // Screen-level animation values - for both entrance and exit animations
-  const contentTranslateX = useRef(new Animated.Value(0)).current;
-  const contentOpacity = useRef(new Animated.Value(1)).current;
+  // Screen-level animation values - initialized in off-screen state to prevent double appearance
+  const contentTranslateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
 
   // Smart entrance animation for the analyzing screen
   React.useEffect(() => {
-    // Start content off-screen and animate in
-    contentTranslateX.setValue(SCREEN_WIDTH);
-    contentOpacity.setValue(0);
-
-    // Brief delay then animate in
+    // Brief delay then animate in (content already positioned off-screen)
     const timer = setTimeout(() => {
       Animated.parallel([
         Animated.timing(contentTranslateX, {
           toValue: 0,
-          duration: 450,
+          duration: 380,
           useNativeDriver: true,
         }),
         Animated.timing(contentOpacity, {
           toValue: 1,
-          duration: 400,
+          duration: 340,
           useNativeDriver: true,
         }),
       ]).start();
@@ -77,12 +73,12 @@ const AnalyzingScreen = () => {
         Animated.parallel([
           Animated.timing(contentTranslateX, {
             toValue: -SCREEN_WIDTH,
-            duration: 600,
+            duration: 520,
             useNativeDriver: true,
           }),
           Animated.timing(contentOpacity, {
             toValue: 0,
-            duration: 500,
+            duration: 430,
             useNativeDriver: true,
           }),
         ]).start(() => {
