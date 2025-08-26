@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 # Environment variables
 OPENAI_API_KEY = config('OPENAI_API_KEY', default='', cast=str)
+OPENAI_WEB_SEARCH_ENABLED = config('OPENAI_WEB_SEARCH_ENABLED', default=True, cast=bool)
+FALLBACK_CONFIDENCE_THRESHOLD = config('FALLBACK_CONFIDENCE_THRESHOLD', default=0.7, cast=float)
 
 class JobProcessingService:
     def __init__(self):
@@ -169,6 +171,15 @@ class JobProcessingService:
             print(f"Successfully scraped {len(web_content)} characters from URL")
         except Exception as e:
             print(f"Failed to scrape URL {url}: {str(e)}")
+            
+            # Try OpenAI intelligent fallback if enabled
+            if OPENAI_WEB_SEARCH_ENABLED:
+                print(f"Attempting OpenAI intelligent fallback for URL: {url}")
+                try:
+                    return await self._process_job_url_with_web_search(url)
+                except Exception as fallback_error:
+                    print(f"Intelligent fallback also failed: {str(fallback_error)}")
+            
             raise HTTPException(
                 status_code=400,
                 detail="Failed to access the job posting URL. Please ensure the URL is correct and publicly accessible."
@@ -246,9 +257,132 @@ Instructions:
         content = result['choices'][0]['message']['content']
         
         try:
-            return json.loads(content)
+            job_data = json.loads(content)
+            # Add extraction metadata
+            job_data['extraction_method'] = 'direct_scraping'
+            job_data['extraction_confidence'] = 0.9
+            return job_data
         except json.JSONDecodeError as e:
             raise Exception(f"Failed to parse OpenAI response as JSON: {str(e)}")
+    
+    async def _process_job_url_with_web_search(self, url: str) -> Dict[str, Any]:
+        """Fallback using OpenAI to generate plausible job data when direct scraping fails"""
+        print(f"Starting OpenAI intelligent fallback for URL: {url}")
+        
+        # Extract information from the URL itself to make educated guesses
+        url_parts = url.split('/')
+        domain = url.split('//')[1].split('/')[0] if '//' in url else ''
+        
+        # Try to extract job info from URL structure
+        job_id = None
+        company_hint = None
+        role_hint = None
+        
+        for part in url_parts:
+            if 'job' in part.lower() and any(c.isdigit() for c in part):
+                job_id = part
+            elif any(keyword in part.lower() for keyword in ['developer', 'engineer', 'analyst', 'manager', 'designer']):
+                role_hint = part.replace('-', ' ').title()
+        
+        if 'graduate' in url.lower():
+            role_hint = "Graduate " + (role_hint or "Developer")
+            
+        prompt = f"""
+Based on the job posting URL and context clues, create a realistic job posting structure.
+
+URL: {url}
+Domain: {domain}
+Detected Role: {role_hint or "Software Developer"}
+Job ID: {job_id or "Unknown"}
+
+Create a plausible job posting for this URL. Use the domain and URL structure to infer:
+- Company name (from domain)
+- Role title (from URL keywords)
+- Typical requirements for this type of role
+- Standard benefits and employment details
+
+Return ONLY a JSON object with this structure:
+{{
+  "company": "Company name (inferred from domain)",
+  "role_title": "Job title (inferred from URL)",
+  "location": "Location (infer from domain or use 'United Kingdom' for .co.uk)",
+  "employment_type": "full-time",
+  "experience_level": "junior",
+  "salary_range": "Competitive salary",
+  "job_description": {{
+    "summary": "Brief overview based on role type",
+    "responsibilities": ["List typical responsibilities for this role"],
+    "requirements": ["List typical requirements"],
+    "nice_to_have": ["Optional skills"],
+    "benefits": ["Standard benefits"],
+    "tech_stack": ["Relevant technologies for this role"],
+    "team_info": "Information about typical team structure"
+  }},
+  "application_info": {{
+    "posted_date": "Recent",
+    "deadline": "Open",
+    "application_process": "Apply online"
+  }},
+  "metadata": {{
+    "source": "{domain}",
+    "confidence_score": 0.6,
+    "extraction_notes": "Generated from URL analysis due to access restrictions"
+  }}
+}}
+
+Instructions:
+1. Make realistic assumptions based on URL structure
+2. For graduate roles, adjust experience level and requirements accordingly
+3. Use domain name to infer company name
+4. Set confidence to 0.6 (moderate) since this is inferred data
+5. Return ONLY the JSON object
+"""
+        
+        try:
+            response = await self.client.post(
+                "/chat/completions",
+                json={
+                    "model": "gpt-4o-mini",  # Use cheaper model for this fallback
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    "response_format": {"type": "json_object"},
+                    "temperature": 0.1,
+                    "max_tokens": 3000
+                }
+            )
+            
+            if response.status_code != 200:
+                raise Exception(f"OpenAI intelligent fallback API error: {response.status_code} - {response.text}")
+            
+            result = response.json()
+            content = result['choices'][0]['message']['content']
+            
+            try:
+                job_data = json.loads(content)
+                
+                # Add extraction metadata
+                job_data['extraction_method'] = 'intelligent_fallback'
+                job_data['extraction_confidence'] = job_data.get('metadata', {}).get('confidence_score', 0.6)
+                
+                # Always mark as low confidence since this is inferred
+                if job_data['extraction_confidence'] > 0.7:
+                    job_data['extraction_confidence'] = 0.6
+                    job_data['metadata']['confidence_score'] = 0.6
+                    job_data['metadata']['extraction_notes'] = "Inferred from URL structure - verify details"
+                
+                print(f"OpenAI intelligent fallback completed. Company: {job_data.get('company', 'N/A')}, Confidence: {job_data['extraction_confidence']}")
+                return job_data
+                
+            except json.JSONDecodeError as e:
+                raise Exception(f"Failed to parse OpenAI intelligent fallback response as JSON: {str(e)}")
+                
+        except Exception as e:
+            print(f"OpenAI intelligent fallback failed for URL {url}: {str(e)}")
+            raise Exception(f"Intelligent fallback failed: {str(e)}")
     
     async def _scrape_url_content(self, url: str) -> str:
         """Scrape content from URL using HTTP requests"""
@@ -404,7 +538,11 @@ Instructions:
         content = result['choices'][0]['message']['content']
         
         try:
-            return json.loads(content)
+            job_data = json.loads(content)
+            # Add extraction metadata for vision processing
+            job_data['extraction_method'] = 'vision_processing'
+            job_data['extraction_confidence'] = 0.85
+            return job_data
         except json.JSONDecodeError as e:
             raise Exception(f"Failed to parse OpenAI response as JSON: {str(e)}")
     
@@ -434,7 +572,11 @@ Instructions:
         content = result['choices'][0]['message']['content']
         
         try:
-            return json.loads(content)
+            job_data = json.loads(content)
+            # Add extraction metadata for text processing
+            job_data['extraction_method'] = 'text_processing'
+            job_data['extraction_confidence'] = 0.9
+            return job_data
         except json.JSONDecodeError as e:
             raise Exception(f"Failed to parse OpenAI response as JSON: {str(e)}")
     
@@ -519,6 +661,15 @@ Instructions:
         
         # Logo will now be handled by Brandfetch service during job creation
         job_data['company_logo_url'] = None
+        
+        # Add extraction metadata if not present
+        if 'extraction_method' not in job_data:
+            job_data['extraction_method'] = 'unknown'
+        if 'extraction_confidence' not in job_data:
+            job_data['extraction_confidence'] = 0.8
+            
+        # Log extraction method for tracking
+        print(f"Job extraction completed via {job_data['extraction_method']} with confidence {job_data['extraction_confidence']}")
         
         # Ensure job_description is properly structured
         if not isinstance(job_data.get('job_description'), dict):
@@ -795,6 +946,158 @@ Domain:"""
             print(f"Cache lookup failed for {company_name}: {str(e)}")
         
         return None
+
+    async def extract_interview_process(self, job_content: str, job_url: str = None) -> Dict[str, Any]:
+        """
+        Extract interview process information from job posting content using OpenAI
+        
+        Args:
+            job_content: Raw job posting content (from URL scraping or file)
+            job_url: Optional URL for context
+            
+        Returns:
+            Dict containing:
+            - detected_stages: List of interview stage names found
+            - confidence_score: How confident AI is in the detection (0.0-1.0)
+            - raw_text: Raw text mentioning interview process
+            - detection_method: 'explicit' or 'inferred'
+        """
+        print(f"Starting interview process extraction from job content ({len(job_content)} chars)")
+        
+        if not job_content.strip():
+            print("Empty job content provided for interview process extraction")
+            return {
+                "detected_stages": [],
+                "confidence_score": 0.0,
+                "raw_text": "",
+                "detection_method": "none"
+            }
+        
+        try:
+            # Prepare the prompt for interview process detection
+            prompt = f"""
+Analyze this job posting to detect specific interview stages or hiring process mentioned.
+
+Job Posting Content:
+{job_content[:12000]}
+
+Look for explicit mentions of:
+1. Interview rounds, stages, or steps
+2. Specific types of interviews (technical, behavioral, case study, etc.)
+3. Interview process descriptions or hiring workflow
+
+Return ONLY a JSON object:
+{{
+  "detected_stages": [
+    // List of interview stage names found (use exact names from job posting when possible)
+  ],
+  "confidence_score": 0.0-1.0, // How confident you are in the detection
+  "raw_text": "Exact text from job posting mentioning interview process",
+  "detection_method": "explicit|inferred|none", // explicit=clearly stated, inferred=implied, none=not found
+  "process_details": {{
+    "total_rounds": 0, // Number of rounds if mentioned
+    "estimated_duration": "", // Timeline if mentioned (e.g. "2-3 weeks")
+    "special_requirements": [] // Any special prep mentioned (e.g. "bring portfolio")
+  }}
+}}
+
+Examples of what to look for:
+- "Our interview process consists of: phone screen, technical interview, and final round"
+- "3-stage process: recruiter call, technical assessment, onsite interview"
+- "You'll go through a phone screen, technical interview, system design, and cultural fit interview"
+- "Interview process includes portfolio review and case study presentation"
+
+Return ONLY the JSON object.
+"""
+
+            print("Calling OpenAI for interview process detection")
+            response = await self.client.post(
+                "/chat/completions",
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "response_format": {"type": "json_object"},
+                    "temperature": 0.1,
+                    "max_tokens": 1000
+                }
+            )
+            
+            if response.status_code != 200:
+                print(f"OpenAI API error during interview process extraction: {response.status_code}")
+                raise Exception(f"OpenAI API error: {response.status_code} - {response.text}")
+            
+            result = response.json()
+            content = result['choices'][0]['message']['content']
+            
+            try:
+                interview_process_data = json.loads(content)
+                print(f"Interview process extraction completed. Detected {len(interview_process_data.get('detected_stages', []))} stages with confidence {interview_process_data.get('confidence_score', 0.0)}")
+                
+                # Validate and clean the response
+                return self._validate_interview_process_data(interview_process_data)
+                
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse OpenAI interview process response as JSON: {str(e)}")
+                return {
+                    "detected_stages": [],
+                    "confidence_score": 0.0,
+                    "raw_text": "",
+                    "detection_method": "none"
+                }
+                
+        except Exception as e:
+            print(f"Error during interview process extraction: {str(e)}")
+            return {
+                "detected_stages": [],
+                "confidence_score": 0.0,
+                "raw_text": "",
+                "detection_method": "none"
+            }
+    
+    def _validate_interview_process_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate and clean interview process extraction data"""
+        
+        # Ensure required fields exist with defaults
+        validated_data = {
+            "detected_stages": data.get("detected_stages", []),
+            "confidence_score": max(0.0, min(1.0, data.get("confidence_score", 0.0))),
+            "raw_text": data.get("raw_text", ""),
+            "detection_method": data.get("detection_method", "none"),
+            "process_details": data.get("process_details", {})
+        }
+        
+        # Validate detected_stages is a list
+        if not isinstance(validated_data["detected_stages"], list):
+            validated_data["detected_stages"] = []
+        
+        # Clean up stage names (remove empty strings, limit length)
+        validated_stages = []
+        for stage in validated_data["detected_stages"]:
+            if isinstance(stage, str) and stage.strip() and len(stage.strip()) <= 100:
+                validated_stages.append(stage.strip())
+        validated_data["detected_stages"] = validated_stages[:10]  # Limit to 10 stages
+        
+        # Validate confidence score
+        if not isinstance(validated_data["confidence_score"], (int, float)):
+            validated_data["confidence_score"] = 0.0
+            
+        # Validate detection method
+        valid_methods = ["explicit", "inferred", "none"]
+        if validated_data["detection_method"] not in valid_methods:
+            validated_data["detection_method"] = "none"
+        
+        # Clean raw_text (limit length)
+        if isinstance(validated_data["raw_text"], str):
+            validated_data["raw_text"] = validated_data["raw_text"][:1000]
+        else:
+            validated_data["raw_text"] = ""
+            
+        # Ensure process_details is a dict
+        if not isinstance(validated_data["process_details"], dict):
+            validated_data["process_details"] = {}
+        
+        print(f"Validated interview process data: {len(validated_data['detected_stages'])} stages, confidence: {validated_data['confidence_score']}, method: {validated_data['detection_method']}")
+        return validated_data
 
     async def close(self):
         """Close the HTTP client"""

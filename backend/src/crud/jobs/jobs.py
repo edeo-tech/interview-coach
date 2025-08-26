@@ -78,15 +78,32 @@ async def create_job_from_url(
     else:
         print("No Brandfetch identifiers to add - will use fallback logo handling")
     
-    # Determine interview stages
-    print("Determining interview stages for job")
+    # Determine interview stages using AI-enhanced detection
+    print("Determining interview stages for job with AI enhancement")
     try:
+        # Try AI-enhanced detection first
+        raw_job_content = job_data.get("jd_raw", "") + "\n" + str(job_data.get("job_description", {}))
+        interview_stages, stage_metadata = await InterviewStageService.determine_interview_stages_with_ai(
+            job_data=job_data,
+            job_processor=job_processor,
+            raw_job_content=raw_job_content
+        )
+        
+        job.interview_stages = interview_stages
+        print(f"Determined {len(interview_stages)} interview stages using {stage_metadata['detection_method']}: {[stage.value for stage in interview_stages]}")
+        print(f"AI stages used: {stage_metadata['ai_stages_used']}, Fallback stages: {stage_metadata['fallback_stages_used']}, Confidence: {stage_metadata['confidence_score']}")
+        
+        # Store metadata in job_description for debugging/analytics
+        if "metadata" not in job_data:
+            job_data["metadata"] = {}
+        job_data["metadata"]["stage_detection"] = stage_metadata
+        
+    except Exception as e:
+        print(f"Error with AI-enhanced stage detection, falling back to business rules: {str(e)}")
+        # Fallback to original method
         interview_stages = InterviewStageService.determine_interview_stages(job_data)
         job.interview_stages = interview_stages
-        print(f"Determined {len(interview_stages)} interview stages: {[stage.value for stage in interview_stages]}")
-    except Exception as e:
-        print(f"Error determining interview stages: {str(e)}")
-        raise
+        print(f"Fallback determined {len(interview_stages)} interview stages: {[stage.value for stage in interview_stages]}")
     
     # Save the job using generic CRUD
     print("Saving job to database")
@@ -203,15 +220,32 @@ async def create_job_from_file(
     else:
         print("No Brandfetch identifiers to add - will use fallback logo handling")
     
-    # Determine interview stages
-    print("Determining interview stages for job")
+    # Determine interview stages using AI-enhanced detection
+    print("Determining interview stages for job with AI enhancement")
     try:
+        # Try AI-enhanced detection first
+        raw_job_content = job_data.get("jd_raw", "") + "\n" + str(job_data.get("job_description", {}))
+        interview_stages, stage_metadata = await InterviewStageService.determine_interview_stages_with_ai(
+            job_data=job_data,
+            job_processor=job_processor,
+            raw_job_content=raw_job_content
+        )
+        
+        job.interview_stages = interview_stages
+        print(f"Determined {len(interview_stages)} interview stages using {stage_metadata['detection_method']}: {[stage.value for stage in interview_stages]}")
+        print(f"AI stages used: {stage_metadata['ai_stages_used']}, Fallback stages: {stage_metadata['fallback_stages_used']}, Confidence: {stage_metadata['confidence_score']}")
+        
+        # Store metadata in job_description for debugging/analytics
+        if "metadata" not in job_data:
+            job_data["metadata"] = {}
+        job_data["metadata"]["stage_detection"] = stage_metadata
+        
+    except Exception as e:
+        print(f"Error with AI-enhanced stage detection, falling back to business rules: {str(e)}")
+        # Fallback to original method
         interview_stages = InterviewStageService.determine_interview_stages(job_data)
         job.interview_stages = interview_stages
-        print(f"Determined {len(interview_stages)} interview stages: {[stage.value for stage in interview_stages]}")
-    except Exception as e:
-        print(f"Error determining interview stages: {str(e)}")
-        raise
+        print(f"Fallback determined {len(interview_stages)} interview stages: {[stage.value for stage in interview_stages]}")
     
     # Save the job using generic CRUD
     print("Saving job to database")
