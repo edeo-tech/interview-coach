@@ -598,20 +598,6 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         <MockInterviewConversation config={conversationConfig}>
             {(conversation) => (
                 <ChatGPTBackground style={styles.container}>
-                    {callState !== 'incoming' && callState !== 'connecting' && (
-                        <View style={styles.header}>
-                            <View style={styles.headerInfo}>
-                                <Text style={styles.companyName}>{params.companyName}</Text>
-                                <Text style={styles.role}>{params.role}</Text>
-                            </View>
-                        {callState === 'active' && (
-                            <View style={styles.timer}>
-                                <Ionicons name="time-outline" size={16} color="#F59E0B" />
-                                <Text style={styles.timerText}>{formatDuration(duration)}</Text>
-                            </View>
-                        )}
-                        </View>
-                    )}
 
                     <ScrollView 
                         style={styles.content}
@@ -656,17 +642,12 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                                 </View>
                                             </View>
                                         ) : (
-                                            <View style={styles.standardInstructionsCard}>
-                                                <View style={styles.instructionsHeader}>
-                                                    <Ionicons name="people" size={20} color="#3b82f6" />
-                                                    <Text style={styles.instructionsTitle}>Interview Tips</Text>
+                                            <View style={styles.interviewTipsContainer}>
+                                                <View style={styles.interviewTipsHeader}>
+                                                    <Ionicons name="lightbulb" size={20} color="#A855F7" />
+                                                    <Text style={styles.interviewTipsTitle}>Interview Tips</Text>
                                                 </View>
-                                                <View style={styles.instructionsList}>
-                                                    <Text style={styles.instructionItem}>• Speak clearly and take your time</Text>
-                                                    <Text style={styles.instructionItem}>• Use specific examples from your experience</Text>
-                                                    <Text style={styles.instructionItem}>• Ask clarifying questions if needed</Text>
-                                                    <Text style={styles.instructionItem}>• Stay confident and be yourself</Text>
-                                                </View>
+                                                <Text style={styles.interviewTipItem}>Speak clearly • Use examples • Be confident</Text>
                                             </View>
                                         )}
                                     </View>
@@ -700,9 +681,8 @@ Remember: This is a practice interview to help ${userName} improve their intervi
 
                         {callState === 'active' && (
                             <View style={styles.activeCallContainer}>
-                                {/* iPhone-style Active Call Interface */}
+                                {/* Clean Active Call Interface */}
                                 <View style={styles.activeCallHeader}>
-                                    <Text style={styles.activeCallStatus}>Interview in progress</Text>
                                     <Text style={styles.activeCallDuration}>{formatDuration(duration)}</Text>
                                 </View>
 
@@ -1306,7 +1286,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingTop: 20,
+        paddingTop: 80,
     },
     activeCallHeader: {
         alignItems: 'center',
@@ -1322,7 +1302,7 @@ const styles = StyleSheet.create({
     activeCallDuration: {
         fontSize: 18,
         fontFamily: 'Inter_600SemiBold',
-        color: '#F59E0B',
+        color: '#A855F7',
         textAlign: 'center',
     },
     activeCallMiddle: {
@@ -1339,11 +1319,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 2,
-        borderColor: 'rgba(245, 158, 11, 0.3)',
+        borderColor: 'rgba(168, 85, 247, 0.3)',
         marginBottom: 24,
         ...Platform.select({
             ios: {
-                shadowColor: '#F59E0B',
+                shadowColor: '#A855F7',
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.2,
                 shadowRadius: 16,
@@ -1435,5 +1415,27 @@ const styles = StyleSheet.create({
         fontFamily: 'Inter_400Regular',
         color: GlassTextColors.muted,
         lineHeight: 20,
+    },
+    // Clean Interview Tips Styles
+    interviewTipsContainer: {
+        marginTop: 16,
+        paddingHorizontal: 20,
+    },
+    interviewTipsHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+        justifyContent: 'center',
+    },
+    interviewTipsTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#FFFFFF',
+        marginLeft: 8,
+    },
+    interviewTipItem: {
+        fontSize: 14,
+        color: 'rgba(255, 255, 255, 0.75)',
+        textAlign: 'center',
     },
 });

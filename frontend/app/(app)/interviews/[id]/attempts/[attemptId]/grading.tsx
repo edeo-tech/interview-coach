@@ -10,9 +10,9 @@ import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
-import { GlassStyles, GlassTextColors } from '../../../../../../constants/GlassStyles';
 import { getInterviewTypeConfig } from '../../../../../../config/interviewTypeConfigs';
 import { InterviewType } from '../../../../../../_api/interviews/feedback';
+import { TYPOGRAPHY } from '../../../../../../constants/Typography';
 
 const BlurredSection = ({ 
   children, 
@@ -178,172 +178,151 @@ export default function AttemptGradingScreen() {
   };
 
   const renderFeedback = () => {
-    const interviewConfig = data?.interview_type ? getInterviewTypeConfig(data.interview_type) : null;
-    
     return (
       <ScrollView 
         style={styles.scrollView} 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Interview Type Badge */}
-        {interviewConfig && (
-          <View style={styles.interviewTypeBadge}>
-            <LinearGradient
-              colors={[interviewConfig.primaryColor, interviewConfig.secondaryColor]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.interviewTypeBadgeGradient}
-            >
-              <Ionicons name={interviewConfig.icon as any} size={20} color="#fff" />
-              <Text style={styles.interviewTypeBadgeText}>{interviewConfig.displayName}</Text>
-            </LinearGradient>
-            <Text style={styles.interviewTypeDescription}>{interviewConfig.description}</Text>
-          </View>
-        )}
-        
-        <View style={styles.overallScoreCard}>
-        <Text style={styles.sectionTitle}>Overall Performance</Text>
-        <View style={styles.scoreRow}>
-          <View style={styles.scoreLeft}>
-            <Text style={[styles.overallScore, { color: getScoreColor(data?.overall_score || 0) }]}>
-              {data?.overall_score}
-            </Text>
-            <Text style={styles.scoreOutOf}>out of 100</Text>
-          </View>
-          <View style={styles.scoreRight}>
-            <Text style={[styles.scoreLabel, { color: getScoreColor(data?.overall_score || 0) }]}>
-              {getScoreLabel(data?.overall_score || 0)}
-            </Text>
-            <Text style={styles.performanceLevel}>Performance Level</Text>
+        {/* Overall Score Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Overall Performance</Text>
+          <View style={styles.scoreContainer}>
+            <View style={styles.scoreDisplay}>
+              <Text style={[styles.scoreNumber, { color: getScoreColor(data?.overall_score || 0) }]}>
+                {data?.overall_score}
+              </Text>
+              <Text style={styles.scoreLabel}>
+                {getScoreLabel(data?.overall_score || 0)}
+              </Text>
+            </View>
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBar}>
+                <View style={[
+                  styles.progressFill, 
+                  { 
+                    backgroundColor: getScoreColor(data?.overall_score || 0), 
+                    width: `${data?.overall_score || 0}%` 
+                  }
+                ]} />
+              </View>
+              <Text style={styles.progressText}>
+                {data?.overall_score}/100
+              </Text>
+            </View>
           </View>
         </View>
-        <View style={styles.overallProgressBar}>
-          <View style={[styles.overallProgress, { backgroundColor: getScoreColor(data?.overall_score || 0), width: `${data?.overall_score || 0}%` }]} />
-        </View>
-      </View>
 
-      <BlurredSection 
-        isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
-        showPaywall={isPaywallEnabled}
-      >
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Performance Breakdown</Text>
-          {(() => {
-            const interviewConfig = data?.interview_type ? getInterviewTypeConfig(data.interview_type) : null;
-            const rubricScores = data?.rubric_scores || {};
-            
-            return Object.entries(rubricScores).map(([category, score]) => {
-              const scoreValue = score as number;
-              const categoryConfig = interviewConfig?.rubricCategories.find(cat => cat.key === category);
-              const displayName = categoryConfig?.displayName || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        {/* Performance Breakdown */}
+        <BlurredSection 
+          isBlurred={feedbackAccess.shouldBlur} 
+          onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
+          showPaywall={isPaywallEnabled}
+        >
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Performance Breakdown</Text>
+            <View style={styles.rubricContainer}>
+            {(() => {
+              const interviewConfig = data?.interview_type ? getInterviewTypeConfig(data.interview_type) : null;
+              const rubricScores = data?.rubric_scores || {};
               
-              return (
-                <View key={category} style={styles.rubricItem}>
-                  <View style={styles.rubricHeader}>
-                    <View>
+              return Object.entries(rubricScores).map(([category, score]) => {
+                const scoreValue = score as number;
+                const categoryConfig = interviewConfig?.rubricCategories.find(cat => cat.key === category);
+                const displayName = categoryConfig?.displayName || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                return (
+                  <View key={category} style={styles.rubricItem}>
+                    <View style={styles.rubricHeader}>
                       <Text style={styles.rubricCategory}>{displayName}</Text>
-                      {categoryConfig?.description && (
-                        <Text style={styles.rubricDescription}>{categoryConfig.description}</Text>
-                      )}
+                      <Text style={[styles.rubricScore, { color: getScoreColor(scoreValue) }]}>{scoreValue}</Text>
                     </View>
-                    <Text style={[styles.rubricScore, { color: getScoreColor(scoreValue) }]}>{scoreValue}/100</Text>
+                    <View style={styles.rubricBar}>
+                      <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(scoreValue), width: `${scoreValue}%` }]} />
+                    </View>
                   </View>
-                  <View style={styles.rubricBar}>
-                    <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(scoreValue), width: `${scoreValue}%` }]} />
-                  </View>
-                </View>
-              );
-            });
-          })()}
-        </View>
-      </BlurredSection>
-
-      <BlurredSection 
-        isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
-        showPaywall={isPaywallEnabled}
-      >
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-            <Text style={styles.sectionTitle}>Strengths</Text>
-          </View>
-          {data?.strengths.map((s, i) => (
-            <View key={i} style={styles.listItem}>
-              <Text style={styles.bulletPoint}>•</Text>
-              <Text style={styles.listText}>{s}</Text>
+                );
+              });
+            })()}
             </View>
-          ))}
-        </View>
-      </BlurredSection>
-
-      <BlurredSection 
-        isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
-        showPaywall={isPaywallEnabled}
-      >
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="trending-up" size={20} color="#F59E0B" />
-            <Text style={styles.sectionTitle}>Areas to Improve</Text>
           </View>
-          {data?.improvement_areas.map((s, i) => (
-            <View key={i} style={styles.listItem}>
-              <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
-              <Text style={styles.listText}>{s}</Text>
+        </BlurredSection>
+
+        {/* Strengths */}
+        <BlurredSection 
+          isBlurred={feedbackAccess.shouldBlur} 
+          onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
+          showPaywall={isPaywallEnabled}
+        >
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+              <Text style={styles.sectionTitle}>Strengths</Text>
             </View>
-          ))}
-        </View>
-      </BlurredSection>
-
-      <BlurredSection 
-        isBlurred={feedbackAccess.shouldBlur} 
-        onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
-        showPaywall={isPaywallEnabled}
-      >
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="document-text" size={20} color="#3B82F6" />
-            <Text style={styles.sectionTitle}>Detailed Feedback</Text>
+            {data?.strengths.map((strength, i) => (
+              <View key={i} style={styles.bulletItem}>
+                <View style={styles.bullet} />
+                <Text style={styles.bulletText}>{strength}</Text>
+              </View>
+            ))}
           </View>
-          <Text style={styles.detailedFeedback}>{data?.detailed_feedback}</Text>
-        </View>
-      </BlurredSection>
+        </BlurredSection>
 
-        {/* View Transcript Section */}
+        {/* Areas to Improve */}
+        <BlurredSection 
+          isBlurred={feedbackAccess.shouldBlur} 
+          onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
+          showPaywall={isPaywallEnabled}
+        >
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="trending-up" size={20} color="#A855F7" />
+              <Text style={styles.sectionTitle}>Areas to Improve</Text>
+            </View>
+            {data?.improvement_areas.map((area, i) => (
+              <View key={i} style={styles.bulletItem}>
+                <View style={[styles.bullet, { backgroundColor: '#A855F7' }]} />
+                <Text style={styles.bulletText}>{area}</Text>
+              </View>
+            ))}
+          </View>
+        </BlurredSection>
+
+        {/* Detailed Feedback */}
+        <BlurredSection 
+          isBlurred={feedbackAccess.shouldBlur} 
+          onUpgradePress={() => isPaywallEnabled && router.push('/paywall?source=feedback' as any)}
+          showPaywall={isPaywallEnabled}
+        >
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="document-text" size={20} color="#A855F7" />
+              <Text style={styles.sectionTitle}>Detailed Feedback</Text>
+            </View>
+            <Text style={styles.feedbackText}>{data?.detailed_feedback}</Text>
+          </View>
+        </BlurredSection>
+
+        {/* View Transcript */}
         <TouchableOpacity 
-        style={[styles.transcriptCard, !data && styles.transcriptCardDisabled]}
-        onPress={() => {
-          if (data) {
-            // Light impact for viewing transcript - secondary action
-            impactAsync(ImpactFeedbackStyle.Light);
-            router.push({ 
-              pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
-              params: { id, attemptId, is_from_interview: 'false' } 
-            });
-          }
-        }}
-        disabled={!data}
-      >
-        <View style={styles.transcriptCardContent}>
-          <View style={styles.transcriptCardLeft}>
-            <View style={styles.transcriptIconContainer}>
-              <Ionicons name="document-text-outline" size={24} color={data ? "#F59E0B" : "#6B7280"} />
-            </View>
-            <View style={styles.transcriptTextContainer}>
-              <Text style={[styles.transcriptTitle, !data && styles.transcriptTitleDisabled]}>
-                View Interview Transcript
-              </Text>
-              <Text style={[styles.transcriptSubtitle, !data && styles.transcriptSubtitleDisabled]}>
-                Review the full conversation and your responses
-              </Text>
-            </View>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={data ? "#F59E0B" : "#6B7280"} />
-        </View>
-      </TouchableOpacity>
+          style={styles.transcriptButton}
+          onPress={() => {
+            if (data) {
+              impactAsync(ImpactFeedbackStyle.Light);
+              router.push({ 
+                pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
+                params: { id, attemptId, is_from_interview: 'false' } 
+              });
+            }
+          }}
+          disabled={!data}
+        >
+          <Ionicons name="document-text" size={20} color={data ? "#A855F7" : "#6B7280"} />
+          <Text style={[styles.transcriptButtonText, !data && { color: "#6B7280" }]}>
+            View Transcript
+          </Text>
+          <Ionicons name="chevron-forward" size={16} color={data ? "rgba(255, 255, 255, 0.5)" : "#6B7280"} />
+        </TouchableOpacity>
       </ScrollView>
     );
   };
@@ -355,26 +334,15 @@ export default function AttemptGradingScreen() {
           {/* Only show back button if coming from details (not from interview) */}
           {is_from_interview !== 'true' && (
             <TouchableOpacity 
-              style={styles.backButton} 
               onPress={() => {
-                // Light impact for navigation back - minor action
                 impactAsync(ImpactFeedbackStyle.Light);
                 router.back();
               }}
             >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="chevron-back" size={24} color="#fff" />
             </TouchableOpacity>
           )}
           <Text style={styles.headerTitle}>Interview Feedback</Text>
-          {data?.interview_type && (
-            <View style={styles.headerBadge}>
-              <Ionicons 
-                name={getInterviewTypeConfig(data.interview_type).icon as any} 
-                size={20} 
-                color={getInterviewTypeConfig(data.interview_type).primaryColor} 
-              />
-            </View>
-          )}
         </View>
         
         {loading ? renderLoadingState() : data ? renderFeedback() : (
@@ -392,28 +360,23 @@ export default function AttemptGradingScreen() {
         {/* Only show footer button if coming from interview */}
         {is_from_interview === 'true' && (
           <View style={styles.footer}>
-            <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.primaryButtonOuter, !data && styles.primaryButtonOuterDisabled]}
+            <TouchableOpacity 
+              style={[
+                styles.primaryButton, 
+                !data && styles.primaryButtonDisabled
+              ]} 
+              onPress={() => {
+                if (data) {
+                  impactAsync(ImpactFeedbackStyle.Medium);
+                  router.replace('/(app)/(tabs)/home');
+                }
+              }}
+              disabled={!data}
+              activeOpacity={0.8}
             >
-              <TouchableOpacity
-                style={[styles.primaryButtonInner, !data && styles.primaryButtonInnerDisabled]}
-                onPress={() => {
-                  if (data) {
-                    impactAsync(ImpactFeedbackStyle.Medium);
-                    router.replace('/(app)/(tabs)/home');
-                  }
-                }}
-                activeOpacity={0.9}
-                disabled={!data}
-              >
-                <Ionicons name="refresh-circle" size={24} color={data ? "#fff" : "#6B7280"} />
-                <Text style={[styles.practiceAgainText, !data && styles.practiceAgainTextDisabled]}>Practice Again & Improve</Text>
-                <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
-              </TouchableOpacity>
-            </LinearGradient>
+              <Text style={[styles.primaryButtonText, !data && styles.primaryButtonTextDisabled]}>Practice Again & Improve</Text>
+              <Ionicons name="arrow-forward" size={20} color={data ? "#ffffff" : "#6B7280"} />
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -434,19 +397,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     paddingTop: 60, 
     paddingHorizontal: 20, 
-    paddingBottom: 16, 
-    borderBottomWidth: 1, 
-    borderBottomColor: 'rgba(255,255,255,0.15)',
-    justifyContent: 'space-between',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 12,
+    paddingBottom: 20,
+    gap: 16,
   },
   headerTitle: { 
-    color: '#fff', 
-    fontSize: 20, 
-    fontWeight: 'bold', 
+    ...TYPOGRAPHY.pageTitle,
+    color: '#FFFFFF',
     flex: 1,
   },
   scrollView: {
@@ -454,102 +410,133 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   scrollContent: {
-    paddingVertical: 20,
-    paddingBottom: 24,
+    paddingBottom: 40,
   },
-  footer: { 
-    padding: 20, 
-    borderTopWidth: 1, 
-    borderTopColor: 'rgba(255,255,255,0.08)',
+  section: {
+    marginBottom: 28,
   },
-  // Transcript Card Styles
-  transcriptCard: {
-    ...GlassStyles.container,
-    padding: 20,
+  sectionTitle: {
+    ...TYPOGRAPHY.sectionHeader,
+    color: '#FFFFFF',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 16,
   },
-  transcriptCardDisabled: {
-    ...GlassStyles.containerSecondary,
-  },
-  transcriptCardContent: {
-    flexDirection: 'row',
+  scoreDisplay: {
     alignItems: 'center',
-    justifyContent: 'space-between',
+    marginBottom: 20,
   },
-  transcriptCardLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+  scoreNumber: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
-  transcriptIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
+  scoreLabel: {
+    ...TYPOGRAPHY.itemTitle,
+    color: '#FFFFFF',
+    marginBottom: 16,
   },
-  transcriptTextContainer: {
-    flex: 1,
+  progressContainer: {
+    width: '100%',
   },
-  transcriptTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+  progressBar: {
+    width: '100%',
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
   },
-  transcriptTitleDisabled: {
-    color: '#6B7280',
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
   },
-  transcriptSubtitle: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  transcriptSubtitleDisabled: {
-    color: '#6B7280',
-  },
-
-  // Practice Again Button Styles
-  primaryButtonOuter: {
-    borderRadius: 28,
-    padding: 2,
-    height: 56,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#A855F7',
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 4 },
-      },
-    }),
-  },
-  primaryButtonOuterDisabled: {
-    opacity: 0.6,
-  },
-  primaryButtonInner: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 28,
-    height: 52,
-    paddingHorizontal: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  primaryButtonInnerDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
-  practiceAgainText: {
-    color: GlassTextColors.primary,
-    fontSize: 17,
-    fontWeight: '700',
-    flex: 1,
+  progressText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
   },
-  practiceAgainTextDisabled: {
+  bulletItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  bullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+    marginRight: 12,
+    marginTop: 7,
+  },
+  bulletText: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.85)',
+    flex: 1,
+    lineHeight: 20,
+  },
+  feedbackText: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.85)',
+    lineHeight: 22,
+  },
+  // Transcript Button Styles
+  transcriptButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 50,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  transcriptButtonText: {
+    ...TYPOGRAPHY.itemTitle,
+    color: '#FFFFFF',
+    flex: 1,
+  },
+
+  // Practice Again Button Styles (matching onboarding)
+  primaryButton: {
+    width: '100%',
+    maxWidth: 320,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    shadowColor: '#A855F7',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)',
+  },
+  primaryButtonDisabled: {
+    backgroundColor: 'rgba(168, 85, 247, 0.05)',
+    borderColor: 'rgba(169, 85, 247, 0.3)',
+    shadowOpacity: 0,
+  },
+  primaryButtonText: {
+    ...TYPOGRAPHY.buttonLarge,
+    color: '#FFFFFF',
+    marginRight: 8,
+  },
+  primaryButtonTextDisabled: {
     color: '#6B7280',
+  },
+  footer: {
+    width: '100%',
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',
   },
   center: { 
     flex: 1, 
@@ -559,25 +546,24 @@ const styles = StyleSheet.create({
   
   // Loading states
   loadingCard: {
-    ...GlassStyles.card,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     maxWidth: 320,
     marginHorizontal: 20,
   },
   loadingTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '600',
+    ...TYPOGRAPHY.sectionHeader,
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   loadingSubtitle: {
-    color: '#9CA3AF',
-    fontSize: 15,
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
-    lineHeight: 20,
     marginBottom: 20,
   },
   statusIndicator: {
@@ -604,39 +590,27 @@ const styles = StyleSheet.create({
 
   // Empty state
   emptyCard: {
-    ...GlassStyles.card,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     maxWidth: 320,
     marginHorizontal: 20,
   },
   emptyTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    ...TYPOGRAPHY.sectionHeader,
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
-    color: '#9CA3AF',
-    fontSize: 15,
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
-    lineHeight: 20,
   },
 
   // Feedback content
-  overallScoreCard: {
-    ...GlassStyles.card,
-    padding: 24,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    color: GlassTextColors.primary,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -679,50 +653,41 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  card: { 
-    ...GlassStyles.card, 
-    padding: 20,
-    marginBottom: 16,
-  },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
     gap: 8,
   },
+  rubricContainer: {
+    marginTop: 20,
+  },
   rubricItem: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   rubricHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   rubricCategory: {
-    color: GlassTextColors.primary,
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  rubricDescription: {
-    color: GlassTextColors.muted,
-    fontSize: 12,
-    fontStyle: 'italic',
+    ...TYPOGRAPHY.itemTitle,
+    color: '#FFFFFF',
   },
   rubricScore: {
-    fontSize: 14,
+    ...TYPOGRAPHY.itemTitle,
     fontWeight: '600',
   },
   rubricBar: {
-    height: 6,
-    backgroundColor: '#374151',
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 4,
     overflow: 'hidden',
   },
   rubricProgress: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 4,
   },
   listItem: {
     flexDirection: 'row',
@@ -736,15 +701,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   listText: {
-    color: GlassTextColors.muted,
-    fontSize: 15,
-    lineHeight: 20,
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.85)',
     flex: 1,
-  },
-  detailedFeedback: {
-    color: GlassTextColors.muted,
-    lineHeight: 22,
-    fontSize: 15,
   },
   
   // Interview Type Badge Styles
@@ -761,13 +720,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   interviewTypeBadgeText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    ...TYPOGRAPHY.labelMedium,
+    color: '#FFFFFF',
   },
   interviewTypeDescription: {
-    color: GlassTextColors.muted,
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
     marginTop: 8,
     paddingHorizontal: 20,
