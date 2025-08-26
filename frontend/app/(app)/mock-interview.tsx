@@ -21,7 +21,7 @@ const AGENT_INTERVIEW_LINK = {
     "phone_screen": {
         "name": "Niamh Morissey",
         "agent_id": "agent_3201k2d96cp0fv7rvw0j3nbe3fd6",
-        "profile_picture": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format"
+        "profile_picture": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "initial_hr_interview": {
         "name": "Sam Tyldesley",
@@ -39,7 +39,7 @@ const AGENT_INTERVIEW_LINK = {
         "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "technical_screening_call": {
-        "name": "Louis O'Brien",
+        "name": "Louise O'Brien",
         "agent_id": "agent_3801k3kkcnpvfenvzpzbkfxcxr1x",
         "profile_picture": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format"
     },
@@ -656,18 +656,19 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                                 </View>
                                             </View>
                                         ) : (
-                                            <View style={styles.standardInstructionsCard}>
-                                                <View style={styles.instructionsHeader}>
-                                                    <Ionicons name="people" size={20} color="#3b82f6" />
-                                                    <Text style={styles.instructionsTitle}>Interview Tips</Text>
-                                                </View>
-                                                <View style={styles.instructionsList}>
-                                                    <Text style={styles.instructionItem}>• Speak clearly and take your time</Text>
-                                                    <Text style={styles.instructionItem}>• Use specific examples from your experience</Text>
-                                                    <Text style={styles.instructionItem}>• Ask clarifying questions if needed</Text>
-                                                    <Text style={styles.instructionItem}>• Stay confident and be yourself</Text>
-                                                </View>
-                                            </View>
+                                            // <View style={styles.standardInstructionsCard}>
+                                            //     <View style={styles.instructionsHeader}>
+                                            //         <Ionicons name="people" size={20} color="#3b82f6" />
+                                            //         <Text style={styles.instructionsTitle}>Interview Tips</Text>
+                                            //     </View>
+                                            //     <View style={styles.instructionsList}>
+                                            //         <Text style={styles.instructionItem}>• Speak clearly and take your time</Text>
+                                            //         <Text style={styles.instructionItem}>• Use specific examples from your experience</Text>
+                                            //         <Text style={styles.instructionItem}>• Ask clarifying questions if needed</Text>
+                                            //         <Text style={styles.instructionItem}>• Stay confident and be yourself</Text>
+                                            //     </View>
+                                            // </View>
+                                            null
                                         )}
                                     </View>
                                 </View>
