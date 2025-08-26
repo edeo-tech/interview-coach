@@ -253,7 +253,7 @@ export default function CreateJob() {
               ]}
             >
               {uploadCV.isPending ? (
-                <ActivityIndicator color="#F59E0B" />
+                <ActivityIndicator color="#A855F7" />
               ) : (
                 <>
                   <Ionicons name="arrow-forward" size={24} color="white" />
@@ -330,7 +330,7 @@ export default function CreateJob() {
                 ]}
               >
                 {isLoading ? (
-                  <ActivityIndicator color="#F59E0B" />
+                  <ActivityIndicator color="#A855F7" />
                 ) : (
                   <>
                     <Ionicons name="add-circle" size={24} color="white" />

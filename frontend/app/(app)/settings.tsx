@@ -252,7 +252,7 @@ const Settings = () => {
                     autoFocus
                   />
                   {updatePending && (
-                    <ActivityIndicator size="small" color="#F59E0B" style={{ marginLeft: 8 }} />
+                    <ActivityIndicator size="small" color="#A855F7" style={{ marginLeft: 8 }} />
                   )}
                 </View>
               ) : (

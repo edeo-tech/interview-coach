@@ -113,7 +113,7 @@ export default function JobDetails() {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#F59E0B" />
+            <ActivityIndicator size="large" color="#A855F7" />
             <Text style={styles.loadingText}>Loading job details...</Text>
           </View>
         </SafeAreaView>

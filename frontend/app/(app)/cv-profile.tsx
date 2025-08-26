@@ -28,7 +28,7 @@ export default function CVProfile() {
       <ChatGPTBackground style={styles.gradient}>
         <View style={styles.loadingContainer}>
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#F59E0B" />
+            <ActivityIndicator size="large" color="#A855F7" />
             <Text style={styles.loadingTitle}>Loading CV Profile...</Text>
           </View>
         </View>

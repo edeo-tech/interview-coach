@@ -135,7 +135,7 @@ export default function InterviewDetails() {
             </View>
           ) : attempt.status === 'graded' ? (
             <View style={styles.gradeContainer}>
-              <ActivityIndicator size="small" color="#F59E0B" />
+              <ActivityIndicator size="small" color="#A855F7" />
               <Text style={styles.gradeLabel}>Loading...</Text>
             </View>
           ) : (
@@ -250,7 +250,7 @@ export default function InterviewDetails() {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#F59E0B" />
+            <ActivityIndicator size="large" color="#A855F7" />
             <Text style={styles.loadingText}>Loading interview details...</Text>
           </View>
         </SafeAreaView>

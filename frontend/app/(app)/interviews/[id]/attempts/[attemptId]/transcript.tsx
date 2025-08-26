@@ -47,7 +47,7 @@ export default function AttemptTranscriptScreen() {
       <ChatGPTBackground style={styles.gradient}>
         <View style={styles.center}> 
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#F59E0B" />
+            <ActivityIndicator size="large" color="#A855F7" />
             <Text style={styles.loadingTitle}>Loading interview...</Text>
           </View>
         </View>
@@ -60,7 +60,7 @@ export default function AttemptTranscriptScreen() {
       return (
         <View style={styles.center}>
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#F59E0B" />
+            <ActivityIndicator size="large" color="#A855F7" />
             <Text style={styles.loadingTitle}>Processing Interview</Text>
             <Text style={styles.loadingSubtitle}>
               Your interview is being processed. The transcript will appear here shortly.
