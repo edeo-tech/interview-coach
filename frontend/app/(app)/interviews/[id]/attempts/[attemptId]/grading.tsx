@@ -11,6 +11,8 @@ import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
 import { GlassStyles, GlassTextColors } from '../../../../../../constants/GlassStyles';
+import { getInterviewTypeConfig } from '../../../../../../config/interviewTypeConfigs';
+import { InterviewType } from '../../../../../../_api/interviews/feedback';
 
 const BlurredSection = ({ 
   children, 
@@ -175,13 +177,32 @@ export default function AttemptGradingScreen() {
     return 'Poor';
   };
 
-  const renderFeedback = () => (
-    <ScrollView 
-      style={styles.scrollView} 
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.overallScoreCard}>
+  const renderFeedback = () => {
+    const interviewConfig = data?.interview_type ? getInterviewTypeConfig(data.interview_type) : null;
+    
+    return (
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Interview Type Badge */}
+        {interviewConfig && (
+          <View style={styles.interviewTypeBadge}>
+            <LinearGradient
+              colors={[interviewConfig.primaryColor, interviewConfig.secondaryColor]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.interviewTypeBadgeGradient}
+            >
+              <Ionicons name={interviewConfig.icon as any} size={20} color="#fff" />
+              <Text style={styles.interviewTypeBadgeText}>{interviewConfig.displayName}</Text>
+            </LinearGradient>
+            <Text style={styles.interviewTypeDescription}>{interviewConfig.description}</Text>
+          </View>
+        )}
+        
+        <View style={styles.overallScoreCard}>
         <Text style={styles.sectionTitle}>Overall Performance</Text>
         <View style={styles.scoreRow}>
           <View style={styles.scoreLeft}>
@@ -209,19 +230,32 @@ export default function AttemptGradingScreen() {
       >
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Performance Breakdown</Text>
-          {Object.entries(data?.rubric_scores || {}).map(([category, score]) => (
-            <View key={category} style={styles.rubricItem}>
-              <View style={styles.rubricHeader}>
-                <Text style={styles.rubricCategory}>
-                  {category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </Text>
-                <Text style={[styles.rubricScore, { color: getScoreColor(score) }]}>{score}/100</Text>
-              </View>
-              <View style={styles.rubricBar}>
-                <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(score), width: `${score}%` }]} />
-              </View>
-            </View>
-          ))}
+          {(() => {
+            const interviewConfig = data?.interview_type ? getInterviewTypeConfig(data.interview_type) : null;
+            const rubricScores = data?.rubric_scores || {};
+            
+            return Object.entries(rubricScores).map(([category, score]) => {
+              const categoryConfig = interviewConfig?.rubricCategories.find(cat => cat.key === category);
+              const displayName = categoryConfig?.displayName || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              
+              return (
+                <View key={category} style={styles.rubricItem}>
+                  <View style={styles.rubricHeader}>
+                    <View>
+                      <Text style={styles.rubricCategory}>{displayName}</Text>
+                      {categoryConfig?.description && (
+                        <Text style={styles.rubricDescription}>{categoryConfig.description}</Text>
+                      )}
+                    </View>
+                    <Text style={[styles.rubricScore, { color: getScoreColor(score) }]}>{score}/100</Text>
+                  </View>
+                  <View style={styles.rubricBar}>
+                    <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(score), width: `${score}%` }]} />
+                  </View>
+                </View>
+              );
+            });
+          })()}
         </View>
       </BlurredSection>
 
@@ -277,8 +311,8 @@ export default function AttemptGradingScreen() {
         </View>
       </BlurredSection>
 
-      {/* View Transcript Section */}
-      <TouchableOpacity 
+        {/* View Transcript Section */}
+        <TouchableOpacity 
         style={[styles.transcriptCard, !data && styles.transcriptCardDisabled]}
         onPress={() => {
           if (data) {
@@ -309,8 +343,9 @@ export default function AttemptGradingScreen() {
           <Ionicons name="chevron-forward" size={20} color={data ? "#F59E0B" : "#6B7280"} />
         </View>
       </TouchableOpacity>
-    </ScrollView>
-  );
+      </ScrollView>
+    );
+  };
 
   return (
     <ChatGPTBackground style={styles.gradient}>
@@ -330,6 +365,15 @@ export default function AttemptGradingScreen() {
             </TouchableOpacity>
           )}
           <Text style={styles.headerTitle}>Interview Feedback</Text>
+          {data?.interview_type && (
+            <View style={styles.headerBadge}>
+              <Ionicons 
+                name={getInterviewTypeConfig(data.interview_type).icon as any} 
+                size={20} 
+                color={getInterviewTypeConfig(data.interview_type).primaryColor} 
+              />
+            </View>
+          )}
         </View>
         
         {loading ? renderLoadingState() : data ? renderFeedback() : (
@@ -392,6 +436,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16, 
     borderBottomWidth: 1, 
     borderBottomColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'space-between',
   },
   backButton: {
     padding: 8,
@@ -656,7 +701,13 @@ const styles = StyleSheet.create({
   rubricCategory: {
     color: GlassTextColors.primary,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  rubricDescription: {
+    color: GlassTextColors.muted,
+    fontSize: 12,
+    fontStyle: 'italic',
   },
   rubricScore: {
     fontSize: 14,
@@ -693,5 +744,39 @@ const styles = StyleSheet.create({
     color: GlassTextColors.muted,
     lineHeight: 22,
     fontSize: 15,
+  },
+  
+  // Interview Type Badge Styles
+  interviewTypeBadge: {
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  interviewTypeBadgeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 8,
+  },
+  interviewTypeBadgeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  interviewTypeDescription: {
+    color: GlassTextColors.muted,
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 8,
+    paddingHorizontal: 20,
+  },
+  headerBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

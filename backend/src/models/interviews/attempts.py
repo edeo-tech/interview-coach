@@ -1,6 +1,7 @@
 from models._base import MongoBaseModel
 from typing import List, Dict, Optional
 from datetime import datetime
+from models.interviews.interview_types import InterviewType
 
 class InterviewAttempt(MongoBaseModel):
     interview_id: str
@@ -20,8 +21,9 @@ class InterviewFeedback(MongoBaseModel):
     interview_id: str
     job_id: str
     user_id: str
+    interview_type: InterviewType  # Type of interview for proper rubric interpretation
     overall_score: int  # 0-100
     strengths: List[str] = []
     improvement_areas: List[str] = []
     detailed_feedback: str
-    rubric_scores: Dict = {}  # {category: score}
+    rubric_scores: Dict = {}  # {category: score} - categories vary by interview_type

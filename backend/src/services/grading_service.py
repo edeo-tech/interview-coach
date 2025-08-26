@@ -6,6 +6,8 @@ import httpx
 
 from crud.interviews.attempts import get_attempt, create_feedback, update_attempt
 from crud.interviews.interviews import get_interview
+from config.interview_configs import get_interview_config
+from models.interviews.interview_types import InterviewType
 
 # Environment variables - these need to be set
 OPENAI_API_KEY = config('OPENAI_API_KEY', default='', cast=str)
@@ -24,7 +26,7 @@ class InterviewGradingService:
         print(f"   - Attempt ID: {attempt_id}")
         
         try:
-            # Get attempt and interview data (CV not needed for scoring)
+            # Get attempt and interview data
             attempt = await self._get_attempt_data(req, attempt_id)
             print(f"   - Attempt status: {attempt.get('status')}")
             print(f"   - Transcript length: {len(attempt.get('transcript', []))}")
@@ -32,7 +34,10 @@ class InterviewGradingService:
             interview = await self._get_interview_data(req, attempt['interview_id'])
             print(f"   - Interview role: {interview.get('role_title')}")
             print(f"   - Company: {interview.get('company')}")
-            print(f"   - Interview type: {interview.get('interview_type', 'technical')}")
+            
+            # Get interview type
+            interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
+            print(f"   - Interview type: {interview_type.value}")
             
             if not attempt or not interview:
                 raise ValueError("Required interview data not found")
@@ -46,25 +51,12 @@ class InterviewGradingService:
                 print(f"   ⚠️  WARNING: No transcript content found! Using minimal score feedback.")
                 default_feedback = await self._create_no_interview_feedback(attempt_id, interview)
                 
-                # Still save to database
-                await create_feedback(
-                    req,
-                    attempt_id,
-                    attempt['interview_id'],
-                    interview.get('job_id', ''),
-                    interview['user_id'],
-                    overall_score=default_feedback["overall_score"],
-                    strengths=default_feedback["strengths"],
-                    improvement_areas=default_feedback["improvement_areas"],
-                    detailed_feedback=default_feedback["detailed_feedback"],
-                    rubric_scores=default_feedback["rubric_scores"],
-                )
-                await update_attempt(req, attempt_id, status="graded")
-                
+                # Save to database
+                await self._save_feedback(req, attempt_id, interview, interview_type, default_feedback)
                 return default_feedback
             
-            # Create grading prompt (without CV data)
-            grading_prompt = self._build_grading_prompt(interview, transcript_text)
+            # Create grading prompt using interview type config
+            grading_prompt = self._build_grading_prompt(interview, transcript_text, interview_type)
             print(f"   - Grading prompt length: {len(grading_prompt)} characters")
             
             # Check if API key is configured
@@ -72,21 +64,8 @@ class InterviewGradingService:
                 print(f"   ❌ ERROR: OPENAI_API_KEY not configured! Using default feedback.")
                 default_feedback = await self._create_fallback_feedback(attempt_id, interview)
                 
-                # Still save to database
-                await create_feedback(
-                    req,
-                    attempt_id,
-                    attempt['interview_id'],
-                    interview.get('job_id', ''),
-                    interview['user_id'],
-                    overall_score=default_feedback["overall_score"],
-                    strengths=default_feedback["strengths"],
-                    improvement_areas=default_feedback["improvement_areas"],
-                    detailed_feedback=default_feedback["detailed_feedback"],
-                    rubric_scores=default_feedback["rubric_scores"],
-                )
-                await update_attempt(req, attempt_id, status="graded")
-                
+                # Save to database
+                await self._save_feedback(req, attempt_id, interview, interview_type, default_feedback)
                 return default_feedback
             
             # Call OpenAI API
@@ -110,27 +89,12 @@ class InterviewGradingService:
             print(f"   - Parsed feedback data successfully")
             
             # Ensure required fields exist
-            feedback_data = self._validate_feedback_data(feedback_data)
+            feedback_data = self._validate_feedback_data(feedback_data, interview_type)
             print(f"   - Validated feedback data")
             
-            # Save feedback to database and mark attempt graded
-            print(f"   - Saving feedback to database...")
-            await create_feedback(
-                req,
-                attempt_id,
-                interview['id'],
-                interview.get('job_id', ''),
-                interview['user_id'],
-                overall_score=feedback_data["overall_score"],
-                strengths=feedback_data["strengths"],
-                improvement_areas=feedback_data["improvement_areas"],
-                detailed_feedback=feedback_data["detailed_feedback"],
-                rubric_scores=feedback_data["rubric_scores"],
-            )
-
-            print(f"   - Updating attempt status to 'graded'...")
-            await update_attempt(req, attempt_id, status="graded")
-
+            # Save feedback to database
+            await self._save_feedback(req, attempt_id, interview, interview_type, feedback_data)
+            
             print(f"   ✅ SUCCESS: Interview grading completed!")
             return feedback_data
             
@@ -145,6 +109,7 @@ class InterviewGradingService:
                     attempt = await self._get_attempt_data(req, attempt_id)
                 if 'interview' not in locals():
                     interview = await self._get_interview_data(req, attempt['interview_id'])
+                interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
             except:
                 print(f"   ❌ Could not load interview data for fallback")
                 return {"error": "Failed to grade interview and could not create fallback"}
@@ -153,24 +118,33 @@ class InterviewGradingService:
             default_feedback = await self._create_fallback_feedback(attempt_id, interview)
             
             try:
-                await create_feedback(
-                    req,
-                    attempt_id,
-                    attempt['interview_id'],
-                    interview.get('job_id', ''),
-                    interview['user_id'],
-                    overall_score=default_feedback["overall_score"],
-                    strengths=default_feedback["strengths"],
-                    improvement_areas=default_feedback["improvement_areas"],
-                    detailed_feedback=default_feedback["detailed_feedback"],
-                    rubric_scores=default_feedback["rubric_scores"],
-                )
-                await update_attempt(req, attempt_id, status="graded")
+                await self._save_feedback(req, attempt_id, interview, interview_type, default_feedback)
                 print(f"   ✅ Default feedback saved successfully")
             except Exception as save_error:
                 print(f"   ❌ ERROR saving default feedback: {str(save_error)}")
             
             return default_feedback
+    
+    async def _save_feedback(self, req: Request, attempt_id: str, interview: Dict, 
+                           interview_type: InterviewType, feedback_data: Dict):
+        """Save feedback to database and mark attempt as graded"""
+        print(f"   - Saving feedback to database...")
+        await create_feedback(
+            req,
+            attempt_id,
+            interview['id'] if 'id' in interview else interview.get('_id'),
+            interview.get('job_id', ''),
+            interview['user_id'],
+            interview_type=interview_type,
+            overall_score=feedback_data["overall_score"],
+            strengths=feedback_data["strengths"],
+            improvement_areas=feedback_data["improvement_areas"],
+            detailed_feedback=feedback_data["detailed_feedback"],
+            rubric_scores=feedback_data["rubric_scores"],
+        )
+        
+        print(f"   - Updating attempt status to 'graded'...")
+        await update_attempt(req, attempt_id, status="graded")
     
     def _format_transcript(self, transcript: List[Dict]) -> str:
         """Format transcript for AI analysis"""
@@ -189,177 +163,62 @@ class InterviewGradingService:
         print(f"   - Total formatted turns: {len(formatted)}")
         return "\n".join(formatted)
     
-    def _build_grading_prompt(self, interview: Dict, transcript: str) -> str:
-        """Build the grading prompt for AI analysis (CV-independent)"""
+    def _build_grading_prompt(self, interview: Dict, transcript: str, interview_type: InterviewType) -> str:
+        """Build the grading prompt using interview type configuration"""
+        
+        config = get_interview_config(interview_type)
         
         role = interview.get('role_title', 'Software Engineer')
         company = interview.get('company', 'the company')
         difficulty = interview.get('difficulty', 'mid')
-        interview_type = interview.get('interview_type', 'technical')
         
         jd_structured = interview.get('jd_structured', {})
         requirements = jd_structured.get('requirements', 'Standard requirements')
         
-        if interview_type == "sales":
-            return self._build_sales_grading_prompt(interview, transcript)
-        else:
-            return self._build_standard_grading_prompt(interview, transcript)
-    
-    def _build_sales_grading_prompt(self, interview: Dict, transcript: str) -> str:
-        """Build the grading prompt for sales call simulation analysis"""
+        # Get company values if it's a values interview
+        company_values = ''
+        if interview_type == InterviewType.VALUES_INTERVIEW:
+            # Extract company values from job description or use defaults
+            company_values = jd_structured.get('company_values', 'Innovation, Collaboration, Integrity, Customer Focus')
         
-        role = interview.get('role_title', 'Sales Development Representative')
-        company = interview.get('company', 'the company')
-        difficulty = interview.get('difficulty', 'mid')
+        # Use the configured prompt template
+        prompt = config.prompt_template.format(
+            role=role,
+            company=company,
+            difficulty=difficulty,
+            requirements=requirements,
+            transcript=transcript,
+            company_values=company_values
+        )
         
-        jd_structured = interview.get('jd_structured', {})
-        requirements = jd_structured.get('requirements', 'Standard sales requirements')
-        focus_areas = interview.get('focus_areas', [])
-        
-        prompt = f"""You are an expert sales manager evaluating a mock sales call for a {role} position at {company}.
-
-IMPORTANT: This was a SALES CALL SIMULATION where the candidate acted as the salesperson and the AI acted as a prospect. Evaluate the candidate's sales performance, not their responses to interview questions.
-
-JOB DETAILS:
-- Role: {role}
-- Company: {company}
-- Level: {difficulty}
-- Requirements: {requirements}
-- Focus Areas: {', '.join(focus_areas) if focus_areas else 'Discovery, objection handling, closing'}
-
-SALES CALL TRANSCRIPT:
-{transcript}
-
-Please analyze this sales call and evaluate the candidate's sales performance. Return your response as valid JSON with exactly these fields:
-
-{{
-    "overall_score": <integer 0-100>,
-    "strengths": [<array of 3-5 specific sales strengths as strings>],
-    "improvement_areas": [<array of 3-5 specific sales improvement areas as strings>],
-    "detailed_feedback": "<detailed paragraph analyzing sales performance, techniques used, and areas for growth>",
-    "rubric_scores": {{
-        "discovery_questioning": <integer 0-100>,
-        "objection_handling": <integer 0-100>,
-        "rapport_building": <integer 0-100>,
-        "closing_technique": <integer 0-100>
-    }}
-}}
-
-SALES EVALUATION CRITERIA:
-- Discovery Questioning: Quality of questions asked to understand prospect's needs, pain points, and situation
-- Objection Handling: How effectively they addressed prospect concerns and objections
-- Rapport Building: Ability to build trust, listen actively, and connect with the prospect
-- Closing Technique: Asking for next steps, creating urgency, and moving the deal forward
-
-SCORING GUIDELINES FOR SALES CALLS:
-- **Discovery (0-100)**: Did they ask open-ended questions? Did they uncover pain points? Did they qualify the prospect?
-- **Objection Handling (0-100)**: How did they respond to "we already have a solution", budget concerns, timing issues?
-- **Rapport Building (0-100)**: Did they build trust? Were they professional? Did they listen and respond appropriately?
-- **Closing (0-100)**: Did they ask for next steps? Were they persistent but not pushy? Did they create value?
-
-SPECIFIC THINGS TO LOOK FOR:
-- Good discovery questions like "What's your current process?" "What challenges are you facing?"
-- Handling objections with empathy: "I understand that concern..."
-- Building on prospect responses: "You mentioned X, tell me more about that..."
-- Clear next steps: "Based on what you've shared, I'd like to show you..."
-- Professional persistence without being pushy
-
-SCORING FOR {difficulty.upper()} LEVEL:
-- Junior (0-2 years): Focus on basic sales fundamentals, enthusiasm, coachability
-- Mid (2-5 years): Expect solid discovery, objection handling, and closing skills
-- Senior (5+ years): Require advanced consultative selling, complex objection handling
-
-If the candidate didn't lead the conversation or ask questions, score accordingly low as this was their role as the salesperson."""
-
         return prompt
     
-    def _build_standard_grading_prompt(self, interview: Dict, transcript: str) -> str:
-        """Build the grading prompt for standard interview types"""
-        
-        role = interview.get('role_title', 'Software Engineer')
-        company = interview.get('company', 'the company')
-        difficulty = interview.get('difficulty', 'mid')
-        interview_type = interview.get('interview_type', 'technical')
-        
-        jd_structured = interview.get('jd_structured', {})
-        requirements = jd_structured.get('requirements', 'Standard requirements')
-        
-        prompt = f"""You are an expert technical interviewer evaluating a {interview_type} interview for a {role} position at {company}. 
-
-IMPORTANT: Base your evaluation SOLELY on the candidate's performance during this interview. Do not make assumptions about their background, experience, or qualifications beyond what they demonstrate in their responses.
-
-JOB DETAILS:
-- Role: {role}
-- Company: {company}
-- Level: {difficulty}
-- Requirements: {requirements}
-
-INTERVIEW TRANSCRIPT:
-{transcript}
-
-Please analyze this interview and provide a comprehensive evaluation based ONLY on the candidate's responses and performance during the interview. Return your response as valid JSON with exactly these fields:
-
-{{
-    "overall_score": <integer 0-100>,
-    "strengths": [<array of 3-5 specific strengths as strings>],
-    "improvement_areas": [<array of 3-5 specific areas for improvement as strings>],
-    "detailed_feedback": "<detailed paragraph analyzing performance, communication, technical accuracy, and areas for growth>",
-    "rubric_scores": {{
-        "technical_knowledge": <integer 0-100>,
-        "communication": <integer 0-100>,
-        "problem_solving": <integer 0-100>,
-        "cultural_fit": <integer 0-100>
-    }}
-}}
-
-EVALUATION CRITERIA:
-- Technical Knowledge: Accuracy and depth of technical responses shown in the interview
-- Communication: Clarity, articulation, and listening skills demonstrated during the conversation
-- Problem Solving: Logical thinking and approach to challenges as evidenced by their responses
-- Cultural Fit: Enthusiasm, professionalism, and engagement displayed during the interview
-
-SCORING GUIDELINES:
-- If the candidate did not answer questions or provided minimal responses, score accordingly low
-- If the interview was cut short or lacks substantial content, reflect this in the scoring
-- Base scores entirely on demonstrated performance, not potential or background assumptions
-- For {difficulty} level positions, evaluate based on what they actually showed during the interview
-
-Be constructive but honest in your feedback. Highlight both strengths and areas for improvement based solely on interview performance."""
-
-        return prompt
-    
-    def _validate_feedback_data(self, data: Dict) -> Dict:
+    def _validate_feedback_data(self, data: Dict, interview_type: InterviewType) -> Dict:
         """Ensure feedback data has all required fields with valid values"""
-        # Determine if this has sales or standard rubric scores
-        rubric_scores = data.get("rubric_scores", {})
-        has_sales_scores = "discovery_questioning" in rubric_scores
+        # Get the expected rubric structure from config
+        config = get_interview_config(interview_type)
+        expected_rubric_keys = [criteria.key for criteria in config.rubric_criteria]
         
-        if has_sales_scores:
-            defaults = {
-                "overall_score": 75,
-                "strengths": ["Showed professional communication", "Attempted to engage the prospect", "Asked some qualifying questions"],
-                "improvement_areas": ["Could ask more discovery questions", "Work on objection handling techniques", "Practice closing for next steps"],
-                "detailed_feedback": "The candidate demonstrated basic sales fundamentals and maintained professional communication throughout the call. With more practice on discovery questioning and objection handling, they would be even more effective in sales conversations.",
-                "rubric_scores": {
-                    "discovery_questioning": 70,
-                    "objection_handling": 75,
-                    "rapport_building": 80,
-                    "closing_technique": 70
-                }
-            }
-        else:
-            defaults = {
-                "overall_score": 75,
-                "strengths": ["Showed enthusiasm for the role", "Communicated clearly", "Asked thoughtful questions"],
-                "improvement_areas": ["Could provide more specific examples", "Opportunity to deepen technical knowledge"],
-                "detailed_feedback": "The candidate demonstrated good communication skills and showed enthusiasm for the position. With some additional preparation on technical concepts and providing more specific examples from their experience, they would be even stronger in future interviews.",
-                "rubric_scores": {
-                    "technical_knowledge": 75,
-                    "communication": 80,
-                    "problem_solving": 70,
-                    "cultural_fit": 80
-                }
-            }
+        # Create defaults based on interview type config
+        default_rubric_scores = {}
+        for key in expected_rubric_keys:
+            default_rubric_scores[key] = 75
+        
+        defaults = {
+            "overall_score": 75,
+            "strengths": [
+                f"Demonstrated understanding of {config.display_name} expectations",
+                "Maintained professional communication",
+                "Showed engagement throughout the interview"
+            ],
+            "improvement_areas": [
+                f"Could provide more specific examples relevant to {config.display_name}",
+                f"Opportunity to deepen skills in {config.improvement_focus[0]}",
+                f"Consider preparing more for {config.improvement_focus[1]}"
+            ],
+            "detailed_feedback": f"The candidate completed the {config.display_name}. {config.description}. With focused preparation on the key areas evaluated, they can strengthen their performance in future interviews.",
+            "rubric_scores": default_rubric_scores
+        }
         
         # Merge with defaults for any missing fields
         for key, default_value in defaults.items():
@@ -367,12 +226,22 @@ Be constructive but honest in your feedback. Highlight both strengths and areas 
                 data[key] = default_value
         
         # Validate score ranges
-        if not isinstance(data["overall_score"], int) or data["overall_score"] < 0 or data["overall_score"] > 100:
+        if not isinstance(data["overall_score"], (int, float)) or data["overall_score"] < 0 or data["overall_score"] > 100:
             data["overall_score"] = 75
+        else:
+            data["overall_score"] = int(data["overall_score"])
         
+        # Ensure all expected rubric keys are present
+        for key in expected_rubric_keys:
+            if key not in data["rubric_scores"]:
+                data["rubric_scores"][key] = 75
+        
+        # Validate each rubric score
         for category, score in data["rubric_scores"].items():
-            if not isinstance(score, int) or score < 0 or score > 100:
+            if not isinstance(score, (int, float)) or score < 0 or score > 100:
                 data["rubric_scores"][category] = 75
+            else:
+                data["rubric_scores"][category] = int(score)
         
         # Ensure arrays have content
         if not isinstance(data["strengths"], list) or len(data["strengths"]) == 0:
@@ -385,93 +254,54 @@ Be constructive but honest in your feedback. Highlight both strengths and areas 
     
     async def _create_no_interview_feedback(self, attempt_id: str, interview: Dict) -> Dict:
         """Create feedback for when there's no interview content (very low score)"""
-        interview_type = interview.get('interview_type', 'technical')
+        interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
+        config = get_interview_config(interview_type)
         
-        if interview_type == "sales":
-            return {
-                "overall_score": 5,
-                "strengths": [
-                    "Started the sales call session"
-                ],
-                "improvement_areas": [
-                    "Complete the full sales call by actively engaging the prospect",
-                    "Ask discovery questions to understand prospect needs",
-                    "Practice leading the conversation as the salesperson"
-                ],
-                "detailed_feedback": "The sales call was not completed or there was minimal engagement with the prospect. To improve your score, make sure to lead the conversation by asking discovery questions, addressing prospect concerns, and closing for next steps. Remember, as the salesperson, you should be driving the conversation.",
-                "rubric_scores": {
-                    "discovery_questioning": 5,
-                    "objection_handling": 5,
-                    "rapport_building": 5,
-                    "closing_technique": 5
-                }
-            }
-        else:
-            return {
-                "overall_score": 5,
-                "strengths": [
-                    "Started the interview session"
-                ],
-                "improvement_areas": [
-                    "Complete the full interview by answering all questions",
-                    "Provide detailed responses to demonstrate your knowledge",
-                    "Engage actively throughout the entire interview process"
-                ],
-                "detailed_feedback": "The interview was not completed or no responses were provided to the questions. To improve your score, make sure to participate fully in the interview by answering all questions with detailed, thoughtful responses that demonstrate your skills and knowledge.",
-                "rubric_scores": {
-                    "technical_knowledge": 5,
-                    "communication": 5,
-                    "problem_solving": 5,
-                    "cultural_fit": 5
-                }
-            }
+        # Create minimal rubric scores
+        minimal_rubric_scores = {}
+        for criteria in config.rubric_criteria:
+            minimal_rubric_scores[criteria.key] = 5
+        
+        return {
+            "overall_score": 5,
+            "strengths": [
+                f"Started the {config.display_name} session"
+            ],
+            "improvement_areas": [
+                f"Complete the full {config.display_name} by engaging throughout",
+                f"Provide detailed responses demonstrating {config.improvement_focus[0]}",
+                f"Actively participate to show {config.improvement_focus[1]}"
+            ],
+            "detailed_feedback": f"The {config.display_name} was not completed or there was minimal participation. {config.description}. To improve your score, make sure to participate fully by providing detailed, thoughtful responses that demonstrate your capabilities.",
+            "rubric_scores": minimal_rubric_scores
+        }
 
     async def _create_fallback_feedback(self, attempt_id: str, interview: Dict) -> Dict:
         """Create fallback feedback when AI grading fails but interview content exists"""
-        interview_type = interview.get('interview_type', 'technical')
+        interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
+        config = get_interview_config(interview_type)
         
-        if interview_type == "sales":
-            return {
-                "overall_score": 60,
-                "strengths": [
-                    "Completed the sales call session",
-                    "Maintained professional communication with the prospect",
-                    "Showed enthusiasm for the sales opportunity"
-                ],
-                "improvement_areas": [
-                    "Ask more discovery questions to understand prospect needs",
-                    "Practice handling objections with empathy and solutions",
-                    "Work on closing techniques and asking for next steps"
-                ],
-                "detailed_feedback": "Thank you for completing the practice sales call. This was a good learning experience. Focus on asking more discovery questions to uncover prospect pain points, handling objections professionally, and always closing for a specific next step to strengthen your sales performance.",
-                "rubric_scores": {
-                    "discovery_questioning": 55,
-                    "objection_handling": 60,
-                    "rapport_building": 65,
-                    "closing_technique": 60
-                }
-            }
-        else:
-            return {
-                "overall_score": 60,
-                "strengths": [
-                    "Completed the interview session",
-                    "Showed interest in the position",
-                    "Maintained professional communication"
-                ],
-                "improvement_areas": [
-                    "Could provide more detailed responses",
-                    "Consider preparing specific examples",
-                    "Practice technical concepts"
-                ],
-                "detailed_feedback": "Thank you for completing the practice interview. This was a good learning experience. Focus on providing more detailed responses and specific examples from your experience to strengthen your interview performance.",
-                "rubric_scores": {
-                    "technical_knowledge": 60,
-                    "communication": 65,
-                    "problem_solving": 55,
-                    "cultural_fit": 65
-                }
-            }
+        # Create moderate rubric scores
+        moderate_rubric_scores = {}
+        for i, criteria in enumerate(config.rubric_criteria):
+            # Slightly vary scores for realism
+            moderate_rubric_scores[criteria.key] = 60 + (i * 5) % 15
+        
+        return {
+            "overall_score": 60,
+            "strengths": [
+                f"Completed the {config.display_name} session",
+                "Maintained professional communication",
+                f"Showed understanding of {config.improvement_focus[0]}"
+            ],
+            "improvement_areas": [
+                f"Deepen knowledge in {config.improvement_focus[0]}",
+                f"Practice {config.improvement_focus[1]} skills",
+                f"Prepare more examples demonstrating {config.improvement_focus[2] if len(config.improvement_focus) > 2 else 'relevant experience'}"
+            ],
+            "detailed_feedback": f"Thank you for completing the {config.display_name}. {config.description}. Focus on strengthening the key areas evaluated to enhance your performance in future interviews.",
+            "rubric_scores": moderate_rubric_scores
+        }
     
     async def _get_attempt_data(self, req: Request, attempt_id: str) -> Dict:
         """Get attempt data from DB"""

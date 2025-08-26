@@ -4,6 +4,7 @@ from datetime import datetime, timezone, timedelta
 
 from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, countDocuments
 from models.interviews.attempts import InterviewAttempt, InterviewFeedback
+from models.interviews.interview_types import InterviewType
 
 async def create_attempt(req: Request, interview_id: str, job_id: str, user_id: str) -> InterviewAttempt:
     """Create a new interview attempt"""
@@ -207,6 +208,7 @@ async def create_feedback(
     interview_id: str,
     job_id: str,
     user_id: str,
+    interview_type: InterviewType,
     overall_score: int,
     strengths: List[str],
     improvement_areas: List[str],
@@ -229,6 +231,7 @@ async def create_feedback(
         interview_id=interview_id,
         job_id=job_id,
         user_id=user_id,
+        interview_type=interview_type,
         overall_score=overall_score,
         strengths=strengths,
         improvement_areas=improvement_areas,
