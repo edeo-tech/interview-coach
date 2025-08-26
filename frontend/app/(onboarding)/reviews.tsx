@@ -76,18 +76,26 @@ const OnboardingReviews = () => {
     if (Platform.OS === 'web') return;
     
     try {
-      if (await StoreReview.isAvailableAsync()) {
-        await StoreReview.requestReview();
-        posthogCapture('onboarding_review_requested', {
-          platform: Platform.OS
-        });
+      const isAvailable = await StoreReview.isAvailableAsync();
+      const hasAction = await StoreReview.hasAction();
+      
+      if (isAvailable && hasAction) {
+        // Add a small delay to ensure the screen is fully loaded
+        setTimeout(async () => {
+          try {
+            await StoreReview.requestReview();
+            posthogCapture('onboarding_review_requested', {
+              platform: Platform.OS
+            });
+          } catch (reviewError) {
+            // Silently fail - this is expected in simulator/development
+            console.log('Store review not available in current environment');
+          }
+        }, 1000);
       }
     } catch (error) {
-      console.error('Error requesting store review:', error);
-      posthogCapture('onboarding_review_error', {
-        error: error.message,
-        platform: Platform.OS
-      });
+      // Silently handle - store review failures shouldn't impact UX
+      console.log('Store review not available:', error.message);
     }
   };
 
@@ -117,7 +125,7 @@ const OnboardingReviews = () => {
 
   const industryMatchedTestimonials = testimonials.filter(t => 
     t.industry === selectedIndustry || t.industry === 'General'
-  ).concat(testimonials.filter(t => t.industry !== selectedIndustry)).slice(0, 3);
+  ).concat(testimonials.filter(t => t.industry !== selectedIndustry)).slice(0, 2);
 
   const handleContinue = () => {
     // Set direction for next screen
@@ -208,30 +216,50 @@ const OnboardingReviews = () => {
             }
           ]}
         >
-          <ScrollView 
-            style={styles.scrollContent} 
-            contentContainerStyle={styles.scrollContentContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.content}>
-              <Text style={styles.screenTitle}>Join thousands who got hired</Text>
-              
-              <Text style={styles.subtitle}>
-                Thousands of job seekers across Marketing, Tech, and Sales trust NextRound to get ahead.
-              </Text>
-
-              <View style={styles.testimonialsContainer}>
-                {industryMatchedTestimonials.map((testimonial, index) => (
-                  <View key={index} style={styles.testimonialCard}>
-                    <Text style={styles.testimonialText}>"{testimonial.text}"</Text>
-                    <Text style={styles.testimonialAuthor}>
-                      — {testimonial.name}, {testimonial.role}
-                    </Text>
-                  </View>
-                ))}
+          <View style={styles.content}>
+            <Text style={styles.screenTitle}>Join thousands who got hired</Text>
+            
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>10,000+</Text>
+                <Text style={styles.statLabel}>Success Stories</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>87%</Text>
+                <Text style={styles.statLabel}>Get Offers</Text>
               </View>
             </View>
-          </ScrollView>
+
+            <Text style={styles.subtitle}>
+              Real results from people just like you
+            </Text>
+
+            <View style={styles.testimonialsContainer}>
+              {industryMatchedTestimonials.map((testimonial, index) => (
+                <View key={index} style={styles.testimonialCard}>
+                  <View style={styles.quoteIcon}>
+                    <Ionicons name="quote" size={20} color="#A855F7" />
+                  </View>
+                  <Text style={styles.testimonialText}>{testimonial.text}</Text>
+                  <View style={styles.testimonialFooter}>
+                    <View style={styles.authorInfo}>
+                      <Text style={styles.testimonialAuthor}>{testimonial.name}</Text>
+                      <Text style={styles.testimonialRole}>{testimonial.role}</Text>
+                    </View>
+                    <View style={styles.industryBadge}>
+                      <Text style={styles.industryText}>{testimonial.industry}</Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.trustIndicator}>
+              <Ionicons name="shield-checkmark" size={24} color="#10B981" />
+              <Text style={styles.trustText}>Trusted by professionals worldwide</Text>
+            </View>
+          </View>
         </Animated.View>
 
         <Animated.View 
@@ -248,7 +276,7 @@ const OnboardingReviews = () => {
             onPress={handleContinue}
             activeOpacity={0.8}
           >
-            <Text style={styles.continueButtonText}>Unlock Your Interview Roadmap</Text>
+            <Text style={styles.continueButtonText}>Get Started</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </Animated.View>
@@ -263,21 +291,19 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    backgroundColor: 'transparent',
+    paddingTop: Platform.OS === 'ios' ? 20 : 20,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   animatedContent: {
     flex: 1,
-  },
-  scrollContent: {
-    flex: 1,
-  },
-  scrollContentContainer: {
-    paddingBottom: 100, // Space for button
   },
   screenTitle: {
     fontSize: 24,
@@ -286,7 +312,45 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 30,
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    width: '100%',
+    maxWidth: 320,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statNumber: {
+    fontSize: 28,
+    fontWeight: '700',
+    fontFamily: 'SpaceGrotesk',
+    color: '#A855F7',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginHorizontal: 20,
   },
   subtitle: {
     fontSize: 16,
@@ -295,36 +359,90 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 32,
+    marginBottom: 20,
     paddingHorizontal: 16,
   },
   testimonialsContainer: {
     gap: 16,
     width: '100%',
     maxWidth: 320,
+    marginBottom: 20,
   },
   testimonialCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.12)',
+    position: 'relative',
+  },
+  quoteIcon: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    opacity: 0.6,
   },
   testimonialText: {
     fontSize: 15,
     fontWeight: '400',
     fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: 'rgba(255, 255, 255, 0.9)',
     lineHeight: 22,
-    fontStyle: 'italic',
-    marginBottom: 8,
+    marginBottom: 16,
+    paddingRight: 32,
+  },
+  testimonialFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  authorInfo: {
+    flex: 1,
   },
   testimonialAuthor: {
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter',
+    color: '#ffffff',
+    marginBottom: 2,
+  },
+  testimonialRole: {
+    fontSize: 12,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  industryBadge: {
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(168, 85, 247, 0.3)',
+  },
+  industryText: {
+    fontSize: 10,
+    fontWeight: '500',
+    fontFamily: 'Inter',
     color: '#A855F7',
-    textAlign: 'left',
+  },
+  trustIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  trustText: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: 'Inter',
+    color: '#10B981',
   },
   bottomContainer: {
     width: '100%',
