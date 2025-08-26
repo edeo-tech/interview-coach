@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { TYPOGRAPHY } from '../../constants/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
@@ -286,9 +287,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   messageText: {
-    fontSize: 28,
-    fontWeight: '300',
-    fontFamily: 'SpaceGrotesk',
+    ...TYPOGRAPHY.displaySmall,
+    fontWeight: '300' as const,
     letterSpacing: 1,
     color: '#FFFFFF', // White for "Get to the"
     textAlign: 'center',
@@ -329,10 +329,7 @@ const styles = StyleSheet.create({
   },
   getStartedText: {
     fontSize: 18, // Design system typography.button.large
-    lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
+    ...TYPOGRAPHY.buttonMedium,
     color: '#ffffff',
     marginRight: 8,
   },
@@ -352,9 +349,7 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     fontSize: 15,
-    lineHeight: 20,
-    fontWeight: '400',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodySmall,
     color: 'rgba(255, 255, 255, 0.65)',
     textAlign: 'center',
   },
@@ -394,20 +389,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   modalTitle: {
-    fontSize: 24, // Design system typography.heading.h2
-    lineHeight: 30,
-    fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
-    letterSpacing: -0.005,
+    ...TYPOGRAPHY.pageTitle,
     color: '#FFFFFF', // Design system text.primary
     textAlign: 'center',
     marginBottom: 8,
   },
   modalSubtitle: {
     fontSize: 16, // Design system typography.body.medium
-    lineHeight: 24,
-    fontWeight: '400',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.70)', // Design system text.tertiary
     textAlign: 'center',
     marginBottom: 32,
@@ -429,10 +418,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: 14, // Design system typography.label.medium
-    lineHeight: 18,
-    fontWeight: '500',
-    fontFamily: 'Inter',
-    letterSpacing: 0.01,
+    ...TYPOGRAPHY.labelMedium,
     color: 'rgba(255, 255, 255, 0.55)', // Design system text.muted
     marginHorizontal: 16,
   },
@@ -451,10 +437,7 @@ const styles = StyleSheet.create({
   },
   emailButtonText: {
     fontSize: 16, // Design system typography.button.medium
-    lineHeight: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
+    ...TYPOGRAPHY.buttonSmall,
     color: '#F59E0B',
     flex: 1,
     textAlign: 'center',

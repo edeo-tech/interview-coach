@@ -8,6 +8,7 @@ import ChatGPTBackground from './ChatGPTBackground';
 import { GlassStyles, GlassTextColors } from '../constants/GlassStyles';
 import useHapticsSafely from '../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle, NotificationFeedbackType } from 'expo-haptics';
+import { TYPOGRAPHY } from '../constants/Typography';
 
 interface JobAnalysisStage {
   id: string;
@@ -554,12 +555,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   progressText: {
+    ...TYPOGRAPHY.heading1,
     color: '#FFFFFF',
-    fontSize: 24, // heading h3
-    fontWeight: '700',
     marginTop: 16,
-    fontFamily: 'SpaceGrotesk',
-    letterSpacing: -0.01,
   },
   successIcon: {
     alignItems: 'center',
@@ -581,25 +579,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageTitle: {
+    ...TYPOGRAPHY.displaySmall,
     color: '#FFFFFF',
-    fontSize: 28, // heading h1
-    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
     height: 36,
-    lineHeight: 36,
     paddingHorizontal: 4,
-    fontFamily: 'SpaceGrotesk',
-    letterSpacing: -0.01,
   },
   stageSubtitle: {
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 16,
     textAlign: 'center',
-    lineHeight: 24,
     height: 50,
     paddingHorizontal: 4,
-    fontFamily: 'Inter',
   },
 });
 

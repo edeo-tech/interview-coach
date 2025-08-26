@@ -9,6 +9,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useCV, useUploadCV, useDeleteCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { useToast } from '../../../components/Toast';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 const CVUpload = () => {
   const { data: currentCV, isLoading: cvLoading } = useCV();
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontSize: 24, // typography.heading.h2.fontSize
     fontWeight: '600', // typography.heading.h2.fontWeight
-    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    ...TYPOGRAPHY.heading2,
     letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   content: {
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     marginTop: 8, // spacing.2
     fontSize: 16, // typography.body.medium.fontSize
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   cvCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
@@ -330,7 +331,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.heading4,
   },
   activeStatus: {
     flexDirection: 'row',
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.label.large.fontWeight
     marginLeft: 8, // spacing.2
     fontSize: 14, // typography.label.medium.fontSize
-    fontFamily: 'Inter', // typography.label.medium.fontFamily
+    ...TYPOGRAPHY.labelMedium,
   },
   cvInfo: {
     gap: 16, // spacing.4
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     marginLeft: 12, // spacing.3
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   cvInfoTextWrap: {
     flex: 1,
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
     marginLeft: 8, // spacing.2
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    ...TYPOGRAPHY.buttonMedium,
   },
   uploadContainer: {
     flex: 1,
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
     fontWeight: '700', // typography.heading.h1.fontWeight
     textAlign: 'center',
     marginBottom: 12, // spacing.3
-    fontFamily: 'SpaceGrotesk', // typography.heading.h1.fontFamily
+    ...TYPOGRAPHY.heading1,
     letterSpacing: -0.01, // typography.heading.h1.letterSpacing
   },
   uploadTitleCompact: {
@@ -429,7 +430,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.heading.h3.fontWeight
     textAlign: 'center',
     marginBottom: 8, // spacing.2
-    fontFamily: 'SpaceGrotesk', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
     letterSpacing: -0.005, // typography.heading.h3.letterSpacing
   },
   uploadSubtitle: {
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
     marginBottom: 32, // spacing.8
     lineHeight: 24, // typography.body.medium.lineHeight
     maxWidth: 280,
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   uploadSubtitleCompact: {
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
@@ -448,7 +449,7 @@ const styles = StyleSheet.create({
     marginBottom: 24, // spacing.6
     lineHeight: 20, // typography.body.small.lineHeight
     maxWidth: 260,
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   uploadButton: {
     backgroundColor: 'rgba(168, 85, 247, 1)', // purple.400
@@ -466,14 +467,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontSize: 16, // typography.button.medium.fontSize
     fontWeight: '600', // typography.button.medium.fontWeight
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    ...TYPOGRAPHY.buttonMedium,
     letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   formatHint: {
     color: 'rgba(255, 255, 255, 0.55)', // text.muted
     fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   trustIndicators: {
     flexDirection: 'row',
@@ -490,7 +491,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     fontSize: 14, // typography.body.small.fontSize
     fontWeight: '500', // typography.label.medium.fontWeight
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
 });
 

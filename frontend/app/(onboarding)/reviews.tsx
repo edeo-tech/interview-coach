@@ -8,6 +8,7 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -307,8 +308,7 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
+    ...TYPOGRAPHY.heading1,
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 30,
@@ -334,15 +334,15 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 28,
+    ...TYPOGRAPHY.displaySmall,
     fontWeight: '700',
-    fontFamily: 'SpaceGrotesk',
     color: '#A855F7',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
+    ...TYPOGRAPHY.bodyMedium,
     fontWeight: '500',
-    fontFamily: 'Inter',
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
   },
@@ -354,8 +354,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
     lineHeight: 24,
@@ -384,8 +383,7 @@ const styles = StyleSheet.create({
   },
   testimonialText: {
     fontSize: 15,
-    fontWeight: '400',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.9)',
     lineHeight: 22,
     marginBottom: 16,
@@ -401,15 +399,13 @@ const styles = StyleSheet.create({
   },
   testimonialAuthor: {
     fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.buttonMedium,
     color: '#ffffff',
     marginBottom: 2,
   },
   testimonialRole: {
     fontSize: 12,
-    fontWeight: '400',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodySmall,
     color: 'rgba(255, 255, 255, 0.6)',
   },
   industryBadge: {
@@ -422,8 +418,7 @@ const styles = StyleSheet.create({
   },
   industryText: {
     fontSize: 10,
-    fontWeight: '500',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.labelMedium,
     color: '#A855F7',
   },
   trustIndicator: {
@@ -440,8 +435,7 @@ const styles = StyleSheet.create({
   },
   trustText: {
     fontSize: 12,
-    fontWeight: '500',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.labelMedium,
     color: '#10B981',
   },
   bottomContainer: {
@@ -471,9 +465,7 @@ const styles = StyleSheet.create({
   continueButtonText: {
     fontSize: 18,
     lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
+    ...TYPOGRAPHY.buttonMedium,
     color: '#FFFFFF',
     marginRight: 8,
   },

@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const AnalyzingScreen = () => {
   const { data } = useOnboarding();
@@ -113,9 +114,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   stepText: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
+    ...TYPOGRAPHY.heading1,
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 32,

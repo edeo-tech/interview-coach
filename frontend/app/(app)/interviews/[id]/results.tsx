@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useFeedbackCheck } from '../../../../hooks/premium/usePremiumCheck';
+import { TYPOGRAPHY } from '../../../../constants/Typography';
 
 const BlurredSection = ({ 
   children, 
@@ -328,13 +329,13 @@ const styles = StyleSheet.create({
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginBottom: 8, // spacing.2
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.heading4,
   },
   loadingSubtitle: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   errorContainer: {
     flex: 1,
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginTop: 16, // spacing.4
     textAlign: 'center',
-    fontFamily: 'Inter', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
   },
   errorSubtitle: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8, // spacing.2
     lineHeight: 20, // typography.body.medium.lineHeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   errorButton: {
     backgroundColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    ...TYPOGRAPHY.buttonMedium,
   },
   header: {
     flexDirection: 'row',
@@ -386,7 +387,7 @@ const styles = StyleSheet.create({
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginLeft: 16, // spacing.4
-    fontFamily: 'Inter', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
   },
   scoreCard: {
     borderRadius: 16, // glass.borderRadius
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginBottom: 16, // spacing.4
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.heading4,
   },
   scoreRow: {
     flexDirection: 'row',
@@ -416,24 +417,24 @@ const styles = StyleSheet.create({
     fontSize: 48, // typography.display.small.fontSize
     fontWeight: '700', // typography.display.small.fontWeight
     marginBottom: 4, // spacing.1
-    fontFamily: 'SpaceGrotesk', // typography.display.small.fontFamily
+    ...TYPOGRAPHY.displaySmall,
     letterSpacing: -0.01, // typography.display.small.letterSpacing
   },
   scoreOutOf: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     fontSize: 14, // typography.body.small.fontSize
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   scoreLabel: {
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginBottom: 4, // spacing.1
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.heading4,
   },
   performanceLevel: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     fontSize: 12, // typography.body.xsmall.fontSize
-    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
+    ...TYPOGRAPHY.bodyXSmall,
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textTransform: 'capitalize',
     flex: 1,
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   rubricRight: {
     flexDirection: 'row',
@@ -476,7 +477,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.label.large.fontWeight
     marginRight: 12, // spacing.3
     fontSize: 14, // typography.body.small.fontSize
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   progressBarContainer: {
     width: 64,
@@ -499,20 +500,20 @@ const styles = StyleSheet.create({
     marginRight: 12, // spacing.3
     fontSize: 16, // typography.body.medium.fontSize
     lineHeight: 20, // typography.body.medium.lineHeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   listText: {
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     lineHeight: 20, // typography.body.medium.lineHeight
     flex: 1,
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   detailedText: {
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     lineHeight: 22, // typography.body.medium.lineHeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   buttonContainer: {
     marginBottom: 16, // spacing.4
@@ -548,7 +549,7 @@ const styles = StyleSheet.create({
     fontSize: 16, // typography.button.medium.fontSize
     fontWeight: '600', // typography.button.medium.fontWeight
     marginLeft: 8, // spacing.2
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    ...TYPOGRAPHY.buttonMedium,
     letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   tipsCard: {
@@ -564,14 +565,14 @@ const styles = StyleSheet.create({
     fontSize: 16, // typography.body.medium.fontSize
     fontWeight: '600', // typography.label.large.fontWeight
     marginBottom: 12, // spacing.3
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   tipText: {
     color: 'rgba(191, 219, 254, 1)', // semantic.info.main with higher opacity
     fontSize: 14, // typography.body.small.fontSize
     lineHeight: 20, // typography.body.small.lineHeight
     marginBottom: 4, // spacing.1
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   blurredContainer: {
     position: 'relative',
@@ -599,7 +600,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginTop: 8, // spacing.2
     marginBottom: 8, // spacing.2
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.heading4,
   },
   upgradeMessage: {
     color: '#FFFFFF', // text.primary
@@ -607,7 +608,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16, // spacing.4
     lineHeight: 20, // typography.body.small.lineHeight
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   upgradeButton: {
     backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
@@ -624,7 +625,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontSize: 14, // typography.button.small.fontSize
     fontWeight: '600', // typography.button.small.fontWeight
-    fontFamily: 'Inter', // typography.button.small.fontFamily
+    ...TYPOGRAPHY.buttonSmall,
     letterSpacing: 0.01, // typography.button.small.letterSpacing
   },
 });

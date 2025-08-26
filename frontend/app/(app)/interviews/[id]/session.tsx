@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useStartAttempt, useFinishAttempt, useAddTranscript } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useToast } from '../../../../components/Toast';
+import { TYPOGRAPHY } from '../../../../constants/Typography';
 
 const InterviewSession = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -313,14 +314,14 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginBottom: 8, // spacing.2
     textAlign: 'center',
-    fontFamily: 'Inter', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
   },
   loadingSubtitle: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textAlign: 'center',
     lineHeight: 20, // typography.body.medium.lineHeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   header: {
     paddingHorizontal: 20, // layout.screenPadding
@@ -350,11 +351,11 @@ const styles = StyleSheet.create({
   connectionText: {
     color: '#FFFFFF', // text.primary
     fontWeight: '600', // typography.label.large.fontWeight
-    fontFamily: 'Inter', // typography.label.large.fontFamily
+    ...TYPOGRAPHY.labelLarge,
   },
   timerText: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
     fontSize: 14, // typography.body.small.fontSize
   },
   transcriptContainer: {
@@ -387,7 +388,7 @@ const styles = StyleSheet.create({
     marginTop: 16, // spacing.4
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     lineHeight: 20, // typography.body.medium.lineHeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   messageContainer: {
     marginBottom: 16, // spacing.4
@@ -420,12 +421,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     lineHeight: 20, // typography.body.medium.lineHeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   messageInfo: {
     fontSize: 12, // typography.body.xsmall.fontSize
     marginTop: 4, // spacing.1
-    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
+    ...TYPOGRAPHY.bodyXSmall,
   },
   userMessageInfo: {
     color: 'rgba(191, 219, 254, 1)', // semantic.info.main with higher opacity
@@ -460,7 +461,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     fontSize: 14, // typography.body.small.fontSize
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -489,15 +490,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
-    letterSpacing: 0.005, // typography.button.medium.letterSpacing
+    ...TYPOGRAPHY.buttonMedium,
   },
   instructionText: {
     color: 'rgba(255, 255, 255, 0.55)', // text.muted
     fontSize: 12, // typography.body.xsmall.fontSize
     textAlign: 'center',
     marginTop: 16, // spacing.4
-    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
+    ...TYPOGRAPHY.bodyXSmall,
   },
 });
 

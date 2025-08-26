@@ -9,19 +9,19 @@
 
 import { Platform } from 'react-native';
 
-// Font Family Constants
+// Font Family Constants - Professional Interview Coaching Typography
 export const FONTS = {
-  // Primary Display Font - For heroes, major headings, branding
-  display: 'PlusJakartaSans_800ExtraBold',
-  displayMedium: 'PlusJakartaSans_700Bold',
-  displayLight: 'PlusJakartaSans_600SemiBold',
+  // Primary Display Font - Nunito Sans for all content hierarchy
+  display: 'NunitoSans_800ExtraBold',
+  displayMedium: 'NunitoSans_700Bold', 
+  displayLight: 'NunitoSans_600SemiBold',
   
-  // Secondary Heading Font - For section headers, secondary titles
-  heading: 'SpaceGrotesk_700Bold',
-  headingMedium: 'SpaceGrotesk_600SemiBold',
-  headingLight: 'SpaceGrotesk_500Medium',
+  // Heading Font - Nunito Sans for consistent visual hierarchy  
+  heading: 'NunitoSans_700Bold',
+  headingMedium: 'NunitoSans_600SemiBold',
+  headingLight: 'NunitoSans_500Medium',
   
-  // Body Font - For all body text, UI elements, forms
+  // Body Font - Inter for all UI elements and interface text
   body: 'Inter_400Regular',
   bodyMedium: 'Inter_500Medium',
   bodySemiBold: 'Inter_600SemiBold',
@@ -83,7 +83,41 @@ export const TYPOGRAPHY = {
     letterSpacing: 0,
   },
   
-  // Heading Hierarchy - For section headers
+  // Content Hierarchy - Refined system for consistent visual hierarchy
+  // Use these for better UX coherence (all Space Grotesk for content structure)
+  contentTitle: {
+    fontSize: 26,
+    lineHeight: 32,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.heading,
+    letterSpacing: -0.25,
+  },
+  
+  pageTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.heading,
+    letterSpacing: 0,
+  },
+  
+  sectionHeader: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '600' as const,
+    fontFamily: FONTS.headingMedium,
+    letterSpacing: 0,
+  },
+  
+  itemTitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '600' as const,
+    fontFamily: FONTS.headingLight,
+    letterSpacing: 0,
+  },
+  
+  // Heading Hierarchy - For section headers (legacy - use content hierarchy above)
   heading1: {
     fontSize: 24,
     lineHeight: 32,
@@ -228,12 +262,10 @@ export const TYPOGRAPHY = {
 
 // Font Loading Configuration
 export const REQUIRED_FONTS = [
-  'PlusJakartaSans-Bold',
-  'PlusJakartaSans-SemiBold', 
-  'PlusJakartaSans-Medium',
-  'SpaceGrotesk-Bold',
-  'SpaceGrotesk-SemiBold',
-  'SpaceGrotesk-Medium',
+  'NunitoSans-ExtraBold',
+  'NunitoSans-Bold',
+  'NunitoSans-SemiBold', 
+  'NunitoSans-Medium',
   'Inter-Regular',
   'Inter-Medium',
   'Inter-SemiBold',

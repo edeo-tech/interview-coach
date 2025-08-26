@@ -11,6 +11,7 @@ import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
 import { useToast } from '../../../components/Toast';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 
 export default function CreateJob() {
@@ -382,11 +383,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20, // spacing.5
   },
   headerTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 20, // typography.heading.h3.fontSize
-    fontWeight: '600', // typography.heading.h3.fontWeight
-    marginLeft: 16, // spacing.4
-    fontFamily: 'Inter', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.pageTitle,
+    color: '#FFFFFF',
+    marginLeft: 16,
   },
   inputTypeContainer: {
     flexDirection: 'row',
@@ -409,11 +408,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(252, 180, 0, 0.2)', // gold.400 with opacity
   },
   inputTypeText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    marginLeft: 8, // spacing.2
-    fontWeight: '600', // typography.label.medium.fontWeight
-    fontSize: 14, // typography.label.medium.fontSize
-    fontFamily: 'Inter', // typography.label.medium.fontFamily
+    ...TYPOGRAPHY.labelMedium,
+    color: 'rgba(255, 255, 255, 0.70)',
+    marginLeft: 8,
+    fontWeight: '600',
   },
   inputTypeTextActive: {
     color: '#FFFFFF', // text.primary

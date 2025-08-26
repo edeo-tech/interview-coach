@@ -9,6 +9,7 @@ import ChatGPTBackground from './ChatGPTBackground';
 import { GlassStyles, GlassTextColors } from '../constants/GlassStyles';
 import { CVProfile } from '../_api/interviews/cv';
 import usePosthogSafely from '../hooks/posthog/usePosthogSafely';
+import { TYPOGRAPHY } from '../constants/Typography';
 
 interface CVProfileDisplayProps {
   profile: CVProfile;
@@ -194,21 +195,16 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   headerTitle: {
+    ...TYPOGRAPHY.displaySmall,
     color: '#FFFFFF', // Design system text primary
-    fontSize: 28, // Design system heading h1
-    fontWeight: '700',
     marginBottom: 8, // Design system spacing
     textAlign: 'center',
-    fontFamily: 'SpaceGrotesk', // Design system heading font
-    letterSpacing: -0.01,
   },
   headerSubtitle: {
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.85)', // Design system text secondary
-    fontSize: 16, // Design system body medium
     textAlign: 'center',
-    lineHeight: 24, // Design system body medium line height
     paddingHorizontal: 12,
-    fontFamily: 'Inter',
   },
   experienceContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
@@ -240,16 +236,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   experienceLevel: {
+    ...TYPOGRAPHY.heading3,
     color: '#FFFFFF', // Design system text primary
-    fontSize: 20, // Design system heading h3
-    fontWeight: '600',
     marginBottom: 4, // Design system spacing
-    fontFamily: 'Inter',
   },
   experienceYears: {
+    ...TYPOGRAPHY.bodySmall,
     color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
-    fontSize: 14, // Design system body small
-    fontFamily: 'Inter',
   },
   sectionContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
@@ -275,10 +268,8 @@ const styles = StyleSheet.create({
     marginBottom: 12, // Design system spacing
   },
   sectionTitle: {
+    ...TYPOGRAPHY.heading4,
     color: '#FFFFFF', // Design system text primary
-    fontSize: 18, // Design system heading h4
-    fontWeight: '600',
-    fontFamily: 'Inter',
   },
   skillsGrid: {
     flexDirection: 'row',
@@ -294,10 +285,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(168, 85, 247, 0.25)', // Design system purple with opacity
   },
   skillText: {
+    ...TYPOGRAPHY.labelMedium,
     color: '#FFFFFF', // Design system text primary
-    fontSize: 14, // Design system body small
-    fontWeight: '500',
-    fontFamily: 'Inter',
   },
   bottomSections: {
     flexDirection: 'row',
@@ -325,18 +314,14 @@ const styles = StyleSheet.create({
     marginBottom: 8, // Design system spacing
   },
   compactTitle: {
-    color: '#FFFFFF', // Design system text primary
-    fontSize: 14, // Design system body small
+    ...TYPOGRAPHY.labelMedium,
     fontWeight: '600',
+    color: '#FFFFFF', // Design system text primary
     marginBottom: 2, // Design system spacing
-    lineHeight: 20, // Design system body small line height
-    fontFamily: 'Inter',
   },
   compactSubtitle: {
+    ...TYPOGRAPHY.bodyXSmall,
     color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
-    fontSize: 12, // Design system body xsmall
-    lineHeight: 16, // Design system body xsmall line height
-    fontFamily: 'Inter',
   },
   certificationRow: {
     flexDirection: 'row',
@@ -344,11 +329,10 @@ const styles = StyleSheet.create({
     gap: 6, // Design system spacing
   },
   moreText: {
+    ...TYPOGRAPHY.caption,
     color: 'rgba(255, 255, 255, 0.55)', // Design system text muted
-    fontSize: 11, // Design system label small
     fontStyle: 'italic',
     marginTop: 4, // Design system spacing
-    fontFamily: 'Inter',
   },
   continueButton: {
     borderRadius: 28, // Design system button primary border radius (fully rounded)
@@ -372,11 +356,8 @@ const styles = StyleSheet.create({
     height: 56, // Design system button height
   },
   continueText: {
+    ...TYPOGRAPHY.buttonLarge,
     color: '#ffffff',
-    fontSize: 18, // Design system button large
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
   },
 });
 

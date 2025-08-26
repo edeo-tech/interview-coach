@@ -12,6 +12,7 @@ import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
 import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
 import { useToast } from '../../../../components/Toast';
+import { TYPOGRAPHY } from '../../../../constants/Typography';
 
 const getInterviewTypeDisplayName = (type: string): string => {
   const displayNames: Record<string, string> = {
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     marginTop: 16, // spacing.4
     fontSize: 16, // typography.body.medium.fontSize
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   errorContainer: {
     flex: 1,
@@ -428,7 +429,7 @@ const styles = StyleSheet.create({
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginTop: 16, // spacing.4
-    fontFamily: 'Inter', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
   },
   errorButton: {
     backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
@@ -446,7 +447,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    ...TYPOGRAPHY.buttonMedium,
   },
   header: {
     flexDirection: 'row',
@@ -459,7 +460,7 @@ const styles = StyleSheet.create({
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginLeft: 16, // spacing.4
-    fontFamily: 'Inter', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
   },
   jobCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
@@ -499,14 +500,14 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.heading.h2.fontWeight
     marginBottom: 4, // spacing.1
     lineHeight: 28, // typography.heading.h2.lineHeight
-    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    ...TYPOGRAPHY.heading2,
     letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   company: {
     color: 'rgba(96, 165, 250, 1)', // text.accent
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.heading4,
   },
   locationRow: {
     flexDirection: 'row',
@@ -516,7 +517,7 @@ const styles = StyleSheet.create({
   location: {
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   interviewTypeRow: {
     flexDirection: 'row',
@@ -528,7 +529,7 @@ const styles = StyleSheet.create({
     color: 'rgba(139, 92, 246, 1)', // purple.500
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     fontWeight: '600', // typography.label.large.fontWeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   cardDivider: {
     height: 1,
@@ -557,7 +558,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     marginHorizontal: 12, // spacing.3
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    ...TYPOGRAPHY.buttonMedium,
     letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   integratedStartButtonTextDisabled: {
@@ -571,14 +572,14 @@ const styles = StyleSheet.create({
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginBottom: 16, // spacing.4
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.heading4,
   },
   emptyText: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     textAlign: 'center',
     padding: 20, // spacing.5
     fontSize: 16, // typography.body.medium.fontSize
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   emptyState: {
     backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background
@@ -599,14 +600,14 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.label.large.fontWeight
     marginTop: 16, // spacing.4
     marginBottom: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   emptySubtitle: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
     lineHeight: 20, // typography.body.small.lineHeight
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   attemptsContainer: {
     gap: 16, // spacing.4
@@ -633,7 +634,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // text.primary
     fontSize: 16, // typography.body.medium.fontSize
     fontWeight: '600', // typography.label.large.fontWeight
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   gradeContainer: {
     alignItems: 'center',
@@ -643,13 +644,13 @@ const styles = StyleSheet.create({
     fontSize: 22, // typography.heading.h3.fontSize
     fontWeight: '700', // typography.heading.h3.fontWeight
     marginBottom: 1, // spacing.0.25
-    fontFamily: 'SpaceGrotesk', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
   },
   gradeLabel: {
     color: 'rgba(255, 255, 255, 0.55)', // text.muted
     fontSize: 11, // typography.body.xsmall.fontSize (slightly smaller)
     fontWeight: '500', // typography.label.small.fontWeight
-    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
+    ...TYPOGRAPHY.bodyXSmall,
   },
   attemptDetails: {
     flexDirection: 'row',
@@ -665,7 +666,7 @@ const styles = StyleSheet.create({
   detailText: {
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     fontSize: 13, // typography.body.small.fontSize (slightly smaller)
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   singleActionButton: {
     flexDirection: 'row',
@@ -691,7 +692,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.label.large.fontWeight
     flex: 1,
     marginLeft: 12, // spacing.3
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   loadingMore: {
     flexDirection: 'row',
@@ -704,6 +705,6 @@ const styles = StyleSheet.create({
     color: 'rgba(139, 92, 246, 1)', // purple.500
     fontSize: 14, // typography.body.small.fontSize
     fontWeight: '500', // typography.label.large.fontWeight
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
 });

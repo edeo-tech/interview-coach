@@ -10,6 +10,7 @@ import { useJobDetails, useStartJobInterviewAttempt } from '../../../_queries/jo
 import { InterviewType } from '../../../_interfaces/interviews/interview-types';
 import { JobInterview } from '../../../_interfaces/jobs/job';
 import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 const getInterviewTypeDisplayName = (type: InterviewType | string): string => {
   const displayNames: Record<string, string> = {
@@ -251,6 +252,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
+    ...TYPOGRAPHY.bodyMedium,
     color: '#9ca3af',
     marginTop: 16,
   },
@@ -261,9 +263,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   errorTitle: {
+    ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '600',
     marginTop: 16,
   },
   errorButton: {
@@ -278,9 +279,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   headerTitle: {
+    ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
     marginLeft: 16,
   },
   jobCard: {
@@ -305,15 +305,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   roleTitle: {
+    ...TYPOGRAPHY.pageTitle,
+    fontSize: 20,
     color: '#ffffff',
-    fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 4,
   },
   company: {
+    ...TYPOGRAPHY.bodyLarge,
     color: '#60a5fa',
-    fontSize: 18,
-    fontWeight: '600',
   },
   jobMeta: {
     flexDirection: 'row',
@@ -326,8 +325,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   metaText: {
+    ...TYPOGRAPHY.bodySmall,
     color: '#d1d5db',
-    fontSize: 14,
   },
   progressOverview: {
     ...GlassStyles.container,
@@ -341,14 +340,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   progressTitle: {
+    ...TYPOGRAPHY.labelLarge,
     color: GlassTextColors.primary,
-    fontSize: 16,
-    fontWeight: '600',
   },
   progressPercentage: {
+    ...TYPOGRAPHY.bodyLarge,
+    fontWeight: '700' as const,
     color: '#10b981',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   progressBar: {
     height: 8,
@@ -363,16 +361,15 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressSubtext: {
+    ...TYPOGRAPHY.bodySmall,
     color: GlassTextColors.muted,
-    fontSize: 13,
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
+    ...TYPOGRAPHY.sectionHeader,
     color: GlassTextColors.primary,
-    fontSize: 18,
-    fontWeight: '600',
     marginBottom: 16,
   },
   stagesContainer: {
@@ -395,9 +392,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   stageNumberText: {
+    ...TYPOGRAPHY.labelMedium,
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
   },
   stageContent: {
     flex: 1,
@@ -411,9 +407,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   stageTitle: {
+    ...TYPOGRAPHY.itemTitle,
     color: GlassTextColors.primary,
-    fontSize: 16,
-    fontWeight: '600',
   },
   stageMeta: {
     flexDirection: 'row',
@@ -426,18 +421,17 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '600',
+    ...TYPOGRAPHY.overline,
     textTransform: 'uppercase',
   },
   difficultyText: {
+    ...TYPOGRAPHY.caption,
     color: GlassTextColors.muted,
-    fontSize: 12,
     textTransform: 'capitalize',
   },
   attemptsText: {
+    ...TYPOGRAPHY.overline,
     color: '#6b7280',
-    fontSize: 11,
     marginTop: 4,
   },
   primaryButtonOuter: {
@@ -464,9 +458,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButtonText: {
+    ...TYPOGRAPHY.buttonMedium,
     color: GlassTextColors.primary,
-    fontWeight: '700',
-    fontSize: 16,
     marginHorizontal: 8,
   },
 });

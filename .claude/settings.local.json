@@ -24,7 +24,10 @@
       "WebSearch",
       "Bash(npx react-native start:*)",
       "Bash(npm start)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(npm search:*)",
+      "Bash(npm install:*)",
+      "Bash(npm info:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

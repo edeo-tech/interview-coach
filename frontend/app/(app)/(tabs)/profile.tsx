@@ -11,6 +11,7 @@ import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 const StatCard = ({ icon, label, value, color = '#A855F7' }: any) => (
     <View style={styles.statCard}>
@@ -389,21 +390,15 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     name: {
-        fontSize: 32,
-        fontWeight: '800',
+        ...TYPOGRAPHY.contentTitle,
         color: '#FFFFFF',
         marginBottom: 8,
         marginTop: 8,
-        fontFamily: Platform.OS === 'ios' ? 'SpaceGrotesk' : 'sans-serif',
-        letterSpacing: -0.02,
     },
     email: {
-        fontSize: 16,
-        fontWeight: '400',
+        ...TYPOGRAPHY.bodyMedium,
         color: 'rgba(255, 255, 255, 0.7)',
         marginBottom: 16,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        lineHeight: 24,
     },
     profileDetailContainer: {
         flexDirection: 'row',
@@ -412,20 +407,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     profileDetailLabel: {
-        fontSize: 14,
-        fontWeight: '500',
+        ...TYPOGRAPHY.labelMedium,
         color: 'rgba(255, 255, 255, 0.7)',
         marginRight: 8,
         minWidth: 80,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
     },
     profileDetailValue: {
-        fontSize: 14,
+        ...TYPOGRAPHY.labelMedium,
         fontWeight: '600',
         color: '#A855F7',
         flex: 1,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
         letterSpacing: 0,
     },
     rankBadge: {
@@ -483,31 +474,22 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     statValue: {
-        fontSize: 24,
-        fontWeight: '700',
+        ...TYPOGRAPHY.heading1,
         color: '#FFFFFF',
         marginBottom: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     statLabel: {
-        fontSize: 12,
-        fontWeight: '500',
+        ...TYPOGRAPHY.caption,
         color: 'rgba(255, 255, 255, 0.7)',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
     },
     section: {
         paddingHorizontal: 20,
         marginBottom: 24,
     },
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: '600',
+        ...TYPOGRAPHY.sectionHeader,
         color: '#FFFFFF',
         marginBottom: 16,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     menuContainer: {
         backgroundColor: 'rgba(255, 255, 255, 0.12)',

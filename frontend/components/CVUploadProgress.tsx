@@ -8,6 +8,7 @@ import ChatGPTBackground from './ChatGPTBackground';
 import { GlassStyles, GlassTextColors } from '../constants/GlassStyles';
 import useHapticsSafely from '../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle, NotificationFeedbackType } from 'expo-haptics';
+import { TYPOGRAPHY } from '../constants/Typography';
 
 interface UploadStage {
   id: string;
@@ -568,12 +569,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   progressText: {
+    ...TYPOGRAPHY.heading1,
     color: '#FFFFFF', // Design system text primary
-    fontSize: 24, // Design system heading h3
-    fontWeight: '700',
     marginTop: 16, // Design system spacing
-    fontFamily: 'SpaceGrotesk', // Design system heading font
-    letterSpacing: -0.01,
   },
   successIcon: {
     alignItems: 'center',
@@ -594,25 +592,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageTitle: {
+    ...TYPOGRAPHY.displaySmall,
     color: '#FFFFFF', // Design system text primary
-    fontSize: 28, // Design system heading h1
-    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8, // Design system spacing
     height: 36, // Increased from 34 to 36 to prevent text clipping
-    lineHeight: 36, // Design system heading h1 line height
-    fontFamily: 'SpaceGrotesk', // Design system heading font
-    letterSpacing: -0.01,
   },
   stageSubtitle: {
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.85)', // Design system text secondary
-    fontSize: 16, // Design system body medium
     textAlign: 'center',
-    lineHeight: 24, // Design system body medium line height
     height: 44, // Fixed height for exactly 2 lines
     width: 280, // Fixed width instead of maxWidth
     paddingHorizontal: 20, // Design system spacing
-    fontFamily: 'Inter', // Design system body font
   },
   additionalInfo: {
     flexDirection: 'row',
@@ -625,9 +617,8 @@ const styles = StyleSheet.create({
     gap: 8, // Design system spacing
   },
   infoText: {
+    ...TYPOGRAPHY.bodySmall,
     color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
-    fontSize: 14, // Design system body small
-    fontFamily: 'Inter', // Design system body font
   },
 });
 
