@@ -1,92 +1,19 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
-import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import MorphingBackground from '../../components/MorphingBackground';
-import OnboardingProgress from '../../components/OnboardingProgress';
+import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
+import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const PreparationRating = () => {
   const { data, updateData } = useOnboarding();
   const [selectedRating, setSelectedRating] = useState(data.preparationRating || 0);
-
-  // Animation values - initialized in off-screen state to prevent double appearance
-  const contentTranslateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
-  const contentOpacity = useRef(new Animated.Value(0)).current;
-  const buttonOpacity = useRef(new Animated.Value(0)).current;
-  const buttonTranslateY = useRef(new Animated.Value(20)).current;
-
-  // Smart entrance animation - content already starts off-screen
-  React.useEffect(() => {
-    // Brief delay then animate in (content already positioned off-screen)
-    const timer = setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: 0,
-          duration: 380,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 1,
-          duration: 340,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Button animates in with slight delay for cascade effect
-      setTimeout(() => {
-        Animated.parallel([
-          Animated.timing(buttonOpacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonTranslateY, {
-            toValue: 0,
-            duration: 340,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }, 120);
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const { navigateWithTransition } = useOnboardingNavigation();
 
   const handleContinue = () => {
     if (selectedRating > 0) {
       updateData('preparationRating', selectedRating);
-      
-      // Animate out before navigation
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: -SCREEN_WIDTH,
-          duration: 520,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 0,
-          duration: 430,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonOpacity, {
-          toValue: 0,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonTranslateY, {
-          toValue: 30,
-          duration: 430,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        // Navigate after animation completes
-        setTimeout(() => {
-          router.push('/(onboarding)/communication-rating');
-        }, 100);
-      });
+      navigateWithTransition('/(onboarding)/communication-rating');
     }
   };
 
@@ -117,92 +44,64 @@ const PreparationRating = () => {
   ];
 
   return (
-    <MorphingBackground mode="static" style={styles.gradient}>
-      <View style={styles.container}>
-        <OnboardingProgress currentStep={9} totalSteps={17} />
-        
-        <Animated.View 
-          style={[
-            styles.content,
-            {
-              transform: [{ translateX: contentTranslateX }],
-              opacity: contentOpacity,
-            },
-          ]}
-        >
-          <Text style={styles.screenTitle}>{framing.question}</Text>
+    <OnboardingLayout currentStep={10} totalSteps={17}>
+      <View style={styles.content}>
+        <Text style={styles.screenTitle}>{framing.question}</Text>
 
-          <View style={styles.ratingContainer}>
-            {ratingLabels.map((rating) => (
-              <TouchableOpacity
-                key={rating.value}
-                style={[
-                  styles.ratingButton,
-                  selectedRating === rating.value && styles.ratingButtonSelected
-                ]}
-                onPress={() => setSelectedRating(rating.value)}
-              >
-                <View style={[
-                  styles.numberContainer,
-                  selectedRating === rating.value && styles.numberContainerSelected
-                ]}>
-                  <Text style={[
-                    styles.ratingNumber,
-                    selectedRating === rating.value && styles.ratingNumberSelected
-                  ]}>
-                    {rating.value}
-                  </Text>
-                </View>
+        <View style={styles.ratingContainer}>
+          {ratingLabels.map((rating) => (
+            <TouchableOpacity
+              key={rating.value}
+              style={[
+                styles.ratingButton,
+                selectedRating === rating.value && styles.ratingButtonSelected
+              ]}
+              onPress={() => setSelectedRating(rating.value)}
+            >
+              <View style={[
+                styles.numberContainer,
+                selectedRating === rating.value && styles.numberContainerSelected
+              ]}>
                 <Text style={[
-                  styles.ratingLabel,
-                  selectedRating === rating.value && styles.ratingLabelSelected
+                  styles.ratingNumber,
+                  selectedRating === rating.value && styles.ratingNumberSelected
                 ]}>
-                  {rating.label}
+                  {rating.value}
                 </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animated.View>
-
-        <Animated.View
-          style={[
-            styles.continueButtonContainer,
-            {
-              opacity: buttonOpacity,
-              transform: [{ translateY: buttonTranslateY }],
-            },
-          ]}
-        >
+              </View>
+              <Text style={[
+                styles.ratingLabel,
+                selectedRating === rating.value && styles.ratingLabelSelected
+              ]}>
+                {rating.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        
+        <View style={styles.bottomContainer}>
           <TouchableOpacity 
-          style={[styles.continueButton, selectedRating === 0 && styles.continueButtonDisabled]} 
-          onPress={handleContinue}
-          disabled={selectedRating === 0}
-        >
+            style={[styles.continueButton, selectedRating === 0 && styles.continueButtonDisabled]} 
+            onPress={handleContinue}
+            disabled={selectedRating === 0}
+          >
             <Text style={styles.continueButtonText}>Continue</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       </View>
-    </MorphingBackground>
+    </OnboardingLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    backgroundColor: 'transparent',
-    justifyContent: 'space-between',
-  },
   content: {
     flex: 1,
     paddingHorizontal: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 100,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   screenTitle: {
     fontSize: 24,
@@ -218,6 +117,7 @@ const styles = StyleSheet.create({
     gap: 16,
     width: '100%',
     maxWidth: 320,
+    marginBottom: 40,
   },
   ratingButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -267,11 +167,10 @@ const styles = StyleSheet.create({
     color: '#A855F7',
     fontWeight: '600',
   },
-  continueButtonContainer: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 34 : 20,
-    left: 24,
-    right: 24,
+  bottomContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    width: '100%',
   },
   continueButton: {
     width: '100%',

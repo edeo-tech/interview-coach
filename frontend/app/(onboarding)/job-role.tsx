@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import MorphingBackground from '../../components/MorphingBackground';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -12,48 +14,58 @@ const OnboardingJobRole = () => {
   const { data, updateData } = useOnboarding();
   const [selectedIndustry, setSelectedIndustry] = useState(data.industry);
 
-  // Animation values - initialized in off-screen state to prevent double appearance
-  const contentTranslateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
-  const contentOpacity = useRef(new Animated.Value(0)).current;
-  const buttonOpacity = useRef(new Animated.Value(0)).current;
-  const buttonTranslateY = useRef(new Animated.Value(20)).current;
+  // Animation values - exactly like profile-setup
+  const contentTranslateX = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+  const buttonOpacity = useRef(new Animated.Value(1)).current;
+  const buttonTranslateY = useRef(new Animated.Value(0)).current;
 
-  // Smart entrance animation - content already starts off-screen
-  React.useEffect(() => {
-    // Brief delay then animate in (content already positioned off-screen)
-    const timer = setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: 0,
-          duration: 380, // 450ms → 380ms
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 1,
-          duration: 340, // 400ms → 340ms
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Button animates in with slight delay for cascade effect
+  // Entrance animation - exactly like profile-setup with direction awareness
+  useFocusEffect(
+    React.useCallback(() => {
+      // Determine slide direction based on last navigation direction
+      const slideInFrom = getNavigationDirection() === 'back' ? -SCREEN_WIDTH : SCREEN_WIDTH;
+      
+      // Reset to slide-in position 
+      contentTranslateX.setValue(slideInFrom);
+      buttonTranslateY.setValue(30);
+      contentOpacity.setValue(0);
+      buttonOpacity.setValue(0);
+      
+      // Add a brief pause before sliding in new content for a more relaxed feel - exactly like profile-setup
       setTimeout(() => {
+        // Animate in content and button together with gentle timing - exactly like profile-setup
         Animated.parallel([
-          Animated.timing(buttonOpacity, {
-            toValue: 1,
-            duration: 300, // 350ms → 300ms
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonTranslateY, {
+          Animated.timing(contentTranslateX, {
             toValue: 0,
-            duration: 340, // 400ms → 340ms
+            duration: 700,
             useNativeDriver: true,
           }),
+          Animated.timing(contentOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          // Button animates in slightly after content starts, creating a nice cascade - exactly like profile-setup
+          Animated.sequence([
+            Animated.delay(200),
+            Animated.parallel([
+              Animated.timing(buttonOpacity, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+              }),
+              Animated.timing(buttonTranslateY, {
+                toValue: 0,
+                duration: 600,
+                useNativeDriver: true,
+              })
+            ])
+          ])
         ]).start();
-      }, 120);
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, []);
+      }, 100);
+    }, [])
+  );
 
   const industries = [
     { id: 'technology', name: 'Technology', icon: 'laptop-outline' },
@@ -70,28 +82,31 @@ const OnboardingJobRole = () => {
     if (selectedIndustry) {
       updateData('industry', selectedIndustry);
       
-      // Animate out before navigation
+      // Set direction for next screen
+      setNavigationDirection('forward');
+      
+      // Slide out to left (forward direction) - exactly like profile-setup
       Animated.parallel([
         Animated.timing(contentTranslateX, {
           toValue: -SCREEN_WIDTH,
-          duration: 520, // 600ms → 520ms
+          duration: 600,
           useNativeDriver: true,
         }),
         Animated.timing(contentOpacity, {
           toValue: 0,
-          duration: 430, // 500ms → 430ms
+          duration: 500,
           useNativeDriver: true,
         }),
         Animated.timing(buttonOpacity, {
           toValue: 0,
-          duration: 350, // 400ms → 350ms
+          duration: 400,
           useNativeDriver: true,
         }),
         Animated.timing(buttonTranslateY, {
           toValue: 30,
-          duration: 430, // 500ms → 430ms
+          duration: 500,
           useNativeDriver: true,
-        }),
+        })
       ]).start(() => {
         // Navigate after animation completes
         setTimeout(() => {
@@ -101,53 +116,93 @@ const OnboardingJobRole = () => {
     }
   };
 
+  const handleBack = () => {
+    // Set direction for previous screen
+    setNavigationDirection('back');
+    
+    // Slide out to right (back direction) - exactly like profile-setup
+    Animated.parallel([
+      Animated.timing(contentTranslateX, {
+        toValue: SCREEN_WIDTH,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setTimeout(() => {
+        router.back();
+      }, 100);
+    });
+  };
+
   return (
-    <MorphingBackground mode="static" style={styles.gradient}>
+    <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={7} totalSteps={17} />
+        <OnboardingProgress 
+          currentStep={7} 
+          totalSteps={17}
+          onBack={handleBack}
+        />
         
         <ScrollView 
           style={styles.scrollContent} 
           contentContainerStyle={styles.scrollContentContainer}
           showsVerticalScrollIndicator={false}
         >
+          {/* Animated content container - exactly like profile-setup */}
           <Animated.View 
             style={[
-              styles.content,
+              styles.animatedContent,
               {
                 transform: [{ translateX: contentTranslateX }],
                 opacity: contentOpacity,
-              },
+              }
             ]}
           >
-            <Text style={styles.screenTitle}>What industry are you in?</Text>
-            <Text style={styles.subtitle}>
-              Which industry are you applying in? We'll tailor advice and prep to this field.
-            </Text>
-            
-            <View style={styles.industryGrid}>
-              {industries.map((industry) => (
-                <TouchableOpacity
-                  key={industry.id}
-                  style={[
-                    styles.industryCard,
-                    selectedIndustry === industry.id && styles.industryCardSelected
-                  ]}
-                  onPress={() => setSelectedIndustry(industry.id)}
-                >
-                  <Ionicons 
-                    name={industry.icon as any} 
-                    size={32} 
-                    color={selectedIndustry === industry.id ? '#A855F7' : 'rgba(255, 255, 255, 0.7)'} 
-                  />
-                  <Text style={[
-                    styles.industryText,
-                    selectedIndustry === industry.id && styles.industryTextSelected
-                  ]}>
-                    {industry.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.content}>
+              <Text style={styles.screenTitle}>What industry are you in?</Text>
+              <Text style={styles.subtitle}>
+                Which industry are you applying in? We'll tailor advice and prep to this field.
+              </Text>
+              
+              <View style={styles.industryGrid}>
+                {industries.map((industry) => (
+                  <TouchableOpacity
+                    key={industry.id}
+                    style={[
+                      styles.industryCard,
+                      selectedIndustry === industry.id && styles.industryCardSelected
+                    ]}
+                    onPress={() => setSelectedIndustry(industry.id)}
+                  >
+                    <Ionicons 
+                      name={industry.icon as any} 
+                      size={32} 
+                      color={selectedIndustry === industry.id ? '#A855F7' : 'rgba(255, 255, 255, 0.7)'} 
+                    />
+                    <Text style={[
+                      styles.industryText,
+                      selectedIndustry === industry.id && styles.industryTextSelected
+                    ]}>
+                      {industry.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </Animated.View>
         </ScrollView>
@@ -158,20 +213,21 @@ const OnboardingJobRole = () => {
             {
               opacity: buttonOpacity,
               transform: [{ translateY: buttonTranslateY }],
-            },
+            }
           ]}
         >
           <TouchableOpacity 
             style={[styles.continueButton, !selectedIndustry && styles.continueButtonDisabled]} 
             onPress={handleContinue}
             disabled={!selectedIndustry}
+            activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         </Animated.View>
       </View>
-    </MorphingBackground>
+    </ChatGPTBackground>
   );
 };
 
@@ -181,37 +237,40 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    backgroundColor: 'transparent',  // Ensure container is transparent
+    backgroundColor: 'transparent',
+    paddingTop: Platform.OS === 'ios' ? 20 : 20,
   },
   scrollContent: {
     flex: 1,
   },
   scrollContentContainer: {
-    paddingBottom: 100, // Space for button container - prevents content from going behind
+    paddingBottom: 100, // Space for button container
+  },
+  animatedContent: {
+    flex: 1,
   },
   content: {
-    paddingHorizontal: 24,  // Design system standard
+    paddingHorizontal: 24,
     paddingVertical: 20,
   },
   screenTitle: {
-    fontSize: 24,           // Design system heading size
-    fontWeight: '600',      // Design system heading weight
-    fontFamily: 'SpaceGrotesk', // Design system heading font
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
     color: '#ffffff',
     textAlign: 'center',
-    lineHeight: 30,         // Design system heading line height
+    lineHeight: 30,
     marginBottom: 16,
   },
   subtitle: {
     fontSize: 16,
-    fontWeight: '400',      // Design system body weight
-    fontFamily: 'Inter',    // Design system body font
-    color: 'rgba(255, 255, 255, 0.70)', // Design system tertiary text
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
     marginBottom: 32,
-    lineHeight: 24,         // Design system body line height
-    paddingHorizontal: 16,  // Add padding instead of maxWidth
+    lineHeight: 24,
+    paddingHorizontal: 16,
   },
   industryGrid: {
     flexDirection: 'row',
@@ -219,67 +278,67 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   industryCard: {
-    width: '47%',           // Slightly smaller to ensure 2 columns fit
-    backgroundColor: 'rgba(255, 255, 255, 0.10)', // Design system glass subtle
-    borderRadius: 12,       // Design system sm radius
+    width: '47%',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    borderRadius: 12,
     padding: 20,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)', // Design system glass border
+    borderColor: 'rgba(255, 255, 255, 0.12)',
     minHeight: 100,
     justifyContent: 'center',
-    marginBottom: 12,       // Vertical spacing between rows
+    marginBottom: 12,
   },
   industryCardSelected: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Design system purple
-    borderColor: '#A855F7',                      // Design system brand primary
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderColor: '#A855F7',
   },
   industryText: {
-    color: 'rgba(255, 255, 255, 0.70)', // Design system tertiary
+    color: 'rgba(255, 255, 255, 0.70)',
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Inter',                 // Design system body font
+    fontFamily: 'Inter',
     textAlign: 'center',
     marginTop: 8,
   },
   industryTextSelected: {
-    color: '#A855F7',                    // Design system brand primary
+    color: '#A855F7',
   },
   bottomContainer: {
-    paddingHorizontal: 24,               // Design system standard
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20, // Proper safe area spacing
-    paddingTop: 20,                      // Top spacing from content
-    alignItems: 'center',                // Center the button
+    width: '100%',
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',
   },
   continueButton: {
     width: '100%',
-    maxWidth: 320,                       // Design system constraint
-    height: 56,                          // Design system button height
-    borderRadius: 28,                    // Design system pill shape
-    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Design system purple background
+    maxWidth: 320,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',    // Design system purple border
+    borderColor: 'rgb(169, 85, 247)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',              // Design system purple shadow
+    shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(168, 85, 247, 0.05)', // Design system disabled
+    backgroundColor: 'rgba(168, 85, 247, 0.05)',
     borderColor: 'rgba(169, 85, 247, 0.3)',
     shadowOpacity: 0,
   },
   continueButtonText: {
-    fontSize: 18,                        // Design system button text
+    fontSize: 18,
     lineHeight: 22,
-    fontWeight: '600',                   // Design system button weight
-    fontFamily: 'Inter',                 // Design system button font
-    letterSpacing: 0.005,               // Design system button spacing
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
     color: '#FFFFFF',
     marginRight: 8,
   },

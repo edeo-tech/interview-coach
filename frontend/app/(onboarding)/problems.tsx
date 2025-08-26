@@ -1,42 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Platform, Animated } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import MorphingBackground from '../../components/MorphingBackground';
-import OnboardingProgress from '../../components/OnboardingProgress';
+import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const AnalyzingScreen = () => {
   const { data } = useOnboarding();
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
-  
-  // Screen-level animation values - initialized in off-screen state to prevent double appearance
-  const contentTranslateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
-  const contentOpacity = useRef(new Animated.Value(0)).current;
-
-  // Smart entrance animation for the analyzing screen
-  React.useEffect(() => {
-    // Brief delay then animate in (content already positioned off-screen)
-    const timer = setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: 0,
-          duration: 380,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 1,
-          duration: 340,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, []);
   
   const analysisSteps = [
     { text: 'Identifying your interview blockers...', icon: 'search-outline' },
@@ -69,115 +41,91 @@ const AnalyzingScreen = () => {
       setTimeout(() => animateStep(1), 2500),
       setTimeout(() => animateStep(2), 4500),
       setTimeout(() => {
-        // Animate out before navigation
-        Animated.parallel([
-          Animated.timing(contentTranslateX, {
-            toValue: -SCREEN_WIDTH,
-            duration: 520,
-            useNativeDriver: true,
-          }),
-          Animated.timing(contentOpacity, {
-            toValue: 0,
-            duration: 430,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          // Navigate after animation completes
-          setTimeout(() => {
-            router.push('/(onboarding)/solutions');
-          }, 100);
-        });
-      }, 6400), // Start exit animation 600ms before original timeout
+        // Navigate to next screen after analysis is complete
+        router.push('/(onboarding)/solutions');
+      }, 6500),
     ];
 
-    return () => timeouts.forEach(clearTimeout);
-  }, [fadeAnim, data.industry]);
+    return () => {
+      timeouts.forEach(timeout => clearTimeout(timeout));
+    };
+  }, []);
 
   return (
-    <MorphingBackground mode="static" style={styles.gradient}>
-      <View style={styles.container}>
-        <OnboardingProgress currentStep={12} totalSteps={17} />
-        
-        <Animated.View 
-          style={[
-            styles.content,
-            {
-              transform: [{ translateX: contentTranslateX }],
-              opacity: contentOpacity,
-            },
-          ]}
-        >
-          <View style={styles.logoContainer}>
-            <View style={styles.loadingContainer}>
-              <Animated.View style={[styles.iconContainer, { opacity: fadeAnim }]}>
-                <Ionicons 
-                  name={analysisSteps[currentStep]?.icon as any || 'search-outline'} 
-                  size={48} 
-                  color="#A855F7" 
-                />
-              </Animated.View>
-              <View style={styles.loadingDots}>
-                {[0, 1, 2].map((dot) => (
-                  <View 
-                    key={dot} 
-                    style={[
-                      styles.dot, 
-                      currentStep >= dot && styles.activeDot
-                    ]} 
-                  />
-                ))}
-              </View>
+    <OnboardingLayout currentStep={13} totalSteps={17}>
+      <View style={styles.content}>
+        <View style={styles.messageContainer}>
+          <Animated.View 
+            style={[
+              styles.stepContainer,
+              { opacity: fadeAnim }
+            ]}
+          >
+            <View style={styles.iconContainer}>
+              <Ionicons 
+                name={analysisSteps[currentStep]?.icon as any || 'analytics-outline'} 
+                size={64} 
+                color="#A855F7" 
+              />
             </View>
-          </View>
-          
-          <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
-            <Text style={styles.screenTitle}>Analyzing your responses...</Text>
-            <Text style={styles.analysisText}>
+            
+            <Text style={styles.stepText}>
               {analysisSteps[currentStep]?.text || 'Analyzing...'}
             </Text>
+            
+            {/* Progress dots */}
+            <View style={styles.progressDots}>
+              {analysisSteps.map((_, index) => (
+                <View 
+                  key={index}
+                  style={[
+                    styles.dot,
+                    index <= currentStep && styles.dotActive
+                  ]}
+                />
+              ))}
+            </View>
           </Animated.View>
-        </Animated.View>
+        </View>
       </View>
-    </MorphingBackground>
+    </OnboardingLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
-  },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
-  logoContainer: {
+  messageContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    maxWidth: 320,
   },
-  loadingContainer: {
+  stepContainer: {
     alignItems: 'center',
-    gap: 24,
   },
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(168, 85, 247, 0.3)',
+    marginBottom: 32,
+    opacity: 0.9,
   },
-  loadingDots: {
+  stepText: {
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
+    color: '#ffffff',
+    textAlign: 'center',
+    lineHeight: 32,
+    marginBottom: 48,
+    paddingHorizontal: 16,
+  },
+  progressDots: {
     flexDirection: 'row',
     gap: 8,
+    alignItems: 'center',
   },
   dot: {
     width: 8,
@@ -185,26 +133,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
-  activeDot: {
+  dotActive: {
     backgroundColor: '#A855F7',
-  },
-  textContainer: {
-    alignItems: 'center',
-  },
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  analysisText: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center',
-    fontWeight: '500',
-    lineHeight: 24,
-    maxWidth: 280,
+    transform: [{ scale: 1.2 }],
   },
 });
 
