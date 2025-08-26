@@ -421,17 +421,8 @@ export default function MorphingBackground({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Dark base background */}
-      <LinearGradient
-        colors={[
-          '#0F172A', // Dark slate
-          '#1E293B', // Slate grey
-          '#111827', // Dark grey
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.darkBase}
-      />
+      {/* Pure black background */}
+      <View style={[styles.darkBase, { backgroundColor: '#000000' }]} />
       
       {/* Animated colorful streaks - repositioning around expanded crystal */}
       <Animated.View
@@ -544,10 +535,10 @@ export default function MorphingBackground({
         {/* Organic dark section - Top curved area */}
         <LinearGradient
           colors={[
-            '#0B1426', // Very dark navy
-            '#0F172A', // Dark slate
-            'rgba(15, 23, 42, 0.8)',
-            'rgba(15, 23, 42, 0)',
+            '#000000', // Pure black
+            '#000000', // Pure black
+            'rgba(0, 0, 0, 0.8)',
+            'rgba(0, 0, 0, 0)',
           ]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0.7, y: 0.6 }}
@@ -557,10 +548,10 @@ export default function MorphingBackground({
         {/* Organic dark section - Bottom flowing area */}
         <LinearGradient
           colors={[
-            '#111827', // Dark grey
-            '#0B1426', // Very dark navy
-            'rgba(11, 20, 38, 0.9)',
-            'rgba(11, 20, 38, 0)',
+            '#000000', // Pure black
+            '#000000', // Pure black
+            'rgba(0, 0, 0, 0.9)',
+            'rgba(0, 0, 0, 0)',
           ]}
           start={{ x: 1, y: 1 }}
           end={{ x: 0.2, y: 0.4 }}

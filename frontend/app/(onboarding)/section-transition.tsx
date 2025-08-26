@@ -10,7 +10,7 @@ import {
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import MorphingBackground from '../../components/MorphingBackground';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 
 const SectionTransition = () => {
@@ -64,7 +64,7 @@ const SectionTransition = () => {
   };
 
   return (
-    <MorphingBackground mode="expanded" style={styles.gradient}>
+    <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={6} 
@@ -120,7 +120,7 @@ const SectionTransition = () => {
           </TouchableOpacity>
         </Animated.View>
       </View>
-    </MorphingBackground>
+    </ChatGPTBackground>
   );
 };
 
