@@ -8,8 +8,8 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     return (
         <View style={styles.tabBar}>
-            <BlurView tint="dark" intensity={30} style={styles.blurView}>
-                <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', paddingHorizontal: 30 }}>
+            <BlurView tint="dark" intensity={20} style={styles.blurView}>
+                <View style={styles.tabContainer}>
                     {state.routes.map((route, index) => {
                         const { options } = descriptors[route.key];
                         const isFocused = state.index === index;
@@ -31,15 +31,16 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                                 key={route.key}
                                 onPress={onPress}
                                 style={styles.tab}
+                                activeOpacity={0.8}
                             >
                                 {options.tabBarIcon?.({
-                                    color: isFocused ? '#F59E0B' : '#B3B3B3',
+                                    color: isFocused ? '#A855F7' : 'rgba(255, 255, 255, 0.7)',
                                     size: 24,
                                     focused: isFocused,
                                 })}
                                 <Text style={[
                                     styles.tabText,
-                                    { color: isFocused ? '#F59E0B' : '#B3B3B3' }
+                                    { color: isFocused ? '#A855F7' : 'rgba(255, 255, 255, 0.7)' }
                                 ]}>
                                     {options.title}
                                 </Text>
@@ -50,10 +51,11 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 <TouchableOpacity
                     style={styles.centerButton}
                     onPress={() => router.push('/interviews/create')}
+                    activeOpacity={0.9}
                 >
-                    <BlurView tint="dark" intensity={30} style={styles.centerButtonBlur}>
+                    <BlurView tint="dark" intensity={20} style={styles.centerButtonBlur}>
                         <View style={styles.centerButtonInner}>
-                            <Ionicons name="add" size={28} color="#ffffff" />
+                            <Ionicons name="add" size={28} color="#FFFFFF" />
                         </View>
                     </BlurView>
                 </TouchableOpacity>
@@ -69,29 +71,31 @@ export default function TabLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                        borderTopWidth: 0,
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    borderTopWidth: 1,
+                    borderTopColor: 'rgba(255, 255, 255, 0.15)',
                     height: 84,
                     paddingHorizontal: 30,
                 },
                 tabBarBackground: () => (
                     <BlurView 
                         tint="dark" 
-                        intensity={30} 
+                        intensity={20} 
                         style={{ 
                             flex: 1,
-                            backgroundColor: 'rgba(55, 55, 55, 0.8)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
                         }} 
                     />
                 ),
-                tabBarActiveTintColor: '#F59E0B',
-                tabBarInactiveTintColor: '#B3B3B3',
+                tabBarActiveTintColor: '#A855F7',
+                tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.7)',
                 headerStyle: {
                     backgroundColor: 'transparent',
                 },
-                headerTintColor: '#fff',
+                headerTintColor: '#FFFFFF',
                 headerTitleStyle: {
-                    fontFamily: 'Inter_600SemiBold',
+                    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+                    fontWeight: '600',
                 },
             }}
         >
@@ -124,14 +128,31 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: 84,
-            borderTopWidth: 0,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.15)',
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            }
+        }),
     },
     blurView: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: Platform.OS === 'android' ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0.2)',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
         justifyContent: 'center',
         alignItems: 'center',
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.15)',
+    },
+    tabContainer: {
+        flexDirection: 'row', 
+        width: '100%', 
+        justifyContent: 'space-between', 
+        paddingHorizontal: 30
     },
     tab: {
         width: '35%',
@@ -143,6 +164,9 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 12,
         marginTop: 4,
+        fontWeight: '500',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.01,
     },
     centerButton: {
         position: 'absolute',
@@ -162,26 +186,28 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: Platform.OS === 'android' ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0.2)',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)',
     },
     centerButtonInner: {
         width: 64,
         height: 64,
         borderRadius: 32,
-        borderWidth: 1,
-        borderColor: 'rgba(245, 158, 11, 1)',
-        backgroundColor: Platform.OS === 'android' ? 'rgba(245, 158, 11, 1)' : 'rgba(245, 158, 11, 0.3)',
+        borderWidth: 2,
+        borderColor: '#A855F7',
+        backgroundColor: 'rgba(168, 85, 247, 0.15)',
         alignItems: 'center',
         justifyContent: 'center',
         ...Platform.select({
             ios: {
-                shadowColor: '#000',
+                shadowColor: '#A855F7',
                 shadowOffset: {
                     width: 0,
-                    height: 2,
+                    height: 4,
                 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
             }
         }),
     },

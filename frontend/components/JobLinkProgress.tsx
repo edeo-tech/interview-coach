@@ -309,24 +309,24 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
 
   return (
     <View style={styles.container}>
-      {/* Subtle gradient background - slightly different colors for job flow */}
+      {/* Design System Background */}
       <LinearGradient
         colors={[
-          '#0F1A0F', // Very dark green-black
-          '#1A0B2B', // Dark purple-blue (consistent)
-          '#0F1419', // Dark slate (consistent)
+          '#0F172A', // primary 900
+          '#1E293B', // primary 800
+          '#334155', // primary 700
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradientBackground}
       />
       
-      {/* Subtle accent streaks - adjusted for job theme */}
+      {/* Design System Accent Streaks for job flow */}
       <LinearGradient
         colors={[
-          'rgba(34, 197, 94, 0.08)', // Green accent for "growth/opportunity"
-          'rgba(139, 92, 246, 0.05)', // Purple accent (consistent)
-          'rgba(245, 158, 11, 0)', // Amber fade (consistent)
+          'rgba(34, 197, 94, 0.08)', // success green
+          'rgba(168, 85, 247, 0.05)', // purple 400
+          'rgba(252, 180, 0, 0)', // gold 400
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0.7 }}
@@ -336,7 +336,7 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Progress Circle */}
         <View style={styles.progressContainer}>
-          {/* Burst Ring Effect - Positioned relative to progress circle */}
+          {/* Burst Ring Effect - Design System Colors */}
           <Animated.View 
             style={[
               styles.burstRing,
@@ -349,7 +349,7 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
             ]}
           >
             <LinearGradient
-              colors={['rgba(34, 197, 94, 0.6)', 'rgba(139, 92, 246, 0.4)', 'rgba(245, 158, 11, 0.2)']}
+              colors={['rgba(34, 197, 94, 0.6)', 'rgba(168, 85, 247, 0.4)', 'rgba(252, 180, 0, 0.2)']}
               style={styles.ringGradient}
             />
           </Animated.View>
@@ -367,9 +367,9 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
           <Svg width={240} height={240} style={styles.svg}>
             <Defs>
               <SvgLinearGradient id="jobProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <Stop offset="0%" stopColor="#22c55e" stopOpacity="1" />
-                <Stop offset="50%" stopColor="#8b5cf6" stopOpacity="1" />
-                <Stop offset="100%" stopColor="#f59e0b" stopOpacity="1" />
+                <Stop offset="0%" stopColor="#22C55E" stopOpacity="1" />
+                <Stop offset="50%" stopColor="#A855F7" stopOpacity="1" />
+                <Stop offset="100%" stopColor="#FCB000" stopOpacity="1" />
               </SvgLinearGradient>
             </Defs>
             {/* Background circle */}
@@ -396,7 +396,7 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
             />
           </Svg>
           
-          {/* Burst Particles - Centered on progress circle */}
+          {/* Burst Particles */}
           <View style={styles.burstContainer}>
             {burstParticles.map((particle) => (
               <Animated.View
@@ -415,7 +415,7 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
                 ]}
               >
                 <LinearGradient
-                  colors={['#22c55e', '#8b5cf6']}
+                  colors={['#22C55E', '#A855F7']}
                   style={styles.particleGradient}
                 />
               </Animated.View>
@@ -434,14 +434,14 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
                   }
                 ]}
               >
-                <Ionicons name="checkmark" size={60} color="#22c55e" />
+                <Ionicons name="checkmark" size={60} color="#22C55E" />
               </Animated.View>
             ) : (
               <Animated.View style={[styles.iconContainer, { opacity: stageIconOpacity }]}>
                 <Ionicons 
                   name={currentStage?.icon as any} 
                   size={52} 
-                  color="#22c55e" 
+                  color="#22C55E" 
                 />
                 <Text style={styles.progressText}>
                   {Math.round(progress)}%
@@ -452,7 +452,7 @@ const JobLinkProgress: React.FC<JobLinkProgressProps> = ({ onComplete }) => {
           </Animated.View>
         </View>
 
-        {/* Stage Information - Fixed positioning */}
+        {/* Stage Information - Design System Typography */}
         <View style={styles.stageInfoContainer}>
           <Animated.View style={[styles.stageInfo, { opacity: stageTextOpacity }]}>
             <Text style={styles.stageTitle} numberOfLines={1} ellipsizeMode="tail">
@@ -492,9 +492,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20, // Reduced horizontal padding to give text more room
+    paddingHorizontal: 20,
     paddingVertical: 24,
-    gap: 36, // Slightly reduced gap to make room for taller text
+    gap: 36,
   },
   progressContainer: {
     position: 'relative',
@@ -554,47 +554,52 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   progressText: {
-    color: '#ffffff',
-    fontSize: 22,
+    color: '#FFFFFF',
+    fontSize: 24, // heading h3
     fontWeight: '700',
     marginTop: 16,
+    fontFamily: 'SpaceGrotesk',
+    letterSpacing: -0.01,
   },
   successIcon: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   stageInfoContainer: {
-    height: 100, // Increased height to accommodate longer text
+    height: 100,
     width: '100%',
     position: 'relative',
-    paddingHorizontal: 16, // Reduced to give more text space
+    paddingHorizontal: 16,
   },
   stageInfo: {
     position: 'absolute',
     top: 0,
-    left: 16, // Account for parent padding
-    right: 16, // Account for parent padding
+    left: 16,
+    right: 16,
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stageTitle: {
-    color: '#ffffff',
-    fontSize: 24, // Further reduced to ensure all titles fit
+    color: '#FFFFFF',
+    fontSize: 28, // heading h1
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 6, // Reduced margin
-    height: 36, // Increased height to prevent cutoff
-    lineHeight: 30, // Reduced line height for better fit
+    marginBottom: 8,
+    height: 36,
+    lineHeight: 36,
     paddingHorizontal: 4,
+    fontFamily: 'SpaceGrotesk',
+    letterSpacing: -0.01,
   },
   stageSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 15, // Slightly reduced
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 16,
     textAlign: 'center',
-    lineHeight: 20, // Reduced line height
-    height: 50, // Increased height for 2+ lines
+    lineHeight: 24,
+    height: 50,
     paddingHorizontal: 4,
+    fontFamily: 'Inter',
   },
 });
 

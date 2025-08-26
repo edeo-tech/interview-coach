@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import CVProfileDisplay from '../../components/CVProfileDisplay';
 import { useCV } from '../../_queries/interviews/cv';
 import { ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
-import { GlassTextColors } from '../../constants/GlassStyles';
+import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 
 export default function CVProfile() {
   const { data: cv, isLoading } = useCV();
@@ -24,9 +25,14 @@ export default function CVProfile() {
 
   if (isLoading) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={GlassTextColors.accent} />
-      </View>
+      <ChatGPTBackground style={styles.gradient}>
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#F59E0B" />
+            <Text style={styles.loadingTitle}>Loading CV Profile...</Text>
+          </View>
+        </View>
+      </ChatGPTBackground>
     );
   }
 
@@ -38,10 +44,26 @@ export default function CVProfile() {
 }
 
 const styles = StyleSheet.create({
-  loading: {
+  gradient: {
+    flex: 1,
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F0A1F',
+  },
+  loadingCard: {
+    ...GlassStyles.card,
+    padding: 32,
+    alignItems: 'center',
+    maxWidth: 320,
+    marginHorizontal: 20,
+  },
+  loadingTitle: {
+    color: GlassTextColors.primary,
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    textAlign: 'center',
   },
 });

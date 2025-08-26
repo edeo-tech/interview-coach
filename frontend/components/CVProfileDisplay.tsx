@@ -42,7 +42,7 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.successBadge}>
-              <Ionicons name="checkmark-circle" size={22} color="#10b981" />
+              <Ionicons name="checkmark-circle" size={24} color="#10b981" />
             </View>
             <Text style={styles.headerTitle}>Profile Created!</Text>
             <Text style={styles.headerSubtitle}>
@@ -50,93 +50,103 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
             </Text>
           </View>
 
-          {/* Experience Level - No container */}
-          <View style={styles.experienceSection}>
-            <View style={[styles.experienceIcon, { backgroundColor: `${experienceInfo.color}20` }]}>
-              <Ionicons name={experienceInfo.icon as any} size={20} color={experienceInfo.color} />
-            </View>
-            <View style={styles.experienceInfo}>
-              <Text style={styles.experienceLevel}>{experienceInfo.level} Developer</Text>
-              <Text style={styles.experienceYears}>
-                {profile.experience_years} years of experience
-              </Text>
+          {/* Experience Level - Enhanced Glass Container */}
+          <View style={styles.experienceContainer}>
+            <View style={styles.experienceSection}>
+              <View style={[styles.experienceIcon, { backgroundColor: `${experienceInfo.color}20` }]}>
+                <Ionicons name={experienceInfo.icon as any} size={20} color={experienceInfo.color} />
+              </View>
+              <View style={styles.experienceInfo}>
+                <Text style={styles.experienceLevel}>{experienceInfo.level} Developer</Text>
+                <Text style={styles.experienceYears}>
+                  {profile.experience_years} years of experience
+                </Text>
+              </View>
             </View>
           </View>
 
-          {/* Skills Section - Compact */}
+          {/* Skills Section - Enhanced Glass Container */}
           {profile.skills.length > 0 && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="code-slash-outline" size={16} color={GlassTextColors.accent} />
-                <Text style={styles.sectionTitle}>Core Skills</Text>
-              </View>
-              <View style={styles.skillsGrid}>
-                {profile.skills.slice(0, 8).map((skill, index) => (
-                  <View key={index} style={styles.skillChip}>
-                    <Text style={styles.skillText}>{skill}</Text>
-                  </View>
-                ))}
-                {profile.skills.length > 8 && (
-                  <View style={styles.skillChip}>
-                    <Text style={styles.skillText}>+{profile.skills.length - 8}</Text>
-                  </View>
-                )}
+            <View style={styles.sectionContainer}>
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="code-slash-outline" size={18} color="#60A5FA" />
+                  <Text style={styles.sectionTitle}>Core Skills</Text>
+                </View>
+                <View style={styles.skillsGrid}>
+                  {profile.skills.slice(0, 8).map((skill, index) => (
+                    <View key={index} style={styles.skillChip}>
+                      <Text style={styles.skillText}>{skill}</Text>
+                    </View>
+                  ))}
+                  {profile.skills.length > 8 && (
+                    <View style={styles.skillChip}>
+                      <Text style={styles.skillText}>+{profile.skills.length - 8}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
           )}
 
-          {/* Education & Certifications - Side by Side */}
+          {/* Education & Certifications - Enhanced Glass Containers */}
           <View style={styles.bottomSections}>
             {/* Education */}
             {profile.education.length > 0 && (
-              <View style={styles.halfSection}>
-                <View style={styles.sectionHeader}>
-                  <Ionicons name="school-outline" size={16} color={GlassTextColors.accent} />
-                  <Text style={styles.sectionTitle}>Education</Text>
-                </View>
-                <View>
-                  {profile.education.slice(0, 2).map((edu: any, index) => (
-                    <View key={index} style={styles.compactItem}>
-                      <Text style={styles.compactTitle}>
-                        {edu.degree || edu.qualification || 'Degree'}
-                      </Text>
-                      {edu.institution && (
-                        <Text style={styles.compactSubtitle}>{edu.institution}</Text>
-                      )}
-                    </View>
-                  ))}
+              <View style={styles.halfSectionContainer}>
+                <View style={styles.halfSection}>
+                  <View style={styles.sectionHeader}>
+                    <Ionicons name="school-outline" size={18} color="#60A5FA" />
+                    <Text style={styles.sectionTitle}>Education</Text>
+                  </View>
+                  <View>
+                    {profile.education.slice(0, 2).map((edu: any, index) => (
+                      <View key={index} style={styles.compactItem}>
+                        <Text style={styles.compactTitle}>
+                          {edu.degree || edu.qualification || 'Degree'}
+                        </Text>
+                        {edu.institution && (
+                          <Text style={styles.compactSubtitle}>{edu.institution}</Text>
+                        )}
+                      </View>
+                    ))}
+                  </View>
                 </View>
               </View>
             )}
 
             {/* Certifications */}
             {profile.certifications.length > 0 && (
-              <View style={styles.halfSection}>
-                <View style={styles.sectionHeader}>
-                  <Ionicons name="ribbon-outline" size={16} color={GlassTextColors.accent} />
-                  <Text style={styles.sectionTitle}>Certifications</Text>
-                </View>
-                <View>
-                  {profile.certifications.slice(0, 2).map((cert, index) => (
-                    <View key={index} style={styles.compactItem}>
-                      <View style={styles.certificationRow}>
-                        <Ionicons name="checkmark-circle" size={12} color="#10b981" />
-                        <Text style={styles.compactTitle} numberOfLines={1}>{cert}</Text>
+              <View style={styles.halfSectionContainer}>
+                <View style={styles.halfSection}>
+                  <View style={styles.sectionHeader}>
+                    <Ionicons name="ribbon-outline" size={18} color="#60A5FA" />
+                    <Text style={styles.sectionTitle}>Certifications</Text>
+                  </View>
+                  <View>
+                    {profile.certifications.slice(0, 2).map((cert, index) => (
+                      <View key={index} style={styles.compactItem}>
+                        <View style={styles.certificationRow}>
+                          <Ionicons name="checkmark-circle" size={12} color="#10b981" />
+                          <Text style={styles.compactTitle} numberOfLines={1}>{cert}</Text>
+                        </View>
                       </View>
-                    </View>
-                  ))}
-                  {profile.certifications.length > 2 && (
-                    <Text style={styles.moreText}>+{profile.certifications.length - 2} more</Text>
-                  )}
+                    ))}
+                    {profile.certifications.length > 2 && (
+                      <Text style={styles.moreText}>+{profile.certifications.length - 2} more</Text>
+                    )}
+                  </View>
                 </View>
               </View>
             )}
           </View>
 
-          {/* Continue Button */}
+          {/* Continue Button - Enhanced Design System Button */}
           <TouchableOpacity onPress={handleContinue} style={styles.continueButton}>
             <LinearGradient
-              colors={['rgba(139, 92, 246, 0.8)', 'rgba(236, 72, 153, 0.6)']}
+              colors={['#A855F7', '#EC4899']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
               style={styles.continueGradient}
             >
               <Text style={styles.continueText}>Continue to Create Interview</Text>
@@ -158,50 +168,71 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20, // Design system spacing
     paddingVertical: 16,
     justifyContent: 'space-between',
   },
   header: {
     alignItems: 'center',
-    paddingBottom: 12,
+    paddingBottom: 16, // Design system spacing
   },
   successBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    width: 56, // Design system button height
+    height: 56,
+    borderRadius: 28, // Fully rounded
+    backgroundColor: 'rgba(16, 185, 129, 0.15)', // Enhanced glass effect
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 12, // Design system spacing
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
+    // Design system shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   headerTitle: {
-    color: GlassTextColors.primary,
-    fontSize: 26,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 28, // Design system heading h1
     fontWeight: '700',
-    marginBottom: 6,
+    marginBottom: 8, // Design system spacing
     textAlign: 'center',
+    fontFamily: 'SpaceGrotesk', // Design system heading font
+    letterSpacing: -0.01,
   },
   headerSubtitle: {
-    color: GlassTextColors.secondary,
-    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.85)', // Design system text secondary
+    fontSize: 16, // Design system body medium
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 24, // Design system body medium line height
     paddingHorizontal: 12,
+    fontFamily: 'Inter',
+  },
+  experienceContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
+    borderColor: 'rgba(255, 255, 255, 0.15)', // Design system glass border
+    borderWidth: 1,
+    borderRadius: 16, // Design system card border radius
+    padding: 20, // Design system card padding
+    marginBottom: 16, // Design system spacing
+    // Design system shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   experienceSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    paddingVertical: 4,
-    marginBottom: 4,
+    gap: 16, // Design system spacing
   },
   experienceIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48, // Design system button height small
+    height: 48,
+    borderRadius: 24, // Fully rounded
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -209,100 +240,143 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   experienceLevel: {
-    color: GlassTextColors.primary,
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 3,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 20, // Design system heading h3
+    fontWeight: '600',
+    marginBottom: 4, // Design system spacing
+    fontFamily: 'Inter',
   },
   experienceYears: {
-    color: GlassTextColors.secondary,
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
+    fontSize: 14, // Design system body small
+    fontFamily: 'Inter',
+  },
+  sectionContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
+    borderColor: 'rgba(255, 255, 255, 0.15)', // Design system glass border
+    borderWidth: 1,
+    borderRadius: 16, // Design system card border radius
+    padding: 20, // Design system card padding
+    marginBottom: 16, // Design system spacing
+    // Design system shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   section: {
-    paddingVertical: 6,
+    // Removed padding as it's now in container
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
+    gap: 8, // Design system spacing
+    marginBottom: 12, // Design system spacing
   },
   sectionTitle: {
-    color: GlassTextColors.primary,
-    fontSize: 16,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 18, // Design system heading h4
     fontWeight: '600',
+    fontFamily: 'Inter',
   },
   skillsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 8, // Design system spacing
   },
   skillChip: {
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Design system purple with opacity
+    borderRadius: 12, // Design system border radius
+    paddingHorizontal: 12, // Design system spacing
+    paddingVertical: 8, // Design system spacing
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(168, 85, 247, 0.25)', // Design system purple with opacity
   },
   skillText: {
-    color: GlassTextColors.primary,
-    fontSize: 13,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 14, // Design system body small
     fontWeight: '500',
+    fontFamily: 'Inter',
   },
   bottomSections: {
     flexDirection: 'row',
-    gap: 18,
-    paddingVertical: 10,
-    marginTop: 4,
+    gap: 16, // Design system spacing
+    marginBottom: 16, // Design system spacing
+  },
+  halfSectionContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
+    borderColor: 'rgba(255, 255, 255, 0.15)', // Design system glass border
+    borderWidth: 1,
+    borderRadius: 16, // Design system card border radius
+    padding: 16, // Design system card padding
+    // Design system shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   halfSection: {
-    flex: 1,
+    // Removed flex: 1 as it's now in container
   },
   compactItem: {
-    marginBottom: 8,
+    marginBottom: 8, // Design system spacing
   },
   compactTitle: {
-    color: GlassTextColors.primary,
-    fontSize: 14,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 14, // Design system body small
     fontWeight: '600',
-    marginBottom: 2,
-    lineHeight: 18,
+    marginBottom: 2, // Design system spacing
+    lineHeight: 20, // Design system body small line height
+    fontFamily: 'Inter',
   },
   compactSubtitle: {
-    color: GlassTextColors.secondary,
-    fontSize: 12,
-    lineHeight: 16,
+    color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
+    fontSize: 12, // Design system body xsmall
+    lineHeight: 16, // Design system body xsmall line height
+    fontFamily: 'Inter',
   },
   certificationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 6, // Design system spacing
   },
   moreText: {
-    color: GlassTextColors.muted,
-    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.55)', // Design system text muted
+    fontSize: 11, // Design system label small
     fontStyle: 'italic',
-    marginTop: 3,
+    marginTop: 4, // Design system spacing
+    fontFamily: 'Inter',
   },
   continueButton: {
-    borderRadius: 14,
+    borderRadius: 28, // Design system button primary border radius (fully rounded)
     overflow: 'hidden',
-    marginTop: 8,
-    marginBottom: 4,
+    marginTop: 8, // Design system spacing
+    marginBottom: 4, // Design system spacing
+    // Design system button primary shadow
+    shadowColor: '#A855F7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 12,
   },
   continueGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    gap: 10, // Design system spacing
+    paddingVertical: 16, // Design system spacing
+    paddingHorizontal: 24, // Design system spacing
+    height: 56, // Design system button height
   },
   continueText: {
     color: '#ffffff',
-    fontSize: 17,
+    fontSize: 18, // Design system button large
     fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
   },
 });
 

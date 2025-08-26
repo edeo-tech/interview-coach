@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -7,7 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
+import { GlassStyles, GlassTextColors } from '../../../../../../constants/GlassStyles';
 
 const BlurredSection = ({ 
   children, 
@@ -37,7 +40,11 @@ const BlurredSection = ({
             <Text style={blurredStyles.upgradeMessage}>
               Upgrade to Premium to see detailed feedback and scores
             </Text>
-            <TouchableOpacity onPress={onUpgradePress} style={blurredStyles.upgradeButton}>
+            <TouchableOpacity onPress={() => {
+              // Heavy impact for upgrade action - critical premium action
+              useHapticsSafely().impactAsync(ImpactFeedbackStyle.Heavy);
+              onUpgradePress?.();
+            }} style={blurredStyles.upgradeButton}>
               <Text style={blurredStyles.upgradeButtonText}>Upgrade Now</Text>
             </TouchableOpacity>
           </View>
@@ -102,6 +109,7 @@ export default function AttemptGradingScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
   const { posthogScreen } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
   const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
 
   const [pollCount, setPollCount] = useState(0);
@@ -270,10 +278,12 @@ export default function AttemptGradingScreen() {
       </BlurredSection>
 
       {/* View Transcript Section */}
-      <Pressable 
+      <TouchableOpacity 
         style={[styles.transcriptCard, !data && styles.transcriptCardDisabled]}
         onPress={() => {
           if (data) {
+            // Light impact for viewing transcript - secondary action
+            impactAsync(ImpactFeedbackStyle.Light);
             router.push({ 
               pathname: '/interviews/[id]/attempts/[attemptId]/transcript', 
               params: { id, attemptId, is_from_interview: 'false' } 
@@ -298,7 +308,7 @@ export default function AttemptGradingScreen() {
           </View>
           <Ionicons name="chevron-forward" size={20} color={data ? "#F59E0B" : "#6B7280"} />
         </View>
-      </Pressable>
+      </TouchableOpacity>
     </ScrollView>
   );
 
@@ -308,12 +318,16 @@ export default function AttemptGradingScreen() {
         <View style={styles.header}>
           {/* Only show back button if coming from details (not from interview) */}
           {is_from_interview !== 'true' && (
-            <Pressable 
+            <TouchableOpacity 
               style={styles.backButton} 
-              onPress={() => router.back()}
+              onPress={() => {
+                // Light impact for navigation back - minor action
+                impactAsync(ImpactFeedbackStyle.Light);
+                router.back();
+              }}
             >
               <Ionicons name="arrow-back" size={24} color="#fff" />
-            </Pressable>
+            </TouchableOpacity>
           )}
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
@@ -333,21 +347,28 @@ export default function AttemptGradingScreen() {
         {/* Only show footer button if coming from interview */}
         {is_from_interview === 'true' && (
           <View style={styles.footer}>
-            <Pressable 
-              style={[styles.practiceAgainButton, !data && styles.practiceAgainButtonDisabled]} 
-              onPress={() => {
-                if (data) {
-                  router.replace('/(app)/(tabs)/home');
-                }
-              }}
-              disabled={!data}
+            <LinearGradient
+              colors={["#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.primaryButtonOuter, !data && styles.primaryButtonOuterDisabled]}
             >
-              <Ionicons name="refresh-circle" size={24} color={data ? "#fff" : "#6B7280"} />
-              <Text style={[styles.practiceAgainText, !data && styles.practiceAgainTextDisabled]}>
-                Practice Again & Improve
-              </Text>
-              <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
-            </Pressable>
+              <TouchableOpacity
+                style={[styles.primaryButtonInner, !data && styles.primaryButtonInnerDisabled]}
+                onPress={() => {
+                  if (data) {
+                    impactAsync(ImpactFeedbackStyle.Medium);
+                    router.replace('/(app)/(tabs)/home');
+                  }
+                }}
+                activeOpacity={0.9}
+                disabled={!data}
+              >
+                <Ionicons name="refresh-circle" size={24} color={data ? "#fff" : "#6B7280"} />
+                <Text style={[styles.practiceAgainText, !data && styles.practiceAgainTextDisabled]}>Practice Again & Improve</Text>
+                <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
+              </TouchableOpacity>
+            </LinearGradient>
           </View>
         )}
       </View>
@@ -370,7 +391,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, 
     paddingBottom: 16, 
     borderBottomWidth: 1, 
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   backButton: {
     padding: 8,
@@ -397,16 +418,12 @@ const styles = StyleSheet.create({
   },
   // Transcript Card Styles
   transcriptCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
+    ...GlassStyles.container,
     padding: 20,
     marginBottom: 16,
   },
   transcriptCardDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderColor: 'rgba(255,255,255,0.05)',
+    ...GlassStyles.containerSecondary,
   },
   transcriptCardContent: {
     flexDirection: 'row',
@@ -449,31 +466,37 @@ const styles = StyleSheet.create({
   },
 
   // Practice Again Button Styles
-  practiceAgainButton: {
-    backgroundColor: '#F43F5E',
-    paddingVertical: 18,
+  primaryButtonOuter: {
+    borderRadius: 28,
+    padding: 2,
+    height: 56,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#A855F7',
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 },
+      },
+    }),
+  },
+  primaryButtonOuterDisabled: {
+    opacity: 0.6,
+  },
+  primaryButtonInner: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 28,
+    height: 52,
     paddingHorizontal: 24,
-    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.15,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      }
-    }),
   },
-  practiceAgainButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    shadowOpacity: 0,
-    elevation: 0,
+  primaryButtonInnerDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   practiceAgainText: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 17,
     fontWeight: '700',
     flex: 1,
@@ -490,12 +513,9 @@ const styles = StyleSheet.create({
   
   // Loading states
   loadingCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
+    ...GlassStyles.card,
     padding: 32,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
     maxWidth: 320,
     marginHorizontal: 20,
   },
@@ -538,12 +558,9 @@ const styles = StyleSheet.create({
 
   // Empty state
   emptyCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
+    ...GlassStyles.card,
     padding: 32,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
     maxWidth: 320,
     marginHorizontal: 20,
   },
@@ -564,15 +581,12 @@ const styles = StyleSheet.create({
 
   // Feedback content
   overallScoreCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
+    ...GlassStyles.card,
     padding: 24,
     marginBottom: 16,
   },
   sectionTitle: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
@@ -620,10 +634,7 @@ const styles = StyleSheet.create({
   },
 
   card: { 
-    backgroundColor: 'rgba(255,255,255,0.06)', 
-    borderWidth: 1, 
-    borderColor: 'rgba(255,255,255,0.08)', 
-    borderRadius: 16, 
+    ...GlassStyles.card, 
     padding: 20,
     marginBottom: 16,
   },
@@ -643,7 +654,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rubricCategory: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 15,
     fontWeight: '500',
   },
@@ -673,13 +684,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   listText: {
-    color: '#d1d5db',
+    color: GlassTextColors.muted,
     fontSize: 15,
     lineHeight: 20,
     flex: 1,
   },
   detailedFeedback: {
-    color: '#d1d5db',
+    color: GlassTextColors.muted,
     lineHeight: 22,
     fontSize: 15,
   },

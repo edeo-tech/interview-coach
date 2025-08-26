@@ -13,7 +13,7 @@ from crud.interviews.interviews import (
     get_interview, get_user_interviews
 )
 from crud.interviews.attempts import (
-    create_attempt, get_attempt, get_interview_attempts, 
+    create_attempt, get_attempt, get_interview_attempts, get_interview_attempts_paginated,
     update_attempt, add_transcript_turn, finish_attempt
 )
 
@@ -166,6 +166,22 @@ async def get_interview_details(
     interview_dict = interview.model_dump()
     interview_dict['_id'] = str(interview.id)
     
+    # If this interview is linked to a job, get job details for backward compatibility
+    if hasattr(interview, 'job_id') and interview.job_id:
+        from crud.jobs import get_job
+        job = await get_job(req, interview.job_id)
+        if job:
+            # Add job details to interview for backward compatibility
+            interview_dict['company'] = job.company
+            interview_dict['role_title'] = job.role_title
+            interview_dict['company_logo_url'] = job.company_logo_url
+            interview_dict['location'] = job.location
+            interview_dict['employment_type'] = job.employment_type
+            interview_dict['experience_level'] = job.experience_level
+            # Add Brandfetch identifiers for logo functionality
+            interview_dict['brandfetch_identifier_type'] = job.brandfetch_identifier_type
+            interview_dict['brandfetch_identifier_value'] = job.brandfetch_identifier_value
+    
     attempts_data = []
     for attempt in attempts:
         attempt_dict = attempt.model_dump()
@@ -209,6 +225,48 @@ async def get_interview_attempts_count(
         }
     )
 
+@router.get("/{interview_id}/attempts")
+@error_decorator
+async def get_interview_attempts_paginated_route(
+    req: Request,
+    interview_id: str,
+    user_id: str = Depends(auth.auth_wrapper),
+    page_size: int = 10,
+    page_number: int = 1
+):
+    """Get paginated attempts for a specific interview"""
+    # Verify interview exists and belongs to user
+    interview = await get_interview(req, interview_id)
+    
+    if not interview:
+        raise HTTPException(status_code=404, detail="Interview not found")
+    
+    if interview.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Calculate skip from page number (page 1 = skip 0, page 2 = skip 10, etc.)
+    skip = (page_number - 1) * page_size
+    attempts_result = await get_interview_attempts_paginated(req, interview_id, page_size, skip)
+    
+    # Convert attempts to dicts and ensure _id is included
+    attempts_data = []
+    for attempt in attempts_result["attempts"]:
+        attempt_dict = attempt.model_dump()
+        attempt_dict['_id'] = str(attempt.id)
+        attempts_data.append(attempt_dict)
+    
+    return JSONResponse(
+        status_code=200,
+        content=jsonable_encoder({
+            "attempts": attempts_data,
+            "has_more": attempts_result["has_more"],
+            "total_count": attempts_result["total_count"],
+            "current_page_size": attempts_result["current_page_size"],
+            "page_number": page_number,
+            "page_size": page_size
+        })
+    )
+
 @router.post("/{interview_id}/start")
 @error_decorator
 async def start_interview_attempt(
@@ -235,7 +293,7 @@ async def start_interview_attempt(
     print(f"   - Interview details: {interview.role_title} at {interview.company}")
     
     # Create attempt record (frontend handles ElevenLabs entirely)
-    attempt = await create_attempt(req, interview_id)
+    attempt = await create_attempt(req, interview_id, interview.job_id, interview.user_id)
 
     print(f"   ✅ SUCCESS: Started attempt with ID: {attempt.id}")
     return JSONResponse(

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Animated, StyleSheet, ViewStyle, Dimensions, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -63,34 +64,70 @@ const Toast: React.FC<ToastProps> = ({ toast, onHide }) => {
     });
   };
 
-  const getBackgroundColor = () => {
+  const getToastStyles = () => {
     switch (toast.type) {
       case 'success':
-        return '#4CAF50';
+        return {
+          backgroundColor: 'rgba(34, 197, 94, 0.15)', // Design system success light
+          borderColor: 'rgba(34, 197, 94, 0.25)',
+          iconColor: '#22C55E', // Design system success
+          iconName: 'checkmark-circle' as const,
+        };
       case 'error':
-        return '#F44336';
+        return {
+          backgroundColor: 'rgba(239, 68, 68, 0.15)', // Design system error light
+          borderColor: 'rgba(239, 68, 68, 0.25)',
+          iconColor: '#EF4444', // Design system error
+          iconName: 'close-circle' as const,
+        };
       case 'warning':
-        return '#FF9800';
+        return {
+          backgroundColor: 'rgba(217, 119, 6, 0.15)', // Design system warning light
+          borderColor: 'rgba(217, 119, 6, 0.25)',
+          iconColor: '#D97706', // Design system warning
+          iconName: 'warning' as const,
+        };
       case 'info':
-        return '#2196F3';
+        return {
+          backgroundColor: 'rgba(59, 130, 246, 0.15)', // Design system info light
+          borderColor: 'rgba(59, 130, 246, 0.25)',
+          iconColor: '#3B82F6', // Design system info
+          iconName: 'information-circle' as const,
+        };
       default:
-        return '#333';
+        return {
+          backgroundColor: 'rgba(255, 255, 255, 0.12)', // Default glass
+          borderColor: 'rgba(255, 255, 255, 0.15)',
+          iconColor: '#60A5FA', // Design system accent
+          iconName: 'information-circle' as const,
+        };
     }
   };
+
+  const toastStyles = getToastStyles();
 
   return (
     <Animated.View
       style={[
         styles.container,
         {
-          backgroundColor: getBackgroundColor(),
+          backgroundColor: toastStyles.backgroundColor,
+          borderColor: toastStyles.borderColor,
           opacity: fadeAnim,
           transform: [{ translateY }],
           top: insets.top + 10,
         },
       ]}
     >
-      <Text style={styles.message}>{toast.message}</Text>
+      <View style={styles.content}>
+        <Ionicons 
+          name={toastStyles.iconName} 
+          size={20} 
+          color={toastStyles.iconColor} 
+          style={styles.icon}
+        />
+        <Text style={styles.message}>{toast.message}</Text>
+      </View>
     </Animated.View>
   );
 };
@@ -154,27 +191,35 @@ const styles = StyleSheet.create({
   },
   container: {
     position: 'absolute',
-    left: 20,
-    right: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderRadius: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-      }
-    }),
+    left: 20, // Design system spacing
+    right: 20, // Design system spacing
+    paddingHorizontal: 16, // Design system spacing
+    paddingVertical: 12, // Design system spacing
+    borderRadius: 12, // Design system border radius
+    borderWidth: 1,
+    // Design system shadow
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8, // Design system spacing
+  },
+  icon: {
+    marginRight: 4, // Design system spacing
   },
   message: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 14, // Design system body small
     fontWeight: '500',
-    textAlign: 'center',
+    flex: 1,
+    fontFamily: 'Inter', // Design system body font
   },
 });

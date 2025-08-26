@@ -1,14 +1,17 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Image, Animated, PanResponder, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Animated, PanResponder, Dimensions, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useCV } from '../../_queries/interviews/cv';
 import { useStartAttempt, useAddTranscript, useFinishAttempt, useInterview } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
+import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -99,6 +102,7 @@ export default function MockInterview() {
     const [duration, setDuration] = useState(0);
     const [interviewNotes, setInterviewNotes] = useState<string[]>([]);
     const { posthogScreen, posthogCapture } = usePosthogSafely();
+    const { impactAsync } = useHapticsSafely();
     
     // Fetch user data and CV
     const { auth } = useAuth();
@@ -631,12 +635,16 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         {callState === 'active' && (
                             <>
                                 <View style={styles.callControls}>
-                                    <Pressable
+                                    <TouchableOpacity
                                         style={[styles.callControlButton, styles.endCallButton]}
-                                        onPress={() => endInterview(conversation)}
+                                        onPress={() => {
+                                            // Heavy impact for ending interview - critical action
+                                            impactAsync(ImpactFeedbackStyle.Heavy);
+                                            endInterview(conversation);
+                                        }}
                                     >
                                         <Ionicons name="call" size={28} color="#fff" />
-                                    </Pressable>
+                                    </TouchableOpacity>
                                 </View>
                                 
                                 <Text style={styles.statusText}>
@@ -646,12 +654,16 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                         )}
 
                         {callState === 'ended' && (
-                            <Pressable
+                            <TouchableOpacity
                                 style={styles.backToMenuButton}
-                                onPress={() => router.back()}
+                                onPress={() => {
+                                    // Light impact for navigation back - minor action
+                                    impactAsync(ImpactFeedbackStyle.Light);
+                                    router.back();
+                                }}
                             >
                                 <Text style={styles.backToMenuText}>Back to Interview Details</Text>
-                            </Pressable>
+                            </TouchableOpacity>
                         )}
                     </View>
                 </ChatGPTBackground>
@@ -669,6 +681,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 20,
         paddingTop: 60,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.15)',
     },
     backButton: {
         padding: 8,
@@ -680,22 +694,24 @@ const styles = StyleSheet.create({
     companyName: {
         fontSize: 18,
         fontFamily: 'Inter_600SemiBold',
-        color: '#fff',
+        color: GlassTextColors.primary,
     },
     role: {
         fontSize: 14,
         fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        color: GlassTextColors.muted,
         marginTop: 2,
     },
     timer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 20,
         gap: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     timerText: {
         fontSize: 14,
@@ -752,14 +768,14 @@ const styles = StyleSheet.create({
     incomingCallTitle: {
         fontSize: 28,
         fontFamily: 'Inter_700Bold',
-        color: '#fff',
+        color: GlassTextColors.primary,
         marginBottom: 12,
         textAlign: 'center',
     },
     incomingCallSubtitle: {
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        color: GlassTextColors.muted,
         marginBottom: 24,
         textAlign: 'center',
         paddingHorizontal: 20,
@@ -792,7 +808,7 @@ const styles = StyleSheet.create({
     endedTitle: {
         fontSize: 24,
         fontFamily: 'Inter_700Bold',
-        color: '#fff',
+        color: GlassTextColors.primary,
         marginTop: 16,
         marginBottom: 8,
         textAlign: 'center',
@@ -800,18 +816,16 @@ const styles = StyleSheet.create({
     endedSubtitle: {
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        color: GlassTextColors.muted,
         textAlign: 'center',
         paddingHorizontal: 20,
     },
     interviewerProfile: {
         alignItems: 'center',
         marginBottom: 32,
-        backgroundColor: '#1a1a1a',
+        ...GlassStyles.container,
         borderRadius: 20,
         padding: 24,
-        borderWidth: 1,
-        borderColor: '#333',
     },
     interviewerAvatar: {
         fontSize: 64,
@@ -820,13 +834,13 @@ const styles = StyleSheet.create({
     interviewerName: {
         fontSize: 20,
         fontFamily: 'Inter_600SemiBold',
-        color: '#fff',
+        color: GlassTextColors.primary,
         marginBottom: 4,
     },
     interviewerRole: {
         fontSize: 14,
         fontFamily: 'Inter_400Regular',
-        color: '#9CA3AF',
+        color: GlassTextColors.muted,
         marginBottom: 4,
     },
     interviewerCompany: {
@@ -837,14 +851,14 @@ const styles = StyleSheet.create({
     welcomeTitle: {
         fontSize: 28,
         fontFamily: 'Inter_700Bold',
-        color: '#fff',
+        color: GlassTextColors.primary,
         marginBottom: 12,
         textAlign: 'center',
     },
     welcomeSubtitle: {
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        color: GlassTextColors.muted,
         marginBottom: 16,
         textAlign: 'center',
     },
@@ -869,7 +883,7 @@ const styles = StyleSheet.create({
     instructions: {
         fontSize: 14,
         fontFamily: 'Inter_400Regular',
-        color: '#9CA3AF',
+        color: GlassTextColors.muted,
         textAlign: 'center',
         paddingHorizontal: 40,
         lineHeight: 20,
@@ -897,12 +911,12 @@ const styles = StyleSheet.create({
     interviewerNameSmall: {
         fontSize: 16,
         fontFamily: 'Inter_600SemiBold',
-        color: '#fff',
+        color: GlassTextColors.primary,
     },
     interviewerRoleSmall: {
         fontSize: 12,
         fontFamily: 'Inter_400Regular',
-        color: '#9CA3AF',
+        color: GlassTextColors.muted,
         marginTop: 2,
     },
     callStatus: {
@@ -932,7 +946,7 @@ const styles = StyleSheet.create({
     emptyNotesText: {
         fontSize: 14,
         fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        color: GlassTextColors.muted,
         textAlign: 'center',
     },
     noteItem: {
@@ -946,11 +960,9 @@ const styles = StyleSheet.create({
         maxWidth: '80%',
     },
     aiNote: {
-        backgroundColor: '#1a1a1a',
+        ...GlassStyles.container,
         alignSelf: 'flex-start',
         maxWidth: '80%',
-        borderWidth: 1,
-        borderColor: '#333',
     },
     noteText: {
         fontSize: 14,
@@ -1026,7 +1038,7 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
     },
     backToMenuButton: {
-        backgroundColor: '#374151',
+        ...GlassStyles.interactive,
         paddingHorizontal: 24,
         paddingVertical: 16,
         borderRadius: 12,
@@ -1035,12 +1047,12 @@ const styles = StyleSheet.create({
     backToMenuText: {
         fontSize: 16,
         fontFamily: 'Inter_600SemiBold',
-        color: '#fff',
+        color: GlassTextColors.primary,
     },
     statusText: {
         fontSize: 14,
         fontFamily: 'Inter_500Medium',
-        color: '#6B7280',
+        color: GlassTextColors.muted,
     },
     // iPhone Call Interface Styles
     iphoneCallContainer: {
@@ -1056,14 +1068,14 @@ const styles = StyleSheet.create({
     iphoneCallerName: {
         fontSize: 42,
         fontFamily: 'Inter_300Light',
-        color: '#ffffff',
+        color: GlassTextColors.primary,
         textAlign: 'center',
         marginBottom: 16,
     },
     iphoneCallStatus: {
         fontSize: 18,
         fontFamily: 'Inter_400Regular',
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: GlassTextColors.muted,
         textAlign: 'center',
         marginTop: 16,
         marginBottom: 24,
@@ -1071,7 +1083,7 @@ const styles = StyleSheet.create({
     iphoneCallSubtext: {
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
-        color: 'rgba(255, 255, 255, 0.5)',
+        color: GlassTextColors.muted,
         textAlign: 'center',
     },
     iphoneMiddleSection: {
@@ -1187,7 +1199,7 @@ const styles = StyleSheet.create({
     activeCallStatus: {
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: GlassTextColors.muted,
         textAlign: 'center',
         marginBottom: 8,
     },
@@ -1230,14 +1242,14 @@ const styles = StyleSheet.create({
     activeCallInterviewerName: {
         fontSize: 28,
         fontFamily: 'Inter_300Light',
-        color: '#ffffff',
+        color: GlassTextColors.primary,
         textAlign: 'center',
         marginBottom: 8,
     },
     activeCallInterviewerRole: {
         fontSize: 16,
         fontFamily: 'Inter_400Regular',
-        color: 'rgba(255, 255, 255, 0.6)',
+        color: GlassTextColors.muted,
         textAlign: 'center',
         marginBottom: 24,
     },
@@ -1270,18 +1282,14 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     salesInstructionsCard: {
+        ...GlassStyles.card,
         backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        borderRadius: 16,
-        padding: 20,
-        borderWidth: 1,
         borderColor: 'rgba(245, 158, 11, 0.3)',
         marginBottom: 20,
     },
     standardInstructionsCard: {
+        ...GlassStyles.card,
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderRadius: 16,
-        padding: 20,
-        borderWidth: 1,
         borderColor: 'rgba(59, 130, 246, 0.3)',
         marginBottom: 20,
     },
@@ -1293,7 +1301,7 @@ const styles = StyleSheet.create({
     instructionsTitle: {
         fontSize: 18,
         fontFamily: 'Inter_600SemiBold',
-        color: '#ffffff',
+        color: GlassTextColors.primary,
         marginLeft: 8,
     },
     instructionsSubtitle: {
@@ -1309,7 +1317,7 @@ const styles = StyleSheet.create({
     instructionItem: {
         fontSize: 14,
         fontFamily: 'Inter_400Regular',
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: GlassTextColors.muted,
         lineHeight: 20,
     },
 });

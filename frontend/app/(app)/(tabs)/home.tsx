@@ -1,25 +1,42 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Platform, Image, ActivityIndicator, Modal } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
-import { useInterviews } from '../../../_queries/interviews/interviews';
-import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
+import { useUserJobs } from '../../../_queries/jobs/jobs';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
-import CVUploadProgress from '../../../components/CVUploadProgress';
+import BrandfetchLogo from '../../../components/BrandfetchLogo';
 
 export default function Home() {
-  const { data: cv } = useCV();
-  const { data: interviews, isLoading: interviewsLoading } = useInterviews(!!cv);
-  const uploadMutation = useUploadCV();
+  const { 
+    data: jobsData, 
+    isLoading: jobsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useUserJobs(10);
+  
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { selectionAsync } = useHapticsSafely();
   
-  const [uploadProgress, setUploadProgress] = useState(false);
-  const [showProgressModal, setShowProgressModal] = useState(false);
+  // Flatten the paginated data - extract jobs from each page
+  const jobs = jobsData?.pages.flatMap(page => page.jobs) || [];
+  
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+  
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: { layoutMeasurement: any, contentOffset: any, contentSize: any }) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom;
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -28,21 +45,13 @@ export default function Home() {
     }, [posthogScreen])
   );
 
-  const handleCreateNewInterview = () => {
-    posthogCapture('navigate_to_create_interview', {
+  const handleJobPress = (jobId: string) => {
+    selectionAsync();
+    posthogCapture('view_job_details', {
       source: 'home',
-      has_cv: !!cv,
-      total_existing_interviews: interviews?.length || 0
+      job_id: jobId
     });
-    router.push('/interviews/create');
-  };
-
-  const handleInterviewPress = (interviewId: string) => {
-    posthogCapture('view_interview_details', {
-      source: 'home',
-      interview_id: interviewId
-    });
-    router.push(`/interviews/${interviewId}/details` as any);
+    router.push(`/jobs/${jobId}` as any);
   };
 
   const formatDate = (dateString: string) => {
@@ -63,273 +72,139 @@ export default function Home() {
     }
   };
 
-  const getInterviewTypeIcon = (type: string) => {
-    switch (type) {
-      case 'technical': return 'code';
-      case 'behavioral': return 'people';
-      case 'leadership': return 'trending-up';
-      default: return 'chatbubble';
-    }
-  };
-
-  const handleUpload = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
-        copyToCacheDirectory: true
-      });
-      
-      if (result.canceled) {
-        return;
-      }
-
-      const file = result.assets[0];
-      
-      // Validate file size (max 5MB)
-      if (file.size && file.size > 5 * 1024 * 1024) {
-        Alert.alert('File Too Large', 'Please select a file smaller than 5MB.');
-        return;
-      }
-
-      setUploadProgress(true);
-      setShowProgressModal(true);
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri: file.uri,
-        type: file.mimeType || 'application/pdf',
-        name: file.name || 'cv.pdf',
-      } as any);
-      
-      await uploadMutation.mutateAsync(formData);
-      
-      posthogCapture('cv_upload_success', {
-        source: 'home_embedded',
-        file_type: file.mimeType || 'unknown',
-        file_size_kb: file.size ? Math.round(file.size / 1024) : null,
-        is_first_upload: true
-      });
-      
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      setShowProgressModal(false);
-      posthogCapture('cv_upload_failed', {
-        source: 'home_embedded',
-        error_message: error.response?.data?.detail || error.message,
-        file_type: file?.mimeType || 'unknown'
-      });
-      Alert.alert(
-        'Upload Error', 
-        error.response?.data?.detail || 'Failed to upload CV. Please try again.'
-      );
-    } finally {
-      setUploadProgress(false);
-    }
-  };
-
-  const handleProgressComplete = () => {
-    // Navigate directly to interview creation - seamless onboarding flow
-    posthogCapture('cv_upload_onboarding_complete', {
-      source: 'home_embedded'
-    });
-    
-    // Navigate immediately, then close modal to prevent flash
-    router.push('/interviews/create');
-    
-    // Delay modal close to prevent brief home screen flash
-    setTimeout(() => {
-      setShowProgressModal(false);
-    }, 100);
+  const getJobProgressColor = (stagesCompleted: number, totalStages: number) => {
+    const progress = stagesCompleted / totalStages;
+    if (progress === 0) return '#6b7280';
+    if (progress < 0.5) return '#f59e0b';
+    if (progress < 1) return '#3b82f6';
+    return '#10b981';
   };
 
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentInsetAdjustmentBehavior="automatic"
-        keyboardDismissMode="on-drag"
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: insets.bottom + 100,
-          gap: 16,
-        }}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Your interviews</Text>
-            <Text style={styles.headerSubtitle}>
-              Practice with AI-powered mock interviews
-            </Text>
-          </View>
-        </View>
-
-        {/* Quick Action: Create New Interview (only show when user has existing interviews) */}
-        {interviews && interviews.length > 0 && (
-          <TouchableOpacity onPress={handleCreateNewInterview} style={styles.createCard}>
-            <View style={styles.createCardLeft}>
-              <Ionicons name="add" size={24} color="#ffffff" />
-            </View>
-            <View style={styles.createCardRight}>
-              <Text style={styles.createCardTitle}>Create new interview</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* CV Upload - Embedded for seamless onboarding */}
-        {!cv && (
-          <View style={styles.uploadContainer}>
-            <TouchableOpacity
-              onPress={handleUpload}
-              disabled={uploadProgress}
-              style={[
-                styles.uploadArea,
-                uploadProgress && styles.uploadAreaDisabled
-              ]}
-            >
-              <View style={styles.uploadIconContainer}>
-                <Ionicons name="cloud-upload" size={48} color="#8b5cf6" />
-              </View>
-              
-              <Text style={styles.uploadTitle}>
-                Upload your CV to get started
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardDismissMode="on-drag"
+          onScroll={({ nativeEvent }) => {
+            if (isCloseToBottom(nativeEvent)) {
+              handleLoadMore();
+            }
+          }}
+          scrollEventThrottle={400}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: insets.bottom + 100,
+            gap: 16,
+          }}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerText}>
+              <Text style={styles.headerTitle}>Recent jobs</Text>
+              <Text style={styles.headerSubtitle}>
+                Your recent job applications
               </Text>
-              
-              <Text style={styles.uploadSubtitle}>
-                Get personalized interview questions based on your experience
-              </Text>
-              
-              <View style={styles.uploadButton}>
-                <Text style={styles.uploadButtonText}>Choose file</Text>
-              </View>
-              
-              <Text style={styles.formatHint}>
-                PDF, DOC, DOCX, or TXT • Max 5MB
-              </Text>
-            </TouchableOpacity>
-            
-            {/* Trust Indicators */}
-            <View style={styles.trustIndicators}>
-              <View style={styles.trustItem}>
-                <Ionicons name="shield-checkmark" size={14} color="#10b981" />
-                <Text style={styles.trustText}>Secure & Private</Text>
-              </View>
-              <View style={styles.trustItem}>
-                <Ionicons name="time" size={14} color="#8b5cf6" />
-                <Text style={styles.trustText}>Processed in seconds</Text>
-              </View>
             </View>
           </View>
-        )}
 
-        {/* Recent Interviews */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Recent Interviews
-          </Text>
-          
-          {!cv || interviewsLoading ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="chatbubble-outline" size={48} color="#6b7280" />
-              <Text style={styles.emptyStateTitle}>
-                No interviews yet
-              </Text>
-              <Text style={styles.emptyStateSubtitle}>
-                {!cv ? 'Upload your CV first, then tap the + button above to create your first interview' : 'Loading your interviews...'}
-              </Text>
-            </View>
-          ) : !interviews || interviews.length === 0 ? (
-            <View style={styles.enhancedEmptyState}>
-              <View style={styles.emptyStateIcon}>
-                <Ionicons name="rocket-outline" size={52} color="#8b5cf6" />
-              </View>
-              <Text style={styles.emptyStateTitle}>
-                Ready to practice?
-              </Text>
-              <Text style={styles.emptyStateSubtitle}>
-                Create your first mock interview to start improving your skills
-              </Text>
-              <View style={styles.ctaContainer}>
-                <View style={styles.ctaArrow}>
-                  <Ionicons name="arrow-up" size={20} color="#8b5cf6" />
-                </View>
-                <Text style={styles.ctaText}>
-                  Tap the + button above to get started
+          {/* Jobs List */}
+          <View style={styles.section}>
+            {jobsLoading ? (
+              <View style={styles.emptyState}>
+                <ActivityIndicator size="large" color="#A855F7" />
+                <Text style={styles.emptyStateTitle}>
+                  Loading your jobs...
                 </Text>
               </View>
-            </View>
-          ) : (
-            interviews.map((interview) => (
-              <TouchableOpacity
-                key={interview.id}
-                onPress={() => handleInterviewPress(interview.id)}
-                style={styles.interviewCard}
-              >
-                                 <View style={styles.interviewCardContent}>
-                   <View style={styles.cardLeftAccent}>
-                     {interview.company_logo_url ? (
-                       <Image 
-                         source={{ uri: interview.company_logo_url }}
-                         style={styles.companyLogo}
-                         onError={() => {
-                           // Fallback handled by conditional rendering
-                         }}
-                       />
-                     ) : (
-                       <Ionicons 
-                         name={getInterviewTypeIcon(interview.interview_type) as any}
-                         size={28} 
-                         color="#ffffff" 
-                       />
-                     )}
-                   </View>
-                   
-                   <View style={styles.interviewCardMain}>
-                     <Text style={styles.interviewTitle}>
-                       {interview.role_title}
-                     </Text>
-                     
-                                           <View style={styles.interviewCompany}>
-                        <Ionicons name="business-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
+            ) : !jobs || jobs.length === 0 ? (
+              <View style={styles.emptyState}>
+                <View style={styles.emptyStateIcon}>
+                  <Ionicons name="briefcase-outline" size={32} color="rgba(255, 255, 255, 0.7)" />
+                </View>
+                <Text style={styles.emptyStateTitle}>
+                  No jobs yet
+                </Text>
+                <Text style={styles.emptyStateSubtitle}>
+                  Your recent job applications will appear here
+                </Text>
+              </View>
+            ) : (
+              jobs.map((job) => (
+                <TouchableOpacity
+                  key={job._id}
+                  onPress={() => handleJobPress(job._id)}
+                  style={styles.interviewCard}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.interviewCardContent}>
+                    <View style={styles.cardLeftAccent}>
+                      <BrandfetchLogo
+                        identifierType={job.brandfetch_identifier_type}
+                        identifierValue={job.brandfetch_identifier_value}
+                        fallbackUrl={job.company_logo_url}
+                        size={32}
+                        imageStyle={styles.companyLogo}
+                        fallbackIconColor="rgba(255, 255, 255, 0.8)"
+                        fallbackIconName="briefcase-outline"
+                      />
+                    </View>
+                    
+                    <View style={styles.interviewCardMain}>
+                      <Text style={styles.interviewTitle}>
+                        {job.role_title}
+                      </Text>
+                      
+                      <View style={styles.interviewCompany}>
+                        <Ionicons name="business-outline" size={14} color="rgba(255, 255, 255, 0.7)" style={{flexShrink: 0}} />
                         <Text style={styles.companyText} numberOfLines={1}>
-                          {interview.company.length > 30 ? interview.company.substring(0, 30) + '...' : interview.company}
+                          {job.company.length > 30 ? job.company.substring(0, 30) + '...' : job.company}
                         </Text>
                       </View>
                       
                       <View style={styles.interviewLocation}>
-                        <Ionicons name="location-outline" size={14} color="#6b7280" style={{flexShrink: 0}} />
+                        <Ionicons name="location-outline" size={14} color="rgba(255, 255, 255, 0.7)" style={{flexShrink: 0}} />
                         <Text style={styles.locationText} numberOfLines={1}>
-                          {(interview.location || 'Remote').length > 40 ? (interview.location || 'Remote').substring(0, 40) + '...' : (interview.location || 'Remote')}
+                          {(job.location || 'Remote').length > 40 ? (job.location || 'Remote').substring(0, 40) + '...' : (job.location || 'Remote')}
                         </Text>
                       </View>
-                     
-                     <View style={styles.interviewBottomRow}>
-                       <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) }]}>
-                         {interview.experience_level || interview.difficulty}
-                       </Text>
-                       <Text style={styles.interviewDate}>
-                         {formatDate(interview.created_at)}
-                       </Text>
-                     </View>
-                   </View>
-                 </View>
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
-      </ScrollView>
-
-      {/* Progress Modal */}
-      <Modal
-        visible={showProgressModal}
-        transparent={true}
-        animationType="fade"
-        statusBarTranslucent={true}
-      >
-        <CVUploadProgress onComplete={handleProgressComplete} />
-      </Modal>
-    </View>
+                      
+                      <View style={styles.progressContainer}>
+                        <Text style={styles.progressText}>
+                          {job.stages_completed} / {job.interview_stages.length} interviews completed
+                        </Text>
+                        <View style={styles.progressBar}>
+                          <View 
+                            style={[
+                              styles.progressFill,
+                              { 
+                                width: `${(job.stages_completed / job.interview_stages.length) * 100}%`,
+                                backgroundColor: getJobProgressColor(job.stages_completed, job.interview_stages.length)
+                              }
+                            ]} 
+                          />
+                        </View>
+                        <Text style={styles.interviewDate}>
+                          Created {formatDate(job.created_at)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            )}
+            
+            {/* Loading more indicator */}
+            {isFetchingNextPage && (
+              <View style={styles.loadingMore}>
+                <ActivityIndicator size="small" color="#A855F7" />
+                <Text style={styles.loadingMoreText}>Loading more jobs...</Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </View>
     </ChatGPTBackground>
   );
 }
@@ -342,7 +217,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
-  scrollView: {},
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -355,22 +229,32 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   headerTitle: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 32,
-    fontWeight: 'bold',
-    letterSpacing: -0.5,
+    fontWeight: '800',
+    letterSpacing: -0.02,
     marginBottom: 6,
+    fontFamily: Platform.OS === 'ios' ? 'SpaceGrotesk' : 'sans-serif',
   },
   headerSubtitle: {
-    color: '#9ca3af',
-    fontSize: 15,
-    lineHeight: 20,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '400',
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
   },
-  statusCard: {
-    padding: 20,
-    borderRadius: 16,
+
+  section: {
     marginBottom: 24,
+  },
+  emptyState: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    marginTop: 4,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -380,134 +264,72 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  createCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    ...GlassStyles.card,
-  },
-  createCardLeft: {
-    width: 56,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...GlassStyles.interactive,
-  },
-  createCardRight: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  createCardTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  emptyState: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    marginTop: 4,
-  },
-  enhancedEmptyState: {
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    marginTop: 4,
-  },
   emptyStateIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-  },
-  ctaContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-  },
-  ctaArrow: {
-    marginRight: 8,
-  },
-  ctaText: {
-    color: '#a855f7',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  emptyStateText: {
-    color: '#9ca3af',
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: 'center',
-    maxWidth: '80%',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   emptyStateTitle: {
-    color: '#ffffff',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontSize: 20,
     fontWeight: '600',
-    marginTop: 12,
-    marginBottom: 4,
+    marginBottom: 8,
     textAlign: 'center',
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    letterSpacing: 0,
   },
   emptyStateSubtitle: {
-    color: '#9ca3af',
-    fontSize: 13,
-    lineHeight: 18,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    lineHeight: 20,
     textAlign: 'center',
-    marginTop: 4,
-    paddingHorizontal: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    fontWeight: '400',
   },
   interviewCard: {
-    ...GlassStyles.card,
-    borderRadius: 12,
-    marginBottom: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 16,
+    marginBottom: 12,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      }
+    }),
   },
   interviewCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingVertical: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     minHeight: 80,
     gap: 16,
   },
   cardLeftAccent: {
     width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)'
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   companyLogo: {
     width: 32,
     height: 32,
-    borderRadius: 6,
+    borderRadius: 8,
     backgroundColor: '#ffffff',
   },
   interviewCardMain: {
@@ -515,12 +337,14 @@ const styles = StyleSheet.create({
     minWidth: 0, // Ensures text truncation works properly
   },
   interviewTitle: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 18,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 22,
     flexShrink: 1,
     marginBottom: 8,
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    letterSpacing: 0,
   },
   interviewCompany: {
     flexDirection: 'row',
@@ -530,133 +354,76 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   companyText: {
-    color: '#d1d5db',
-    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 14,
     fontWeight: '500',
     lineHeight: 18,
-    marginLeft: 4,
+    marginLeft: 6,
     flexShrink: 1,
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    letterSpacing: 0.01,
   },
   interviewLocation: {
     flexDirection: 'row',
     alignItems: 'center',
     flexShrink: 1,
     minWidth: 0,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   locationText: {
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 12,
     fontWeight: '500',
     lineHeight: 16,
-    marginLeft: 4,
+    marginLeft: 6,
     flexShrink: 1,
-  },
-  interviewBottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  difficultyText: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-    flexShrink: 0,
-  },
-  metaSeparator: {
-    color: '#6b7280',
-    fontSize: 14,
-    marginHorizontal: 4,
-    lineHeight: 18,
-    flexShrink: 0,
-  },
-  interviewType: {
-    color: '#9ca3af',
-    fontSize: 12,
-    lineHeight: 16,
-    textTransform: 'capitalize',
-    flexShrink: 1,
-  },
-  interviewCardRight: {
-    flexShrink: 0,
-    alignSelf: 'flex-start',
-    marginTop: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    letterSpacing: 0.02,
   },
   interviewDate: {
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.55)',
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 16,
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    letterSpacing: 0.02,
   },
 
-  // Embedded CV Upload Styles
-  uploadContainer: {
-    marginBottom: 32,
+  progressContainer: {
+    marginTop: 8,
   },
-  uploadArea: {
-    backgroundColor: 'rgba(55, 65, 81, 0.6)',
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    borderRadius: 20,
-    padding: 32,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  uploadAreaDisabled: {
-    opacity: 0.5,
-  },
-  uploadIconContainer: {
-    marginBottom: 16,
-  },
-  uploadTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  uploadSubtitle: {
+  progressText: {
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
-    maxWidth: 250,
-  },
-  uploadButton: {
-    backgroundColor: '#8b5cf6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 16,
-  },
-  uploadButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  formatHint: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  trustIndicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-  },
-  trustItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  trustText: {
-    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 12,
     fontWeight: '500',
+    marginBottom: 8,
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    letterSpacing: 0.02,
   },
-
+  progressBar: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  loadingMore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 24,
+    gap: 12,
+  },
+  loadingMoreText: {
+    color: '#A855F7',
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+    letterSpacing: 0.01,
+  },
 });
 

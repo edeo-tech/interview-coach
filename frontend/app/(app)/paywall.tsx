@@ -14,11 +14,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import Purchases, { PurchasesOffering, PurchasesPackage, CustomerInfo } from 'react-native-purchases';
 import { useToast } from '../../components/Toast';
 import { useCustomerInfo } from '../../context/purchases/CustomerInfo';
+import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
 
 type PaywallSource = 'retry' | 'feedback' | 'settings' | string;
 
@@ -32,6 +36,7 @@ interface OfferingCardProps {
 
 const Paywall = () => {
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { impactAsync, notificationAsync } = useHapticsSafely();
   const { showToast } = useToast();
   const { setCustomerInfo } = useCustomerInfo();
   const params = useLocalSearchParams();
@@ -229,7 +234,11 @@ const Paywall = () => {
         styles.offeringCard,
         isSelected && styles.offeringCardSelected
       ]}
-      onPress={onSelect}
+      onPress={() => {
+        // Medium impact for subscription plan selection - important choice
+        useHapticsSafely().impactAsync(ImpactFeedbackStyle.Medium);
+        onSelect();
+      }}
       activeOpacity={0.8}
     >
       <View style={styles.offeringCardContent}>
@@ -247,6 +256,8 @@ const Paywall = () => {
                 style={styles.infoIcon}
                 onPress={(e) => {
                   e.stopPropagation();
+                  // Light impact for info button - minor action
+                  impactAsync(ImpactFeedbackStyle.Light);
                   setIsPopularModalVisible(true);
                 }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -293,7 +304,11 @@ const Paywall = () => {
           <View style={styles.modalHeader}>
             <TouchableOpacity
               style={styles.modalCloseButton}
-              onPress={() => setIsPopularModalVisible(false)}
+              onPress={() => {
+                // Light impact for modal close - minor action
+                impactAsync(ImpactFeedbackStyle.Light);
+                setIsPopularModalVisible(false);
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name="close" size={20} color="#6b7280" />
@@ -312,7 +327,7 @@ const Paywall = () => {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#F59E0B" />
+            <ActivityIndicator size="large" color="#A855F7" />
             <Text style={styles.loadingText}>Loading subscription options...</Text>
           </View>
         </SafeAreaView>
@@ -344,6 +359,8 @@ const Paywall = () => {
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => {
+              // Light impact for navigation back - minor action
+              impactAsync(ImpactFeedbackStyle.Light);
               if (source === 'onboarding') {
                 router.replace('/(app)/(tabs)/home');
               } else {
@@ -368,7 +385,7 @@ const Paywall = () => {
                 <Ionicons 
                   name={benefit.icon as any} 
                   size={24} 
-                  color={benefit.highlight || index === 0 ? '#F59E0B' : '#ffffff'} 
+                  color={benefit.highlight || index === 0 ? '#A855F7' : '#ffffff'} 
                 />
                 <Text style={[
                   styles.benefitText,
@@ -410,19 +427,34 @@ const Paywall = () => {
               styles.continueButton,
               (isPurchasing || !selectedPackage) && styles.continueButtonDisabled
             ]}
-            onPress={handlePurchase}
+            onPress={() => {
+              // Heavy impact for purchase - critical financial action
+              impactAsync(ImpactFeedbackStyle.Heavy);
+              handlePurchase();
+            }}
             disabled={isPurchasing || !selectedPackage}
           >
-            {isPurchasing ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <Text style={styles.continueButtonText}>Continue</Text>
-            )}
+            <LinearGradient
+              colors={["#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.continueButtonInner}
+            >
+              {isPurchasing ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={styles.continueButtonText}>Continue</Text>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.restoreButton}
-            onPress={handleRestore}
+            onPress={() => {
+              // Medium impact for restore - important but not critical
+              impactAsync(ImpactFeedbackStyle.Medium);
+              handleRestore();
+            }}
             disabled={isRestoring || isPurchasing}
           >
             {isRestoring ? (
@@ -461,7 +493,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 16,
     marginTop: 16,
   },
@@ -475,14 +507,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mainTitle: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    color: '#9ca3af',
+    color: GlassTextColors.muted,
     fontSize: 16,
     textAlign: 'center',
   },
@@ -490,7 +522,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   benefitsTitle: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
@@ -502,29 +534,28 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   benefitText: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 18,
     marginLeft: 16,
     flex: 1,
   },
   benefitTextHighlight: {
-    color: '#F59E0B',
+    color: '#A855F7',
     fontWeight: '600',
   },
   offeringsContainer: {
     marginBottom: 20,
   },
   offeringCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
+    ...GlassStyles.container,
     padding: 20,
     marginBottom: 16,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   offeringCardSelected: {
-    borderColor: '#F59E0B',
-    backgroundColor: 'rgba(245,158,11,0.1)',
+    borderColor: '#A855F7',
+    backgroundColor: 'rgba(168, 85, 247, 0.1)',
   },
   offeringCardContent: {
     position: 'relative',
@@ -533,25 +564,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   offeringTitle: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: Platform.OS === 'ios' ? 16 : 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   offeringTitleSelected: {
-    color: '#F59E0B',
+    color: '#A855F7',
   },
   offeringPrice: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: Platform.OS === 'ios' ? 20 : 18,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   offeringPriceSelected: {
-    color: '#F59E0B',
+    color: '#A855F7',
   },
   offeringDescription: {
-    color: '#9ca3af',
+    color: GlassTextColors.muted,
     fontSize: Platform.OS === 'ios' ? 14 : 12,
   },
   offeringDescriptionSelected: {
@@ -581,7 +612,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#A855F7',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -596,18 +627,16 @@ const styles = StyleSheet.create({
     paddingBottom: 20
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 100,
-    paddingVertical: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 28,
+    padding: 2,
+    height: 56,
     marginTop: 20,
     marginBottom: 16,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
+        shadowColor: '#A855F7',
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
         shadowOffset: { width: 0, height: 4 },
       }
     })
@@ -615,8 +644,15 @@ const styles = StyleSheet.create({
   continueButtonDisabled: {
     opacity: 0.6,
   },
+  continueButtonInner: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 28,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   continueButtonText: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -625,7 +661,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   restoreButtonText: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 15,
     fontWeight: '500',
   },
@@ -638,19 +674,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   modalContent: {
-    backgroundColor: '#1f2937',
-    borderRadius: 16,
+    ...GlassStyles.card,
     padding: 12,
     width: '100%',
     maxWidth: 280,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.25,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 4 },
-      }
-    }),
   },
   modalHeader: {
     flexDirection: 'row',
@@ -661,7 +688,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     flex: 1,
   },
   modalCloseButton: {
@@ -669,7 +696,7 @@ const styles = StyleSheet.create({
   },
   modalMessage: {
     fontSize: 16,
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     lineHeight: 24,
     textAlign: 'center',
     paddingHorizontal: 32,

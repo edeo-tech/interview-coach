@@ -1,19 +1,22 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useToast } from '@/components/Toast';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useInterviews } from '../../../_queries/interviews/interviews';
+import { useUserJobs } from '../../../_queries/jobs/jobs';
 import { useCV } from '../../../_queries/interviews/cv';
 import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
-import { GlassStyles } from '../../../constants/GlassStyles';
 
-const StatCard = ({ icon, label, value, color = '#F59E0B' }: any) => (
+const StatCard = ({ icon, label, value, color = '#A855F7' }: any) => (
     <View style={styles.statCard}>
-        <Ionicons name={icon} size={24} color={color} />
+        <View style={styles.statIconContainer}>
+            <Ionicons name={icon} size={24} color={color} />
+        </View>
         <Text style={styles.statValue}>{value}</Text>
         <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -44,21 +47,29 @@ const getScoreIconAndColor = (score: number | null | string) => {
 };
 
 const MenuItem = ({ icon, label, onPress }: any) => (
-    <Pressable style={styles.menuItem} onPress={onPress}>
-        <Ionicons name={icon} size={24} color="#6B7280" />
+    <TouchableOpacity style={styles.menuItem} onPress={() => {
+        // Light impact for menu navigation - minor action
+        useHapticsSafely().impactAsync(ImpactFeedbackStyle.Light);
+        onPress();
+    }} activeOpacity={0.8}>
+        <View style={styles.menuIconContainer}>
+            <Ionicons name={icon} size={20} color="rgba(255, 255, 255, 0.7)" />
+        </View>
         <Text style={styles.menuLabel}>{label}</Text>
-        <Ionicons name="chevron-forward" size={20} color="#6B7280" />
-    </Pressable>
+        <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
+    </TouchableOpacity>
 );
 
 export default function Profile() {
     const { auth, logout, logoutLoading, logoutSuccess, logoutErrorMessage, clearLogoutError, resetLogout } = useAuth();
     const { showToast } = useToast();
     const router = useRouter();
-    const { data: interviews } = useInterviews();
+    const { data: jobsData } = useUserJobs(5); // Only fetch 5 for profile display
+    const jobs = jobsData?.pages[0]?.jobs || [];
     const { data: currentCV } = useCV();
     const { data: userStats } = useUserStats();
     const { posthogScreen, posthogCapture } = usePosthogSafely();
+    const { impactAsync, selectionAsync } = useHapticsSafely();
 
     useFocusEffect(
         React.useCallback(() => {
@@ -84,13 +95,13 @@ export default function Profile() {
     };
 
     const getIndustryRole = () => {
-        if (!interviews || interviews.length === 0) {
+        if (!jobs || jobs.length === 0) {
             return 'Industry / Role: Not specified';
         }
         
-        // Get the most recent interview to determine target role
-        const latestInterview = interviews[0];
-        const roleTitle = latestInterview.role_title || 'Software Engineer';
+        // Get the most recent job to determine target role
+        const latestJob = jobs[0];
+        const roleTitle = latestJob.role_title || 'Software Engineer';
         
         // Extract industry from company or role title
         let industry = 'Tech';
@@ -148,18 +159,18 @@ export default function Profile() {
         name: auth?.name || 'User',
         email: auth?.email || 'user@example.com',
         joinedDate: getMemberSinceDate(),
-        totalInterviews: interviews?.length || 0,
+        totalInterviews: userStats?.total_attempts || 0,
         averageScore: getAverageScoreDisplay(),
         streak: auth?.streak || 0,
         rank: 'Advanced',
     };
 
-    const handleInterviewPress = (interviewId: string) => {
-        posthogCapture('view_interview_details', {
+    const handleJobPress = (jobId: string) => {
+        posthogCapture('view_job_details', {
             source: 'profile',
-            interview_id: interviewId
+            job_id: jobId
         });
-        router.push(`/interviews/${interviewId}/details` as any);
+        router.push(`/jobs/${jobId}` as any);
     };
 
     const handleLogout = () => {
@@ -177,7 +188,7 @@ export default function Profile() {
                     onPress: async () => {
                         try {
                             posthogCapture('user_logout', {
-                                total_interviews: interviews?.length || 0,
+                                total_interviews: userStats?.total_attempts || 0,
                                 has_cv: !!currentCV,
                                 user_rank: user.rank
                             });
@@ -212,7 +223,7 @@ export default function Profile() {
                     <Text style={styles.profileDetailValue}>{getExperienceText()}</Text>
                 </View>
                 <View style={styles.rankBadge}>
-                    <Ionicons name="trophy" size={16} color="#F59E0B" />
+                    <Ionicons name="trophy" size={16} color="#A855F7" />
                     <Text style={styles.rankText}>{user.rank}</Text>
                 </View>
             </View>
@@ -221,15 +232,18 @@ export default function Profile() {
                 <TouchableOpacity 
                     style={styles.cvContainer} 
                     onPress={() => {
+                        // Medium impact for CV upload - important profile action
+                        impactAsync(ImpactFeedbackStyle.Medium);
                         posthogCapture('navigate_to_cv_upload', {
                             source: 'profile',
                             has_existing_cv: !!currentCV
                         });
                         router.push('/interviews/cv-upload');
                     }}
+                    activeOpacity={0.9}
                 >
                     <View style={styles.cvLeft}>
-                        <Ionicons name="document-text" size={28} color={currentCV ? "#10B981" : "#F59E0B"} />
+                        <Ionicons name="document-text" size={28} color={currentCV ? "#10B981" : "#A855F7"} />
                     </View>
                     <View style={styles.cvInfo}>
                         <Text style={styles.cvTitle}>
@@ -242,7 +256,7 @@ export default function Profile() {
                             }
                         </Text>
                     </View>
-                    <Ionicons name="create-outline" size={22} color="#FFFFFF" />
+                    <Ionicons name="create-outline" size={22} color="rgba(255, 255, 255, 0.7)" />
                 </TouchableOpacity>
             </View>
 
@@ -251,7 +265,7 @@ export default function Profile() {
                     icon="bar-chart"
                     label="Total Interviews"
                     value={user.totalInterviews}
-                    color="#F59E0B"
+                    color="#A855F7"
                 />
                 <StatCard
                     icon={getScoreIconAndColor(user.averageScore).icon}
@@ -268,48 +282,46 @@ export default function Profile() {
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Interview History</Text>
+                <Text style={styles.sectionTitle}>Job History</Text>
                 <View style={styles.menuContainer}>
-                    {(!interviews || interviews.length === 0) ? (
+                    {(!jobs || jobs.length === 0) ? (
                         <View style={styles.emptyState}>
-                            <Ionicons name="chatbubble-outline" size={32} color="#6b7280" />
-                            <Text style={styles.emptyStateText}>No practice interviews yet</Text>
-                            <Text style={styles.emptyStateSubtext}>Start your first mock interview to see it here</Text>
+                            <View style={styles.emptyStateIcon}>
+                                <Ionicons name="briefcase-outline" size={32} color="rgba(255, 255, 255, 0.7)" />
+                            </View>
+                            <Text style={styles.emptyStateText}>No job applications yet</Text>
+                            <Text style={styles.emptyStateSubtext}>Add your first job to start practicing interviews</Text>
                         </View>
                     ) : (
-                        interviews.slice(0, 5).map((interview) => (
+                        jobs.map((job) => (
                             <TouchableOpacity
-                                key={interview.id}
-                                onPress={() => handleInterviewPress(interview.id)}
-                                style={styles.interviewItem}
+                                key={job._id}
+                                onPress={() => {
+                                    // Selection haptic for job history items
+                                    selectionAsync();
+                                    handleJobPress(job._id);
+                                }}
+                                style={styles.jobItem}
+                                activeOpacity={0.8}
                             >
-                                <View style={styles.interviewIcon}>
-                                    <Ionicons name="briefcase" size={16} color="#F59E0B" />
+                                <View style={styles.jobIcon}>
+                                    <Ionicons name="briefcase" size={16} color="#A855F7" />
                                 </View>
-                                <View style={styles.interviewInfo}>
-                                    <Text style={styles.interviewTitle}>{interview.role_title}</Text>
-                                    <Text style={styles.interviewCompany}>{interview.company}</Text>
-                                    <Text style={styles.interviewDate}>{formatDate(interview.created_at)}</Text>
+                                <View style={styles.jobInfo}>
+                                    <Text style={styles.jobTitle}>{job.role_title}</Text>
+                                    <Text style={styles.jobCompany}>{job.company}</Text>
+                                    <View style={styles.jobMetaContainer}>
+                                        <Text style={styles.jobLocation}>{job.location}</Text>
+                                        <Text style={styles.jobDate}>• {formatDate(job.created_at)}</Text>
+                                    </View>
                                 </View>
-                                <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+                                <View style={styles.jobStatusContainer}>
+                                    <Text style={styles.jobStatus}>{job.status}</Text>
+                                    <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
+                                </View>
                             </TouchableOpacity>
                         ))
                     )}
-                    {/* {interviews && interviews.length > 5 && (
-                        <TouchableOpacity 
-                            style={styles.viewAllButton}
-                            onPress={() => {
-                                posthogCapture('view_all_interviews', {
-                                    source: 'profile',
-                                    total_interviews: interviews.length
-                                });
-                                router.push('/interviews/index' as any);
-                            }}
-                        >
-                            <Text style={styles.viewAllText}>View all {interviews.length} interviews</Text>
-                            <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
-                        </TouchableOpacity>
-                    )} */}
                 </View>
             </View>
 
@@ -339,14 +351,19 @@ export default function Profile() {
                 </View>
             </View>
 
-            <Pressable 
+            <TouchableOpacity 
                 style={[styles.logoutButton, logoutLoading && styles.logoutButtonDisabled]} 
-                onPress={handleLogout} 
+                onPress={() => {
+                    // Heavy impact for logout - critical destructive action
+                    impactAsync(ImpactFeedbackStyle.Heavy);
+                    handleLogout();
+                }} 
                 disabled={logoutLoading}
+                activeOpacity={0.8}
             >
                 <Ionicons name="log-out-outline" size={20} color="#EF4444" />
                 <Text style={styles.logoutText}>{logoutLoading ? 'Logging Out...' : 'Log Out'}</Text>
-            </Pressable>
+            </TouchableOpacity>
 
             <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
         </ScrollView>
@@ -372,53 +389,63 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     name: {
-        fontSize: 28,
-        fontFamily: 'Inter_700Bold',
-        color: '#fff',
+        fontSize: 32,
+        fontWeight: '800',
+        color: '#FFFFFF',
         marginBottom: 8,
         marginTop: 8,
+        fontFamily: Platform.OS === 'ios' ? 'SpaceGrotesk' : 'sans-serif',
+        letterSpacing: -0.02,
     },
     email: {
         fontSize: 16,
-        fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
-        marginBottom: 8,
+        fontWeight: '400',
+        color: 'rgba(255, 255, 255, 0.7)',
+        marginBottom: 16,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        lineHeight: 24,
     },
     profileDetailContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 6,
+        marginBottom: 8,
         paddingHorizontal: 20,
     },
     profileDetailLabel: {
         fontSize: 14,
-        fontFamily: 'Inter_500Medium',
-        color: '#6B7280',
+        fontWeight: '500',
+        color: 'rgba(255, 255, 255, 0.7)',
         marginRight: 8,
         minWidth: 80,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.01,
     },
     profileDetailValue: {
         fontSize: 14,
-        fontFamily: 'Inter_600SemiBold',
-        color: '#F59E0B',
+        fontWeight: '600',
+        color: '#A855F7',
         flex: 1,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0,
     },
     rankBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'rgba(168, 85, 247, 0.15)',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: 'rgba(168, 85, 247, 0.3)',
         gap: 6,
-        marginTop: 8,
+        marginTop: 12,
     },
     rankText: {
         fontSize: 14,
-        fontFamily: 'Inter_600SemiBold',
-        color: '#F59E0B',
+        fontWeight: '600',
+        color: '#A855F7',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.01,
     },
     statsContainer: {
         flexDirection: 'row',
@@ -428,146 +455,240 @@ const styles = StyleSheet.create({
     },
     statCard: {
         alignItems: 'center',
-        ...GlassStyles.card,
-        padding: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: 16,
+        padding: 20,
         flex: 1,
         marginHorizontal: 6,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            }
+        }),
+    },
+    statIconContainer: {
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     statValue: {
-        fontSize: 20,
-        fontFamily: 'Inter_700Bold',
-        color: '#fff',
-        marginTop: 8,
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#FFFFFF',
         marginBottom: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0,
     },
     statLabel: {
         fontSize: 12,
-        fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        fontWeight: '500',
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.02,
     },
     section: {
         paddingHorizontal: 20,
         marginBottom: 24,
     },
     sectionTitle: {
-        fontSize: 18,
-        fontFamily: 'Inter_600SemiBold',
-        color: '#fff',
-        marginBottom: 12,
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#FFFFFF',
+        marginBottom: 16,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0,
     },
     menuContainer: {
-        ...GlassStyles.container,
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)',
         borderRadius: 16,
         overflow: 'hidden',
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            }
+        }),
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.08)',
+        borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    },
+    menuIconContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     menuLabel: {
         flex: 1,
         fontSize: 16,
-        fontFamily: 'Inter_500Medium',
-        color: '#fff',
-        marginLeft: 12,
+        fontWeight: '500',
+        color: '#FFFFFF',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0,
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: 'rgba(239, 68, 68, 0.15)',
         marginHorizontal: 20,
         marginBottom: 16,
         padding: 16,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: 'rgba(239,68,68,0.45)',
+        borderColor: 'rgba(239, 68, 68, 0.3)',
         gap: 8,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#EF4444',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            }
+        }),
     },
     logoutButtonDisabled: {
         opacity: 0.6,
     },
     logoutText: {
         fontSize: 16,
-        fontFamily: 'Inter_600SemiBold',
+        fontWeight: '600',
         color: '#EF4444',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.01,
     },
     joinedText: {
         textAlign: 'center',
         fontSize: 14,
-        fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        fontWeight: '400',
+        color: 'rgba(255, 255, 255, 0.55)',
         marginBottom: 40,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.02,
     },
     emptyState: {
         alignItems: 'center',
-        padding: 24,
+        padding: 32,
+    },
+    emptyStateIcon: {
+        width: 64,
+        height: 64,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     emptyStateText: {
-        fontSize: 16,
-        fontFamily: 'Inter_500Medium',
-        color: '#9CA3AF',
-        marginTop: 12,
-        marginBottom: 4,
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#FFFFFF',
+        marginBottom: 8,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0,
     },
     emptyStateSubtext: {
         fontSize: 14,
-        fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        fontWeight: '400',
+        color: 'rgba(255, 255, 255, 0.7)',
         textAlign: 'center',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        lineHeight: 20,
     },
-    interviewItem: {
+    jobItem: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.08)',
+        borderBottomColor: 'rgba(255, 255, 255, 0.08)',
     },
-    interviewIcon: {
+    jobIcon: {
         width: 32,
         height: 32,
-        borderRadius: 16,
-        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        borderRadius: 8,
+        backgroundColor: 'rgba(168, 85, 247, 0.15)',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(168, 85, 247, 0.3)',
     },
-    interviewInfo: {
+    jobInfo: {
         flex: 1,
     },
-    interviewTitle: {
+    jobTitle: {
         fontSize: 16,
-        fontFamily: 'Inter_600SemiBold',
-        color: '#fff',
-        marginBottom: 2,
+        fontWeight: '600',
+        color: '#FFFFFF',
+        marginBottom: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0,
     },
-    interviewCompany: {
+    jobCompany: {
         fontSize: 14,
-        fontFamily: 'Inter_400Regular',
-        color: '#9CA3AF',
-        marginBottom: 2,
+        fontWeight: '500',
+        color: 'rgba(255, 255, 255, 0.85)',
+        marginBottom: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        lineHeight: 18,
     },
-    interviewDate: {
-        fontSize: 12,
-        fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
-    },
-    viewAllButton: {
+    jobMetaContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: 16,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.08)',
     },
-    viewAllText: {
-        fontSize: 14,
-        fontFamily: 'Inter_500Medium',
-        color: '#F59E0B',
-        marginRight: 4,
+    jobLocation: {
+        fontSize: 12,
+        fontWeight: '400',
+        color: 'rgba(255, 255, 255, 0.55)',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.02,
+    },
+    jobDate: {
+        fontSize: 12,
+        fontWeight: '400',
+        color: 'rgba(255, 255, 255, 0.55)',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.02,
+        marginLeft: 4,
+    },
+    jobStatusContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    jobStatus: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#10B981',
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.02,
+        textTransform: 'capitalize',
     },
     cvSection: {
         paddingHorizontal: 20,
@@ -575,47 +696,50 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     cvContainer: {
-        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        backgroundColor: 'rgba(168, 85, 247, 0.15)',
         borderRadius: 20,
         borderWidth: 2,
-        borderColor: 'rgba(59, 130, 246, 0.3)',
+        borderColor: 'rgba(168, 85, 247, 0.3)',
         flexDirection: 'row',
         alignItems: 'center',
         padding: 20,
         ...Platform.select({
             ios: {
-                shadowColor: '#F59E0B',
+                shadowColor: '#A855F7',
                 shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 8,
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
             }
         }),
     },
     cvLeft: {
         width: 56,
         height: 56,
-        borderRadius: 28,
-        backgroundColor: 'rgba(59, 130, 246, 0.25)',
+        borderRadius: 16,
+        backgroundColor: 'rgba(168, 85, 247, 0.25)',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16,
         borderWidth: 2,
-        borderColor: 'rgba(59, 130, 246, 0.4)',
+        borderColor: 'rgba(168, 85, 247, 0.4)',
     },
     cvInfo: {
         flex: 1,
     },
     cvTitle: {
         fontSize: 18,
-        fontFamily: 'Inter_700Bold',
-        color: '#fff',
+        fontWeight: '700',
+        color: '#FFFFFF',
         marginBottom: 6,
-        letterSpacing: 0.3,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0,
     },
     cvSubtitle: {
-        fontSize: 15,
-        fontFamily: 'Inter_500Medium',
-        color: '#E5E7EB',
+        fontSize: 14,
+        fontWeight: '500',
+        color: 'rgba(255, 255, 255, 0.85)',
         lineHeight: 20,
+        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
+        letterSpacing: 0.01,
     },
 });

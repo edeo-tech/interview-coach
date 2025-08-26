@@ -63,6 +63,15 @@ export interface AttemptsCountResponse {
   has_attempts: boolean;
 }
 
+export interface PaginatedAttemptsResponse {
+  attempts: InterviewAttempt[];
+  has_more: boolean;
+  total_count: number;
+  current_page_size: number;
+  page_number: number;
+  page_size: number;
+}
+
 export const interviewsApi = {
   // Interview management
   createFromURL: (data: CreateInterviewFromURLRequest) => 
@@ -77,14 +86,21 @@ export const interviewsApi = {
     });
   },
   
-  list: () => 
-    protectedApi.get<Interview[]>('/app/interviews/'),
+  list: (limit?: number) => 
+    protectedApi.get<Interview[]>('/app/interviews/', {
+      params: limit ? { limit } : {}
+    }),
   
   get: (interviewId: string) =>
     protectedApi.get<InterviewWithAttempts>(`/app/interviews/${interviewId}`),
 
   getAttemptsCount: (interviewId: string) =>
     protectedApi.get<AttemptsCountResponse>(`/app/interviews/${interviewId}/attempts-count`),
+
+  getAttemptsPaginated: (interviewId: string, pageSize: number = 10, pageNumber: number = 1) =>
+    protectedApi.get<PaginatedAttemptsResponse>(`/app/interviews/${interviewId}/attempts`, {
+      params: { page_size: pageSize, page_number: pageNumber }
+    }),
 
   // Interview attempts
   startAttempt: (interviewId: string) =>

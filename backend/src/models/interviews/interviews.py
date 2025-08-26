@@ -1,30 +1,35 @@
 from models._base import MongoBaseModel
 from typing import List, Dict, Optional, Any
+from models.interviews.interview_types import InterviewType
+
 
 class Interview(MongoBaseModel):
+    job_id: str  # Links to parent job
     user_id: str
     
-    # Company and role information
-    company: str
-    role_title: str
+    # Interview stage information
+    interview_type: InterviewType
+    stage_order: int  # Position in the interview sequence (0-based)
+    status: str = "pending"  # pending/active/completed
+    
+    # Interview-specific configuration
+    difficulty: str = "mid"  # easy/mid/hard
+    focus_areas: List[str] = []  # Interview-specific focus areas
+    
+    # Metadata
+    total_attempts: int = 0
+    last_attempt_date: Optional[str] = None
+    
+    # Legacy fields for backward compatibility during migration
+    company: Optional[str] = None
+    role_title: Optional[str] = None
     company_logo_url: Optional[str] = None
-    location: str = ""
-    employment_type: str = "full-time"
-    experience_level: str = "mid"  # junior/mid/senior/lead/principal
-    salary_range: str = ""
-    
-    # Job description data
-    jd_raw: str = ""  # Raw job description text
-    job_description: Dict[str, Any] = {}  # Full structured JD from OpenAI
-    
-    # Interview configuration
-    difficulty: str = "mid"  # Computed from experience_level
-    interview_type: str = "technical"  # technical/behavioral/leadership/sales
-    focus_areas: List[str] = []  # Extracted from tech_stack
-    
-    # Source information
-    source_type: str = "file"  # url/file
-    source_url: Optional[str] = None  # If from URL
-    
-    # Legacy field for backward compatibility
-    jd_structured: Dict = {}  # Alias for job_description
+    location: Optional[str] = None
+    employment_type: Optional[str] = None
+    experience_level: Optional[str] = None
+    salary_range: Optional[str] = None
+    jd_raw: Optional[str] = None
+    job_description: Optional[Dict[str, Any]] = None
+    source_type: Optional[str] = None
+    source_url: Optional[str] = None
+    jd_structured: Optional[Dict] = None

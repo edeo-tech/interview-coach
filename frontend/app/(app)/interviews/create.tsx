@@ -6,16 +6,15 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import JobLinkProgress from '../../../components/JobLinkProgress';
 import * as DocumentPicker from 'expo-document-picker';
-import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
+import { useCreateJobFromURL } from '../../../_queries/jobs/jobs';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
+import { useToast } from '../../../components/Toast';
 
-type InterviewType = 'technical' | 'behavioral' | 'leadership' | 'sales';
 
-export default function CreateInterview() {
+export default function CreateJob() {
   const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
-  const [interviewType, setInterviewType] = useState<InterviewType>('technical');
   const [jobUrl, setJobUrl] = useState('');
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
@@ -25,15 +24,16 @@ export default function CreateInterview() {
   
   const { data: currentCV, isLoading: cvLoading } = useCV();
   const uploadCV = useUploadCV();
-  const createFromURL = useCreateInterviewFromURL();
+  const createFromURL = useCreateJobFromURL();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { showToast } = useToast();
   
   const isLoading = createFromURL.isPending || uploadCV.isPending;
 
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'web') return;
-      posthogScreen('interview_create');
+      posthogScreen('job_create');
     }, [posthogScreen])
   );
 
@@ -80,7 +80,7 @@ export default function CreateInterview() {
         setSelectedCVFile(result.assets[0]);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to select CV file');
+      showToast('Unable to select CV file. Please try again.', 'error');
     }
   };
 
@@ -104,9 +104,8 @@ export default function CreateInterview() {
         file_type: selectedCVFile.mimeType || 'unknown',
         file_size_kb: selectedCVFile.size ? Math.round(selectedCVFile.size / 1024) : null
       });
-      Alert.alert('Success!', 'Your CV has been uploaded successfully.', [
-        { text: 'Continue', onPress: () => setCurrentStep('job') }
-      ]);
+      showToast('CV uploaded successfully', 'success');
+      setCurrentStep('job');
       
     } catch (error: any) {
       posthogCapture('cv_upload_failed', {
@@ -114,10 +113,7 @@ export default function CreateInterview() {
         error_message: error.response?.data?.detail || error.message,
         file_type: selectedCVFile.mimeType || 'unknown'
       });
-      Alert.alert(
-        'Upload Error', 
-        error.response?.data?.detail || 'Failed to upload CV. Please try again.'
-      );
+      showToast('Problem uploading CV. Please try again.', 'error');
     }
   };
 
@@ -140,41 +136,39 @@ export default function CreateInterview() {
     try {
       const result = await createFromURL.mutateAsync({
         job_url: cleanedUrl,
-        interview_type: interviewType,
       });
       
-      posthogCapture('interview_created', {
+      posthogCapture('job_created', {
         method: 'url',
         has_cv: !!currentCV,
-        job_url_domain: new URL(cleanedUrl).hostname,
-        interview_type: interviewType
+        job_url_domain: new URL(cleanedUrl).hostname
       });
       
-      console.log('Interview created from URL:', result.data);
+      console.log('Job created from URL:', result);
       
       // Store the result for navigation after progress completes
-      (window as any).pendingInterviewResult = result.data;
+      (window as any).pendingJobResult = result;
       
     } catch (error: any) {
       // Hide progress modal on error
       setShowProgressModal(false);
       
-      posthogCapture('interview_creation_failed', {
+      posthogCapture('job_creation_failed', {
         method: 'url',
         error_message: error.response?.data?.detail || error.message,
-        interview_type: interviewType
+        has_cv: !!currentCV
       });
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview from URL');
+      showToast('Unable to process job link. Please try again.', 'error');
     }
   };
 
   const handleProgressComplete = () => {
-    // Navigate to the interview details page
-    const result = (window as any).pendingInterviewResult;
-    if (result) {
-      router.push(`/interviews/${result.id}/details` as any);
+    // Navigate to the job details page
+    const result = (window as any).pendingJobResult;
+    if (result && result.job) {
+      router.push(`/jobs/${result.job._id}` as any);
       // Clean up the stored result
-      delete (window as any).pendingInterviewResult;
+      delete (window as any).pendingJobResult;
     } else {
       // Fallback: navigate back to home
       router.push('/home');
@@ -215,7 +209,7 @@ export default function CreateInterview() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
             {currentStep === 'cv' ? 'Upload Your CV' : 
-             currentCV ? 'Job Details' : 'Create New Interview'}
+             currentCV ? 'Job Details' : 'Add New Job'}
           </Text>
         </View>
 
@@ -340,7 +334,7 @@ export default function CreateInterview() {
                 ) : (
                   <>
                     <Ionicons name="add-circle" size={24} color="white" />
-                    <Text style={styles.submitText}>Create Interview</Text>
+                    <Text style={styles.submitText}>Create Job</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -377,7 +371,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   scrollViewContent: {
     paddingBottom: 100, // Extra space at bottom for keyboard
@@ -385,58 +379,65 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 20, // spacing.5
   },
   headerTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginLeft: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 20, // typography.heading.h3.fontSize
+    fontWeight: '600', // typography.heading.h3.fontWeight
+    marginLeft: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h3.fontFamily
   },
   inputTypeContainer: {
     flexDirection: 'row',
-    backgroundColor: '#1f2937',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.background
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 4, // spacing.1
+    marginBottom: 24, // spacing.6
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)', // glassSecondary.border
   },
   inputTypeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    borderRadius: 8,
+    padding: 12, // spacing.3
+    borderRadius: 8, // borderRadius.default
   },
   inputTypeButtonActive: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: 'rgba(252, 180, 0, 0.2)', // gold.400 with opacity
   },
   inputTypeText: {
-    color: '#9ca3af',
-    marginLeft: 8,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    marginLeft: 8, // spacing.2
+    fontWeight: '600', // typography.label.medium.fontWeight
+    fontSize: 14, // typography.label.medium.fontSize
+    fontFamily: 'Inter', // typography.label.medium.fontFamily
   },
   inputTypeTextActive: {
-    color: '#ffffff',
+    color: '#FFFFFF', // text.primary
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 24, // spacing.6
   },
   urlInput: {
-    backgroundColor: '#1f2937',
-    borderRadius: 12,
-    padding: 16,
-    color: '#ffffff',
-    fontSize: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    borderRadius: 12, // glassInput.borderRadius
+    padding: 16, // spacing.4
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.body.medium.fontSize
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
+    height: 56, // layout.inputHeight.medium
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   fileButton: {
-    backgroundColor: '#1f2937',
-    borderRadius: 12,
-    padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    borderRadius: 12, // glassInput.borderRadius
+    padding: 24, // spacing.6
     borderWidth: 2,
-    borderColor: '#374151',
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
     borderStyle: 'dashed',
   },
   selectedFileContainer: {
@@ -445,139 +446,163 @@ const styles = StyleSheet.create({
   },
   fileInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 12, // spacing.3
   },
   fileName: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '500',
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.body.medium.fontSize
+    fontWeight: '500', // typography.label.large.fontWeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   fileSize: {
-    color: '#9ca3af',
-    fontSize: 14,
-    marginTop: 2,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 14, // typography.body.small.fontSize
+    marginTop: 2, // spacing.0.5
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   uploadPrompt: {
     alignItems: 'center',
   },
   uploadText: {
-    color: '#9ca3af',
-    fontSize: 16,
-    marginTop: 8,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 16, // typography.body.medium.fontSize
+    marginTop: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   submitButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    padding: 16,
+    // Primary button with gradient border effect
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glass-like transparent fill
+    borderRadius: 28, // Fully rounded (height/2 = 56/2 = 28)
+    padding: 16, // spacing.4
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: 24, // spacing.6
+    height: 56, // layout.buttonHeight.medium
+    borderWidth: 2,
+    borderColor: 'rgba(168, 85, 247, 0.4)', // purple.400 with opacity for gradient effect
+    shadowColor: '#A855F7', // purple.400
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8, // Android shadow
   },
   submitButtonDisabled: {
-    backgroundColor: '#374151',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)', // glassInteractive.disabled.background
+    borderColor: 'rgba(255, 255, 255, 0.08)', // glassInteractive.disabled.border
+    shadowOpacity: 0,
+    elevation: 0,
   },
   submitText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginLeft: 8,
+    color: '#FFFFFF', // text.primary
+    fontSize: 18, // typography.button.large.fontSize
+    fontWeight: '600', // typography.button.large.fontWeight
+    marginLeft: 8, // spacing.2
+    fontFamily: 'Inter', // typography.button.large.fontFamily
+    letterSpacing: 0.005, // typography.button.large.letterSpacing
   },
   cvStatusCard: {
-    backgroundColor: 'rgba(5, 46, 22, 0.15)',
-    borderColor: 'rgba(34, 197, 94, 0.25)',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)', // semantic.success.light
+    borderColor: 'rgba(34, 197, 94, 0.25)', // semantic.success.main with opacity
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
+    marginBottom: 24, // spacing.6
   },
   cvStatusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 8, // spacing.2
   },
   cvStatusTitle: {
-    color: '#10b981',
-    fontWeight: '600',
-    fontSize: 16,
-    marginLeft: 8,
+    color: 'rgba(34, 197, 94, 1)', // semantic.success.main
+    fontWeight: '600', // typography.label.large.fontWeight
+    fontSize: 16, // typography.label.large.fontSize
+    marginLeft: 8, // spacing.2
+    fontFamily: 'Inter', // typography.label.large.fontFamily
   },
   cvStatusDescription: {
-    color: '#d1d5db',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   infoBox: {
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)', // semantic.info.light
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
     flexDirection: 'row',
-    marginBottom: 24,
+    marginBottom: 24, // spacing.6
     borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
+    borderColor: 'rgba(59, 130, 246, 0.3)', // semantic.info.main with opacity
   },
   infoText: {
-    color: '#93c5fd',
-    fontSize: 14,
-    marginLeft: 12,
+    color: 'rgba(59, 130, 246, 1)', // semantic.info.main
+    fontSize: 14, // typography.body.small.fontSize
+    marginLeft: 12, // spacing.3
     flex: 1,
-    lineHeight: 20,
+    lineHeight: 20, // typography.body.small.lineHeight
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   sectionTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginBottom: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   interviewTypeContainer: {
     flexDirection: 'column',
-    gap: 12,
-    marginBottom: 16,
+    gap: 12, // spacing.3
+    marginBottom: 16, // spacing.4
   },
   interviewTypeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1f2937',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    borderRadius: 20, // borderRadius.lg
+    paddingHorizontal: 16, // spacing.4
+    paddingVertical: 14, // spacing.3.5
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
     justifyContent: 'center',
   },
   interviewTypeButtonWide: {
     width: '100%',
   },
   interviewTypeButtonActive: {
-    backgroundColor: '#F59E0B',
-    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(252, 180, 0, 0.2)', // gold.400 with opacity
+    borderColor: 'rgba(252, 180, 0, 0.4)', // gold.400 with opacity
   },
   interviewTypeText: {
-    color: '#9ca3af',
-    marginLeft: 8,
-    fontWeight: '600',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    marginLeft: 8, // spacing.2
+    fontWeight: '600', // typography.label.medium.fontWeight
+    fontSize: 14, // typography.label.medium.fontSize
+    fontFamily: 'Inter', // typography.label.medium.fontFamily
   },
   interviewTypeTextActive: {
-    color: '#ffffff',
+    color: '#FFFFFF', // text.primary
   },
   typeDescriptionContainer: {
-    backgroundColor: 'rgba(55, 65, 81, 0.5)',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)', // glassSecondary.background with lower opacity
+    borderRadius: 8, // borderRadius.default
+    padding: 12, // spacing.3
   },
   typeDescription: {
-    color: '#d1d5db',
-    fontSize: 14,
-    lineHeight: 20,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 14, // typography.body.small.fontSize
+    lineHeight: 20, // typography.body.small.lineHeight
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   typeDescriptionBold: {
     fontWeight: 'bold',
-    color: '#F59E0B',
+    color: 'rgba(252, 180, 0, 1)', // gold.400
   },
   instructionText: {
-    color: '#d1d5db',
-    fontSize: 16,
-    lineHeight: 24,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 16, // typography.body.medium.fontSize
+    lineHeight: 24, // typography.body.medium.lineHeight
     textAlign: 'left',
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
 });

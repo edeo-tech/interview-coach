@@ -9,7 +9,7 @@ import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 
 const InterviewsHome = () => {
-  const { data: interviews, isLoading: interviewsLoading } = useInterviews();
+  const { data: interviews, isLoading: interviewsLoading } = useInterviews(); // No limit for full interviews list
   const { data: cv } = useCV();
   const { posthogScreen } = usePosthogSafely();
 
@@ -51,10 +51,10 @@ const InterviewsHome = () => {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'junior': return 'text-green-400';
-      case 'mid': return 'text-yellow-400';
-      case 'senior': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'junior': return 'rgba(34, 197, 94, 1)'; // semantic.success.main
+      case 'mid': return 'rgba(252, 180, 0, 1)'; // gold.400
+      case 'senior': return 'rgba(239, 68, 68, 1)'; // semantic.error.main
+      default: return 'rgba(255, 255, 255, 0.55)'; // text.muted
     }
   };
 
@@ -69,20 +69,20 @@ const InterviewsHome = () => {
 
   return (
     <ChatGPTBackground style={{flex: 1}}>
-      <SafeAreaView className="flex-1">
-      <ScrollView className="flex-1 px-6">
+      <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
         {/* Header */}
-        <View className="flex-row justify-between items-center py-6">
+        <View style={styles.header}>
           <View>
-            <Text className="text-white text-2xl font-bold">Interviews</Text>
-            <Text className="text-gray-400 text-sm mt-1">
+            <Text style={styles.headerTitle}>Interviews</Text>
+            <Text style={styles.headerSubtitle}>
               Practice with AI-powered mock interviews
             </Text>
           </View>
           
           <TouchableOpacity
             onPress={() => router.push('/interviews/cv-upload')}
-            className="bg-gray-800 p-3 rounded-full"
+            style={styles.cvButton}
           >
             <Ionicons name="document-text" size={20} color="white" />
           </TouchableOpacity>
@@ -90,30 +90,30 @@ const InterviewsHome = () => {
 
         {/* CV Status */}
         {!cv && (
-          <View className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-4 mb-6">
-            <View className="flex-row items-center">
-              <Ionicons name="warning" size={20} color="#fbbf24" />
-              <Text className="text-yellow-400 font-medium ml-2">CV Required</Text>
+          <View style={styles.cvWarningCard}>
+            <View style={styles.cvWarningHeader}>
+              <Ionicons name="warning" size={20} color="rgba(252, 180, 0, 1)" />
+              <Text style={styles.cvWarningTitle}>CV Required</Text>
             </View>
-            <Text className="text-gray-300 mt-2 text-sm">
+            <Text style={styles.cvWarningText}>
               Upload your CV to get personalized interview questions and feedback.
             </Text>
             <TouchableOpacity 
               onPress={() => router.push('/interviews/cv-upload')}
-              className="mt-3"
+              style={styles.cvWarningButton}
             >
-              <Text className="text-yellow-400 font-medium">Upload CV →</Text>
+              <Text style={styles.cvWarningButtonText}>Upload CV →</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {cv && (
-          <View className="bg-green-900/20 border border-green-600/30 rounded-lg p-4 mb-6">
-            <View className="flex-row items-center">
-              <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <Text className="text-green-400 font-medium ml-2">Your CV</Text>
+          <View style={styles.cvSuccessCard}>
+            <View style={styles.cvSuccessHeader}>
+              <Ionicons name="checkmark-circle" size={20} color="rgba(34, 197, 94, 1)" />
+              <Text style={styles.cvSuccessTitle}>Your CV</Text>
             </View>
-            <Text className="text-gray-300 mt-1 text-sm">
+            <Text style={styles.cvSuccessText}>
               {cv.skills.length} skills • {cv.experience_years} years experience
             </Text>
           </View>
@@ -122,39 +122,39 @@ const InterviewsHome = () => {
         {/* New Interview Button */}
         <TouchableOpacity
           onPress={handleStartNewInterview}
-          className="bg-blue-600 rounded-lg p-4 mb-6 flex-row items-center justify-center"
+          style={styles.newInterviewButton}
         >
           <Ionicons name="add-circle" size={24} color="white" />
-          <Text className="text-white font-semibold ml-2 text-lg">
+          <Text style={styles.newInterviewButtonText}>
             Start New Interview
           </Text>
         </TouchableOpacity>
 
         {/* Recent Interviews */}
-        <View className="mb-6">
-          <Text className="text-white text-lg font-semibold mb-4">
+        <View style={styles.interviewsSection}>
+          <Text style={styles.sectionTitle}>
             Recent Interviews
           </Text>
           
           {interviewsLoading ? (
-            <View className="bg-gray-800 rounded-lg p-6 items-center">
-              <Text className="text-gray-400">Loading interviews...</Text>
+            <View style={styles.loadingCard}>
+              <Text style={styles.loadingText}>Loading interviews...</Text>
             </View>
           ) : !interviews || interviews.length === 0 ? (
-            <View className="bg-gray-800 rounded-lg p-6 items-center">
-              <Ionicons name="chatbubble-outline" size={48} color="#6b7280" />
-              <Text className="text-gray-400 text-lg font-medium mt-4">
+            <View style={styles.emptyCard}>
+              <Ionicons name="chatbubble-outline" size={48} color="rgba(255, 255, 255, 0.55)" />
+              <Text style={styles.emptyTitle}>
                 No interviews yet
               </Text>
-              <Text className="text-gray-500 text-center mt-2">
+              <Text style={styles.emptyText}>
                 Start your first mock interview to begin practicing
               </Text>
             </View>
           ) : (
             interviews.map((interview) => (
               <TouchableOpacity
-                key={interview._id}
-                onPress={() => handleInterviewPress(interview._id)}
+                key={interview.id}
+                onPress={() => handleInterviewPress(interview.id)}
                 style={styles.interviewCard}
               >
                 <View style={styles.interviewCardContent}>
@@ -169,7 +169,7 @@ const InterviewsHome = () => {
                         <Ionicons 
                           name={getInterviewTypeIcon(interview.interview_type) as any}
                           size={20} 
-                          color="#9ca3af" 
+                          color="rgba(255, 255, 255, 0.70)" 
                         />
                       </View>
                     )}
@@ -179,7 +179,7 @@ const InterviewsHome = () => {
                       <Ionicons 
                         name={getInterviewTypeIcon(interview.interview_type) as any}
                         size={16} 
-                        color="#9ca3af" 
+                        color="rgba(255, 255, 255, 0.70)" 
                       />
                       <Text style={styles.roleTitle}>
                         {interview.role_title}
@@ -191,7 +191,7 @@ const InterviewsHome = () => {
                     </Text>
                     
                     <View style={styles.metaRow}>
-                      <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) === 'text-green-400' ? '#10b981' : getDifficultyColor(interview.difficulty) === 'text-yellow-400' ? '#f59e0b' : getDifficultyColor(interview.difficulty) === 'text-red-400' ? '#ef4444' : '#6b7280' }]}>
+                      <Text style={[styles.difficultyText, { color: getDifficultyColor(interview.difficulty) }]}>
                         {interview.difficulty}
                       </Text>
                       <Text style={styles.separator}>•</Text>
@@ -205,7 +205,7 @@ const InterviewsHome = () => {
                     <Text style={styles.dateText}>
                       {formatDate(interview.created_at)}
                     </Text>
-                    <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+                    <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.55)" />
                   </View>
                 </View>
               </TouchableOpacity>
@@ -219,11 +219,191 @@ const InterviewsHome = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20, // layout.screenPadding
+  },
+  scrollViewContent: {
+    paddingBottom: 40, // spacing.10
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 24, // spacing.6
+  },
+  headerTitle: {
+    color: '#FFFFFF', // text.primary
+    fontSize: 24, // typography.heading.h2.fontSize
+    fontWeight: '600', // typography.heading.h2.fontWeight
+    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
+  },
+  headerSubtitle: {
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 14, // typography.body.small.fontSize
+    marginTop: 4, // spacing.1
+    fontFamily: 'Inter', // typography.body.small.fontFamily
+  },
+  cvButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    padding: 12, // spacing.3
+    borderRadius: 12, // glassInput.borderRadius
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
+  },
+  cvWarningCard: {
+    backgroundColor: 'rgba(252, 180, 0, 0.1)', // semantic.warning.light
+    borderColor: 'rgba(252, 180, 0, 0.3)', // gold.400 with opacity
+    borderWidth: 1,
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
+    marginBottom: 24, // spacing.6
+  },
+  cvWarningHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cvWarningTitle: {
+    color: 'rgba(252, 180, 0, 1)', // gold.400
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginLeft: 8, // spacing.2
+    fontSize: 14, // typography.label.medium.fontSize
+    fontFamily: 'Inter', // typography.label.medium.fontFamily
+  },
+  cvWarningText: {
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    marginTop: 8, // spacing.2
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
+  },
+  cvWarningButton: {
+    marginTop: 12, // spacing.3
+  },
+  cvWarningButtonText: {
+    color: 'rgba(252, 180, 0, 1)', // gold.400
+    fontWeight: '600', // typography.label.medium.fontWeight
+    fontSize: 14, // typography.label.medium.fontSize
+    fontFamily: 'Inter', // typography.label.medium.fontFamily
+  },
+  cvSuccessCard: {
+    backgroundColor: 'rgba(34, 197, 94, 0.1)', // semantic.success.light
+    borderColor: 'rgba(34, 197, 94, 0.3)', // semantic.success.main with opacity
+    borderWidth: 1,
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
+    marginBottom: 24, // spacing.6
+  },
+  cvSuccessHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cvSuccessTitle: {
+    color: 'rgba(34, 197, 94, 1)', // semantic.success.main
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginLeft: 8, // spacing.2
+    fontSize: 14, // typography.label.medium.fontSize
+    fontFamily: 'Inter', // typography.label.medium.fontFamily
+  },
+  cvSuccessText: {
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    marginTop: 4, // spacing.1
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
+  },
+  newInterviewButton: {
+    backgroundColor: 'rgba(168, 85, 247, 1)', // purple.400
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
+    marginBottom: 24, // spacing.6
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#A855F7', // purple.400
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
+  },
+  newInterviewButtonText: {
+    color: '#FFFFFF', // text.primary
+    fontWeight: '600', // typography.button.medium.fontWeight
+    marginLeft: 8, // spacing.2
+    fontSize: 18, // typography.button.large.fontSize
+    fontFamily: 'Inter', // typography.button.large.fontFamily
+    letterSpacing: 0.005, // typography.button.large.letterSpacing
+  },
+  interviewsSection: {
+    marginBottom: 24, // spacing.6
+  },
+  sectionTitle: {
+    color: '#FFFFFF', // text.primary
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginBottom: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+  },
+  loadingCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 24, // spacing.6
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
+  },
+  loadingText: {
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 16, // typography.body.medium.fontSize
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
+  },
+  emptyCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 24, // spacing.6
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
+  },
+  emptyTitle: {
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginTop: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+  },
+  emptyText: {
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    textAlign: 'center',
+    marginTop: 8, // spacing.2
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
+  },
   interviewCard: {
-    backgroundColor: '#1f2937',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
+    marginBottom: 12, // spacing.3
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2, // Android shadow
   },
   interviewCardContent: {
     flexDirection: 'row',
@@ -231,21 +411,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   interviewCardLeft: {
-    marginRight: 12,
+    marginRight: 12, // spacing.3
   },
   companyLogo: {
     width: 40,
     height: 40,
-    borderRadius: 8,
+    borderRadius: 8, // borderRadius.default
     backgroundColor: '#ffffff',
   },
   logoPlaceholder: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: '#374151',
+    borderRadius: 8, // borderRadius.default
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
   },
   interviewCardRight: {
     flex: 1,
@@ -253,45 +435,52 @@ const styles = StyleSheet.create({
   interviewHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 8, // spacing.2
   },
   roleTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.body.medium.fontSize
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginLeft: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   companyName: {
-    color: '#d1d5db',
-    fontSize: 14,
-    marginBottom: 4,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 14, // typography.body.small.fontSize
+    marginBottom: 4, // spacing.1
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   difficultyText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 12, // typography.body.xsmall.fontSize
+    fontWeight: '500', // typography.label.small.fontWeight
     textTransform: 'capitalize',
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
+    letterSpacing: 0.02, // typography.label.small.letterSpacing
   },
   separator: {
-    color: '#6b7280',
-    fontSize: 12,
-    marginHorizontal: 8,
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 12, // typography.body.xsmall.fontSize
+    marginHorizontal: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
   typeText: {
-    color: '#6b7280',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 12, // typography.body.xsmall.fontSize
     textTransform: 'capitalize',
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
   dateContainer: {
     alignItems: 'flex-end',
   },
   dateText: {
-    color: '#6b7280',
-    fontSize: 11,
-    marginBottom: 4,
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 11, // typography.body.xsmall.fontSize (slightly smaller)
+    marginBottom: 4, // spacing.1
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
 });
 
