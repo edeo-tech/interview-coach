@@ -50,7 +50,8 @@ const getInterviewTypeIcon = (type: InterviewType | string): string => {
   return iconMap[type] || 'chatbubble';
 };
 
-const getStatusColor = (status: string): string => {
+const getStatusColor = (status: string, isLocked: boolean = false): string => {
+  if (isLocked) return '#4b5563'; // Muted gray for locked
   switch (status) {
     case 'completed': return '#10b981';
     case 'active': return '#3b82f6';
@@ -59,14 +60,25 @@ const getStatusColor = (status: string): string => {
   }
 };
 
+const isStageUnlocked = (interviews: any[], currentIndex: number): boolean => {
+  // First stage is always unlocked
+  if (currentIndex === 0) return true;
+  
+  // Check if previous stage is completed
+  const previousInterview = interviews[currentIndex - 1];
+  return previousInterview && previousInterview.status === 'completed';
+};
+
 export default function JobDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: jobData, isLoading, error } = useJobDetails(id);
   const startAttempt = useStartJobInterviewAttempt();
 
-  const handleInterviewPress = (interview: any) => {
-    // Always navigate to interview details screen
-    router.push(`/interviews/${interview._id}/details` as any);
+  const handleInterviewPress = (interview: any, index: number) => {
+    // Only navigate if stage is unlocked
+    if (isStageUnlocked(interviews, index)) {
+      router.push(`/interviews/${interview._id}/details` as any);
+    }
   };
 
   if (isLoading) {
@@ -173,44 +185,60 @@ export default function JobDetails() {
             <Text style={styles.sectionTitle}>Interview Stages</Text>
             
             <View style={styles.stagesContainer}>
-              {interviews.map((interview, index) => (
-                <TouchableOpacity
-                  key={interview._id}
-                  onPress={() => handleInterviewPress(interview)}
-                  style={styles.stageCard}
-                >
-                  <View style={styles.stageNumber}>
-                    <Text style={styles.stageNumberText}>{index + 1}</Text>
-                  </View>
-                  
-                  <View style={styles.stageContent}>
-                    <View style={styles.stageHeader}>
-                      <View style={styles.stageIconContainer}>
-                        <Ionicons 
-                          name={getInterviewTypeIcon(interview.interview_type) as any} 
-                          size={20} 
-                          color={getStatusColor(interview.status)} 
-                        />
-                      </View>
-                      <Text style={styles.stageTitle}>
-                        {getInterviewTypeDisplayName(interview.interview_type)}
-                      </Text>
+              {interviews.map((interview, index) => {
+                const isUnlocked = isStageUnlocked(interviews, index);
+                return (
+                  <TouchableOpacity
+                    key={interview._id}
+                    onPress={() => handleInterviewPress(interview, index)}
+                    style={[
+                      styles.stageCard,
+                      !isUnlocked && styles.stageCardLocked
+                    ]}
+                    disabled={!isUnlocked}
+                  >
+                    <View style={[
+                      styles.stageNumber,
+                      !isUnlocked && styles.stageNumberLocked
+                    ]}>
+                      <Text style={[
+                        styles.stageNumberText,
+                        !isUnlocked && styles.stageNumberTextLocked
+                      ]}>{index + 1}</Text>
                     </View>
                     
-                    {interview.total_attempts > 0 && (
-                      <Text style={styles.attemptsText}>
-                        {interview.total_attempts} attempt{interview.total_attempts !== 1 ? 's' : ''}
-                      </Text>
-                    )}
-                  </View>
-                  
-                  <Ionicons 
-                    name="chevron-forward" 
-                    size={20} 
-                    color={GlassTextColors.muted} 
-                  />
-                </TouchableOpacity>
-              ))}
+                    <View style={styles.stageContent}>
+                      <View style={styles.stageHeader}>
+                        <View style={styles.stageIconContainer}>
+                          <Ionicons 
+                            name={isUnlocked ? getInterviewTypeIcon(interview.interview_type) as any : 'lock-closed'} 
+                            size={20} 
+                            color={getStatusColor(interview.status, !isUnlocked)} 
+                          />
+                        </View>
+                        <Text style={[
+                          styles.stageTitle,
+                          !isUnlocked && styles.stageTitleLocked
+                        ]}>
+                          {getInterviewTypeDisplayName(interview.interview_type)}
+                        </Text>
+                      </View>
+                      
+                      {isUnlocked && interview.total_attempts > 0 && (
+                        <Text style={styles.attemptsText}>
+                          {interview.total_attempts} attempt{interview.total_attempts !== 1 ? 's' : ''}
+                        </Text>
+                      )}
+                    </View>
+                    
+                    <Ionicons 
+                      name={isUnlocked ? "chevron-forward" : "lock-closed"} 
+                      size={20} 
+                      color={isUnlocked ? GlassTextColors.muted : '#4b5563'} 
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         </ScrollView>
@@ -364,6 +392,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
+  stageCardLocked: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)', // Dimmed background
+    opacity: 0.6,
+  },
   stageNumber: {
     width: 32,
     height: 32,
@@ -373,9 +405,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
+  stageNumberLocked: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
   stageNumberText: {
     ...TYPOGRAPHY.labelMedium,
     color: '#ffffff',
+  },
+  stageNumberTextLocked: {
+    color: '#6b7280',
   },
   stageContent: {
     flex: 1,
@@ -390,6 +428,9 @@ const styles = StyleSheet.create({
   stageTitle: {
     ...TYPOGRAPHY.itemTitle,
     color: GlassTextColors.primary,
+  },
+  stageTitleLocked: {
+    color: '#6b7280',
   },
   attemptsText: {
     ...TYPOGRAPHY.overline,
