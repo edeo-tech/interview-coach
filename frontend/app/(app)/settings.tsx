@@ -375,7 +375,7 @@ const Settings = () => {
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.linkItem}
-              onPress={() => handleLinkPress('https://example.com/help', 'open_help_center')}
+              onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_help_center')}
             >
               <Ionicons name="help-circle-outline" size={20} color="#6b7280" />
               <Text style={styles.linkText}>Help Center</Text>
@@ -384,7 +384,7 @@ const Settings = () => {
 
             <TouchableOpacity
               style={styles.linkItem}
-              onPress={() => handleLinkPress('mailto:support@example.com', 'contact_support')}
+              onPress={() => handleLinkPress('mailto:ross@edio.cc', 'contact_support')}
             >
               <Ionicons name="mail-outline" size={20} color="#6b7280" />
               <Text style={styles.linkText}>Contact Support</Text>
@@ -399,7 +399,7 @@ const Settings = () => {
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.linkItem}
-              onPress={() => handleLinkPress('https://example.com/privacy', 'open_privacy_policy')}
+              onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_privacy_policy')}
             >
               <Ionicons name="shield-checkmark-outline" size={20} color="#6b7280" />
               <Text style={styles.linkText}>Privacy Policy</Text>
@@ -408,7 +408,7 @@ const Settings = () => {
 
             <TouchableOpacity
               style={styles.linkItem}
-              onPress={() => handleLinkPress('https://example.com/terms', 'open_terms')}
+              onPress={() => handleLinkPress('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/', 'open_terms')}
             >
               <Ionicons name="document-text-outline" size={20} color="#6b7280" />
               <Text style={styles.linkText}>Terms of Service</Text>
