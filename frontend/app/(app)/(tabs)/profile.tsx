@@ -18,9 +18,7 @@ import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
 
 const StatCard = ({ icon, label, value, color = '#A855F7' }: any) => (
     <View style={styles.statCard}>
-        <View style={styles.statIconContainer}>
-            <Ionicons name={icon} size={24} color={color} />
-        </View>
+        <Ionicons name={icon} size={24} color={color} />
         <Text style={styles.statValue}>{value}</Text>
         <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -444,6 +442,7 @@ const styles = StyleSheet.create({
     statValue: {
         ...TYPOGRAPHY.pageTitle,
         color: '#ffffff',
+        marginTop: 8,
         marginBottom: 4,
     },
     statLabel: {
