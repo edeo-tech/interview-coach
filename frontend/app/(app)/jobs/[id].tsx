@@ -118,7 +118,7 @@ export default function JobDetails() {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="chevron-back" size={28} color="white" />
+              <Ionicons name="chevron-back" size={24} color="white" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Job Details</Text>
           </View>
@@ -280,14 +280,6 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
     marginLeft: 16,
-  },
-  headerBackButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   jobCard: {
     ...GlassStyles.card,
