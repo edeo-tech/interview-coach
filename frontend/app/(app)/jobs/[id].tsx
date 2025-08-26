@@ -197,29 +197,20 @@ export default function JobDetails() {
                     ]}
                     disabled={!isUnlocked}
                   >
-                    <View style={[
-                      styles.stageNumber,
-                      !isUnlocked && styles.stageNumberLocked
-                    ]}>
-                      <Text style={[
-                        styles.stageNumberText,
-                        !isUnlocked && styles.stageNumberTextLocked
-                      ]}>{index + 1}</Text>
+                    <View style={styles.stageNumber}>
+                      <Text style={styles.stageNumberText}>{index + 1}</Text>
                     </View>
                     
                     <View style={styles.stageContent}>
                       <View style={styles.stageHeader}>
                         <View style={styles.stageIconContainer}>
                           <Ionicons 
-                            name={isUnlocked ? getInterviewTypeIcon(interview.interview_type) as any : 'lock-closed'} 
+                            name={getInterviewTypeIcon(interview.interview_type) as any} 
                             size={20} 
-                            color={getStatusColor(interview.status, !isUnlocked)} 
+                            color={getStatusColor(interview.status)} 
                           />
                         </View>
-                        <Text style={[
-                          styles.stageTitle,
-                          !isUnlocked && styles.stageTitleLocked
-                        ]}>
+                        <Text style={styles.stageTitle}>
                           {getInterviewTypeDisplayName(interview.interview_type)}
                         </Text>
                       </View>
@@ -232,10 +223,21 @@ export default function JobDetails() {
                     </View>
                     
                     <Ionicons 
-                      name={isUnlocked ? "chevron-forward" : "lock-closed"} 
+                      name="chevron-forward" 
                       size={20} 
-                      color={isUnlocked ? GlassTextColors.muted : '#4b5563'} 
+                      color={GlassTextColors.muted} 
                     />
+                    
+                    {/* Lock overlay for locked stages */}
+                    {!isUnlocked && (
+                      <View style={styles.lockOverlay}>
+                        <Ionicons 
+                          name="lock-closed" 
+                          size={24} 
+                          color="#ffffff" 
+                        />
+                      </View>
+                    )}
                   </TouchableOpacity>
                 );
               })}
@@ -388,13 +390,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...GlassStyles.container,
     borderRadius: 50,
-    borderColor: 'rgba(255, 255, 255, 0.00)', // Reduced opacity for subtler border
+    borderColor: 'rgba(255, 255, 255, 0.00)',
     paddingVertical: 14,
     paddingHorizontal: 16,
+    position: 'relative',
   },
   stageCardLocked: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)', // Dimmed background
-    opacity: 0.6,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    opacity: 0.4,
+  },
+  lockOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
   stageNumber: {
     width: 32,
@@ -405,15 +420,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-  stageNumberLocked: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
   stageNumberText: {
     ...TYPOGRAPHY.labelMedium,
     color: '#ffffff',
-  },
-  stageNumberTextLocked: {
-    color: '#6b7280',
   },
   stageContent: {
     flex: 1,
@@ -428,9 +437,6 @@ const styles = StyleSheet.create({
   stageTitle: {
     ...TYPOGRAPHY.itemTitle,
     color: GlassTextColors.primary,
-  },
-  stageTitleLocked: {
-    color: '#6b7280',
   },
   attemptsText: {
     ...TYPOGRAPHY.overline,
