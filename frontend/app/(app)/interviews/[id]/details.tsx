@@ -9,6 +9,7 @@ import BrandfetchLogo from '../../../../components/BrandfetchLogo';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../../hooks/haptics/useHapticsSafely';
 import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
 import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
 import { useToast } from '../../../../components/Toast';
@@ -64,6 +65,7 @@ export default function InterviewDetails() {
   } = useInterviewAttempts(id, 10);
   const startAttempt = useStartAttempt();
   const { posthogScreen } = usePosthogSafely();
+  const { selectionAsync } = useHapticsSafely();
   const [attemptGrades, setAttemptGrades] = useState<{[key: string]: number}>({});
   const { canRetryInterview, isPaywallEnabled } = useInterviewRetryCheck();
   const { showToast } = useToast();
@@ -169,11 +171,12 @@ export default function InterviewDetails() {
         {/* Action button */}
         <TouchableOpacity
           style={[
-            styles.singleActionButton,
-            attempt.status === 'graded' ? styles.primaryAction : styles.disabledAction
+            styles.attemptButton,
+            attempt.status !== 'graded' && styles.attemptButtonDisabled
           ]}
           onPress={() => {
             if (attempt.status === 'graded') {
+              selectionAsync();
               router.push({ 
                 pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
                 params: { id, attemptId: attempt.id, is_from_interview: 'false' } 
@@ -183,15 +186,15 @@ export default function InterviewDetails() {
           disabled={attempt.status !== 'graded'}
         >
           <Ionicons 
-            name="analytics-outline" 
+            name="analytics" 
             size={18} 
             color={attempt.status === 'graded' ? '#10b981' : '#6b7280'} 
           />
           <Text style={[
-            styles.singleActionButtonText,
+            styles.attemptButtonText,
             attempt.status === 'graded' ? { color: '#10b981' } : { color: '#6b7280' }
           ]}>
-            {attempt.status === 'graded' ? 'View Feedback & Results' : 'Feedback Pending'}
+            {attempt.status === 'graded' ? 'View Results' : 'Pending'}
           </Text>
           {attempt.status === 'graded' && (
             <Ionicons name="chevron-forward" size={16} color="#10b981" />
@@ -290,8 +293,11 @@ export default function InterviewDetails() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="white" />
+          <TouchableOpacity onPress={() => {
+            selectionAsync();
+            router.back();
+          }}>
+            <Ionicons name="chevron-back" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Interview Details</Text>
         </View>
@@ -337,25 +343,21 @@ export default function InterviewDetails() {
           <View style={styles.cardDivider} />
           
           <TouchableOpacity
-            onPress={handleStartInterview}
+            onPress={() => {
+              selectionAsync();
+              handleStartInterview();
+            }}
             disabled={startAttempt.isPending}
-            style={[
-              styles.integratedStartButton,
-              startAttempt.isPending && styles.integratedStartButtonDisabled
-            ]}
+            style={styles.startButton}
           >
             {startAttempt.isPending ? (
-              <ActivityIndicator color="#F43F5E" size="small" />
+              <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
-              <Ionicons name="play-circle" size={20} color="#F43F5E" />
+              <Ionicons name="play" size={20} color="#FFFFFF" />
             )}
-            <Text style={[
-              styles.integratedStartButtonText,
-              startAttempt.isPending && styles.integratedStartButtonTextDisabled
-            ]}>
-              {attemptsCountData?.has_attempts ? 'Retry Interview' : 'Start Mock Interview'}
+            <Text style={styles.startButtonText}>
+              {attemptsCountData?.has_attempts ? 'Retry Interview' : 'Start Interview'}
             </Text>
-            <Ionicons name="chevron-forward" size={16} color="#F43F5E" />
           </TouchableOpacity>
         </View>
 
@@ -452,15 +454,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 60, // layout.safeAreaTop + spacing.4
-    paddingBottom: 20, // spacing.5
+    paddingTop: 60,
+    paddingBottom: 20,
+    marginBottom: 8,
   },
   headerTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 20, // typography.heading.h3.fontSize
-    fontWeight: '600', // typography.heading.h3.fontWeight
-    marginLeft: 16, // spacing.4
-    ...TYPOGRAPHY.heading3,
+    ...TYPOGRAPHY.pageTitle,
+    color: '#FFFFFF',
+    marginLeft: 16,
   },
   jobCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
@@ -536,43 +537,28 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
     marginBottom: 20, // spacing.5
   },
-  integratedStartButton: {
+  startButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16, // spacing.4
-    paddingHorizontal: 20, // spacing.5
-    backgroundColor: 'rgba(244, 63, 94, 0.1)', // semantic.error.light
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.2)', // semantic.error.main with opacity
-    borderRadius: 12, // glassSecondary.borderRadius
+    justifyContent: 'center',
+    backgroundColor: '#A855F7',
+    borderRadius: 50,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    gap: 8,
   },
-  integratedStartButtonDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)', // glassInteractive.disabled.background
-    borderColor: 'rgba(255, 255, 255, 0.08)', // glassInteractive.disabled.border
-  },
-  integratedStartButtonText: {
-    color: 'rgba(244, 63, 94, 1)', // semantic.error.main
-    fontSize: 16, // typography.button.medium.fontSize
-    fontWeight: '600', // typography.button.medium.fontWeight
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 12, // spacing.3
-    ...TYPOGRAPHY.buttonMedium,
-    letterSpacing: 0.005, // typography.button.medium.letterSpacing
-  },
-  integratedStartButtonTextDisabled: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+  startButtonText: {
+    ...TYPOGRAPHY.labelMedium,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   section: {
     marginBottom: 24, // spacing.6
   },
   sectionTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 18, // typography.heading.h4.fontSize
-    fontWeight: '600', // typography.heading.h4.fontWeight
-    marginBottom: 16, // spacing.4
-    ...TYPOGRAPHY.heading4,
+    ...TYPOGRAPHY.sectionHeader,
+    color: '#FFFFFF',
+    marginBottom: 16,
   },
   emptyText: {
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
@@ -668,31 +654,24 @@ const styles = StyleSheet.create({
     fontSize: 13, // typography.body.small.fontSize (slightly smaller)
     ...TYPOGRAPHY.bodySmall,
   },
-  singleActionButton: {
+  attemptButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14, // spacing.3.5
-    paddingHorizontal: 18, // spacing.4.5
-    borderRadius: 10, // borderRadius.md
-    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 50,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 8,
   },
-  primaryAction: {
-    backgroundColor: 'rgba(34, 197, 94, 0.1)', // semantic.success.light
-    borderColor: 'rgba(34, 197, 94, 0.2)', // semantic.success.main with opacity
+  attemptButtonDisabled: {
+    opacity: 0.5,
   },
-  disabledAction: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)', // glassInteractive.disabled.background
-    borderColor: 'rgba(255, 255, 255, 0.05)', // glassInteractive.disabled.border
-  },
-  singleActionButtonText: {
-    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
-    fontWeight: '600', // typography.label.large.fontWeight
+  attemptButtonText: {
+    ...TYPOGRAPHY.labelMedium,
+    fontWeight: '600',
     flex: 1,
-    marginLeft: 12, // spacing.3
-    ...TYPOGRAPHY.bodyMedium,
+    textAlign: 'center',
   },
   loadingMore: {
     flexDirection: 'row',
