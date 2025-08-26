@@ -209,8 +209,7 @@ export default function CreateJob() {
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {currentStep === 'cv' ? 'Upload Your CV' : 
-             currentCV ? 'Job Details' : 'Add New Job'}
+            {currentStep === 'cv' ? 'Upload Your CV' : 'Create Interview'}
           </Text>
         </View>
 
@@ -421,13 +420,12 @@ const styles = StyleSheet.create({
   },
   urlInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
-    borderRadius: 12, // glassInput.borderRadius
-    padding: 16, // spacing.4
+    borderRadius: 50, // Pill-shaped like other touchable elements
+    paddingHorizontal: 20, // Increased horizontal padding for pill shape
+    paddingVertical: 16, // Keep vertical padding
     color: '#FFFFFF', // text.primary
     fontSize: 16, // typography.body.medium.fontSize
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
-    height: 56, // layout.inputHeight.medium
+    height: 56, // layout.inputHeight.medium - consistent with other inputs
     fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   fileButton: {
@@ -471,7 +469,8 @@ const styles = StyleSheet.create({
     // Primary button with gradient border effect
     backgroundColor: 'rgba(255, 255, 255, 0.08)', // glass-like transparent fill
     borderRadius: 28, // Fully rounded (height/2 = 56/2 = 28)
-    padding: 16, // spacing.4
+    paddingHorizontal: 24, // Horizontal padding only
+    paddingVertical: 0, // Remove vertical padding to prevent cutoff
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -493,11 +492,13 @@ const styles = StyleSheet.create({
   },
   submitText: {
     color: '#FFFFFF', // text.primary
-    fontSize: 18, // typography.button.large.fontSize
+    fontSize: 16, // Reduced from 18 to prevent cutoff
     fontWeight: '600', // typography.button.large.fontWeight
     marginLeft: 8, // spacing.2
     fontFamily: 'Inter', // typography.button.large.fontFamily
     letterSpacing: 0.005, // typography.button.large.letterSpacing
+    textAlign: 'center',
+    includeFontPadding: false, // Prevent extra padding that causes cutoff
   },
   cvStatusCard: {
     backgroundColor: 'rgba(34, 197, 94, 0.1)', // semantic.success.light
