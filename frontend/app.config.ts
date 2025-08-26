@@ -4,14 +4,14 @@ module.exports = {
         slug: "interview-coach",
         version: "1.0.1",
         orientation: "portrait",
-        icon: "./assets/images/FinalAppIcon.png",
+        icon: "./assets/images/AllBlackAppIcon.png",
         scheme: "nextround",
         userInterfaceStyle: "dark",
         newArchEnabled: true,
         splash: {
-            image: "./assets/images/splash_real.png",
+            image: "./assets/images/ios_splash.png",
             resizeMode: "cover",
-            backgroundColor: "#151a31",
+            backgroundColor: "#000000",
             fade: true,
         },
         ios: {
@@ -33,7 +33,7 @@ module.exports = {
             splash: {
                 image: "./assets/images/FinalAppIconTransparent.png",
                 resizeMode: "cover",
-                backgroundColor: "#151a31",
+                backgroundColor: "#000000",
                 fade: true,
             },
             package: "com.interviewcoach.app",
@@ -41,7 +41,7 @@ module.exports = {
             versionCode: 1
         },
         web: {
-            favicon: "./assets/images/FinalAppIcon.png",
+            favicon: "./assets/images/AllBlackAppIcon.png",
             output: "server",
         },
         plugins: [
