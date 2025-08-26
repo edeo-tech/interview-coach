@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useToast } from '@/components/Toast';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -12,6 +14,7 @@ import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { TYPOGRAPHY } from '../../../constants/Typography';
+import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
 
 const StatCard = ({ icon, label, value, color = '#A855F7' }: any) => (
     <View style={styles.statCard}>
@@ -49,15 +52,14 @@ const getScoreIconAndColor = (score: number | null | string) => {
 
 const MenuItem = ({ icon, label, onPress }: any) => (
     <TouchableOpacity style={styles.menuItem} onPress={() => {
-        // Light impact for menu navigation - minor action
-        useHapticsSafely().impactAsync(ImpactFeedbackStyle.Light);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
     }} activeOpacity={0.8}>
         <View style={styles.menuIconContainer}>
-            <Ionicons name={icon} size={20} color="rgba(255, 255, 255, 0.7)" />
+            <Ionicons name={icon} size={20} color={GlassTextColors.muted} />
         </View>
         <Text style={styles.menuLabel}>{label}</Text>
-        <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
+        <Ionicons name="chevron-forward" size={16} color={GlassTextColors.muted} />
     </TouchableOpacity>
 );
 
@@ -207,34 +209,41 @@ export default function Profile() {
 
     return (
         <ChatGPTBackground style={styles.gradient}>
-        <View style={styles.container}>
-        <ScrollView 
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-        >
+            <SafeAreaView style={styles.container} edges={['left', 'right']}>
+                <ScrollView 
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+            {/* Profile Header - No container for clean look */}
             <View style={styles.header}>
                 <Text style={styles.name}>{user.name}</Text>
                 <Text style={styles.email}>{user.email}</Text>
-                <View style={styles.profileDetailContainer}>
-                    <Text style={styles.profileDetailLabel}>Target Role:</Text>
-                    <Text style={styles.profileDetailValue}>{getIndustryRole().replace('Industry / Role: ', '').replace(/Industry \/ /, '')}</Text>
+                
+                {/* Profile Details - Metadata pattern */}
+                <View style={styles.profileMeta}>
+                    <View style={styles.metaItem}>
+                        <Ionicons name="briefcase-outline" size={16} color={GlassTextColors.muted} />
+                        <Text style={styles.metaText}>{getIndustryRole().replace('Industry / Role: ', '').replace(/Industry \/ /, '')}</Text>
+                    </View>
+                    <View style={styles.metaItem}>
+                        <Ionicons name="time-outline" size={16} color={GlassTextColors.muted} />
+                        <Text style={styles.metaText}>{getExperienceText()}</Text>
+                    </View>
                 </View>
-                <View style={styles.profileDetailContainer}>
-                    <Text style={styles.profileDetailLabel}>Experience:</Text>
-                    <Text style={styles.profileDetailValue}>{getExperienceText()}</Text>
-                </View>
+                
                 <View style={styles.rankBadge}>
                     <Ionicons name="trophy" size={16} color="#A855F7" />
                     <Text style={styles.rankText}>{user.rank}</Text>
                 </View>
             </View>
 
+            {/* CV Section - Primary Action Card */}
             <View style={styles.cvSection}>
                 <TouchableOpacity 
                     style={styles.cvContainer} 
                     onPress={() => {
-                        // Medium impact for CV upload - important profile action
-                        impactAsync(ImpactFeedbackStyle.Medium);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                         posthogCapture('navigate_to_cv_upload', {
                             source: 'profile',
                             has_existing_cv: !!currentCV
@@ -257,7 +266,7 @@ export default function Profile() {
                             }
                         </Text>
                     </View>
-                    <Ionicons name="create-outline" size={22} color="rgba(255, 255, 255, 0.7)" />
+                    <Ionicons name="create-outline" size={22} color={GlassTextColors.muted} />
                 </TouchableOpacity>
             </View>
 
@@ -282,6 +291,7 @@ export default function Profile() {
                 />
             </View>
 
+            {/* Job History Section */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Job History</Text>
                 <View style={styles.menuContainer}>
@@ -298,8 +308,7 @@ export default function Profile() {
                             <TouchableOpacity
                                 key={job._id}
                                 onPress={() => {
-                                    // Selection haptic for job history items
-                                    selectionAsync();
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                                     handleJobPress(job._id);
                                 }}
                                 style={styles.jobItem}
@@ -326,6 +335,7 @@ export default function Profile() {
                 </View>
             </View>
 
+            {/* Account Section */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Account</Text>
                 <View style={styles.menuContainer}>
@@ -352,11 +362,11 @@ export default function Profile() {
                 </View>
             </View>
 
+            {/* Logout Button */}
             <TouchableOpacity 
                 style={[styles.logoutButton, logoutLoading && styles.logoutButtonDisabled]} 
                 onPress={() => {
-                    // Heavy impact for logout - critical destructive action
-                    impactAsync(ImpactFeedbackStyle.Heavy);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                     handleLogout();
                 }} 
                 disabled={logoutLoading}
@@ -367,8 +377,8 @@ export default function Profile() {
             </TouchableOpacity>
 
             <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
-        </ScrollView>
-        </View>
+                </ScrollView>
+            </SafeAreaView>
         </ChatGPTBackground>
     );
 }
@@ -381,86 +391,71 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
     },
+    scrollView: {
+        flex: 1,
+        paddingHorizontal: 20,
+    },
     scrollContent: {
-        paddingBottom: 120, // Extra space for nav bar + floating action button
+        paddingBottom: 120,
     },
     header: {
         alignItems: 'center',
-        paddingTop: 62,
-        paddingBottom: 24,
+        paddingTop: 20,
+        paddingBottom: 28,
     },
     name: {
-        ...TYPOGRAPHY.contentTitle,
-        color: '#FFFFFF',
-        marginBottom: 8,
-        marginTop: 8,
+        ...TYPOGRAPHY.pageTitle,
+        color: GlassTextColors.primary,
+        marginBottom: 4,
     },
     email: {
         ...TYPOGRAPHY.bodyMedium,
-        color: 'rgba(255, 255, 255, 0.7)',
-        marginBottom: 16,
+        color: GlassTextColors.secondary,
+        marginBottom: 20,
     },
-    profileDetailContainer: {
+    profileMeta: {
+        flexDirection: 'column',
+        gap: 8,
+        marginBottom: 20,
+        paddingHorizontal: 4,
+    },
+    metaItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
-        paddingHorizontal: 20,
+        gap: 6,
+        justifyContent: 'center',
     },
-    profileDetailLabel: {
-        ...TYPOGRAPHY.labelMedium,
-        color: 'rgba(255, 255, 255, 0.7)',
-        marginRight: 8,
-        minWidth: 80,
-    },
-    profileDetailValue: {
-        ...TYPOGRAPHY.labelMedium,
-        fontWeight: '600',
-        color: '#A855F7',
-        flex: 1,
-        letterSpacing: 0,
+    metaText: {
+        ...TYPOGRAPHY.bodySmall,
+        color: GlassTextColors.detail,
     },
     rankBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+        backgroundColor: 'rgba(168, 85, 247, 0.3)',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(168, 85, 247, 0.3)',
+        borderWidth: 2,
+        borderColor: '#A855F7',
         gap: 6,
-        marginTop: 12,
+        marginTop: 8,
     },
     rankText: {
-        fontSize: 14,
-        fontWeight: '600',
+        ...TYPOGRAPHY.labelMedium,
+        fontWeight: '600' as const,
         color: '#A855F7',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
     },
     statsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        paddingHorizontal: 20,
-        marginBottom: 30,
+        gap: 12,
+        marginBottom: 28,
     },
     statCard: {
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.15)',
-        borderRadius: 16,
+        ...GlassStyles.card,
         padding: 20,
         flex: 1,
-        marginHorizontal: 6,
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-            }
-        }),
     },
     statIconContainer: {
         width: 48,
@@ -474,37 +469,26 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     statValue: {
-        ...TYPOGRAPHY.heading1,
-        color: '#FFFFFF',
+        ...TYPOGRAPHY.pageTitle,
+        color: GlassTextColors.primary,
         marginBottom: 4,
     },
     statLabel: {
-        ...TYPOGRAPHY.caption,
-        color: 'rgba(255, 255, 255, 0.7)',
+        ...TYPOGRAPHY.bodySmall,
+        color: GlassTextColors.muted,
     },
     section: {
-        paddingHorizontal: 20,
-        marginBottom: 24,
+        marginBottom: 28,
     },
     sectionTitle: {
         ...TYPOGRAPHY.sectionHeader,
-        color: '#FFFFFF',
+        color: GlassTextColors.primary,
         marginBottom: 16,
     },
     menuContainer: {
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.15)',
-        borderRadius: 16,
+        ...GlassStyles.card,
+        padding: 0,
         overflow: 'hidden',
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-            }
-        }),
     },
     menuItem: {
         flexDirection: 'row',
@@ -526,18 +510,14 @@ const styles = StyleSheet.create({
     },
     menuLabel: {
         flex: 1,
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#FFFFFF',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
+        ...TYPOGRAPHY.itemTitle,
+        color: GlassTextColors.primary,
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(239, 68, 68, 0.15)',
-        marginHorizontal: 20,
         marginBottom: 16,
         padding: 16,
         borderRadius: 16,
@@ -557,20 +537,15 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     logoutText: {
-        fontSize: 16,
-        fontWeight: '600',
+        ...TYPOGRAPHY.labelLarge,
+        fontWeight: '600' as const,
         color: '#EF4444',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
     },
     joinedText: {
+        ...TYPOGRAPHY.bodySmall,
         textAlign: 'center',
-        fontSize: 14,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.55)',
+        color: GlassTextColors.muted,
         marginBottom: 40,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
     },
     emptyState: {
         alignItems: 'center',
@@ -588,19 +563,14 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     emptyStateText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#FFFFFF',
+        ...TYPOGRAPHY.sectionHeader,
+        color: GlassTextColors.primary,
         marginBottom: 8,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     emptyStateSubtext: {
-        fontSize: 14,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.7)',
+        ...TYPOGRAPHY.bodyMedium,
+        color: GlassTextColors.muted,
         textAlign: 'center',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
         lineHeight: 20,
     },
     jobItem: {
@@ -625,38 +595,26 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     jobTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
+        ...TYPOGRAPHY.itemTitle,
+        color: GlassTextColors.primary,
         marginBottom: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     jobCompany: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: 'rgba(255, 255, 255, 0.85)',
+        ...TYPOGRAPHY.bodyMedium,
+        color: GlassTextColors.secondary,
         marginBottom: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        lineHeight: 18,
     },
     jobMetaContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     jobLocation: {
-        fontSize: 12,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.55)',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
+        ...TYPOGRAPHY.bodySmall,
+        color: GlassTextColors.detail,
     },
     jobDate: {
-        fontSize: 12,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.55)',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
+        ...TYPOGRAPHY.bodySmall,
+        color: GlassTextColors.detail,
         marginLeft: 4,
     },
     jobStatusContainer: {
@@ -665,17 +623,12 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     jobStatus: {
-        fontSize: 12,
-        fontWeight: '500',
+        ...TYPOGRAPHY.labelMedium,
         color: '#10B981',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
-        textTransform: 'capitalize',
+        textTransform: 'capitalize' as const,
     },
     cvSection: {
-        paddingHorizontal: 20,
-        marginBottom: 24,
-        marginTop: 8,
+        marginBottom: 28,
     },
     cvContainer: {
         backgroundColor: 'rgba(168, 85, 247, 0.15)',
@@ -709,19 +662,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     cvTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#FFFFFF',
+        ...TYPOGRAPHY.sectionHeader,
+        color: GlassTextColors.primary,
         marginBottom: 6,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     cvSubtitle: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: 'rgba(255, 255, 255, 0.85)',
+        ...TYPOGRAPHY.bodyMedium,
+        color: GlassTextColors.secondary,
         lineHeight: 20,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
     },
 });

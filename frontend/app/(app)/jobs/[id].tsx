@@ -195,7 +195,7 @@ export default function JobDetails() {
 
           {/* Progress Overview */}
           <View style={styles.progressHeader}>
-            <Text style={styles.progressTitle}>Interview Progress</Text>
+            <Text style={styles.progressTitle}>Your Progress</Text>
             <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
           </View>
           <View style={styles.progressBar}>
