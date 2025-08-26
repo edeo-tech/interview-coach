@@ -407,12 +407,11 @@ const styles = StyleSheet.create({
   },
   roleTitle: {
     ...TYPOGRAPHY.pageTitle,
-    fontSize: 20,
     color: '#ffffff',
     marginBottom: 4,
   },
   company: {
-    ...TYPOGRAPHY.bodyLarge,
+    ...TYPOGRAPHY.bodyMedium,
     color: GlassTextColors.secondary,
   },
   jobMeta: {
@@ -439,11 +438,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   progressTitle: {
-    ...TYPOGRAPHY.labelLarge,
+    ...TYPOGRAPHY.sectionHeader,
     color: GlassTextColors.primary,
   },
   progressPercentage: {
-    ...TYPOGRAPHY.labelMedium,
+    ...TYPOGRAPHY.labelLarge,
     fontWeight: '600' as const,
     color: '#10b981',
   },
@@ -461,7 +460,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressSubtext: {
-    ...TYPOGRAPHY.bodySmall,
+    ...TYPOGRAPHY.bodyMedium,
     color: GlassTextColors.muted,
     marginBottom: 24,
     paddingHorizontal: 4,
@@ -625,7 +624,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   popupTitle: {
-    ...TYPOGRAPHY.heading3,
+    ...TYPOGRAPHY.pageTitle,
     color: GlassTextColors.primary,
     textAlign: 'center',
     marginBottom: 12,
