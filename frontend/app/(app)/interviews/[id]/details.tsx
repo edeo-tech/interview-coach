@@ -53,6 +53,38 @@ const getInterviewTypeIcon = (type: string): string => {
   return iconMap[type] || 'chatbubble';
 };
 
+const getInterviewStageInfo = (type: string) => {
+  const stageInfo: Record<string, { duration: string; focus: string[]; evaluation: string[] }> = {
+    [InterviewType.PhoneScreen]: {
+      duration: '15-20 minutes',
+      focus: ['Background discussion', 'Role fit assessment', 'Company culture match'],
+      evaluation: ['Communication skills', 'Interest in role', 'Professional experience', 'Cultural alignment']
+    },
+    [InterviewType.InitialHRInterview]: {
+      duration: '20-30 minutes', 
+      focus: ['Experience review', 'Salary expectations', 'Availability discussion'],
+      evaluation: ['Communication skills', 'Experience relevance', 'Compensation alignment', 'Scheduling fit']
+    },
+    [InterviewType.TechnicalScreeningCall]: {
+      duration: '45-60 minutes',
+      focus: ['Technical knowledge', 'Problem solving', 'Coding discussion'],
+      evaluation: ['Technical competency', 'Problem-solving approach', 'Code quality', 'Communication of ideas']
+    },
+    [InterviewType.BehavioralInterview]: {
+      duration: '30-45 minutes',
+      focus: ['Past experiences', 'Situational responses', 'Leadership examples'],
+      evaluation: ['Leadership potential', 'Team collaboration', 'Conflict resolution', 'Growth mindset']
+    },
+    // Add more types as needed
+  };
+  
+  return stageInfo[type] || {
+    duration: '30-45 minutes',
+    focus: ['General discussion', 'Role-specific topics', 'Company questions'],
+    evaluation: ['Communication skills', 'Role fit', 'Company interest', 'Professional experience']
+  };
+};
+
 export default function InterviewDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: interviewData, isLoading, error } = useInterview(id);
@@ -72,6 +104,13 @@ export default function InterviewDetails() {
   
   // Flatten the paginated attempts data
   const attempts = attemptsData?.pages.flatMap(page => page.attempts) || [];
+  
+  // Pre-fetch feedback for the first 3 attempts to avoid conditional hooks
+  const recentAttempts = attempts.slice(0, 3);
+  const feedback1 = useAttemptFeedback(recentAttempts[0]?.id);
+  const feedback2 = useAttemptFeedback(recentAttempts[1]?.id);
+  const feedback3 = useAttemptFeedback(recentAttempts[2]?.id);
+  const feedbackData = [feedback1.data, feedback2.data, feedback3.data];
 
   useFocusEffect(
     React.useCallback(() => {
@@ -115,106 +154,6 @@ export default function InterviewDetails() {
     });
   };
 
-  // Component for individual attempt cards  
-  const AttemptCard = ({ attempt, index }: { attempt: any; index: number }) => {
-    const { data: feedback } = useAttemptFeedback(attempt.id);
-    const hasGrade = feedback?.overall_score !== undefined;
-    const grade = feedback?.overall_score || 0;
-
-    return (
-      <View style={styles.attemptCard}>
-        {/* Header with attempt number and grade */}
-        <View style={styles.attemptHeader}>
-          <Text style={styles.attemptTitle}>Attempt #{index + 1}</Text>
-          
-          {/* Grade display */}
-          {hasGrade ? (
-            <View style={styles.gradeContainer}>
-              <Text style={[styles.gradeScore, { color: getScoreColor(grade) }]}>
-                {grade}
-              </Text>
-              <Text style={styles.gradeLabel}>Score</Text>
-            </View>
-          ) : attempt.status === 'graded' ? (
-            <View style={styles.gradeContainer}>
-              <ActivityIndicator size="small" color="#A855F7" />
-              <Text style={styles.gradeLabel}>Loading...</Text>
-            </View>
-          ) : (
-            <View style={styles.gradeContainer}>
-              <Text style={styles.gradeScore}>--</Text>
-              <Text style={styles.gradeLabel}>Score</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Details row */}
-        <View style={styles.attemptDetails}>
-          <View style={styles.detailItem}>
-            <Ionicons name="calendar-outline" size={14} color="#9ca3af" />
-            <Text style={styles.detailText}>{formatDate(attempt.created_at)}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Ionicons name="time-outline" size={14} color="#9ca3af" />
-            <Text style={styles.detailText}>{formatDuration(attempt.duration_seconds)}</Text>
-          </View>
-          {hasGrade && (
-            <View style={styles.detailItem}>
-              <Ionicons name="star-outline" size={14} color={getScoreColor(grade)} />
-              <Text style={[styles.detailText, { color: getScoreColor(grade) }]}>
-                {getScoreLabel(grade)}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Action button */}
-        <TouchableOpacity
-          style={[
-            styles.attemptButton,
-            attempt.status !== 'graded' && styles.attemptButtonDisabled
-          ]}
-          onPress={() => {
-            if (attempt.status === 'graded') {
-              selectionAsync();
-              router.push({ 
-                pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
-                params: { id, attemptId: attempt.id, is_from_interview: 'false' } 
-              });
-            }
-          }}
-          disabled={attempt.status !== 'graded'}
-        >
-          <Ionicons 
-            name="analytics" 
-            size={18} 
-            color={attempt.status === 'graded' ? '#10b981' : '#6b7280'} 
-          />
-          <Text style={[
-            styles.attemptButtonText,
-            attempt.status === 'graded' ? { color: '#10b981' } : { color: '#6b7280' }
-          ]}>
-            {attempt.status === 'graded' ? 'View Results' : 'Pending'}
-          </Text>
-          {attempt.status === 'graded' && (
-            <Ionicons name="chevron-forward" size={16} color="#10b981" />
-          )}
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const handleLoadMore = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
-  
-  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: { layoutMeasurement: any; contentOffset: any; contentSize: any }) => {
-    const paddingToBottom = 20;
-    return layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom;
-  };
 
   const handleStartInterview = async () => {
     try {
@@ -278,121 +217,169 @@ export default function InterviewDetails() {
   }
 
   const { interview } = interviewData;
+  const stageInfo = getInterviewStageInfo(interview.interview_type || '');
+  const hasAttempts = attempts.length > 0;
 
   return (
     <ChatGPTBackground style={styles.gradient}>
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <ScrollView 
-        style={styles.scrollView}
-        onScroll={({ nativeEvent }) => {
-          if (isCloseToBottom(nativeEvent)) {
-            handleLoadMore();
-          }
-        }}
-        scrollEventThrottle={400}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => {
-            selectionAsync();
-            router.back();
-          }}>
-            <Ionicons name="chevron-back" size={24} color="white" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Interview Details</Text>
-        </View>
-
-        {/* Job Info with Integrated CTA */}
-        <View style={styles.jobCard}>
-          <View style={styles.jobInfo}>
-            <View style={styles.jobHeader}>
-              <BrandfetchLogo
-                identifierType={(interview as any).brandfetch_identifier_type}
-                identifierValue={(interview as any).brandfetch_identifier_value}
-                fallbackUrl={interview.company_logo_url}
-                size={48}
-                style={styles.companyLogoContainer}
-                fallbackIconColor="#ffffff"
-                fallbackIconName="briefcase-outline"
-              />
-              <View style={styles.jobHeaderText}>
-                <Text style={styles.roleTitle}>{interview.role_title}</Text>
-                <Text style={styles.company}>{interview.company}</Text>
-              </View>
-            </View>
-            <View style={styles.locationRow}>
-              <Ionicons name="location-outline" size={16} color="#9ca3af" />
-              <Text style={styles.location}>{interview.location || 'Remote'}</Text>
-            </View>
-            
-            {/* Interview Type */}
-            {interview.interview_type && (
-              <View style={styles.interviewTypeRow}>
-                <Ionicons 
-                  name={getInterviewTypeIcon(interview.interview_type) as any} 
-                  size={16} 
-                  color="#8b5cf6" 
-                />
-                <Text style={styles.interviewType}>
-                  {getInterviewTypeDisplayName(interview.interview_type)}
-                </Text>
-              </View>
-            )}
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => {
+              selectionAsync();
+              router.back();
+            }}>
+              <Ionicons name="chevron-back" size={24} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>
+              Stage {interview.order || 1}: {getInterviewTypeDisplayName(interview.interview_type || '')}
+            </Text>
           </View>
-          
-          <View style={styles.cardDivider} />
-          
+
+          {/* Subtitle */}
+          <Text style={styles.subtitle}>
+            {interview.role_title} at {interview.company}
+          </Text>
+
+          {!hasAttempts ? (
+            // First-time user experience
+            <>
+              {/* What to Expect Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>What to Expect</Text>
+                <View style={styles.infoCard}>
+                  <View style={styles.infoItem}>
+                    <Ionicons name="time-outline" size={20} color="#A855F7" />
+                    <Text style={styles.infoText}>Duration: {stageInfo.duration}</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <Ionicons name="chatbubble-outline" size={20} color="#A855F7" />
+                    <Text style={styles.infoText}>Live conversation with interviewer</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Focus Areas */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Focus Areas</Text>
+                <View style={styles.bulletList}>
+                  {stageInfo.focus.map((item, index) => (
+                    <View key={index} style={styles.bulletItem}>
+                      <View style={styles.bullet} />
+                      <Text style={styles.bulletText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Evaluation Criteria */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>You'll be evaluated on</Text>
+                <View style={styles.bulletList}>
+                  {stageInfo.evaluation.map((item, index) => (
+                    <View key={index} style={styles.bulletItem}>
+                      <View style={styles.bullet} />
+                      <Text style={styles.bulletText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </>
+          ) : (
+            // Returning user experience
+            <>
+              {/* Performance Summary */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Your Performance</Text>
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{attempts.length}</Text>
+                    <Text style={styles.statLabel}>Attempts</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statValue, { color: '#10b981' }]}>
+                      {Math.max(...attempts.map(a => {
+                        const feedback = attemptGrades[a.id];
+                        return feedback || 0;
+                      }))}
+                    </Text>
+                    <Text style={styles.statLabel}>Best Score</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Previous Attempts */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Previous Attempts</Text>
+                <View style={styles.attemptsList}>
+                  {recentAttempts.map((attempt, index) => {
+                    const feedback = feedbackData[index];
+                    const grade = feedback?.overall_score || 0;
+                    
+                    return (
+                      <TouchableOpacity
+                        key={attempt.id}
+                        style={styles.attemptItem}
+                        onPress={() => {
+                          if (attempt.status === 'graded') {
+                            selectionAsync();
+                            router.push({ 
+                              pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
+                              params: { id, attemptId: attempt.id, is_from_interview: 'false' } 
+                            });
+                          }
+                        }}
+                        disabled={attempt.status !== 'graded'}
+                      >
+                        <View style={styles.attemptContent}>
+                          <Text style={styles.attemptTitle}>Attempt #{index + 1}</Text>
+                          <Text style={styles.attemptDate}>{formatDate(attempt.created_at)}</Text>
+                        </View>
+                        <View style={styles.attemptScore}>
+                          {attempt.status === 'graded' ? (
+                            <Text style={[styles.scoreValue, { color: getScoreColor(grade) }]}>
+                              {grade}
+                            </Text>
+                          ) : (
+                            <Text style={styles.scorePending}>Pending</Text>
+                          )}
+                        </View>
+                        {attempt.status === 'graded' && (
+                          <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.5)" />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* Start/Retry Button */}
           <TouchableOpacity
             onPress={() => {
               selectionAsync();
               handleStartInterview();
             }}
             disabled={startAttempt.isPending}
-            style={styles.startButton}
+            style={styles.mainButton}
           >
             {startAttempt.isPending ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
               <Ionicons name="play" size={20} color="#FFFFFF" />
             )}
-            <Text style={styles.startButtonText}>
-              {attemptsCountData?.has_attempts ? 'Retry Interview' : 'Start Interview'}
+            <Text style={styles.mainButtonText}>
+              {hasAttempts ? 'New Attempt' : 'Start Interview'}
             </Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Previous Attempts */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Previous Attempts {attemptsData?.pages[0]?.total_count ? `(${attemptsData.pages[0].total_count})` : ''}
-          </Text>
-          
-          {attempts.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="clipboard-outline" size={48} color="#6b7280" />
-              <Text style={styles.emptyTitle}>No attempts yet</Text>
-              <Text style={styles.emptySubtitle}>
-                Start your first mock interview to begin practicing
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.attemptsContainer}>
-              {attempts.map((attempt, index) => (
-                <AttemptCard key={attempt.id} attempt={attempt} index={index} />
-              ))}
-              
-              {/* Loading more indicator */}
-              {isFetchingNextPage && (
-                <View style={styles.loadingMore}>
-                  <ActivityIndicator size="small" color="#8b5cf6" />
-                  <Text style={styles.loadingMoreText}>Loading more attempts...</Text>
-                </View>
-              )}
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
     </ChatGPTBackground>
   );
 }
@@ -407,7 +394,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20, // layout.screenPadding
+    paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
@@ -415,275 +405,161 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    marginTop: 16, // spacing.4
-    fontSize: 16, // typography.body.medium.fontSize
     ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.70)',
+    marginTop: 16,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20, // layout.screenPadding
+    paddingHorizontal: 20,
   },
   errorTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 20, // typography.heading.h3.fontSize
-    fontWeight: '600', // typography.heading.h3.fontWeight
-    marginTop: 16, // spacing.4
-    ...TYPOGRAPHY.heading3,
+    ...TYPOGRAPHY.sectionHeader,
+    color: '#FFFFFF',
+    marginTop: 16,
   },
   errorButton: {
-    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
-    paddingHorizontal: 24, // spacing.6
-    paddingVertical: 12, // spacing.3
-    borderRadius: 12, // glassSecondary.borderRadius
-    marginTop: 24, // spacing.6
-    shadowColor: '#F59E0B', // gold.400
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4, // Android shadow
-  },
-  errorButtonText: {
-    color: '#FFFFFF', // text.primary
-    fontWeight: '600', // typography.button.medium.fontWeight
-    fontSize: 16, // typography.button.medium.fontSize
-    ...TYPOGRAPHY.buttonMedium,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 20,
-    marginBottom: 8,
-  },
-  headerTitle: {
-    ...TYPOGRAPHY.pageTitle,
-    color: '#FFFFFF',
-    marginLeft: 16,
-  },
-  jobCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
-    borderRadius: 16, // glass.borderRadius
-    padding: 24, // spacing.6
-    marginBottom: 24, // spacing.6
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4, // Android shadow
-  },
-  jobInfo: {
-    marginBottom: 20, // spacing.5
-  },
-  jobHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12, // spacing.3
-  },
-  companyLogoContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 8, // borderRadius.default
-    backgroundColor: '#ffffff',
-    marginRight: 16, // spacing.4
-    overflow: 'hidden',
-  },
-  jobHeaderText: {
-    flex: 1,
-  },
-  roleTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 24, // typography.heading.h2.fontSize
-    fontWeight: '600', // typography.heading.h2.fontWeight
-    marginBottom: 4, // spacing.1
-    lineHeight: 28, // typography.heading.h2.lineHeight
-    ...TYPOGRAPHY.heading2,
-    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
-  },
-  company: {
-    color: 'rgba(96, 165, 250, 1)', // text.accent
-    fontSize: 18, // typography.heading.h4.fontSize
-    fontWeight: '600', // typography.heading.h4.fontWeight
-    ...TYPOGRAPHY.heading4,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6, // spacing.1.5
-  },
-  location: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
-    ...TYPOGRAPHY.bodyMedium,
-  },
-  interviewTypeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6, // spacing.1.5
-    marginTop: 8, // spacing.2
-  },
-  interviewType: {
-    color: 'rgba(139, 92, 246, 1)', // purple.500
-    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
-    fontWeight: '600', // typography.label.large.fontWeight
-    ...TYPOGRAPHY.bodyMedium,
-  },
-  cardDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
-    marginBottom: 20, // spacing.5
-  },
-  startButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#A855F7',
     borderRadius: 50,
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 24,
-    gap: 8,
+    marginTop: 24,
   },
-  startButtonText: {
+  errorButtonText: {
     ...TYPOGRAPHY.labelMedium,
     color: '#FFFFFF',
     fontWeight: '600',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingTop: 60,
+    paddingBottom: 20,
+    gap: 16,
+  },
+  headerTitle: {
+    ...TYPOGRAPHY.pageTitle,
+    color: '#FFFFFF',
+    flex: 1,
+    lineHeight: 28,
+  },
+  subtitle: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.70)',
+    marginBottom: 32,
+  },
   section: {
-    marginBottom: 24, // spacing.6
+    marginBottom: 28,
   },
   sectionTitle: {
     ...TYPOGRAPHY.sectionHeader,
     color: '#FFFFFF',
     marginBottom: 16,
   },
-  emptyText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    textAlign: 'center',
-    padding: 20, // spacing.5
-    fontSize: 16, // typography.body.medium.fontSize
-    ...TYPOGRAPHY.bodyMedium,
+  infoCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 16,
+    padding: 20,
+    gap: 16,
   },
-  emptyState: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background
-    borderRadius: 16, // glass.borderRadius
-    padding: 32, // spacing.8
+  infoItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4, // Android shadow
+    gap: 12,
   },
-  emptyTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 16, // typography.body.medium.fontSize
-    fontWeight: '600', // typography.label.large.fontWeight
-    marginTop: 16, // spacing.4
-    marginBottom: 8, // spacing.2
+  infoText: {
     ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.85)',
   },
-  emptySubtitle: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    fontSize: 14, // typography.body.small.fontSize
-    textAlign: 'center',
-    lineHeight: 20, // typography.body.small.lineHeight
+  bulletList: {
+    gap: 12,
+  },
+  bulletItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  bullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#A855F7',
+    marginTop: 6,
+  },
+  bulletText: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.85)',
+    flex: 1,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 32,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    ...TYPOGRAPHY.pageTitle,
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  statLabel: {
     ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.70)',
   },
-  attemptsContainer: {
-    gap: 16, // spacing.4
+  attemptsList: {
+    gap: 12,
   },
-  attemptCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
-    borderRadius: 16, // glass.borderRadius
-    padding: 20, // spacing.5
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4, // Android shadow
-  },
-  attemptHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14, // spacing.3.5
-  },
-  attemptTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 16, // typography.body.medium.fontSize
-    fontWeight: '600', // typography.label.large.fontWeight
-    ...TYPOGRAPHY.bodyMedium,
-  },
-  gradeContainer: {
-    alignItems: 'center',
-    minWidth: 55,
-  },
-  gradeScore: {
-    fontSize: 22, // typography.heading.h3.fontSize
-    fontWeight: '700', // typography.heading.h3.fontWeight
-    marginBottom: 1, // spacing.0.25
-    ...TYPOGRAPHY.heading3,
-  },
-  gradeLabel: {
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
-    fontSize: 11, // typography.body.xsmall.fontSize (slightly smaller)
-    fontWeight: '500', // typography.label.small.fontWeight
-    ...TYPOGRAPHY.bodyXSmall,
-  },
-  attemptDetails: {
-    flexDirection: 'row',
-    gap: 16, // spacing.4
-    marginBottom: 18, // spacing.4.5
-    flexWrap: 'wrap',
-  },
-  detailItem: {
+  attemptItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6, // spacing.1.5
-  },
-  detailText: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    fontSize: 13, // typography.body.small.fontSize (slightly smaller)
-    ...TYPOGRAPHY.bodySmall,
-  },
-  attemptButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderRadius: 50,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    gap: 16,
   },
-  attemptButtonDisabled: {
-    opacity: 0.5,
-  },
-  attemptButtonText: {
-    ...TYPOGRAPHY.labelMedium,
-    fontWeight: '600',
+  attemptContent: {
     flex: 1,
-    textAlign: 'center',
   },
-  loadingMore: {
+  attemptTitle: {
+    ...TYPOGRAPHY.itemTitle,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  attemptDate: {
+    ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.70)',
+  },
+  attemptScore: {
+    alignItems: 'center',
+    minWidth: 40,
+  },
+  scoreValue: {
+    ...TYPOGRAPHY.labelMedium,
+    fontWeight: '700',
+    fontSize: 18,
+  },
+  scorePending: {
+    ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.5)',
+  },
+  mainButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20, // spacing.5
-    gap: 8, // spacing.2
+    backgroundColor: '#A855F7',
+    borderRadius: 50,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    gap: 12,
+    marginTop: 8,
   },
-  loadingMoreText: {
-    color: 'rgba(139, 92, 246, 1)', // purple.500
-    fontSize: 14, // typography.body.small.fontSize
-    fontWeight: '500', // typography.label.large.fontWeight
-    ...TYPOGRAPHY.bodySmall,
+  mainButtonText: {
+    ...TYPOGRAPHY.labelLarge,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
 });
