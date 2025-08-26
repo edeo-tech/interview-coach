@@ -1,106 +1,243 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import MorphingBackground from '../../components/MorphingBackground';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const SolutionFraming = () => {
   const { data } = useOnboarding();
+
+  // Animation values - exactly like profile-setup
+  const contentTranslateX = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+  const buttonOpacity = useRef(new Animated.Value(1)).current;
+  const buttonTranslateY = useRef(new Animated.Value(0)).current;
+
+  // Entrance animation - exactly like profile-setup with direction awareness
+  useFocusEffect(
+    React.useCallback(() => {
+      // Determine slide direction based on last navigation direction
+      const slideInFrom = getNavigationDirection() === 'back' ? -SCREEN_WIDTH : SCREEN_WIDTH;
+      
+      // Reset to slide-in position 
+      contentTranslateX.setValue(slideInFrom);
+      buttonTranslateY.setValue(30);
+      contentOpacity.setValue(0);
+      buttonOpacity.setValue(0);
+      
+      // Add a brief pause before sliding in new content for a more relaxed feel - exactly like profile-setup
+      setTimeout(() => {
+        // Animate in content and button together with gentle timing - exactly like profile-setup
+        Animated.parallel([
+          Animated.timing(contentTranslateX, {
+            toValue: 0,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          // Button animates in slightly after content starts, creating a nice cascade - exactly like profile-setup
+          Animated.sequence([
+            Animated.delay(200),
+            Animated.parallel([
+              Animated.timing(buttonOpacity, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+              }),
+              Animated.timing(buttonTranslateY, {
+                toValue: 0,
+                duration: 600,
+                useNativeDriver: true,
+              })
+            ])
+          ])
+        ]).start();
+      }, 100);
+    }, [])
+  );
   
   const handleContinue = () => {
-    router.push('/(onboarding)/notifications');
+    // Set direction for next screen
+    setNavigationDirection('forward');
+    
+    // Slide out to left (forward direction) - exactly like profile-setup
+    Animated.parallel([
+      Animated.timing(contentTranslateX, {
+        toValue: -SCREEN_WIDTH,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      // Navigate after animation completes
+      setTimeout(() => {
+        router.push('/(onboarding)/notifications');
+      }, 100);
+    });
   };
 
-  const getPainPoint = () => {
-    if (data.hasFailed && data.mainBlocker) {
-      const painPoints = {
-        prep: 'lack of preparation',
-        nerves: 'interview anxiety',
-        communication: 'poor communication',
-        experience: 'limited experience',
-        technical: 'technical gaps'
-      };
-      return painPoints[data.mainBlocker] || 'preparation challenges';
+  const handleBack = () => {
+    // Set direction for previous screen
+    setNavigationDirection('back');
+    
+    // Slide out to right (back direction) - exactly like profile-setup
+    Animated.parallel([
+      Animated.timing(contentTranslateX, {
+        toValue: SCREEN_WIDTH,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setTimeout(() => {
+        router.back();
+      }, 100);
+    });
+  };
+
+  const getSteps = () => {
+    return [
+      {
+        title: 'Structured Practice',
+        description: 'AI-powered mock interviews tailored to your industry'
+      },
+      {
+        title: 'Real-time Feedback', 
+        description: 'Get instant insights on your communication and content'
+      },
+      {
+        title: 'Build Confidence',
+        description: 'Practice until you feel ready for any question'
+      },
+      {
+        title: 'Land the Job',
+        description: 'Interview with confidence and get the offer'
+      }
+    ];
+  };
+
+  const getPersonalizedMessage = () => {
+    const industryName = data.industry ? data.industry.charAt(0).toUpperCase() + data.industry.slice(1) : 'your industry';
+    
+    if (data.hasFailed) {
+      return `Structured practice helps ${industryName} candidates turn past struggles into interview success.`;
+    } else {
+      return `Most ${industryName} candidates see dramatic confidence improvements with structured practice.`;
     }
-    return 'interview confidence';
   };
-
-  const industryName = data.industry ? data.industry.charAt(0).toUpperCase() + data.industry.slice(1) : 'your industry';
-  const painPoint = getPainPoint();
 
   return (
-    <MorphingBackground mode="static" style={styles.gradient}>
+    <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={14} totalSteps={17} />
+        <OnboardingProgress 
+          currentStep={15} 
+          totalSteps={17}
+          onBack={handleBack}
+        />
         
-        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            <Text style={styles.screenTitle}>Here's how we'll help</Text>
-            
-            <View style={styles.chainContainer}>
-              <View style={styles.chainStep}>
-                <View style={styles.stepCircle}>
-                  <Ionicons name="book-outline" size={24} color="#F59E0B" />
-                </View>
-                <Text style={styles.stepTitle}>Prepared</Text>
-                <Text style={styles.stepDescription}>Structured practice with AI feedback</Text>
-              </View>
-
-              <View style={styles.arrow}>
-                <Ionicons name="arrow-down" size={20} color="rgba(255, 255, 255, 0.5)" />
-              </View>
-
-              <View style={styles.chainStep}>
-                <View style={styles.stepCircle}>
-                  <Ionicons name="shield-checkmark" size={24} color="#F59E0B" />
-                </View>
-                <Text style={styles.stepTitle}>Confident</Text>
-                <Text style={styles.stepDescription}>Feel ready for any question</Text>
-              </View>
-
-              <View style={styles.arrow}>
-                <Ionicons name="arrow-down" size={20} color="rgba(255, 255, 255, 0.5)" />
-              </View>
-
-              <View style={styles.chainStep}>
-                <View style={styles.stepCircle}>
-                  <Ionicons name="chatbubbles" size={24} color="#F59E0B" />
-                </View>
-                <Text style={styles.stepTitle}>Clear Communication</Text>
-                <Text style={styles.stepDescription}>Articulate your value effectively</Text>
-              </View>
-
-              <View style={styles.arrow}>
-                <Ionicons name="arrow-down" size={20} color="rgba(255, 255, 255, 0.5)" />
-              </View>
-
-              <View style={[styles.chainStep, styles.finalStep]}>
-                <View style={[styles.stepCircle, styles.finalCircle]}>
-                  <Ionicons name="trophy" size={24} color="#ffffff" />
-                </View>
-                <Text style={[styles.stepTitle, styles.finalTitle]}>Next Round</Text>
-                <Text style={styles.stepDescription}>Land the job you want</Text>
-              </View>
-            </View>
-
-            <View style={styles.personalizedContainer}>
-              <Text style={styles.personalizedText}>
-                For people in {industryName} with {painPoint}, structured prep increases confidence dramatically.
+        {/* Animated content container - exactly like profile-setup */}
+        <Animated.View 
+          style={[
+            styles.animatedContent,
+            {
+              transform: [{ translateX: contentTranslateX }],
+              opacity: contentOpacity,
+            }
+          ]}
+        >
+          <ScrollView 
+            style={styles.scrollContent} 
+            contentContainerStyle={styles.scrollContentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.content}>
+              <Text style={styles.screenTitle}>Here's how we'll help</Text>
+              
+              <Text style={styles.subtitle}>
+                Your personalized path to interview success:
               </Text>
-            </View>
-          </View>
-        </ScrollView>
+              
+              <View style={styles.stepsContainer}>
+                {getSteps().map((step, index) => (
+                  <View key={index} style={styles.stepContainer}>
+                    <View style={styles.stepNumber}>
+                      <Text style={styles.stepNumberText}>{index + 1}</Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepTitle}>{step.title}</Text>
+                      <Text style={styles.stepDescription}>{step.description}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
 
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+              <View style={styles.messageContainer}>
+                <Text style={styles.personalizedMessage}>
+                  {getPersonalizedMessage()}
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
+        </Animated.View>
+
+        <Animated.View 
+          style={[
+            styles.bottomContainer,
+            {
+              opacity: buttonOpacity,
+              transform: [{ translateY: buttonTranslateY }],
+            }
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.continueButton} 
+            onPress={handleContinue}
+            activeOpacity={0.8}
+          >
             <Text style={styles.continueButtonText}>I'm ready to start</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
-    </MorphingBackground>
+    </ChatGPTBackground>
   );
 };
 
@@ -110,103 +247,140 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 32 : 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    backgroundColor: 'transparent',
+    paddingTop: Platform.OS === 'ios' ? 20 : 20,
+  },
+  animatedContent: {
+    flex: 1,
   },
   scrollContent: {
     flex: 1,
   },
+  scrollContentContainer: {
+    paddingBottom: 100, // Space for button
+  },
   content: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingVertical: 32,
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
     color: '#ffffff',
     textAlign: 'center',
+    lineHeight: 30,
+    marginBottom: 24,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.70)',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
+    paddingHorizontal: 16,
+  },
+  stepsContainer: {
+    width: '100%',
+    maxWidth: 320,
     marginBottom: 32,
   },
-  chainContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
+  stepContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 24,
   },
-  chainStep: {
-    alignItems: 'center',
-    maxWidth: 200,
-  },
-  stepCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderWidth: 2,
-    borderColor: '#F59E0B',
+  stepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderWidth: 1,
+    borderColor: '#A855F7',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginRight: 16,
+    flexShrink: 0,
   },
-  finalCircle: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+  stepNumberText: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    color: '#A855F7',
+  },
+  stepContent: {
+    flex: 1,
   },
   stepTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter',
     color: '#ffffff',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  finalTitle: {
-    color: '#10B981',
+    lineHeight: 20,
+    marginBottom: 4,
   },
   stepDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'center',
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.70)',
     lineHeight: 18,
   },
-  arrow: {
-    paddingVertical: 16,
-  },
-  finalStep: {
-    marginTop: 4,
-  },
-  personalizedContainer: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-    borderRadius: 16,
-    padding: 20,
+  messageContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(168, 85, 247, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    width: '100%',
+    maxWidth: 320,
   },
-  personalizedText: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
+  personalizedMessage: {
+    fontSize: 14,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20,
   },
   bottomContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    width: '100%',
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    paddingVertical: 18,
+    width: '100%',
+    maxWidth: 320,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    paddingHorizontal: 24,
+    shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 8,
   },
   continueButtonText: {
-    color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
+    color: '#FFFFFF',
+    marginRight: 8,
   },
 });
 
