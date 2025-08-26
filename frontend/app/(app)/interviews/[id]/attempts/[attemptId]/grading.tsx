@@ -235,6 +235,7 @@ export default function AttemptGradingScreen() {
             const rubricScores = data?.rubric_scores || {};
             
             return Object.entries(rubricScores).map(([category, score]) => {
+              const scoreValue = score as number;
               const categoryConfig = interviewConfig?.rubricCategories.find(cat => cat.key === category);
               const displayName = categoryConfig?.displayName || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
               
@@ -247,10 +248,10 @@ export default function AttemptGradingScreen() {
                         <Text style={styles.rubricDescription}>{categoryConfig.description}</Text>
                       )}
                     </View>
-                    <Text style={[styles.rubricScore, { color: getScoreColor(score) }]}>{score}/100</Text>
+                    <Text style={[styles.rubricScore, { color: getScoreColor(scoreValue) }]}>{scoreValue}/100</Text>
                   </View>
                   <View style={styles.rubricBar}>
-                    <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(score), width: `${score}%` }]} />
+                    <View style={[styles.rubricProgress, { backgroundColor: getScoreColor(scoreValue), width: `${scoreValue}%` }]} />
                   </View>
                 </View>
               );
