@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, Modal } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -69,16 +70,42 @@ const isStageUnlocked = (interviews: any[], currentIndex: number): boolean => {
   return previousInterview && previousInterview.status === 'completed';
 };
 
+const isCurrentActiveStage = (interviews: any[], currentIndex: number): boolean => {
+  // Must be unlocked and not completed
+  const isUnlocked = isStageUnlocked(interviews, currentIndex);
+  const interview = interviews[currentIndex];
+  return isUnlocked && interview.status !== 'completed';
+};
+
 export default function JobDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: jobData, isLoading, error } = useJobDetails(id);
   const startAttempt = useStartJobInterviewAttempt();
+  const [showLockedPopup, setShowLockedPopup] = useState(false);
+  const [lockedStageInfo, setLockedStageInfo] = useState<{stageName: string, stageNumber: number} | null>(null);
 
   const handleInterviewPress = (interview: any, index: number) => {
-    // Only navigate if stage is unlocked
-    if (isStageUnlocked(interviews, index)) {
+    const isUnlocked = isStageUnlocked(interviews, index);
+    if (isUnlocked) {
+      // Success haptic for unlocked stages
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       router.push(`/interviews/${interview._id}/details` as any);
+    } else {
+      // Warning haptic for locked stages
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      // Show popup for locked stage
+      setLockedStageInfo({
+        stageName: getInterviewTypeDisplayName(interview.interview_type),
+        stageNumber: index + 1
+      });
+      setShowLockedPopup(true);
     }
+  };
+
+  const getPreviousStageName = (currentIndex: number): string => {
+    if (currentIndex === 0) return '';
+    const previousInterview = interviews[currentIndex - 1];
+    return getInterviewTypeDisplayName(previousInterview.interview_type);
   };
 
   if (isLoading) {
@@ -129,7 +156,10 @@ export default function JobDetails() {
         <ScrollView style={styles.scrollView}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.back();
+            }}>
               <Ionicons name="chevron-back" size={24} color="white" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Job Details</Text>
@@ -148,7 +178,7 @@ export default function JobDetails() {
             />
             <View style={styles.jobHeaderText}>
               <Text style={styles.roleTitle}>{job.role_title}</Text>
-              <Text style={styles.company}>{job.company}</Text>
+              <Text style={styles.company}>Company: {job.company}</Text>
             </View>
           </View>
           
@@ -187,6 +217,8 @@ export default function JobDetails() {
             <View style={styles.stagesContainer}>
               {interviews.map((interview, index) => {
                 const isUnlocked = isStageUnlocked(interviews, index);
+                const isActive = isCurrentActiveStage(interviews, index);
+                const isCompleted = interview.status === 'completed';
                 return (
                   <TouchableOpacity
                     key={interview._id}
@@ -195,10 +227,17 @@ export default function JobDetails() {
                       styles.stageCard,
                       !isUnlocked && styles.stageCardLocked
                     ]}
-                    disabled={!isUnlocked}
                   >
-                    <View style={styles.stageNumber}>
-                      <Text style={styles.stageNumberText}>{index + 1}</Text>
+                    <View style={[
+                      styles.stageNumber,
+                      isActive && styles.stageNumberActive,
+                      isCompleted && styles.stageNumberCompleted
+                    ]}>
+                      <Text style={[
+                        styles.stageNumberText,
+                        isActive && styles.stageNumberTextActive,
+                        isCompleted && styles.stageNumberTextCompleted
+                      ]}>{index + 1}</Text>
                     </View>
                     
                     <View style={styles.stageContent}>
@@ -245,6 +284,59 @@ export default function JobDetails() {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* Locked Stage Popup */}
+      <Modal
+        visible={showLockedPopup}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLockedPopup(false)}
+      >
+        <View style={styles.popupBackdrop}>
+          <TouchableOpacity 
+            style={styles.popupBackdropTouchable}
+            activeOpacity={1}
+            onPress={() => setShowLockedPopup(false)}
+          >
+            <View style={styles.popupContainer}>
+              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+                <View style={styles.popupContent}>
+                  {/* Lock Icon */}
+                  <View style={styles.popupIconContainer}>
+                    <Ionicons name="lock-closed" size={32} color="#A855F7" />
+                  </View>
+                  
+                  {/* Title */}
+                  <Text style={styles.popupTitle}>Stage Locked</Text>
+                  
+                  {/* Message */}
+                  <Text style={styles.popupMessage}>
+                    {lockedStageInfo ? (
+                      `To unlock "${lockedStageInfo.stageName}" (Stage ${lockedStageInfo.stageNumber}), you need to complete the previous stage first.`
+                    ) : (
+                      'Complete the previous stage to unlock this interview step.'
+                    )}
+                  </Text>
+                  
+                  
+                  {/* Close Button */}
+                  <TouchableOpacity 
+                    onPress={() => {
+                      // Light haptic for dismissal
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setShowLockedPopup(false);
+                    }}
+                    style={styles.popupButton}
+                    activeOpacity={0.9}
+                  >
+                    <Text style={styles.popupButtonText}>Got it</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </ChatGPTBackground>
   );
 }
@@ -321,7 +413,7 @@ const styles = StyleSheet.create({
   },
   company: {
     ...TYPOGRAPHY.bodyLarge,
-    color: '#60a5fa',
+    color: GlassTextColors.secondary,
   },
   jobMeta: {
     flexDirection: 'column',
@@ -420,9 +512,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
+  stageNumberActive: {
+    backgroundColor: 'rgba(168, 85, 247, 0.3)', // Opaque purple background
+    borderWidth: 2,
+    borderColor: '#A855F7', // Solid purple border
+  },
+  stageNumberCompleted: {
+    backgroundColor: 'rgba(16, 185, 129, 0.3)', // Opaque green background
+    borderWidth: 2,
+    borderColor: '#10b981', // Solid green border
+  },
   stageNumberText: {
     ...TYPOGRAPHY.labelMedium,
     color: '#ffffff',
+  },
+  stageNumberTextActive: {
+    color: '#ffffff',
+    fontWeight: '600' as const,
+  },
+  stageNumberTextCompleted: {
+    color: '#ffffff',
+    fontWeight: '600' as const,
   },
   stageContent: {
     flex: 1,
@@ -470,5 +580,76 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.buttonMedium,
     color: GlassTextColors.primary,
     marginHorizontal: 8,
+  },
+  // Popup Styles
+  popupBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  popupBackdropTouchable: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  popupContainer: {
+    paddingHorizontal: 20,
+    width: '100%',
+    maxWidth: 340,
+  },
+  popupContent: {
+    backgroundColor: 'rgba(0, 0, 0, 0.85)', // Solid dark background instead of glass
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 24,
+    alignItems: 'center',
+    borderRadius: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      }
+    }),
+  },
+  popupIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  popupTitle: {
+    ...TYPOGRAPHY.heading3,
+    color: GlassTextColors.primary,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  popupMessage: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: GlassTextColors.secondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  popupButton: {
+    backgroundColor: 'rgba(168, 85, 247, 0.3)',
+    borderWidth: 2,
+    borderColor: '#A855F7',
+    borderRadius: 28,
+    height: 56,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+  },
+  popupButtonText: {
+    ...TYPOGRAPHY.buttonMedium,
+    color: GlassTextColors.primary,
   },
 });
