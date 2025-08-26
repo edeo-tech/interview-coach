@@ -19,31 +19,29 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   icon_name,
   shouldShowProgress = true
 }) => {
-  // Progress calculation for screens 3-12 only (profile-setup to problems/analyzing)
-  // Screen 3 (profile-setup) = 0%, Screen 12 (problems) = 100%
+  // Progress calculation for screens 3-11 only (profile-setup to nerves-rating, before analyzing)
+  // Screen 3 (profile-setup) = 0%, Screen 11 (nerves-rating) = 100%
   const calculateProgress = () => {
-    // Only show progress for steps 3-12 (profile-setup to analyzing screen)
+    // Only show progress for steps 3-11 (profile-setup to nerves-rating, before analyzing screen)
     if (currentStep < 3) return 0; // Before profile-setup
-    if (currentStep > 12) return 1; // After analyzing screen
+    if (currentStep > 11) return 1; // At or after analyzing screen
     
-    // Map steps 3-12 to progress 0-100%
-    // Step 3 = 0%, Step 12 = 100%
-    const progressStep = currentStep - 3; // Convert to 0-9 range
-    const totalProgressSteps = 9; // Steps 3-12 = 10 steps (0-9)
+    // Map steps 3-11 to progress 0-100%
+    // Step 3 = 0%, Step 11 = 100%
+    const progressStep = currentStep - 3; // Convert to 0-8 range
+    const totalProgressSteps = 8; // Steps 3-11 = 9 steps (0-8)
     
     // Weighted progress for better UX - early steps get more weight
     const weights = [
       0.0,   // Step 3 (profile-setup-profile) = 0%
       0.15,  // Step 4 (profile-setup-name) = 15%
       0.25,  // Step 5 (profile-setup-age) = 25%
-      0.30,  // Step 6 (section-transition) = 30%
-      0.35,  // Step 7 (job-role) = 35%
-      0.45,  // Step 8 (industry-struggle) = 45%
-      0.55,  // Step 9 (past-outcomes) = 55%
-      0.65,  // Step 10 (preparation-rating) = 65%
-      0.75,  // Step 11 (communication-rating) = 75%
-      0.85,  // Step 12 (nerves-rating) = 85%
-      1.0    // Step 13 (problems/analyzing) = 100%
+      0.35,  // Step 6 (section-transition) = 35%
+      0.45,  // Step 7 (job-role) = 45%
+      0.55,  // Step 8 (industry-struggle) = 55%
+      0.65,  // Step 9 (past-outcomes) = 65%
+      0.80,  // Step 10 (preparation-rating) = 80%
+      1.0    // Step 11 (nerves-rating) = 100%
     ];
     
     return weights[progressStep] || 0;
@@ -54,13 +52,13 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   // Calculate previous step's progress for smooth transitions
   const calculatePreviousProgress = () => {
     if (currentStep <= 3) return 0;
-    if (currentStep > 12) return 1;
+    if (currentStep > 11) return 1;
     
     const previousStep = currentStep - 1;
     const progressStep = previousStep - 3;
     
     const weights = [
-      0.0, 0.15, 0.25, 0.30, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1.0
+      0.0, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.80, 1.0
     ];
     
     return weights[progressStep] || 0;
@@ -93,8 +91,8 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     }
   };
 
-  // Don't show progress bar for screens after analyzing (step 12)
-  const showProgressBar = shouldShowProgress && currentStep <= 12;
+  // Don't show progress bar for screens at or after analyzing (step 12)
+  const showProgressBar = shouldShowProgress && currentStep < 12;
 
   return (
     <View style={styles.container}>
@@ -128,22 +126,22 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 16,
-    gap: 16,
+    gap: 20,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   progressContainer: {
     flex: 1,
     height: 8,
+    marginRight: 64,
   },
   progressBackground: {
     height: '100%',

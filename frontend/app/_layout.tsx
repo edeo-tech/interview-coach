@@ -11,8 +11,16 @@ import {
     Inter_900Black,
 } from '@expo-google-fonts/inter';
 import {
+    SpaceGrotesk_500Medium,
     SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk';
+import {
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
@@ -105,7 +113,13 @@ function RootLayout() {
         Inter_700Bold,
         Inter_800ExtraBold,
         Inter_900Black,
+        SpaceGrotesk_500Medium,
         SpaceGrotesk_600SemiBold,
+        SpaceGrotesk_700Bold,
+        PlusJakartaSans_500Medium,
+        PlusJakartaSans_600SemiBold,
+        PlusJakartaSans_700Bold,
+        PlusJakartaSans_800ExtraBold,
     });
 
     useEffect(() => {

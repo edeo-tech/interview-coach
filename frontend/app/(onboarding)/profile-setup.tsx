@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -329,37 +330,26 @@ const styles = StyleSheet.create({
     height: 80,
   },
   
-  // Typography - following new design system
+  // Typography - using enhanced typography system
   titleMain: {
-    fontSize: 28,
-    fontWeight: '300',
-    fontFamily: 'SpaceGrotesk',
-    letterSpacing: 1,
+    ...TYPOGRAPHY.displaySmall,
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 36,
   },
   titleBrand: {
-    fontSize: 48,
-    fontWeight: '800',
-    fontFamily: 'SpaceGrotesk',
-    lineHeight: 60,
+    ...TYPOGRAPHY.hero,
     color: '#A855F7',
     textAlign: 'center',
     marginBottom: 60,
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    ...TYPOGRAPHY.displaySmall,
     color: '#ffffff',
     textAlign: 'center',
     marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    lineHeight: 24,
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
     maxWidth: 320,
@@ -415,11 +405,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
   },
   primaryButtonText: {
-    fontSize: 18,
-    lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
+    ...TYPOGRAPHY.buttonLarge,
     color: '#FFFFFF',
     marginRight: 8,
   },

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const NameInput = () => {
   const { data, updateData } = useOnboarding();
@@ -75,18 +76,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    ...TYPOGRAPHY.displaySmall,
     color: '#ffffff',
     textAlign: 'center',
     marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
     marginBottom: 32,
-    lineHeight: 22,
   },
   inputContainer: {
     width: '100%',
@@ -126,9 +125,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
   },
   continueButtonText: {
+    ...TYPOGRAPHY.buttonLarge,
     color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
   },
 });
 
