@@ -309,24 +309,24 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
 
   return (
     <View style={styles.container}>
-      {/* Subtle gradient background */}
+      {/* Design System Background */}
       <LinearGradient
         colors={[
-          '#0F0A1F', // Very dark purple
-          '#1A0B2B', // Dark purple-blue
-          '#0F1419', // Dark slate
+          '#0F172A', // Design system primary 900
+          '#1E293B', // Design system primary 800
+          '#334155', // Design system primary 700
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradientBackground}
       />
       
-      {/* Subtle accent streaks */}
+      {/* Design System Accent Streaks */}
       <LinearGradient
         colors={[
-          'rgba(139, 92, 246, 0.08)',
-          'rgba(236, 72, 153, 0.05)',
-          'rgba(245, 158, 11, 0)',
+          'rgba(168, 85, 247, 0.08)', // Design system purple 400
+          'rgba(236, 72, 153, 0.05)', // Design system pink 400
+          'rgba(252, 180, 0, 0)', // Design system gold 400
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0.7 }}
@@ -336,7 +336,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Progress Circle */}
         <View style={styles.progressContainer}>
-          {/* Burst Ring Effect - Positioned relative to progress circle */}
+          {/* Burst Ring Effect - Enhanced Design System Colors */}
           <Animated.View 
             style={[
               styles.burstRing,
@@ -349,7 +349,11 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
             ]}
           >
             <LinearGradient
-              colors={['rgba(139, 92, 246, 0.6)', 'rgba(236, 72, 153, 0.4)', 'rgba(245, 158, 11, 0.2)']}
+              colors={[
+                'rgba(168, 85, 247, 0.6)', // Design system purple 400
+                'rgba(236, 72, 153, 0.4)', // Design system pink 400
+                'rgba(252, 180, 0, 0.2)' // Design system gold 400
+              ]}
               style={styles.ringGradient}
             />
           </Animated.View>
@@ -367,9 +371,9 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
           <Svg width={240} height={240} style={styles.svg}>
             <Defs>
               <SvgLinearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <Stop offset="0%" stopColor="#8b5cf6" stopOpacity="1" />
-                <Stop offset="50%" stopColor="#ec4899" stopOpacity="1" />
-                <Stop offset="100%" stopColor="#f59e0b" stopOpacity="1" />
+                <Stop offset="0%" stopColor="#A855F7" stopOpacity="1" />
+                <Stop offset="50%" stopColor="#EC4899" stopOpacity="1" />
+                <Stop offset="100%" stopColor="#FCB000" stopOpacity="1" />
               </SvgLinearGradient>
             </Defs>
             {/* Background circle */}
@@ -396,7 +400,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
             />
           </Svg>
           
-          {/* Burst Particles - Centered on progress circle */}
+          {/* Burst Particles - Enhanced Design System Colors */}
           <View style={styles.burstContainer}>
             {burstParticles.map((particle) => (
               <Animated.View
@@ -415,7 +419,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
                 ]}
               >
                 <LinearGradient
-                  colors={['#8b5cf6', '#ec4899']}
+                  colors={['#A855F7', '#EC4899']} // Design system purple to pink
                   style={styles.particleGradient}
                 />
               </Animated.View>
@@ -434,14 +438,14 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
                   }
                 ]}
               >
-                <Ionicons name="checkmark" size={60} color="#10b981" />
+                <Ionicons name="checkmark" size={60} color="#22C55E" /> {/* Design system success */}
               </Animated.View>
             ) : (
               <Animated.View style={[styles.iconContainer, { opacity: stageIconOpacity }]}>
                 <Ionicons 
                   name={currentStage?.icon as any} 
                   size={52} 
-                  color="#8b5cf6" 
+                  color="#A855F7" // Design system purple 400
                 />
                 <Text style={styles.progressText}>
                   {Math.round(progress)}%
@@ -452,7 +456,7 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
           </Animated.View>
         </View>
 
-        {/* Stage Information - Fixed positioning */}
+        {/* Stage Information - Enhanced Design System Typography */}
         <View style={styles.stageInfoContainer}>
           <Animated.View style={[styles.stageInfo, { opacity: stageTextOpacity }]}>
             <Text style={styles.stageTitle}>
@@ -464,15 +468,14 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
           </Animated.View>
         </View>
 
-
-        {/* Additional Info */}
+        {/* Additional Info - Enhanced Design System Styling */}
         <View style={styles.additionalInfo}>
           <View style={styles.infoItem}>
-            <Ionicons name="shield-checkmark" size={16} color="#10b981" />
+            <Ionicons name="shield-checkmark" size={16} color="#22C55E" /> {/* Design system success */}
             <Text style={styles.infoText}>Securely encrypted</Text>
           </View>
           <View style={styles.infoItem}>
-            <Ionicons name="time" size={16} color="#8b5cf6" />
+            <Ionicons name="time" size={16} color="#A855F7" /> {/* Design system purple 400 */}
             <Text style={styles.infoText}>Usually takes 10-15 seconds</Text>
           </View>
         </View>
@@ -504,8 +507,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
-    gap: 40,
+    padding: 20, // Design system spacing
+    gap: 40, // Design system spacing
   },
   progressContainer: {
     position: 'relative',
@@ -548,12 +551,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 16,
     height: 16,
-    borderRadius: 8,
+    borderRadius: 8, // Design system border radius
   },
   particleGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: 8, // Design system border radius
   },
   centerContent: {
     alignItems: 'center',
@@ -565,10 +568,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   progressText: {
-    color: '#ffffff',
-    fontSize: 22,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 24, // Design system heading h3
     fontWeight: '700',
-    marginTop: 16,
+    marginTop: 16, // Design system spacing
+    fontFamily: 'SpaceGrotesk', // Design system heading font
+    letterSpacing: -0.01,
   },
   successIcon: {
     alignItems: 'center',
@@ -589,36 +594,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageTitle: {
-    color: '#ffffff',
-    fontSize: 28,
+    color: '#FFFFFF', // Design system text primary
+    fontSize: 28, // Design system heading h1
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 8, // Design system spacing
     height: 36, // Increased from 34 to 36 to prevent text clipping
-    lineHeight: 36,
+    lineHeight: 36, // Design system heading h1 line height
+    fontFamily: 'SpaceGrotesk', // Design system heading font
+    letterSpacing: -0.01,
   },
   stageSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.85)', // Design system text secondary
+    fontSize: 16, // Design system body medium
     textAlign: 'center',
-    lineHeight: 22, // Reduced from 24 to fit better
+    lineHeight: 24, // Design system body medium line height
     height: 44, // Fixed height for exactly 2 lines
     width: 280, // Fixed width instead of maxWidth
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // Design system spacing
+    fontFamily: 'Inter', // Design system body font
   },
   additionalInfo: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 24, // Design system spacing
     alignItems: 'center',
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8, // Design system spacing
   },
   infoText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
+    fontSize: 14, // Design system body small
+    fontFamily: 'Inter', // Design system body font
   },
 });
 

@@ -31,7 +31,7 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
                   <Ionicons 
                     name={turn.role === 'user' ? 'person' : 'chatbubble-ellipses'} 
                     size={14} 
-                    color={turn.role === 'user' ? '#ffffff' : '#F59E0B'} 
+                    color={turn.role === 'user' ? '#FFFFFF' : '#60A5FA'} 
                   />
                 </View>
                 <Text style={[styles.speaker, turn.role === 'user' ? styles.userSpeaker : styles.agentSpeaker]}>
@@ -52,7 +52,7 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
       ))}
       {transcript.length === 0 && (
         <View style={styles.emptyState}>
-          <Ionicons name="document-text-outline" size={48} color="#6B7280" />
+          <Ionicons name="document-text-outline" size={48} color="rgba(255, 255, 255, 0.55)" />
           <Text style={styles.emptyTitle}>No transcript available</Text>
           <Text style={styles.emptyText}>The conversation transcript will appear here once the interview begins.</Text>
         </View>
@@ -67,11 +67,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   contentContainer: { 
-    padding: 20, 
+    padding: 20, // Design system screen padding
     paddingBottom: 40,
   },
   messageContainer: {
-    marginBottom: 16,
+    marginBottom: 12, // Design system spacing
   },
   userMessage: {
     alignItems: 'flex-end',
@@ -81,19 +81,23 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '85%',
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 16, // Design system card radius
+    padding: 16, // Design system spacing
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    // Subtle shadow for depth
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   userBubble: {
-    backgroundColor: '#F59E0B',
-    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Purple glass
+    borderColor: 'rgba(168, 85, 247, 0.25)',
   },
   agentBubble: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Glass background
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   messageHeader: {
     flexDirection: 'row',
@@ -108,41 +112,43 @@ const styles = StyleSheet.create({
   avatarIcon: {
     width: 24,
     height: 24,
-    borderRadius: 6,
+    borderRadius: 12, // Fully rounded
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
   },
   userAvatar: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(168, 85, 247, 0.25)', // Purple tint
   },
   agentAvatar: {
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    backgroundColor: 'rgba(96, 165, 250, 0.20)', // Accent blue tint
   },
   speaker: {
-    fontSize: 13,
+    fontSize: 12, // Design system label medium
     fontWeight: '600',
+    fontFamily: 'Inter',
   },
   userSpeaker: {
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255, 255, 255, 0.85)', // Text secondary
   },
   agentSpeaker: {
-    color: '#ffffff',
+    color: '#FFFFFF', // Text primary
   },
   timestamp: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.6)',
-    fontFamily: 'monospace',
+    fontSize: 12, // Label small per design system
+    color: 'rgba(255, 255, 255, 0.55)', // Text muted
+    fontFamily: 'Inter',
   },
   messageText: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16, // Body medium
+    lineHeight: 24, // Body medium line height
+    fontFamily: 'Inter',
   },
   userText: {
-    color: '#ffffff',
+    color: '#FFFFFF', // Text primary on purple glass
   },
   agentText: {
-    color: '#ffffff',
+    color: '#FFFFFF', // Text primary on glass
   },
   emptyState: {
     alignItems: 'center',
@@ -151,18 +157,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    color: '#ffffff',
-    fontSize: 18,
+    color: '#FFFFFF', // Text primary
+    fontSize: 18, // Heading h5
     fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Inter',
   },
   emptyText: {
-    color: '#9CA3AF',
-    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.70)', // Text tertiary
+    fontSize: 14, // Body small
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20, // Body small line height
+    fontFamily: 'Inter',
   },
 });
 
