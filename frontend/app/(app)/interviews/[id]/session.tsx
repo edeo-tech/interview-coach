@@ -282,44 +282,51 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   loadingCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
-    padding: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 32, // spacing.8
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
     maxWidth: 320,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   spinner: {
     width: 48,
     height: 48,
     borderWidth: 2,
-    borderColor: '#3b82f6',
+    borderColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
     borderTopColor: 'transparent',
     borderRadius: 24,
-    marginBottom: 16,
+    marginBottom: 16, // spacing.4
   },
   loadingTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 8,
+    color: '#FFFFFF', // text.primary
+    fontSize: 20, // typography.heading.h3.fontSize
+    fontWeight: '600', // typography.heading.h3.fontWeight
+    marginBottom: 8, // spacing.2
     textAlign: 'center',
+    fontFamily: 'Inter', // typography.heading.h3.fontFamily
   },
   loadingSubtitle: {
-    color: '#9ca3af',
-    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 20, // typography.body.medium.lineHeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 20, // layout.screenPadding
+    paddingVertical: 16, // spacing.4
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -332,50 +339,58 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 12,
+    marginRight: 12, // spacing.3
   },
   statusConnected: {
-    backgroundColor: '#10b981',
+    backgroundColor: 'rgba(34, 197, 94, 1)', // semantic.success.main
   },
   statusDisconnected: {
-    backgroundColor: '#ef4444',
+    backgroundColor: 'rgba(239, 68, 68, 1)', // semantic.error.main
   },
   connectionText: {
-    color: '#ffffff',
-    fontWeight: '600',
+    color: '#FFFFFF', // text.primary
+    fontWeight: '600', // typography.label.large.fontWeight
+    fontFamily: 'Inter', // typography.label.large.fontFamily
   },
   timerText: {
-    color: '#9ca3af',
-    fontFamily: 'monospace',
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    fontSize: 14, // typography.body.small.fontSize
   },
   transcriptContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   transcriptContent: {
-    paddingVertical: 16,
+    paddingVertical: 16, // spacing.4
   },
   emptyTranscript: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
-    padding: 32,
-    marginHorizontal: 20,
-    marginVertical: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 32, // spacing.8
+    marginHorizontal: 20, // layout.screenPadding
+    marginVertical: 20, // spacing.5
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   emptyTranscriptText: {
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     textAlign: 'center',
-    marginTop: 16,
-    fontSize: 15,
-    lineHeight: 20,
+    marginTop: 16, // spacing.4
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    lineHeight: 20, // typography.body.medium.lineHeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   messageContainer: {
-    marginBottom: 16,
+    marginBottom: 16, // spacing.4
   },
   userMessage: {
     alignItems: 'flex-end',
@@ -385,85 +400,104 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '80%',
-    padding: 16,
-    borderRadius: 12,
+    padding: 16, // spacing.4
+    borderRadius: 12, // glassSecondary.borderRadius
   },
   userBubble: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
+    shadowColor: '#F59E0B', // gold.400
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   agentBubble: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.background
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.12)', // glassSecondary.border
   },
   messageText: {
-    color: '#ffffff',
+    color: '#FFFFFF', // text.primary
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    lineHeight: 20, // typography.body.medium.lineHeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   messageInfo: {
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: 12, // typography.body.xsmall.fontSize
+    marginTop: 4, // spacing.1
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
   userMessageInfo: {
-    color: '#bfdbfe',
+    color: 'rgba(191, 219, 254, 1)', // semantic.info.main with higher opacity
   },
   agentMessageInfo: {
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
   },
   controls: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingHorizontal: 20, // layout.screenPadding
+    paddingVertical: 24, // spacing.6
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 16, // spacing.4
   },
   recordingDot: {
     width: 16,
     height: 16,
     borderRadius: 8,
-    marginRight: 8,
+    marginRight: 8, // spacing.2
   },
   recordingActive: {
-    backgroundColor: '#ef4444',
+    backgroundColor: 'rgba(239, 68, 68, 1)', // semantic.error.main
   },
   recordingInactive: {
-    backgroundColor: '#6b7280',
+    backgroundColor: 'rgba(255, 255, 255, 0.55)', // text.muted
   },
   statusText: {
-    color: '#9ca3af',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    gap: 16, // spacing.4
   },
   actionButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingHorizontal: 24, // spacing.6
+    paddingVertical: 16, // spacing.4
+    borderRadius: 12, // glassSecondary.borderRadius
   },
   simulateButton: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.background
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.12)', // glassSecondary.border
   },
   endButton: {
-    backgroundColor: '#F43F5E',
+    backgroundColor: 'rgba(239, 68, 68, 1)', // semantic.error.main
+    shadowColor: '#EF4444', // semantic.error.main
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   actionButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
+    color: '#FFFFFF', // text.primary
+    fontWeight: '600', // typography.button.medium.fontWeight
+    fontSize: 16, // typography.button.medium.fontSize
+    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   instructionText: {
-    color: '#6b7280',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 12, // typography.body.xsmall.fontSize
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: 16, // spacing.4
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
 });
 

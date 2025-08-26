@@ -303,91 +303,103 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: 24, // spacing.6
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   spinner: {
     width: 48,
     height: 48,
     borderWidth: 2,
-    borderColor: '#3b82f6',
+    borderColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
     borderTopColor: 'transparent',
     borderRadius: 24,
-    marginBottom: 16,
+    marginBottom: 16, // spacing.4
   },
   loadingTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
+    color: '#FFFFFF', // text.primary
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginBottom: 8, // spacing.2
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   loadingSubtitle: {
-    color: '#9ca3af',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   errorTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '600',
-    marginTop: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 20, // typography.heading.h3.fontSize
+    fontWeight: '600', // typography.heading.h3.fontWeight
+    marginTop: 16, // spacing.4
     textAlign: 'center',
+    fontFamily: 'Inter', // typography.heading.h3.fontFamily
   },
   errorSubtitle: {
-    color: '#9ca3af',
-    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
+    marginTop: 8, // spacing.2
+    lineHeight: 20, // typography.body.medium.lineHeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   errorButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginTop: 24,
+    backgroundColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
+    paddingHorizontal: 24, // spacing.6
+    paddingVertical: 12, // spacing.3
+    borderRadius: 12, // glassSecondary.borderRadius
+    marginTop: 24, // spacing.6
+    shadowColor: '#3B82F6', // semantic.info.main
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   errorButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
+    color: '#FFFFFF', // text.primary
+    fontWeight: '600', // typography.button.medium.fontWeight
+    fontSize: 16, // typography.button.medium.fontSize
+    fontFamily: 'Inter', // typography.button.medium.fontFamily
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 20, // spacing.5
   },
   headerTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginLeft: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 20, // typography.heading.h3.fontSize
+    fontWeight: '600', // typography.heading.h3.fontWeight
+    marginLeft: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h3.fontFamily
   },
   scoreCard: {
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
+    borderRadius: 16, // glass.borderRadius
+    padding: 24, // spacing.6
+    marginBottom: 16, // spacing.4
     borderWidth: 1,
   },
   sectionTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginBottom: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   scoreRow: {
     flexDirection: 'row',
@@ -401,144 +413,172 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   overallScore: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontSize: 48, // typography.display.small.fontSize
+    fontWeight: '700', // typography.display.small.fontWeight
+    marginBottom: 4, // spacing.1
+    fontFamily: 'SpaceGrotesk', // typography.display.small.fontFamily
+    letterSpacing: -0.01, // typography.display.small.letterSpacing
   },
   scoreOutOf: {
-    color: '#9ca3af',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   scoreLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginBottom: 4, // spacing.1
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   performanceLevel: {
-    color: '#9ca3af',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 12, // typography.body.xsmall.fontSize
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 20, // spacing.5
+    marginBottom: 16, // spacing.4
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 12, // spacing.3
   },
   rubricItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 12, // spacing.3
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
+    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
   },
   rubricCategory: {
-    color: '#ffffff',
-    fontSize: 15,
+    color: '#FFFFFF', // text.primary
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textTransform: 'capitalize',
     flex: 1,
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   rubricRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   rubricScore: {
-    fontWeight: 'bold',
-    marginRight: 12,
-    fontSize: 14,
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginRight: 12, // spacing.3
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   progressBarContainer: {
     width: 64,
     height: 8,
-    backgroundColor: '#374151',
-    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.background
+    borderRadius: 4, // borderRadius.sm
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 4, // borderRadius.sm
   },
   listItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 12, // spacing.3
   },
   bulletPoint: {
-    color: '#10b981',
-    marginRight: 12,
-    fontSize: 16,
-    lineHeight: 20,
+    color: 'rgba(34, 197, 94, 1)', // semantic.success.main
+    marginRight: 12, // spacing.3
+    fontSize: 16, // typography.body.medium.fontSize
+    lineHeight: 20, // typography.body.medium.lineHeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   listText: {
-    color: '#d1d5db',
-    fontSize: 15,
-    lineHeight: 20,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    lineHeight: 20, // typography.body.medium.lineHeight
     flex: 1,
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   detailedText: {
-    color: '#d1d5db',
-    fontSize: 15,
-    lineHeight: 22,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    lineHeight: 22, // typography.body.medium.lineHeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   buttonContainer: {
-    marginBottom: 16,
+    marginBottom: 16, // spacing.4
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingVertical: 16, // spacing.4
+    borderRadius: 12, // glassSecondary.borderRadius
+    marginBottom: 12, // spacing.3
   },
   primaryButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
+    shadowColor: '#3B82F6', // semantic.info.main
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.background
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)', // glassSecondary.border
   },
   tertiaryButton: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background with lower opacity
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
   },
   actionButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.button.medium.fontSize
+    fontWeight: '600', // typography.button.medium.fontWeight
+    marginLeft: 8, // spacing.2
+    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   tipsCard: {
-    backgroundColor: 'rgba(30, 58, 138, 0.15)',
-    borderColor: 'rgba(59, 130, 246, 0.25)',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)', // semantic.info.light
+    borderColor: 'rgba(59, 130, 246, 0.3)', // semantic.info.main with opacity
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
+    marginBottom: 24, // spacing.6
   },
   tipsTitle: {
-    color: '#60a5fa',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+    color: 'rgba(96, 165, 250, 1)', // text.accent
+    fontSize: 16, // typography.body.medium.fontSize
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginBottom: 12, // spacing.3
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   tipText: {
-    color: '#bfdbfe',
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 4,
+    color: 'rgba(191, 219, 254, 1)', // semantic.info.main with higher opacity
+    fontSize: 14, // typography.body.small.fontSize
+    lineHeight: 20, // typography.body.small.lineHeight
+    marginBottom: 4, // spacing.1
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   blurredContainer: {
     position: 'relative',
-    marginBottom: 16,
+    marginBottom: 16, // spacing.4
   },
   blurredContent: {
-    borderRadius: 16,
+    borderRadius: 16, // glass.borderRadius
     overflow: 'hidden',
   },
   upgradeOverlay: {
@@ -550,33 +590,42 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 16, // glass.borderRadius
+    padding: 20, // spacing.5
   },
   upgradeTitle: {
-    color: '#f59e0b',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 8,
-    marginBottom: 8,
+    color: 'rgba(252, 180, 0, 1)', // gold.400
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginTop: 8, // spacing.2
+    marginBottom: 8, // spacing.2
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   upgradeMessage: {
-    color: '#ffffff',
-    fontSize: 14,
+    color: '#FFFFFF', // text.primary
+    fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 20,
+    marginBottom: 16, // spacing.4
+    lineHeight: 20, // typography.body.small.lineHeight
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   upgradeButton: {
-    backgroundColor: '#f59e0b',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
+    paddingHorizontal: 20, // spacing.5
+    paddingVertical: 10, // spacing.2.5
+    borderRadius: 8, // borderRadius.default
+    shadowColor: '#F59E0B', // gold.400
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   upgradeButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
+    color: '#FFFFFF', // text.primary
+    fontSize: 14, // typography.button.small.fontSize
+    fontWeight: '600', // typography.button.small.fontWeight
+    fontFamily: 'Inter', // typography.button.small.fontFamily
+    letterSpacing: 0.01, // typography.button.small.letterSpacing
   },
 });
 

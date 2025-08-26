@@ -6,7 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
-import { GlassStyles } from '../../../constants/GlassStyles';
 
 const InterviewSetup = () => {
   const [formData, setFormData] = useState({
@@ -156,115 +155,151 @@ const InterviewSetup = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 20, // spacing.5
   },
   backButton: {
-    marginRight: 16,
+    marginRight: 16, // spacing.4
   },
   headerTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: '#FFFFFF', // text.primary
+    fontSize: 24, // typography.heading.h2.fontSize
+    fontWeight: '600', // typography.heading.h2.fontWeight
+    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 24, // spacing.6
   },
   selectorGroup: {
-    marginBottom: 24,
+    marginBottom: 24, // spacing.6
   },
   label: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 16, // typography.label.large.fontSize
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginBottom: 12, // spacing.3
+    fontFamily: 'Inter', // typography.label.large.fontFamily
   },
   input: {
-    backgroundColor: '#374151',
-    color: '#ffffff',
-    padding: 16,
-    borderRadius: 8,
-    fontSize: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    color: '#FFFFFF', // text.primary
+    padding: 16, // spacing.4
+    borderRadius: 12, // glassInput.borderRadius
+    fontSize: 16, // typography.body.medium.fontSize
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
+    height: 56, // layout.inputHeight.medium
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   textArea: {
     minHeight: 120,
     textAlignVertical: 'top',
+    height: undefined,
   },
   inputHint: {
-    color: '#6b7280',
-    fontSize: 12,
-    marginTop: 8,
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 12, // typography.body.xsmall.fontSize
+    marginTop: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
   difficultyContainer: {
     flexDirection: 'row',
   },
   difficultyOption: {
     flex: 1,
-    padding: 12,
-    marginHorizontal: 4,
-    borderRadius: 8,
+    padding: 12, // spacing.3
+    marginHorizontal: 4, // spacing.1
+    borderRadius: 12, // glassSecondary.borderRadius
     borderWidth: 1,
+    alignItems: 'center',
   },
   difficultySelected: {
-    backgroundColor: '#F59E0B',
-    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(252, 180, 0, 0.2)', // gold.400 with opacity
+    borderColor: 'rgba(252, 180, 0, 0.4)', // gold.400 with opacity
   },
   difficultyUnselected: {
-    backgroundColor: '#374151',
-    borderColor: '#4b5563',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
   },
   difficultyText: {
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '600', // typography.label.medium.fontWeight
     textTransform: 'capitalize',
+    fontSize: 14, // typography.label.medium.fontSize
+    fontFamily: 'Inter', // typography.label.medium.fontFamily
   },
   difficultyTextSelected: {
-    color: '#ffffff',
+    color: '#FFFFFF', // text.primary
   },
   difficultyTextUnselected: {
-    color: '#d1d5db',
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
   },
   startButton: {
-    backgroundColor: '#F59E0B',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glass-like transparent fill
+    borderRadius: 28, // pill (height/2 of 56)
+    padding: 16, // spacing.4
+    marginBottom: 32, // spacing.8
+    borderWidth: 2,
+    borderColor: 'rgba(168, 85, 247, 0.4)', // purple.400 with opacity
+    height: 56, // layout.buttonHeight.medium
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#A855F7', // purple.400
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
   },
   startButtonDisabled: {
-    backgroundColor: '#4b5563',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)', // disabled glass
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   startButtonText: {
-    color: '#ffffff',
+    color: '#FFFFFF', // text.primary
     textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 18, // typography.button.large.fontSize
+    fontWeight: '600', // typography.button.large.fontWeight
+    fontFamily: 'Inter', // typography.button.large.fontFamily
+    letterSpacing: 0.005, // typography.button.large.letterSpacing
   },
   tipsCard: {
-    backgroundColor: '#374151',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 16, // spacing.4
+    marginBottom: 24, // spacing.6
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   tipsTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.heading.h5.fontSize
+    fontWeight: '600', // typography.heading.h5.fontWeight
+    marginBottom: 8, // spacing.2
+    fontFamily: 'Inter', // typography.heading.h5.fontFamily
   },
   tipsList: {
-    gap: 4,
+    gap: 4, // spacing.1
   },
   tipText: {
-    color: '#d1d5db',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 14, // typography.body.small.fontSize
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
 });
 

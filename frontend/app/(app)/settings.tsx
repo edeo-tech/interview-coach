@@ -459,47 +459,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 20, // layout.screenPadding
+    paddingBottom: 20, // spacing.5
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    fontSize: 24, // typography.heading.h2.fontSize
+    fontWeight: '600', // typography.heading.h2.fontWeight
+    color: '#FFFFFF', // text.primary
+    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 24, // spacing.6
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#e5e7eb',
-    marginBottom: 12,
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    marginBottom: 12, // spacing.3
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 16, // spacing.4
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   fieldContainer: {
-    paddingVertical: 12,
+    paddingVertical: 12, // spacing.3
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
+    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
   },
   fieldLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 4,
+    fontSize: 12, // typography.body.xsmall.fontSize
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    marginBottom: 4, // spacing.1
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
   fieldValue: {
-    fontSize: 16,
-    color: '#e5e7eb',
+    fontSize: 16, // typography.body.medium.fontSize
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   fieldValueContainer: {
     flexDirection: 'row',
@@ -512,62 +522,68 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    color: '#e5e7eb',
+    fontSize: 16, // typography.body.medium.fontSize
+    color: '#FFFFFF', // text.primary
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
-    paddingBottom: 4,
-    marginRight: 12,
+    borderBottomColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
+    paddingBottom: 4, // spacing.1
+    marginRight: 12, // spacing.3
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   linkItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 16, // spacing.4
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
+    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
   },
   linkText: {
     flex: 1,
-    fontSize: 16,
-    color: '#e5e7eb',
-    marginLeft: 12,
+    fontSize: 16, // typography.body.medium.fontSize
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    marginLeft: 12, // spacing.3
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   dangerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    paddingVertical: 4, // spacing.1
     paddingHorizontal: 0,
     alignSelf: 'flex-start',
-    borderRadius: 8,
+    borderRadius: 8, // borderRadius.default
   },
   dangerButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#ef4444',
-    marginLeft: 8,
+    fontSize: 16, // typography.body.medium.fontSize
+    fontWeight: '500', // typography.label.large.fontWeight
+    color: 'rgba(239, 68, 68, 1)', // semantic.error.main
+    marginLeft: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   appInfo: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 32, // spacing.8
   },
   appInfoText: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 14, // typography.body.small.fontSize
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   loadingContainer: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 32, // spacing.8
   },
   loadingText: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 8,
+    fontSize: 14, // typography.body.small.fontSize
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    marginTop: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   errorText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#ef4444',
+    fontSize: 14, // typography.body.small.fontSize
+    fontWeight: '500', // typography.label.large.fontWeight
+    color: 'rgba(239, 68, 68, 1)', // semantic.error.main
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   premiumStatus: {
     flexDirection: 'row',
@@ -579,46 +595,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   premiumText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 16, // typography.body.medium.fontSize
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginLeft: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   upgradeButton: {
-    backgroundColor: '#f59e0b',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
+    borderRadius: 12, // glassSecondary.borderRadius
+    paddingVertical: 8, // spacing.2
+    paddingHorizontal: 16, // spacing.4
     flexDirection: 'row',
     alignItems: 'center',
+    shadowColor: '#F59E0B', // gold.400
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   upgradeButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
+    color: '#FFFFFF', // text.primary
+    fontSize: 14, // typography.button.small.fontSize
+    fontWeight: '600', // typography.button.small.fontWeight
+    marginLeft: 6, // spacing.1.5
+    fontFamily: 'Inter', // typography.button.small.fontFamily
+    letterSpacing: 0.01, // typography.button.small.letterSpacing
   },
   divider: {
     height: 1,
-    backgroundColor: '#374151',
-    marginVertical: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
+    marginVertical: 16, // spacing.4
   },
   manageButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 8, // spacing.2
   },
   manageButtonText: {
-    fontSize: 16,
-    color: '#f59e0b',
-    fontWeight: '500',
-    marginHorizontal: 8,
+    fontSize: 16, // typography.body.medium.fontSize
+    color: 'rgba(252, 180, 0, 1)', // gold.400
+    fontWeight: '500', // typography.label.large.fontWeight
+    marginHorizontal: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   manageSubscriptionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 8, // spacing.2
   },
   manageSubscriptionInfo: {
     flexDirection: 'row',
@@ -626,9 +651,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   manageSubscriptionText: {
-    fontSize: 16,
-    color: '#e5e7eb',
-    marginLeft: 8,
+    fontSize: 16, // typography.body.medium.fontSize
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    marginLeft: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
 });
 

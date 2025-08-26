@@ -70,7 +70,7 @@ const CVUpload = () => {
       posthogCapture('cv_upload_failed', {
         source: 'cv_upload_page',
         error_message: error.response?.data?.detail || error.message,
-        file_type: file?.mimeType || 'unknown',
+        file_type: 'unknown',
         is_replacement: !!currentCV
       });
       showToast('Problem uploading CV. Please try again.', 'error');
@@ -268,194 +268,229 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingHorizontal: 24, // layout.screenPaddingLarge
+    paddingTop: 60, // layout.safeAreaTop + spacing.4
+    paddingBottom: 20, // spacing.5
   },
   backButton: {
-    marginRight: 16,
+    marginRight: 16, // spacing.4
   },
   headerTitle: {
-    color: '#ffffff',
-    fontSize: 24,
-    fontWeight: '700',
+    color: '#FFFFFF', // text.primary
+    fontSize: 24, // typography.heading.h2.fontSize
+    fontWeight: '600', // typography.heading.h2.fontWeight
+    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: 24, // layout.screenPaddingLarge
+    paddingBottom: 40, // spacing.10
   },
   loadingCard: {
-    backgroundColor: 'rgba(55, 65, 81, 0.8)',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 24, // spacing.6
     alignItems: 'center',
-    marginBottom: 24,
-    backdropFilter: 'blur(10px)',
+    marginBottom: 24, // spacing.6
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   loadingText: {
-    color: '#9ca3af',
-    marginTop: 8,
-    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    marginTop: 8, // spacing.2
+    fontSize: 16, // typography.body.medium.fontSize
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   cvCard: {
-    backgroundColor: 'rgba(55, 65, 81, 0.8)',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    backdropFilter: 'blur(10px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 24, // spacing.6
+    marginBottom: 24, // spacing.6
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   cvCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 20, // spacing.5
   },
   cvCardTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
+    color: '#FFFFFF', // text.primary
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   activeStatus: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   activeText: {
-    color: '#10b981',
-    fontWeight: '600',
-    marginLeft: 8,
+    color: 'rgba(34, 197, 94, 1)', // semantic.success.main
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginLeft: 8, // spacing.2
+    fontSize: 14, // typography.label.medium.fontSize
+    fontFamily: 'Inter', // typography.label.medium.fontFamily
   },
   cvInfo: {
-    gap: 16,
+    gap: 16, // spacing.4
   },
   cvInfoItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   cvInfoText: {
-    color: '#d1d5db',
-    marginLeft: 12,
-    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    marginLeft: 12, // spacing.3
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   cvInfoTextWrap: {
     flex: 1,
   },
   deleteButton: {
-    backgroundColor: 'rgba(153, 27, 27, 0.3)',
-    borderColor: 'rgba(239, 68, 68, 0.5)',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)', // semantic.error.light
+    borderColor: 'rgba(239, 68, 68, 0.3)', // semantic.error.main with opacity
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
+    borderRadius: 12, // glassSecondary.borderRadius
+    padding: 16, // spacing.4
+    marginTop: 20, // spacing.5
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   deleteButtonText: {
-    color: '#ef4444',
-    marginLeft: 8,
-    fontWeight: '600',
-    fontSize: 16,
+    color: 'rgba(239, 68, 68, 1)', // semantic.error.main
+    marginLeft: 8, // spacing.2
+    fontWeight: '600', // typography.button.medium.fontWeight
+    fontSize: 16, // typography.button.medium.fontSize
+    fontFamily: 'Inter', // typography.button.medium.fontFamily
   },
   uploadContainer: {
     flex: 1,
     justifyContent: 'center',
-    marginVertical: 40,
+    marginVertical: 40, // spacing.10
   },
   uploadContainerWithCV: {
     marginTop: 0,
-    marginBottom: 32,
+    marginBottom: 32, // spacing.8
   },
   uploadArea: {
-    backgroundColor: 'rgba(55, 65, 81, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    borderRadius: 20,
-    padding: 48,
+    borderColor: 'rgba(168, 85, 247, 0.3)', // purple.400 with opacity
+    borderRadius: 20, // borderRadius.lg
+    padding: 48, // spacing.12
     alignItems: 'center',
-    minHeight: 320,
+    minHeight: 320, // Custom height for large upload area
     justifyContent: 'center',
   },
   uploadAreaCompact: {
-    backgroundColor: 'rgba(55, 65, 81, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    borderRadius: 20,
-    padding: 32,
+    borderColor: 'rgba(168, 85, 247, 0.3)', // purple.400 with opacity
+    borderRadius: 20, // borderRadius.lg
+    padding: 32, // spacing.8
     alignItems: 'center',
-    minHeight: 240,
+    minHeight: 240, // Custom height for compact upload area
     justifyContent: 'center',
   },
   uploadAreaDisabled: {
     opacity: 0.5,
   },
   uploadIconContainer: {
-    marginBottom: 20,
+    marginBottom: 20, // spacing.5
   },
   uploadTitle: {
-    color: '#ffffff',
-    fontSize: 28,
-    fontWeight: '700',
+    color: '#FFFFFF', // text.primary
+    fontSize: 28, // typography.heading.h1.fontSize
+    fontWeight: '700', // typography.heading.h1.fontWeight
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 12, // spacing.3
+    fontFamily: 'SpaceGrotesk', // typography.heading.h1.fontFamily
+    letterSpacing: -0.01, // typography.heading.h1.letterSpacing
   },
   uploadTitleCompact: {
-    color: '#ffffff',
-    fontSize: 22,
-    fontWeight: '700',
+    color: '#FFFFFF', // text.primary
+    fontSize: 22, // typography.heading.h3.fontSize
+    fontWeight: '600', // typography.heading.h3.fontWeight
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 8, // spacing.2
+    fontFamily: 'SpaceGrotesk', // typography.heading.h3.fontFamily
+    letterSpacing: -0.005, // typography.heading.h3.letterSpacing
   },
   uploadSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 16, // typography.body.medium.fontSize
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 22,
+    marginBottom: 32, // spacing.8
+    lineHeight: 24, // typography.body.medium.lineHeight
     maxWidth: 280,
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   uploadSubtitleCompact: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
+    marginBottom: 24, // spacing.6
+    lineHeight: 20, // typography.body.small.lineHeight
     maxWidth: 260,
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   uploadButton: {
-    backgroundColor: '#8b5cf6',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 20,
+    backgroundColor: 'rgba(168, 85, 247, 1)', // purple.400
+    paddingHorizontal: 32, // spacing.8
+    paddingVertical: 16, // spacing.4
+    borderRadius: 12, // glassSecondary.borderRadius
+    marginBottom: 20, // spacing.5
+    shadowColor: '#A855F7', // purple.400
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   uploadButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.button.medium.fontSize
+    fontWeight: '600', // typography.button.medium.fontWeight
+    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   formatHint: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   trustIndicators: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 32,
-    paddingTop: 20,
+    gap: 32, // spacing.8
+    paddingTop: 20, // spacing.5
   },
   trustItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 8, // spacing.2
   },
   trustText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 14, // typography.body.small.fontSize
+    fontWeight: '500', // typography.label.medium.fontWeight
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
 });
 

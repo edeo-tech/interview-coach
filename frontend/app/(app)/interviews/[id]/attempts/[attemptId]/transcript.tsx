@@ -9,6 +9,7 @@ import { useInterview } from '../../../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
+import { GlassStyles, GlassTextColors } from '../../../../../../constants/GlassStyles';
 
 export default function AttemptTranscriptScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
@@ -78,23 +79,29 @@ export default function AttemptTranscriptScreen() {
     if (is_from_interview === 'true' && hasTranscript) {
       return (
         <View style={styles.footer}>
-          <TouchableOpacity 
-            style={styles.viewFeedbackButton}
-            onPress={() => {
-              // Medium impact for viewing feedback - important action
-              impactAsync(ImpactFeedbackStyle.Medium);
-              router.push({ 
-                pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
-                params: { id, attemptId } 
-              });
-            }}
+          <LinearGradient
+            colors={["#A855F7", "#EC4899"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.primaryButtonOuter}
           >
-            <Ionicons name="analytics-outline" size={24} color="#fff" />
-            <Text style={styles.viewFeedbackText}>
-              View Feedback & Analysis
-            </Text>
-            <Ionicons name="arrow-forward" size={20} color="#fff" />
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.primaryButtonInner}
+              onPress={() => {
+                // Medium impact for viewing feedback - important action
+                impactAsync(ImpactFeedbackStyle.Medium);
+                router.push({ 
+                  pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
+                  params: { id, attemptId } 
+                });
+              }}
+              activeOpacity={0.9}
+            >
+              <Ionicons name="analytics-outline" size={24} color="#fff" />
+              <Text style={styles.viewFeedbackText}>View Feedback & Analysis</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       );
     }
@@ -138,7 +145,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, 
     paddingBottom: 16, 
     borderBottomWidth: 1, 
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   backButton: {
     padding: 8,
@@ -156,17 +163,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
+    ...GlassStyles.card,
     padding: 32,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
     maxWidth: 320,
     marginHorizontal: 20,
   },
   loadingTitle: {
-    color: '#fff',
+    color: GlassTextColors.primary,
     fontSize: 20,
     fontWeight: '600',
     marginTop: 16,
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loadingSubtitle: {
-    color: '#9CA3AF',
+    color: GlassTextColors.muted,
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 20,
@@ -184,28 +188,33 @@ const styles = StyleSheet.create({
     padding: 20, 
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1, 
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: 'rgba(255,255,255,0.15)',
   },
-  viewFeedbackButton: {
-    backgroundColor: '#3B82F6',
-    paddingVertical: 18,
+  primaryButtonOuter: {
+    borderRadius: 28,
+    padding: 2,
+    height: 56,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#A855F7',
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 },
+      }
+    }),
+  },
+  primaryButtonInner: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 28,
+    height: 52,
     paddingHorizontal: 24,
-    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.15,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      }
-    }),
   },
   viewFeedbackText: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 17,
     fontWeight: '700',
     flex: 1,

@@ -3,14 +3,16 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Sty
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import BrandfetchLogo from '../../../components/BrandfetchLogo';
 import { useJobDetails, useStartJobInterviewAttempt } from '../../../_queries/jobs/jobs';
 import { InterviewType } from '../../../_interfaces/interviews/interview-types';
 import { JobInterview } from '../../../_interfaces/jobs/job';
+import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
 
-const getInterviewTypeDisplayName = (type: InterviewType): string => {
-  const displayNames: Record<InterviewType, string> = {
+const getInterviewTypeDisplayName = (type: InterviewType | string): string => {
+  const displayNames: Record<string, string> = {
     [InterviewType.PhoneScreen]: 'Phone Screen',
     [InterviewType.InitialHRInterview]: 'HR Interview',
     [InterviewType.MockSalesCall]: 'Sales Call',
@@ -25,11 +27,11 @@ const getInterviewTypeDisplayName = (type: InterviewType): string => {
     [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: 'Stakeholder Interview',
     [InterviewType.ExecutiveLeadershipRound]: 'Executive Round',
   };
-  return displayNames[type] || type;
+  return displayNames[type] || String(type);
 };
 
-const getInterviewTypeIcon = (type: InterviewType): string => {
-  const iconMap: Record<InterviewType, string> = {
+const getInterviewTypeIcon = (type: InterviewType | string): string => {
+  const iconMap: Record<string, string> = {
     [InterviewType.PhoneScreen]: 'call',
     [InterviewType.InitialHRInterview]: 'people',
     [InterviewType.MockSalesCall]: 'megaphone',
@@ -61,7 +63,7 @@ export default function JobDetails() {
   const { data: jobData, isLoading, error } = useJobDetails(id);
   const startAttempt = useStartJobInterviewAttempt();
 
-  const handleInterviewPress = (interview: JobInterview) => {
+  const handleInterviewPress = (interview: any) => {
     // Always navigate to interview details screen
     router.push(`/interviews/${interview._id}/details` as any);
   };
@@ -86,9 +88,18 @@ export default function JobDetails() {
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle" size={64} color="#ef4444" />
             <Text style={styles.errorTitle}>Failed to load job</Text>
-            <TouchableOpacity onPress={() => router.back()} style={styles.errorButton}>
-              <Text style={styles.errorButtonText}>Go Back</Text>
-            </TouchableOpacity>
+            <LinearGradient
+              colors={["#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.primaryButtonOuter}
+            >
+              <TouchableOpacity onPress={() => router.back()} style={styles.primaryButtonInner} activeOpacity={0.9}>
+                <Ionicons name="arrow-back" size={20} color="#fff" />
+                <Text style={styles.primaryButtonText}>Go Back</Text>
+                <Ionicons name="chevron-forward" size={20} color="#fff" />
+              </TouchableOpacity>
+            </LinearGradient>
           </View>
         </SafeAreaView>
       </ChatGPTBackground>
@@ -131,11 +142,11 @@ export default function JobDetails() {
             
             <View style={styles.jobMeta}>
               <View style={styles.metaItem}>
-                <Ionicons name="location-outline" size={16} color="#9ca3af" />
+                <Ionicons name="location-outline" size={16} color={GlassTextColors.muted} />
                 <Text style={styles.metaText}>{job.location || 'Remote'}</Text>
               </View>
               <View style={styles.metaItem}>
-                <Ionicons name="briefcase-outline" size={16} color="#9ca3af" />
+                <Ionicons name="briefcase-outline" size={16} color={GlassTextColors.muted} />
                 <Text style={styles.metaText}>{job.experience_level}</Text>
               </View>
             </View>
@@ -210,7 +221,7 @@ export default function JobDetails() {
                   <Ionicons 
                     name="chevron-forward" 
                     size={20} 
-                    color="#9ca3af" 
+                    color={GlassTextColors.muted} 
                   />
                 </TouchableOpacity>
               ))}
@@ -256,21 +267,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   errorButton: {
-    backgroundColor: '#F59E0B',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
     marginTop: 24,
-  },
-  errorButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   headerTitle: {
     color: '#ffffff',
@@ -279,12 +284,9 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   jobCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
+    ...GlassStyles.card,
     padding: 24,
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
   },
   jobHeader: {
     flexDirection: 'row',
@@ -328,7 +330,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   progressOverview: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    ...GlassStyles.container,
     borderRadius: 12,
     padding: 16,
   },
@@ -339,7 +341,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   progressTitle: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -361,14 +363,14 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressSubtext: {
-    color: '#9ca3af',
+    color: GlassTextColors.muted,
     fontSize: 13,
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
@@ -379,11 +381,9 @@ const styles = StyleSheet.create({
   stageCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    ...GlassStyles.container,
     borderRadius: 12,
     padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
   stageNumber: {
     width: 32,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   stageTitle: {
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   difficultyText: {
-    color: '#9ca3af',
+    color: GlassTextColors.muted,
     fontSize: 12,
     textTransform: 'capitalize',
   },
@@ -439,5 +439,34 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontSize: 11,
     marginTop: 4,
+  },
+  primaryButtonOuter: {
+    borderRadius: 28,
+    padding: 2,
+    height: 56,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#A855F7',
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 },
+      }
+    }),
+  },
+  primaryButtonInner: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 28,
+    height: 52,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  primaryButtonText: {
+    color: GlassTextColors.primary,
+    fontWeight: '700',
+    fontSize: 16,
+    marginHorizontal: 8,
   },
 });

@@ -206,7 +206,7 @@ export default function InterviewDetails() {
     }
   };
   
-  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: { layoutMeasurement: any; contentOffset: any; contentSize: any }) => {
     const paddingToBottom = 20;
     return layoutMeasurement.height + contentOffset.y >=
       contentSize.height - paddingToBottom;
@@ -300,8 +300,8 @@ export default function InterviewDetails() {
           <View style={styles.jobInfo}>
             <View style={styles.jobHeader}>
               <BrandfetchLogo
-                identifierType={interview.brandfetch_identifier_type}
-                identifierValue={interview.brandfetch_identifier_value}
+                identifierType={(interview as any).brandfetch_identifier_type}
+                identifierValue={(interview as any).brandfetch_identifier_value}
                 fallbackUrl={interview.company_logo_url}
                 size={48}
                 style={styles.companyLogoContainer}
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   loadingContainer: {
     flex: 1,
@@ -412,270 +412,298 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#9ca3af',
-    marginTop: 16,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    marginTop: 16, // spacing.4
+    fontSize: 16, // typography.body.medium.fontSize
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // layout.screenPadding
   },
   errorTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '600',
-    marginTop: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 20, // typography.heading.h3.fontSize
+    fontWeight: '600', // typography.heading.h3.fontWeight
+    marginTop: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h3.fontFamily
   },
   errorButton: {
-    backgroundColor: '#F59E0B',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 24,
+    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
+    paddingHorizontal: 24, // spacing.6
+    paddingVertical: 12, // spacing.3
+    borderRadius: 12, // glassSecondary.borderRadius
+    marginTop: 24, // spacing.6
+    shadowColor: '#F59E0B', // gold.400
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // Android shadow
   },
   errorButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
+    color: '#FFFFFF', // text.primary
+    fontWeight: '600', // typography.button.medium.fontWeight
+    fontSize: 16, // typography.button.medium.fontSize
+    fontFamily: 'Inter', // typography.button.medium.fontFamily
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingTop: 60, // layout.safeAreaTop + spacing.4
+    paddingBottom: 20, // spacing.5
   },
   headerTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginLeft: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 20, // typography.heading.h3.fontSize
+    fontWeight: '600', // typography.heading.h3.fontWeight
+    marginLeft: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h3.fontFamily
   },
   jobCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 24, // spacing.6
+    marginBottom: 24, // spacing.6
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-      }
-    }),
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   jobInfo: {
-    marginBottom: 20,
+    marginBottom: 20, // spacing.5
   },
   jobHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 12, // spacing.3
   },
   companyLogoContainer: {
     width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: 8, // borderRadius.default
     backgroundColor: '#ffffff',
-    marginRight: 16,
+    marginRight: 16, // spacing.4
     overflow: 'hidden',
   },
   jobHeaderText: {
     flex: 1,
   },
   roleTitle: {
-    color: '#ffffff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    lineHeight: 28,
+    color: '#FFFFFF', // text.primary
+    fontSize: 24, // typography.heading.h2.fontSize
+    fontWeight: '600', // typography.heading.h2.fontWeight
+    marginBottom: 4, // spacing.1
+    lineHeight: 28, // typography.heading.h2.lineHeight
+    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   company: {
-    color: '#60a5fa',
-    fontSize: 18,
-    fontWeight: '600',
+    color: 'rgba(96, 165, 250, 1)', // text.accent
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 6, // spacing.1.5
   },
   location: {
-    color: '#d1d5db',
-    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   interviewTypeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
+    gap: 6, // spacing.1.5
+    marginTop: 8, // spacing.2
   },
   interviewType: {
-    color: '#8b5cf6',
-    fontSize: 15,
-    fontWeight: '600',
+    color: 'rgba(139, 92, 246, 1)', // purple.500
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    fontWeight: '600', // typography.label.large.fontWeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   cardDivider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginBottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
+    marginBottom: 20, // spacing.5
   },
   integratedStartButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+    paddingVertical: 16, // spacing.4
+    paddingHorizontal: 20, // spacing.5
+    backgroundColor: 'rgba(244, 63, 94, 0.1)', // semantic.error.light
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.2)',
-    borderRadius: 12,
+    borderColor: 'rgba(244, 63, 94, 0.2)', // semantic.error.main with opacity
+    borderRadius: 12, // glassSecondary.borderRadius
   },
   integratedStartButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)', // glassInteractive.disabled.background
+    borderColor: 'rgba(255, 255, 255, 0.08)', // glassInteractive.disabled.border
   },
   integratedStartButtonText: {
-    color: '#F43F5E',
-    fontSize: 16,
-    fontWeight: '600',
+    color: 'rgba(244, 63, 94, 1)', // semantic.error.main
+    fontSize: 16, // typography.button.medium.fontSize
+    fontWeight: '600', // typography.button.medium.fontWeight
     flex: 1,
     textAlign: 'center',
-    marginHorizontal: 12,
+    marginHorizontal: 12, // spacing.3
+    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   integratedStartButtonTextDisabled: {
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 24, // spacing.6
   },
   sectionTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+    color: '#FFFFFF', // text.primary
+    fontSize: 18, // typography.heading.h4.fontSize
+    fontWeight: '600', // typography.heading.h4.fontWeight
+    marginBottom: 16, // spacing.4
+    fontFamily: 'Inter', // typography.heading.h4.fontFamily
   },
   emptyText: {
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     textAlign: 'center',
-    padding: 20,
+    padding: 20, // spacing.5
+    fontSize: 16, // typography.body.medium.fontSize
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   emptyState: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 16,
-    padding: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 32, // spacing.8
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   emptyTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.body.medium.fontSize
+    fontWeight: '600', // typography.label.large.fontWeight
+    marginTop: 16, // spacing.4
+    marginBottom: 8, // spacing.2
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   emptySubtitle: {
-    color: '#9ca3af',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 20, // typography.body.small.lineHeight
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   attemptsContainer: {
-    gap: 16,
+    gap: 16, // spacing.4
   },
   attemptCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    borderRadius: 16, // glass.borderRadius
+    padding: 20, // spacing.5
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      }
-    }),
+    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
   },
   attemptHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 14, // spacing.3.5
   },
   attemptTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#FFFFFF', // text.primary
+    fontSize: 16, // typography.body.medium.fontSize
+    fontWeight: '600', // typography.label.large.fontWeight
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   gradeContainer: {
     alignItems: 'center',
     minWidth: 55,
   },
   gradeScore: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 1,
+    fontSize: 22, // typography.heading.h3.fontSize
+    fontWeight: '700', // typography.heading.h3.fontWeight
+    marginBottom: 1, // spacing.0.25
+    fontFamily: 'SpaceGrotesk', // typography.heading.h3.fontFamily
   },
   gradeLabel: {
-    color: '#9ca3af',
-    fontSize: 11,
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    fontSize: 11, // typography.body.xsmall.fontSize (slightly smaller)
+    fontWeight: '500', // typography.label.small.fontWeight
+    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
   },
   attemptDetails: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 18,
+    gap: 16, // spacing.4
+    marginBottom: 18, // spacing.4.5
     flexWrap: 'wrap',
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 6, // spacing.1.5
   },
   detailText: {
-    color: '#d1d5db',
-    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    fontSize: 13, // typography.body.small.fontSize (slightly smaller)
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   singleActionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    paddingVertical: 14, // spacing.3.5
+    paddingHorizontal: 18, // spacing.4.5
+    borderRadius: 10, // borderRadius.md
+    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
   },
   primaryAction: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)', // semantic.success.light
+    borderColor: 'rgba(34, 197, 94, 0.2)', // semantic.success.main with opacity
   },
   disabledAction: {
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)', // glassInteractive.disabled.background
+    borderColor: 'rgba(255, 255, 255, 0.05)', // glassInteractive.disabled.border
   },
   singleActionButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
+    fontWeight: '600', // typography.label.large.fontWeight
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 12, // spacing.3
+    fontFamily: 'Inter', // typography.body.medium.fontFamily
   },
   loadingMore: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    gap: 8,
+    paddingVertical: 20, // spacing.5
+    gap: 8, // spacing.2
   },
   loadingMoreText: {
-    color: '#8b5cf6',
-    fontSize: 14,
-    fontWeight: '500',
+    color: 'rgba(139, 92, 246, 1)', // purple.500
+    fontSize: 14, // typography.body.small.fontSize
+    fontWeight: '500', // typography.label.large.fontWeight
+    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
 });

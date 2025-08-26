@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
 
 const Terms = () => {
   const router = useRouter();
@@ -132,22 +133,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    ...GlassStyles.interactive,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     textAlign: 'center',
     flex: 1,
   },
@@ -161,18 +159,15 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   contentContainer: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    ...GlassStyles.card,
     marginHorizontal: 20,
     marginTop: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
     padding: 24,
   },
   h1: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: GlassTextColors.primary,
     marginBottom: 16,
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -180,7 +175,7 @@ const styles = StyleSheet.create({
   h2: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#F59E0B',
+    color: '#A855F7',
     marginTop: 24,
     marginBottom: 12,
     letterSpacing: -0.3,
@@ -188,14 +183,14 @@ const styles = StyleSheet.create({
   paragraph: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#E5E7EB',
+    color: GlassTextColors.muted,
     marginBottom: 16,
     textAlign: 'left',
   },
   bullet: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#E5E7EB',
+    color: GlassTextColors.muted,
     marginBottom: 8,
     marginLeft: 8,
     textAlign: 'left',
