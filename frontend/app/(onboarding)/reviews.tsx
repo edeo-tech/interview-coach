@@ -1,15 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import * as StoreReview from 'expo-store-review';
 import { Ionicons } from '@expo/vector-icons';
-import MorphingBackground from '../../components/MorphingBackground';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
+import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const OnboardingReviews = () => {
   const { posthogCapture } = usePosthogSafely();
   const [selectedIndustry] = useState('Marketing'); // This would come from onboarding context
+
+  // Animation values - exactly like profile-setup
+  const contentTranslateX = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+  const buttonOpacity = useRef(new Animated.Value(1)).current;
+  const buttonTranslateY = useRef(new Animated.Value(0)).current;
+
+  // Entrance animation - exactly like profile-setup with direction awareness
+  useFocusEffect(
+    React.useCallback(() => {
+      // Determine slide direction based on last navigation direction
+      const slideInFrom = getNavigationDirection() === 'back' ? -SCREEN_WIDTH : SCREEN_WIDTH;
+      
+      // Reset to slide-in position 
+      contentTranslateX.setValue(slideInFrom);
+      buttonTranslateY.setValue(30);
+      contentOpacity.setValue(0);
+      buttonOpacity.setValue(0);
+      
+      // Add a brief pause before sliding in new content for a more relaxed feel - exactly like profile-setup
+      setTimeout(() => {
+        // Animate in content and button together with gentle timing - exactly like profile-setup
+        Animated.parallel([
+          Animated.timing(contentTranslateX, {
+            toValue: 0,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          // Button animates in slightly after content starts, creating a nice cascade - exactly like profile-setup
+          Animated.sequence([
+            Animated.delay(200),
+            Animated.parallel([
+              Animated.timing(buttonOpacity, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+              }),
+              Animated.timing(buttonTranslateY, {
+                toValue: 0,
+                duration: 600,
+                useNativeDriver: true,
+              })
+            ])
+          ])
+        ]).start();
+      }, 100);
+    }, [])
+  );
 
   useEffect(() => {
     requestStoreReview();
@@ -63,61 +120,140 @@ const OnboardingReviews = () => {
   ).concat(testimonials.filter(t => t.industry !== selectedIndustry)).slice(0, 3);
 
   const handleContinue = () => {
-    router.push({ 
-      pathname: '/(app)/paywall',
-      params: { source: 'onboarding' }
+    // Set direction for next screen
+    setNavigationDirection('forward');
+    
+    // Slide out to left (forward direction) - exactly like profile-setup
+    Animated.parallel([
+      Animated.timing(contentTranslateX, {
+        toValue: -SCREEN_WIDTH,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      // Navigate after animation completes
+      setTimeout(() => {
+        router.push({ 
+          pathname: '/(app)/paywall',
+          params: { source: 'onboarding' }
+        });
+      }, 100);
     });
   };
 
-  const renderStars = (rating) => {
-    return (
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Ionicons
-            key={star}
-            name={star <= rating ? 'star' : 'star-outline'}
-            size={14}
-            color="#F59E0B"
-          />
-        ))}
-      </View>
-    );
+  const handleBack = () => {
+    // Set direction for previous screen
+    setNavigationDirection('back');
+    
+    // Slide out to right (back direction) - exactly like profile-setup
+    Animated.parallel([
+      Animated.timing(contentTranslateX, {
+        toValue: SCREEN_WIDTH,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setTimeout(() => {
+        router.back();
+      }, 100);
+    });
   };
 
   return (
-    <MorphingBackground mode="static" style={styles.gradient}>
+    <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={16} totalSteps={17} />
+        <OnboardingProgress 
+          currentStep={17} 
+          totalSteps={17}
+          onBack={handleBack}
+        />
         
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.screenTitle}>Join thousands who got hired</Text>
-          <Text style={styles.subtitle}>
-            Thousands of job seekers across Marketing, Tech, Sales trust Nextround to get ahead.
-          </Text>
+        {/* Animated content container - exactly like profile-setup */}
+        <Animated.View 
+          style={[
+            styles.animatedContent,
+            {
+              transform: [{ translateX: contentTranslateX }],
+              opacity: contentOpacity,
+            }
+          ]}
+        >
+          <ScrollView 
+            style={styles.scrollContent} 
+            contentContainerStyle={styles.scrollContentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.content}>
+              <Text style={styles.screenTitle}>Join thousands who got hired</Text>
+              
+              <Text style={styles.subtitle}>
+                Thousands of job seekers across Marketing, Tech, and Sales trust NextRound to get ahead.
+              </Text>
 
-          <View style={styles.testimonialsContainer}>
-            {industryMatchedTestimonials.map((testimonial, index) => (
-              <View key={index} style={styles.testimonialCard}>
-                <View style={styles.testimonialHeader}>
-                  <View>
-                    <Text style={styles.testimonialName}>{testimonial.name}</Text>
-                    <Text style={styles.testimonialRole}>{testimonial.role}</Text>
+              <View style={styles.testimonialsContainer}>
+                {industryMatchedTestimonials.map((testimonial, index) => (
+                  <View key={index} style={styles.testimonialCard}>
+                    <Text style={styles.testimonialText}>"{testimonial.text}"</Text>
+                    <Text style={styles.testimonialAuthor}>
+                      — {testimonial.name}, {testimonial.role}
+                    </Text>
                   </View>
-                  {renderStars(testimonial.rating)}
-                </View>
-                <Text style={styles.testimonialText}>"{testimonial.text}"</Text>
+                ))}
               </View>
-            ))}
-          </View>
-        </ScrollView>
+            </View>
+          </ScrollView>
+        </Animated.View>
 
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <Animated.View 
+          style={[
+            styles.bottomContainer,
+            {
+              opacity: buttonOpacity,
+              transform: [{ translateY: buttonTranslateY }],
+            }
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.continueButton} 
+            onPress={handleContinue}
+            activeOpacity={0.8}
+          >
             <Text style={styles.continueButtonText}>Unlock Your Interview Roadmap</Text>
+            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
-    </MorphingBackground>
+    </ChatGPTBackground>
   );
 };
 
@@ -134,76 +270,94 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
+  animatedContent: {
+    flex: 1,
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  scrollContentContainer: {
+    paddingBottom: 100, // Space for button
+  },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 8,
+    lineHeight: 30,
+    marginBottom: 24,
   },
   subtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
+    lineHeight: 24,
     marginBottom: 32,
-    lineHeight: 22,
+    paddingHorizontal: 16,
   },
   testimonialsContainer: {
     gap: 16,
+    width: '100%',
+    maxWidth: 320,
   },
   testimonialCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  testimonialHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  testimonialName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 2,
-  },
-  testimonialRole: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    gap: 2,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   testimonialText: {
     fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.85)',
     lineHeight: 22,
     fontStyle: 'italic',
+    marginBottom: 8,
+  },
+  testimonialAuthor: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    color: '#A855F7',
+    textAlign: 'left',
   },
   bottomContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    width: '100%',
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 12,
-    paddingVertical: 18,
+    width: '100%',
+    maxWidth: 320,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    paddingHorizontal: 24,
+    shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 8,
   },
   continueButtonText: {
-    color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
+    color: '#FFFFFF',
+    marginRight: 8,
   },
 });
 
