@@ -11,7 +11,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassStyles } from '../../constants/GlassStyles';
 import { useAuth } from '@/context/authentication/AuthContext';
@@ -19,19 +18,42 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import { useToast } from '@/components/Toast';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useSecureStore from '../../hooks/secure-store/useSecureStore';
+import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
+import AppleSignIn from '../../components/(auth)/AppleSignIn';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userName, setUserName] = useState('');
+  const [lastSignInType, setLastSignInType] = useState<string | null>(null);
+  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError, googleLoginErrorMessage, appleLoginErrorMessage, clearGoogleLoginError, clearAppleLoginError, resetLogin } = useAuth();
   const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
-  const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError, resetLogin } = useAuth();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { getItem } = useSecureStore();
   
   useFocusEffect(() => {
     posthogScreen('auth_login');
+    loadUserMetadata();
   });
+
+  const loadUserMetadata = async () => {
+    try {
+      const storedUserName = await getItem('user_name');
+      const storedLastSignInType = await getItem('last_sign_in_type');
+      
+      if (storedUserName) {
+        setUserName(storedUserName);
+      }
+      if (storedLastSignInType) {
+        setLastSignInType(storedLastSignInType);
+      }
+    } catch (error) {
+      console.error('Error loading user metadata:', error);
+    }
+  };
 
   useEffect(() => {
     if (loginErrorMessage) {
@@ -55,6 +77,20 @@ const Login = () => {
       resetLogin();
     }
   }, [loginSuccess, hasAttemptedLogin, showToast, resetLogin]);
+
+  useEffect(() => {
+    if (googleLoginErrorMessage) {
+      showToast(googleLoginErrorMessage, 'error');
+      clearGoogleLoginError();
+    }
+  }, [googleLoginErrorMessage, showToast, clearGoogleLoginError]);
+
+  useEffect(() => {
+    if (appleLoginErrorMessage) {
+      showToast(appleLoginErrorMessage, 'error');
+      clearAppleLoginError();
+    }
+  }, [appleLoginErrorMessage, showToast, clearAppleLoginError]);
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -94,7 +130,9 @@ const Login = () => {
             <View style={styles.logoContainer}>
               <Ionicons name="chatbubble-ellipses" size={48} color="#ffffff" />
             </View>
-            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.title}>
+              {userName ? `Welcome back, ${userName}!` : 'Welcome Back'}
+            </Text>
             <Text style={styles.subtitle}>Sign in to continue your interview prep</Text>
           </View>
 
@@ -149,12 +187,38 @@ const Login = () => {
             </TouchableOpacity>
           </View>
 
+          {/* Social Sign-in Section */}
+          <View style={styles.socialSignInContainer}>
+            <View style={styles.dividerContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.divider} />
+            </View>
+            
+            <View style={styles.socialButtonsContainer}>
+              <View style={lastSignInType === 'google' ? styles.lastUsedContainer : {}}>
+                {lastSignInType === 'google' && (
+                  <Text style={styles.lastUsedLabel}>Last used</Text>
+                )}
+                <GoogleSignIn />
+              </View>
+              
+              <View style={lastSignInType === 'apple' ? styles.lastUsedContainer : {}}>
+                {lastSignInType === 'apple' && (
+                  <Text style={styles.lastUsedLabel}>Last used</Text>
+                )}
+                <AppleSignIn />
+              </View>
+            </View>
+            
+          </View>
+
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account yet?</Text>
             <TouchableOpacity 
               style={styles.linkButton}
-              onPress={() => router.replace('/(auth)/register')}
+              onPress={() => router.replace('/(auth)/welcome')}
             >
               <Text style={styles.linkText}>Create Account</Text>
               <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
@@ -290,6 +354,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginRight: 4,
+  },
+  socialSignInContainer: {
+    marginBottom: 32,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  dividerText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    fontWeight: '500',
+    marginHorizontal: 16,
+  },
+  socialButtonsContainer: {
+    gap: 12,
+  },
+  lastUsedContainer: {
+    position: 'relative',
+  },
+  lastUsedLabel: {
+    position: 'absolute',
+    top: -8,
+    right: 8,
+    backgroundColor: '#F59E0B',
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    zIndex: 1,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 12,
+    paddingHorizontal: 16,
   },
 });
 

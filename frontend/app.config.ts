@@ -1,6 +1,6 @@
 module.exports = {
     expo: {
-        name: "Nextround",
+        name: "nextround",
         slug: "interview-coach",
         version: "1.0.1",
         orientation: "portrait",

@@ -127,7 +127,11 @@ const Paywall = () => {
           source
         });
         showToast('Welcome to Premium! 🎉', 'success');
-        router.back();
+        if (source === 'onboarding') {
+          router.replace('/(app)/(tabs)/home');
+        } else {
+          router.back();
+        }
       } else {
         throw new Error('Purchase completed but premium not activated');
       }
@@ -168,7 +172,11 @@ const Paywall = () => {
         setCustomerInfo(customerInfo);
         posthogCapture('paywall_restore_success', { source });
         showToast('Premium access restored!', 'success');
-        router.back();
+        if (source === 'onboarding') {
+          router.replace('/(app)/(tabs)/home');
+        } else {
+          router.back();
+        }
       } else {
         posthogCapture('paywall_restore_no_purchases', { source });
         Alert.alert(
@@ -353,7 +361,11 @@ const Paywall = () => {
             onPress={() => {
               // Light impact for navigation back - minor action
               impactAsync(ImpactFeedbackStyle.Light);
-              router.back();
+              if (source === 'onboarding') {
+                router.replace('/(app)/(tabs)/home');
+              } else {
+                router.back();
+              }
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >

@@ -20,7 +20,11 @@
       "Bash(ls:*)",
       "Bash(python -m pytest --version)",
       "Bash(pip3 list:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "WebSearch",
+      "Bash(npx react-native start:*)",
+      "Bash(npm start)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
