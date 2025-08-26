@@ -123,36 +123,36 @@ export default function JobDetails() {
             <Text style={styles.headerTitle}>Job Details</Text>
           </View>
 
-          {/* Job Info Card */}
-          <View style={styles.jobCard}>
-            <View style={styles.jobHeader}>
-              <BrandfetchLogo
-                identifierType={job.brandfetch_identifier_type}
-                identifierValue={job.brandfetch_identifier_value}
-                fallbackUrl={job.company_logo_url}
-                size={56}
-                style={styles.companyLogoContainer}
-                fallbackIconColor="#ffffff"
-                fallbackIconName="briefcase-outline"
-              />
-              <View style={styles.jobHeaderText}>
-                <Text style={styles.roleTitle}>{job.role_title}</Text>
-                <Text style={styles.company}>{job.company}</Text>
-              </View>
+          {/* Job Info - No container for static content */}
+          <View style={styles.jobHeader}>
+            <BrandfetchLogo
+              identifierType={job.brandfetch_identifier_type}
+              identifierValue={job.brandfetch_identifier_value}
+              fallbackUrl={job.company_logo_url}
+              size={56}
+              style={styles.companyLogoContainer}
+              fallbackIconColor="#ffffff"
+              fallbackIconName="briefcase-outline"
+            />
+            <View style={styles.jobHeaderText}>
+              <Text style={styles.roleTitle}>{job.role_title}</Text>
+              <Text style={styles.company}>{job.company}</Text>
             </View>
-            
-            <View style={styles.jobMeta}>
-              <View style={styles.metaItem}>
-                <Ionicons name="location-outline" size={16} color={GlassTextColors.muted} />
-                <Text style={styles.metaText}>{job.location || 'Remote'}</Text>
-              </View>
-              <View style={styles.metaItem}>
-                <Ionicons name="briefcase-outline" size={16} color={GlassTextColors.muted} />
-                <Text style={styles.metaText}>{job.experience_level}</Text>
-              </View>
+          </View>
+          
+          <View style={styles.jobMeta}>
+            <View style={styles.metaItem}>
+              <Ionicons name="location-outline" size={16} color={GlassTextColors.muted} />
+              <Text style={styles.metaText}>{job.location || 'Remote'}</Text>
             </View>
+            <View style={styles.metaItem}>
+              <Ionicons name="briefcase-outline" size={16} color={GlassTextColors.muted} />
+              <Text style={styles.metaText}>{job.experience_level}</Text>
+            </View>
+          </View>
 
-            {/* Progress Overview - Simplified without nested container */}
+          {/* Progress Overview - In its own container */}
+          <View style={styles.progressContainer}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressTitle}>Interview Progress</Text>
               <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
@@ -273,23 +273,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   headerTitle: {
     ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
     marginLeft: 16,
   },
-  jobCard: {
+  progressContainer: {
     ...GlassStyles.card,
-    padding: 24,
+    padding: 20,
     marginBottom: 24,
   },
   jobHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    paddingHorizontal: 4,
   },
   companyLogoContainer: {
     width: 56,
@@ -315,7 +314,8 @@ const styles = StyleSheet.create({
   jobMeta: {
     flexDirection: 'row',
     gap: 20,
-    marginBottom: 20,
+    marginBottom: 28,
+    paddingHorizontal: 4,
   },
   metaItem: {
     flexDirection: 'row',
@@ -331,7 +331,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
-    marginTop: 20,
   },
   progressTitle: {
     ...TYPOGRAPHY.labelLarge,
