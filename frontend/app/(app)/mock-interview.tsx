@@ -12,8 +12,99 @@ import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
+import { InterviewType } from '../../_interfaces/interviews/interview-types';
 
 const { width: screenWidth } = Dimensions.get('window');
+
+// Agent interview link data
+const AGENT_INTERVIEW_LINK = {
+    "phone_screen": {
+        "name": "Niamh Morissey",
+        "agent_id": "agent_3201k2d96cp0fv7rvw0j3nbe3fd6",
+        "profile_picture": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "initial_hr_interview": {
+        "name": "Sam Tyldesley",
+        "agent_id": "agent_9101k2qdcg74f6bteqwe4y2se5ct",
+        "profile_picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "mock_sales_call": {
+        "name": "Jane Smith",
+        "agent_id": "agent_5701k3kk62prf8b9f2cnrdbtwghz",
+        "profile_picture": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "presentation_pitch": {
+        "name": "Paddy Beaumont",
+        "agent_id": "agent_9901k3kkamqwekbvd26e4hf2g4td",
+        "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "technical_screening_call": {
+        "name": "Louis O'Brien",
+        "agent_id": "agent_3801k3kkcnpvfenvzpzbkfxcxr1x",
+        "profile_picture": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "system_design_interview": {
+        "name": "Daniel Jones",
+        "agent_id": "agent_4801k3kkeazve138emwhjrnqmg0p",
+        "profile_picture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "portfolio_review": {
+        "name": "Ruby Galloway",
+        "agent_id": "agent_9101k3kkfyv6e21ry5rmsf6w4p7q",
+        "profile_picture": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "case_study": {
+        "name": "Conor Duffy",
+        "agent_id": "agent_6501k3kkhnqmf098ndn7bgvath91",
+        "profile_picture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "behavioral_interview": {
+        "name": "Brenda Newman",
+        "agent_id": "agent_0501k3kkksrkewj9mhys46xvtq50",
+        "profile_picture": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "values_interview": {
+        "name": "Victor Phelps",
+        "agent_id": "agent_2701k3kkp3w4ec99d0pvsxdx41gn",
+        "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "team_fit_interview": {
+        "name": "Fran Haines",
+        "agent_id": "agent_9501k3kkq19hedptvztph0k5p1e3",
+        "profile_picture": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "interview_with_business_partner_client_stakeholder": {
+        "name": "John McGrath",
+        "agent_id": "agent_2601k3km0bxbe62aness666ye02n",
+        "profile_picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format"
+    },
+    "executive_leadership_round": {
+        "name": "Ethan Ford",
+        "agent_id": "agent_5201k3km2snnffbv0qtmfbxhd6p1",
+        "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
+    }
+};
+
+// Function to map InterviewType enum to JSON keys
+function getInterviewTypeKey(interviewType: string): string {
+    const typeMapping: { [key: string]: string } = {
+        [InterviewType.PhoneScreen]: "phone_screen",
+        [InterviewType.InitialHRInterview]: "initial_hr_interview",
+        [InterviewType.MockSalesCall]: "mock_sales_call",
+        [InterviewType.PresentationPitch]: "presentation_pitch",
+        [InterviewType.TechnicalScreeningCall]: "technical_screening_call",
+        [InterviewType.SystemDesignInterview]: "system_design_interview",
+        [InterviewType.PortfolioReview]: "portfolio_review",
+        [InterviewType.CaseStudy]: "case_study",
+        [InterviewType.BehavioralInterview]: "behavioral_interview",
+        [InterviewType.ValuesInterview]: "values_interview",
+        [InterviewType.TeamFitInterview]: "team_fit_interview",
+        [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: "interview_with_business_partner_client_stakeholder",
+        [InterviewType.ExecutiveLeadershipRound]: "executive_leadership_round"
+    };
+    
+    return typeMapping[interviewType] || "phone_screen"; // Default fallback
+}
 
 const SlideToAnswer = ({ onAnswer, onDecline }: { onAnswer: () => void; onDecline: () => void }) => {
     const slideAnim = React.useRef(new Animated.Value(0)).current;
@@ -126,13 +217,41 @@ export default function MockInterview() {
     
     // Interviewer profile - changes based on interview type (check both API data and URL params)
     const currentInterviewType = interviewData?.interview_type || params.interviewType as string;
-    const interviewer = {
-        name: currentInterviewType === 'sales' ? 'Alex Martinez' : 'Niamh Morrisey',
-        avatar: currentInterviewType === 'sales' 
-            ? 'https://res.cloudinary.com/dphekriyz/image/upload/v1755190732/temp_prof_male_business_vchg09.jpg'
-            : 'https://res.cloudinary.com/dphekriyz/image/upload/v1755190732/temp_prof_female_vchg08.jpg',
-        role: currentInterviewType === 'sales' ? 'Director of Operations' : 'Senior Technical Interviewer'
+    
+    // Get agent info based on interview type
+    const getAgentInfo = () => {
+        const interviewTypeKey = getInterviewTypeKey(currentInterviewType);
+        const agentData = AGENT_INTERVIEW_LINK[interviewTypeKey as keyof typeof AGENT_INTERVIEW_LINK];
+        
+        return {
+            name: agentData?.name || 'Niamh Morissey',
+            avatar: agentData?.profile_picture || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format',
+            role: getInterviewerRole(currentInterviewType),
+            agentId: agentData?.agent_id || 'agent_3201k2d96cp0fv7rvw0j3nbe3fd6'
+        };
     };
+    
+    // Helper function to determine interviewer role based on interview type
+    const getInterviewerRole = (type: string): string => {
+        switch (type) {
+            case InterviewType.MockSalesCall:
+                return 'Director of Operations';
+            case InterviewType.TechnicalScreeningCall:
+            case InterviewType.SystemDesignInterview:
+                return 'Senior Technical Interviewer';
+            case InterviewType.InitialHRInterview:
+            case InterviewType.BehavioralInterview:
+                return 'HR Manager';
+            case InterviewType.ExecutiveLeadershipRound:
+                return 'VP of Engineering';
+            case InterviewType.PortfolioReview:
+                return 'Design Lead';
+            default:
+                return 'Senior Interviewer';
+        }
+    };
+    
+    const interviewer = getAgentInfo();
 
     const conversationConfig = useMemo(() => ({
         onConnect: () => {
@@ -221,7 +340,7 @@ export default function MockInterview() {
         
         const currentInterviewType = interviewData?.interview_type || params.interviewType as string;
         
-        if (currentInterviewType === 'sales') {
+        if (currentInterviewType === InterviewType.MockSalesCall) {
             return `You are ${interviewer.name}, a ${interviewer.role} at TechFlow Solutions, participating in a sales call simulation.
 
 PROSPECT PROFILE (YOU):
@@ -301,11 +420,8 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         });
         setCallState('connecting');
         
-        // Select agent based on interview type (check both API data and URL params)
-        const interviewType = interviewData?.interview_type || params.interviewType as string;
-        const agentId = interviewType === 'sales' 
-            ? 'agent_9101k2qdcg74f6bteqwe4y2se5ct'  // Sales agent
-            : process.env.EXPO_PUBLIC_ELEVENLABS_AGENT_ID; // Default agent
+        // Use the correct agent_id from the interviewer mapping
+        const agentId = interviewer.agentId;
 
         // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
         let newAttemptId: string | null = null;
@@ -333,9 +449,9 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             console.log('📝 Starting ElevenLabs session with attemptId:', newAttemptId);
             console.log('📝 Interview type from API:', interviewData?.interview_type);
             console.log('📝 Interview type from params:', params.interviewType);
-            console.log('📝 Final interview type:', interviewType);
+            console.log('📝 Final interview type:', currentInterviewType);
             console.log('📝 AgentId:', agentId);
-            console.log('📝 Is sales interview:', interviewType === 'sales');
+            console.log('📝 Interviewer name:', interviewer.name);
             
             const sessionConfig = {
                 agentId: agentId,
@@ -525,7 +641,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                     
                                     {/* Instructions based on interview type */}
                                     <View style={styles.instructionsContainer}>
-                                        {currentInterviewType === 'sales' ? (
+                                        {currentInterviewType === InterviewType.MockSalesCall ? (
                                             <View style={styles.salesInstructionsCard}>
                                                 <View style={styles.instructionsHeader}>
                                                     <Ionicons name="trending-up" size={20} color="#F59E0B" />
