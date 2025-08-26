@@ -1,16 +1,136 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import MorphingBackground from '../../components/MorphingBackground';
+import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const ProblemValidation = () => {
   const { data } = useOnboarding();
+
+  // Animation values - exactly like profile-setup
+  const contentTranslateX = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+  const buttonOpacity = useRef(new Animated.Value(1)).current;
+  const buttonTranslateY = useRef(new Animated.Value(0)).current;
+
+  // Entrance animation - exactly like profile-setup with direction awareness
+  useFocusEffect(
+    React.useCallback(() => {
+      // Determine slide direction based on last navigation direction
+      const slideInFrom = getNavigationDirection() === 'back' ? -SCREEN_WIDTH : SCREEN_WIDTH;
+      
+      // Reset to slide-in position 
+      contentTranslateX.setValue(slideInFrom);
+      buttonTranslateY.setValue(30);
+      contentOpacity.setValue(0);
+      buttonOpacity.setValue(0);
+      
+      // Add a brief pause before sliding in new content for a more relaxed feel - exactly like profile-setup
+      setTimeout(() => {
+        // Animate in content and button together with gentle timing - exactly like profile-setup
+        Animated.parallel([
+          Animated.timing(contentTranslateX, {
+            toValue: 0,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          // Button animates in slightly after content starts, creating a nice cascade - exactly like profile-setup
+          Animated.sequence([
+            Animated.delay(200),
+            Animated.parallel([
+              Animated.timing(buttonOpacity, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+              }),
+              Animated.timing(buttonTranslateY, {
+                toValue: 0,
+                duration: 600,
+                useNativeDriver: true,
+              })
+            ])
+          ])
+        ]).start();
+      }, 100);
+    }, [])
+  );
   
   const handleContinue = () => {
-    router.push('/(onboarding)/demo');
+    // Set direction for next screen
+    setNavigationDirection('forward');
+    
+    // Slide out to left (forward direction) - exactly like profile-setup
+    Animated.parallel([
+      Animated.timing(contentTranslateX, {
+        toValue: -SCREEN_WIDTH,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      // Navigate after animation completes
+      setTimeout(() => {
+        router.push('/(onboarding)/demo');
+      }, 100);
+    });
+  };
+
+  const handleBack = () => {
+    // Set direction for previous screen
+    setNavigationDirection('back');
+    
+    // Slide out to right (back direction) - exactly like profile-setup
+    Animated.parallel([
+      Animated.timing(contentTranslateX, {
+        toValue: SCREEN_WIDTH,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonTranslateY, {
+        toValue: 30,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setTimeout(() => {
+        router.back();
+      }, 100);
+    });
   };
 
   const getPrimaryProblem = () => {
@@ -40,162 +160,128 @@ const ProblemValidation = () => {
   const primaryProblem = getPrimaryProblem();
   const industryName = data.industry ? data.industry.charAt(0).toUpperCase() + data.industry.slice(1) : 'your field';
 
-  const getInsightMessage = () => {
+  const getInsightText = () => {
     const hasFailedBefore = data.hasFailed;
     
-    switch (primaryProblem.area) {
-      case 'preparation':
-        return hasFailedBefore 
-          ? "Looking at your past struggles, research shows that 73% of failed interviews trace back to inadequate preparation rather than lack of qualifications."
-          : "Research shows that 73% of candidates fail because they wing it instead of preparing strategic examples - but you can avoid this.";
-      case 'communication':
-        return hasFailedBefore
-          ? "Based on your experience, you're not alone - studies reveal that 68% of rejections happen due to poor communication, not insufficient skills."
-          : "Studies reveal that 68% of rejections happen due to poor communication, not lack of skills - this is your chance to stand out.";
-      case 'nerves':
-        return hasFailedBefore
-          ? "Your nervousness makes sense given your past experience, but data shows 61% of qualified candidates self-sabotage due to unmanaged anxiety."
-          : "Data shows that 61% of qualified candidates self-sabotage due to unmanaged interview anxiety - you can master this before it becomes an issue.";
-      default:
-        return hasFailedBefore
-          ? "Most interview failures aren't about credentials - they're about the preparation you can now control."
-          : "Most interview failures aren't about credentials - they're about preparation, which you have the power to master.";
+    if (hasFailedBefore) {
+      return `Looking back at your interview struggles, your main challenge was ${primaryProblem.name}.`;
+    } else {
+      return `Based on your self-assessment, your biggest interview concern is ${primaryProblem.name}.`;
     }
   };
 
-  const getComparisonCards = () => {
-    const cardContent = {
-      preparation: {
-        struggling: {
-          title: "Unprepared",
-          items: [
-            "Wings it with generic answers",
-            "Stumbles through examples", 
-            "Lacks company knowledge",
-            "Can't articulate their value"
-          ]
-        },
-        succeeding: {
-          title: "Well-Prepared",
-          items: [
-            "Uses specific, relevant examples",
-            "Demonstrates deep company research",
-            "Articulates clear value proposition", 
-            "Asks insightful questions"
-          ]
-        }
-      },
-      communication: {
-        struggling: {
-          title: "Poor Communicator", 
-          items: [
-            "Rambles without clear points",
-            "Uses unprofessional language",
-            "Poor body language/presence",
-            "Doesn't listen actively"
-          ]
-        },
-        succeeding: {
-          title: "Strong Communicator",
-          items: [
-            "Concise, structured responses",
-            "Professional, confident tone",
-            "Engaging body language",
-            "Asks clarifying questions"
-          ]
-        }
-      },
-      nerves: {
-        struggling: {
-          title: "Anxious Candidate",
-          items: [
-            "Freezes up under pressure",
-            "Voice shakes, appears nervous",
-            "Makes careless mistakes", 
-            "Undersells their abilities"
-          ]
-        },
-        succeeding: {
-          title: "Calm & Confident",
-          items: [
-            "Stays composed under pressure",
-            "Speaks with steady confidence",
-            "Thinks clearly through challenges",
-            "Showcases abilities naturally"
-          ]
-        }
-      }
-    };
+  const getInsightBullets = () => {
+    switch (primaryProblem.area) {
+      case 'preparation':
+        return [
+          '73% of failed interviews trace back to inadequate preparation',
+          'Most rejections happen to qualified candidates who "wing it"',
+          'Strategic preparation beats raw qualifications every time'
+        ];
+      case 'communication':
+        return [
+          '68% of rejections happen due to poor communication skills',
+          'Technical skills matter less than clear articulation',
+          'Strong communicators stand out instantly'
+        ];
+      case 'nerves':
+        return [
+          '61% of qualified candidates self-sabotage due to anxiety',
+          'Interview nerves are manageable with the right techniques',
+          'Confidence can be learned and practiced'
+        ];
+      default:
+        return [
+          'Most interview failures aren\'t about credentials',
+          'Preparation and presentation matter more than experience',
+          'Success comes from mastering the interview process'
+        ];
+    }
+  };
 
-    const content = cardContent[primaryProblem.area] || cardContent.preparation;
-    
-    return (
-      <>
-        <View style={styles.comparisonCard}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="close-circle" size={32} color="#EF4444" />
-            <Text style={styles.cardTitle}>{content.struggling.title}</Text>
-          </View>
-          <View style={styles.cardContent}>
-            {content.struggling.items.map((item, index) => (
-              <Text key={index} style={styles.cardItem}>• {item}</Text>
-            ))}
-          </View>
-        </View>
-
-        <View style={[styles.comparisonCard, styles.preparedCard]}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="checkmark-circle" size={32} color="#10B981" />
-            <Text style={[styles.cardTitle, styles.preparedTitle]}>{content.succeeding.title}</Text>
-          </View>
-          <View style={styles.cardContent}>
-            {content.succeeding.items.map((item, index) => (
-              <Text key={index} style={styles.cardItem}>• {item}</Text>
-            ))}
-          </View>
-        </View>
-      </>
-    );
+  const getSolutionTitle = () => {
+    switch (primaryProblem.area) {
+      case 'preparation':
+        return 'Strategic preparation is the difference';
+      case 'communication':
+        return 'Clear communication sets you apart';
+      case 'nerves':
+        return 'Confidence can be mastered';
+      default:
+        return 'Success is about preparation, not perfection';
+    }
   };
 
   return (
-    <MorphingBackground mode="static" style={styles.gradient}>
-      <View style={styles.resultsOverlay}>
-        <View style={styles.container}>
-          <OnboardingProgress currentStep={13} totalSteps={17} />
-          
-          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            <Text style={styles.screenTitle}>Here's what we found</Text>
-            
-            <View style={styles.insightContainer}>
-              <Text style={styles.insightText}>
-                {data.hasFailed 
-                  ? `Looking back at your interview struggles, your main challenge was `
-                  : `Based on your self-assessment, your biggest interview concern is `
-                }<Text style={styles.highlightText}>{primaryProblem.name}</Text>. {getInsightMessage()}
-              </Text>
-            </View>
-
-            <View style={styles.comparisonContainer}>
-              <Text style={styles.comparisonTitle}>The Difference</Text>
+    <ChatGPTBackground style={styles.gradient}>
+      <View style={styles.container}>
+        <OnboardingProgress 
+          currentStep={14} 
+          totalSteps={17}
+          onBack={handleBack}
+        />
+        
+        {/* Animated content container - exactly like profile-setup */}
+        <Animated.View 
+          style={[
+            styles.animatedContent,
+            {
+              transform: [{ translateX: contentTranslateX }],
+              opacity: contentOpacity,
+            }
+          ]}
+        >
+          <ScrollView 
+            style={styles.scrollContent} 
+            contentContainerStyle={styles.scrollContentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.content}>
+              <Text style={styles.screenTitle}>Here's what we found</Text>
               
-              <View style={styles.comparisonRow}>
-                {getComparisonCards()}
+              <Text style={styles.introText}>
+                {getInsightText()}
+              </Text>
+
+              <Text style={styles.highlightText}>
+                {primaryProblem.name}
+              </Text>
+              
+              <Text style={styles.subtitle}>
+                {getSolutionTitle()}
+              </Text>
+              
+              <View style={styles.insightContainer}>
+                {getInsightBullets().map((insight, index) => (
+                  <Text key={index} style={styles.insightItem}>
+                    • {insight}
+                  </Text>
+                ))}
               </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </Animated.View>
 
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <Animated.View 
+          style={[
+            styles.bottomContainer,
+            {
+              opacity: buttonOpacity,
+              transform: [{ translateY: buttonTranslateY }],
+            }
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.continueButton} 
+            onPress={handleContinue}
+            activeOpacity={0.8}
+          >
             <Text style={styles.continueButtonText}>I want to be prepared</Text>
             <Ionicons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
-        </View>
-        </View>
+        </Animated.View>
       </View>
-    </MorphingBackground>
+    </ChatGPTBackground>
   );
 };
 
@@ -203,140 +289,111 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
-  resultsOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
-  },
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 28 : 12,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+    backgroundColor: 'transparent',
+    paddingTop: Platform.OS === 'ios' ? 20 : 20,
+  },
+  animatedContent: {
+    flex: 1,
   },
   scrollContent: {
     flex: 1,
   },
+  scrollContentContainer: {
+    paddingBottom: 100, // Space for button
+  },
   content: {
-    paddingHorizontal: 28,
-    paddingVertical: 24,
-    maxWidth: 600,
-    alignSelf: 'center',
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingVertical: 32,
   },
   screenTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 32,
-    letterSpacing: 0.8,
-  },
-  insightContainer: {
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    borderRadius: 20,
-    padding: 32,
-    marginBottom: 40,
-    borderWidth: 2,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  insightText: {
-    fontSize: 20,
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk',
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 30,
-    fontWeight: '600',
+    marginBottom: 24,
+  },
+  introText: {
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.70)',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
   highlightText: {
-    color: '#FCD34D',
-    fontWeight: '800',
-    textDecorationLine: 'underline',
-    textDecorationColor: 'rgba(252, 211, 77, 0.5)',
-  },
-  comparisonContainer: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    color: '#A855F7',
+    textAlign: 'center',
     marginBottom: 32,
   },
-  comparisonTitle: {
-    fontSize: 26,
-    fontWeight: '800',
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 28,
-    letterSpacing: 0.5,
+    lineHeight: 24,
+    marginBottom: 24,
   },
-  comparisonRow: {
-    gap: 20,
-  },
-  comparisonCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  preparedCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    borderColor: 'rgba(16, 185, 129, 0.4)',
-    shadowColor: '#10B981',
-    shadowOpacity: 0.2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  preparedTitle: {
-    color: '#10B981',
-  },
-  cardContent: {
+  insightContainer: {
     gap: 8,
+    marginBottom: 48,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 320,
   },
-  cardItem: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    lineHeight: 20,
+  insightItem: {
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: 'rgba(255, 255, 255, 0.85)',
+    textAlign: 'center',
+    lineHeight: 22,
   },
   bottomContainer: {
-    paddingHorizontal: 28,
-    paddingBottom: 24,
-    paddingTop: 16,
+    width: '100%',
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 32,
+    width: '100%',
+    maxWidth: 320,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgb(169, 85, 247)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    shadowColor: '#F59E0B',
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
-    borderWidth: 2,
-    borderColor: 'rgba(252, 211, 77, 0.3)',
+    paddingHorizontal: 24,
+    shadowColor: '#A855F7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   continueButtonText: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+    letterSpacing: 0.005,
+    color: '#FFFFFF',
+    marginRight: 8,
   },
 });
 
