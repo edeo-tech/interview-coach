@@ -118,7 +118,7 @@ export default function JobDetails() {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={24} color="white" />
+              <Ionicons name="chevron-back" size={28} color="white" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Job Details</Text>
           </View>
@@ -152,24 +152,22 @@ export default function JobDetails() {
               </View>
             </View>
 
-            {/* Progress Overview */}
-            <View style={styles.progressOverview}>
-              <View style={styles.progressHeader}>
-                <Text style={styles.progressTitle}>Interview Progress</Text>
-                <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
-              </View>
-              <View style={styles.progressBar}>
-                <View 
-                  style={[
-                    styles.progressFill,
-                    { width: `${progress * 100}%` }
-                  ]} 
-                />
-              </View>
-              <Text style={styles.progressSubtext}>
-                {completedInterviews} of {interviews.length} interviews completed
-              </Text>
+            {/* Progress Overview - Simplified without nested container */}
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressTitle}>Interview Progress</Text>
+              <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
             </View>
+            <View style={styles.progressBar}>
+              <View 
+                style={[
+                  styles.progressFill,
+                  { width: `${progress * 100}%` }
+                ]} 
+              />
+            </View>
+            <Text style={styles.progressSubtext}>
+              {completedInterviews} of {interviews.length} interviews completed
+            </Text>
           </View>
 
           {/* Interview Stages */}
@@ -283,6 +281,14 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginLeft: 16,
   },
+  headerBackButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   jobCard: {
     ...GlassStyles.card,
     padding: 24,
@@ -328,16 +334,12 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodySmall,
     color: '#d1d5db',
   },
-  progressOverview: {
-    ...GlassStyles.container,
-    borderRadius: 12,
-    padding: 16,
-  },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    marginTop: 20,
   },
   progressTitle: {
     ...TYPOGRAPHY.labelLarge,
@@ -363,6 +365,7 @@ const styles = StyleSheet.create({
   progressSubtext: {
     ...TYPOGRAPHY.bodySmall,
     color: GlassTextColors.muted,
+    marginTop: 8,
   },
   section: {
     marginBottom: 24,
@@ -449,7 +452,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonInner: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 28,
+    borderRadius: 26,
     height: 52,
     paddingHorizontal: 24,
     flexDirection: 'row',
