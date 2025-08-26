@@ -197,17 +197,6 @@ export default function JobDetails() {
                       </Text>
                     </View>
                     
-                    <View style={styles.stageMeta}>
-                      <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(interview.status)}20` }]}>
-                        <Text style={[styles.statusText, { color: getStatusColor(interview.status) }]}>
-                          {interview.status}
-                        </Text>
-                      </View>
-                      <Text style={styles.difficultyText}>
-                        {interview.difficulty} difficulty
-                      </Text>
-                    </View>
-                    
                     {interview.total_attempts > 0 && (
                       <Text style={styles.attemptsText}>
                         {interview.total_attempts} attempt{interview.total_attempts !== 1 ? 's' : ''}
@@ -370,8 +359,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     ...GlassStyles.container,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 50,
+    borderColor: 'rgba(255, 255, 255, 0.00)', // Reduced opacity for subtler border
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
   stageNumber: {
     width: 32,
@@ -392,7 +383,6 @@ const styles = StyleSheet.create({
   stageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   stageIconContainer: {
     marginRight: 8,
@@ -400,25 +390,6 @@ const styles = StyleSheet.create({
   stageTitle: {
     ...TYPOGRAPHY.itemTitle,
     color: GlassTextColors.primary,
-  },
-  stageMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusText: {
-    ...TYPOGRAPHY.overline,
-    textTransform: 'uppercase',
-  },
-  difficultyText: {
-    ...TYPOGRAPHY.caption,
-    color: GlassTextColors.muted,
-    textTransform: 'capitalize',
   },
   attemptsText: {
     ...TYPOGRAPHY.overline,
