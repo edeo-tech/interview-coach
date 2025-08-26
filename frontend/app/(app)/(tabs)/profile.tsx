@@ -51,15 +51,15 @@ const getScoreIconAndColor = (score: number | null | string) => {
 };
 
 const MenuItem = ({ icon, label, onPress }: any) => (
-    <TouchableOpacity style={styles.menuItem} onPress={() => {
+    <TouchableOpacity style={styles.menuButton} onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
     }} activeOpacity={0.8}>
         <View style={styles.menuIconContainer}>
-            <Ionicons name={icon} size={20} color={GlassTextColors.muted} />
+            <Ionicons name={icon} size={20} color="rgba(255, 255, 255, 0.7)" />
         </View>
         <Text style={styles.menuLabel}>{label}</Text>
-        <Ionicons name="chevron-forward" size={16} color={GlassTextColors.muted} />
+        <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
     </TouchableOpacity>
 );
 
@@ -215,60 +215,49 @@ export default function Profile() {
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
-            {/* Profile Header - No container for clean look */}
+            {/* Profile Header */}
             <View style={styles.header}>
-                <Text style={styles.name}>{user.name}</Text>
-                <Text style={styles.email}>{user.email}</Text>
-                
-                {/* Profile Details - Metadata pattern */}
-                <View style={styles.profileMeta}>
-                    <View style={styles.metaItem}>
-                        <Ionicons name="briefcase-outline" size={16} color={GlassTextColors.muted} />
-                        <Text style={styles.metaText}>{getIndustryRole().replace('Industry / Role: ', '').replace(/Industry \/ /, '')}</Text>
+                <View style={styles.headerContent}>
+                    <View style={styles.headerLeft}>
+                        <Text style={styles.name}>{user.name}</Text>
+                        <Text style={styles.email}>{user.email}</Text>
                     </View>
-                    <View style={styles.metaItem}>
-                        <Ionicons name="time-outline" size={16} color={GlassTextColors.muted} />
-                        <Text style={styles.metaText}>{getExperienceText()}</Text>
+                    <View style={styles.headerRight}>
+                        <Text style={styles.industry}>{getIndustryRole().split(' / ')[0] || 'Tech'}</Text>
                     </View>
                 </View>
                 
-                <View style={styles.rankBadge}>
-                    <Ionicons name="trophy" size={16} color="#A855F7" />
-                    <Text style={styles.rankText}>{user.rank}</Text>
-                </View>
             </View>
 
-            {/* CV Section - Primary Action Card */}
-            <View style={styles.cvSection}>
-                <TouchableOpacity 
-                    style={styles.cvContainer} 
-                    onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                        posthogCapture('navigate_to_cv_upload', {
-                            source: 'profile',
-                            has_existing_cv: !!currentCV
-                        });
-                        router.push('/interviews/cv-upload');
-                    }}
-                    activeOpacity={0.9}
-                >
-                    <View style={styles.cvLeft}>
-                        <Ionicons name="document-text" size={28} color={currentCV ? "#10B981" : "#A855F7"} />
-                    </View>
-                    <View style={styles.cvInfo}>
-                        <Text style={styles.cvTitle}>
-                            {currentCV ? "Your CV" : "Upload Your CV"}
-                        </Text>
-                        <Text style={styles.cvSubtitle}>
-                            {currentCV 
-                                ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
-                                : "Get personalized interview questions tailored to your background"
-                            }
-                        </Text>
-                    </View>
-                    <Ionicons name="create-outline" size={22} color={GlassTextColors.muted} />
-                </TouchableOpacity>
-            </View>
+            {/* CV Section - Pill Button */}
+            <TouchableOpacity 
+                style={styles.cvButton} 
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    posthogCapture('navigate_to_cv_upload', {
+                        source: 'profile',
+                        has_existing_cv: !!currentCV
+                    });
+                    router.push('/interviews/cv-upload');
+                }}
+                activeOpacity={0.9}
+            >
+                <View style={styles.cvIcon}>
+                    <Ionicons name="document-text" size={20} color={currentCV ? "#10B981" : "#A855F7"} />
+                </View>
+                <View style={styles.cvInfo}>
+                    <Text style={styles.cvTitle}>
+                        {currentCV ? "Your CV" : "Upload Your CV"}
+                    </Text>
+                    <Text style={styles.cvSubtitle}>
+                        {currentCV 
+                            ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
+                            : "Get personalized interview questions"
+                        }
+                    </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={GlassTextColors.muted} />
+            </TouchableOpacity>
 
             <View style={styles.statsContainer}>
                 <StatCard
@@ -311,7 +300,7 @@ export default function Profile() {
                                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                                     handleJobPress(job._id);
                                 }}
-                                style={styles.jobItem}
+                                style={styles.jobButton}
                                 activeOpacity={0.8}
                             >
                                 <View style={styles.jobIcon}>
@@ -320,15 +309,8 @@ export default function Profile() {
                                 <View style={styles.jobInfo}>
                                     <Text style={styles.jobTitle}>{job.role_title}</Text>
                                     <Text style={styles.jobCompany}>{job.company}</Text>
-                                    <View style={styles.jobMetaContainer}>
-                                        <Text style={styles.jobLocation}>{job.location}</Text>
-                                        <Text style={styles.jobDate}>• {formatDate(job.created_at)}</Text>
-                                    </View>
                                 </View>
-                                <View style={styles.jobStatusContainer}>
-                                    <Text style={styles.jobStatus}>{job.status}</Text>
-                                    <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
-                                </View>
+                                <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
                             </TouchableOpacity>
                         ))
                     )}
@@ -376,7 +358,6 @@ export default function Profile() {
                 <Text style={styles.logoutText}>{logoutLoading ? 'Logging Out...' : 'Log Out'}</Text>
             </TouchableOpacity>
 
-            <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
                 </ScrollView>
             </SafeAreaView>
         </ChatGPTBackground>
@@ -399,63 +380,55 @@ const styles = StyleSheet.create({
         paddingBottom: 120,
     },
     header: {
-        alignItems: 'center',
-        paddingTop: 20,
-        paddingBottom: 28,
+        paddingTop: 60,
+        marginBottom: 20,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    headerLeft: {
+        flex: 1,
+    },
+    headerRight: {
+        alignItems: 'flex-end',
     },
     name: {
         ...TYPOGRAPHY.pageTitle,
-        color: GlassTextColors.primary,
+        color: '#ffffff',
         marginBottom: 4,
     },
     email: {
         ...TYPOGRAPHY.bodyMedium,
-        color: GlassTextColors.secondary,
-        marginBottom: 20,
+        color: 'rgba(255, 255, 255, 0.85)',
     },
-    profileMeta: {
-        flexDirection: 'column',
-        gap: 8,
-        marginBottom: 20,
-        paddingHorizontal: 4,
-    },
-    metaItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        justifyContent: 'center',
-    },
-    metaText: {
-        ...TYPOGRAPHY.bodySmall,
-        color: GlassTextColors.detail,
-    },
-    rankBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(168, 85, 247, 0.3)',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        borderWidth: 2,
-        borderColor: '#A855F7',
-        gap: 6,
-        marginTop: 8,
-    },
-    rankText: {
-        ...TYPOGRAPHY.labelMedium,
-        fontWeight: '600' as const,
+    industry: {
+        ...TYPOGRAPHY.labelLarge,
         color: '#A855F7',
+        fontWeight: '600' as const,
     },
     statsContainer: {
         flexDirection: 'row',
         gap: 12,
-        marginBottom: 28,
+        marginBottom: 32,
     },
     statCard: {
         alignItems: 'center',
-        ...GlassStyles.card,
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: 16,
         padding: 20,
         flex: 1,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            }
+        }),
     },
     statIconContainer: {
         width: 48,
@@ -470,55 +443,53 @@ const styles = StyleSheet.create({
     },
     statValue: {
         ...TYPOGRAPHY.pageTitle,
-        color: GlassTextColors.primary,
+        color: '#ffffff',
         marginBottom: 4,
     },
     statLabel: {
         ...TYPOGRAPHY.bodySmall,
-        color: GlassTextColors.muted,
+        color: 'rgba(255, 255, 255, 0.7)',
     },
     section: {
         marginBottom: 28,
     },
     sectionTitle: {
         ...TYPOGRAPHY.sectionHeader,
-        color: GlassTextColors.primary,
+        color: '#ffffff',
         marginBottom: 16,
     },
     menuContainer: {
-        ...GlassStyles.card,
-        padding: 0,
-        overflow: 'hidden',
+        gap: 12,
     },
-    menuItem: {
+    menuButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
     },
     menuIconContainer: {
         width: 32,
         height: 32,
-        borderRadius: 8,
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        borderRadius: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     menuLabel: {
         flex: 1,
         ...TYPOGRAPHY.itemTitle,
-        color: GlassTextColors.primary,
+        color: '#ffffff',
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(239, 68, 68, 0.15)',
-        marginBottom: 16,
+        marginTop: 8,
+        marginBottom: 40,
         padding: 16,
         borderRadius: 16,
         borderWidth: 1,
@@ -541,12 +512,6 @@ const styles = StyleSheet.create({
         fontWeight: '600' as const,
         color: '#EF4444',
     },
-    joinedText: {
-        ...TYPOGRAPHY.bodySmall,
-        textAlign: 'center',
-        color: GlassTextColors.muted,
-        marginBottom: 40,
-    },
     emptyState: {
         alignItems: 'center',
         padding: 32,
@@ -564,111 +529,72 @@ const styles = StyleSheet.create({
     },
     emptyStateText: {
         ...TYPOGRAPHY.sectionHeader,
-        color: GlassTextColors.primary,
+        color: '#ffffff',
         marginBottom: 8,
     },
     emptyStateSubtext: {
         ...TYPOGRAPHY.bodyMedium,
-        color: GlassTextColors.muted,
+        color: 'rgba(255, 255, 255, 0.7)',
         textAlign: 'center',
         lineHeight: 20,
     },
-    jobItem: {
+    jobButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
     },
     jobIcon: {
         width: 32,
         height: 32,
-        borderRadius: 8,
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.1)',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(168, 85, 247, 0.3)',
     },
     jobInfo: {
         flex: 1,
     },
     jobTitle: {
         ...TYPOGRAPHY.itemTitle,
-        color: GlassTextColors.primary,
-        marginBottom: 4,
+        color: '#ffffff',
+        marginBottom: 2,
     },
     jobCompany: {
-        ...TYPOGRAPHY.bodyMedium,
-        color: GlassTextColors.secondary,
-        marginBottom: 4,
-    },
-    jobMetaContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    jobLocation: {
         ...TYPOGRAPHY.bodySmall,
-        color: GlassTextColors.detail,
+        color: 'rgba(255, 255, 255, 0.85)',
     },
-    jobDate: {
-        ...TYPOGRAPHY.bodySmall,
-        color: GlassTextColors.detail,
-        marginLeft: 4,
-    },
-    jobStatusContainer: {
+    cvButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        marginBottom: 24,
     },
-    jobStatus: {
-        ...TYPOGRAPHY.labelMedium,
-        color: '#10B981',
-        textTransform: 'capitalize' as const,
-    },
-    cvSection: {
-        marginBottom: 28,
-    },
-    cvContainer: {
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
-        borderRadius: 20,
-        borderWidth: 2,
-        borderColor: 'rgba(168, 85, 247, 0.3)',
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 20,
-        ...Platform.select({
-            ios: {
-                shadowColor: '#A855F7',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-            }
-        }),
-    },
-    cvLeft: {
-        width: 56,
-        height: 56,
+    cvIcon: {
+        width: 32,
+        height: 32,
         borderRadius: 16,
-        backgroundColor: 'rgba(168, 85, 247, 0.25)',
+        backgroundColor: 'rgba(255,255,255,0.1)',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 16,
-        borderWidth: 2,
-        borderColor: 'rgba(168, 85, 247, 0.4)',
+        marginRight: 12,
     },
     cvInfo: {
         flex: 1,
     },
     cvTitle: {
-        ...TYPOGRAPHY.sectionHeader,
-        color: GlassTextColors.primary,
-        marginBottom: 6,
+        ...TYPOGRAPHY.itemTitle,
+        color: '#ffffff',
+        marginBottom: 2,
     },
     cvSubtitle: {
-        ...TYPOGRAPHY.bodyMedium,
-        color: GlassTextColors.secondary,
-        lineHeight: 20,
+        ...TYPOGRAPHY.bodySmall,
+        color: 'rgba(255, 255, 255, 0.7)',
     },
 });
