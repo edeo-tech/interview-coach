@@ -151,24 +151,22 @@ export default function JobDetails() {
             </View>
           </View>
 
-          {/* Progress Overview - In its own container */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.progressTitle}>Interview Progress</Text>
-              <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
-            </View>
-            <View style={styles.progressBar}>
-              <View 
-                style={[
-                  styles.progressFill,
-                  { width: `${progress * 100}%` }
-                ]} 
-              />
-            </View>
-            <Text style={styles.progressSubtext}>
-              {completedInterviews} of {interviews.length} interviews completed
-            </Text>
+          {/* Progress Overview */}
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>Interview Progress</Text>
+            <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
           </View>
+          <View style={styles.progressBar}>
+            <View 
+              style={[
+                styles.progressFill,
+                { width: `${progress * 100}%` }
+              ]} 
+            />
+          </View>
+          <Text style={styles.progressSubtext}>
+            {completedInterviews} of {interviews.length} interviews completed
+          </Text>
 
           {/* Interview Stages */}
           <View style={styles.section}>
@@ -279,11 +277,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginLeft: 16,
   },
-  progressContainer: {
-    ...GlassStyles.card,
-    padding: 20,
-    marginBottom: 24,
-  },
   jobHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -312,8 +305,8 @@ const styles = StyleSheet.create({
     color: '#60a5fa',
   },
   jobMeta: {
-    flexDirection: 'row',
-    gap: 20,
+    flexDirection: 'column',
+    gap: 8,
     marginBottom: 28,
     paddingHorizontal: 4,
   },
@@ -331,14 +324,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    marginTop: 8,
+    paddingHorizontal: 4,
   },
   progressTitle: {
     ...TYPOGRAPHY.labelLarge,
     color: GlassTextColors.primary,
   },
   progressPercentage: {
-    ...TYPOGRAPHY.bodyLarge,
-    fontWeight: '700' as const,
+    ...TYPOGRAPHY.labelMedium,
+    fontWeight: '600' as const,
     color: '#10b981',
   },
   progressBar: {
@@ -347,6 +342,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
+    marginHorizontal: 4,
   },
   progressFill: {
     height: '100%',
@@ -356,7 +352,8 @@ const styles = StyleSheet.create({
   progressSubtext: {
     ...TYPOGRAPHY.bodySmall,
     color: GlassTextColors.muted,
-    marginTop: 8,
+    marginBottom: 24,
+    paddingHorizontal: 4,
   },
   section: {
     marginBottom: 24,
