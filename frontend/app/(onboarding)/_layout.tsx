@@ -11,6 +11,7 @@ const OnboardingLayout = () => {
         screenOptions={{
           headerShown: false,
           animation: 'none',
+          gestureEnabled: false,
           contentStyle: styles.stackContent,
         }}
       >

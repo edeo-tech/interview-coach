@@ -9,6 +9,7 @@ import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
 import BrandfetchLogo from '../../../components/BrandfetchLogo';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 export default function Home() {
   const { 
@@ -229,19 +230,13 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   headerTitle: {
+    ...TYPOGRAPHY.displayMedium,
     color: '#FFFFFF',
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: -0.02,
     marginBottom: 6,
-    fontFamily: Platform.OS === 'ios' ? 'SpaceGrotesk' : 'sans-serif',
   },
   headerSubtitle: {
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '400',
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
   },
 
   section: {
@@ -276,21 +271,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   emptyStateTitle: {
+    ...TYPOGRAPHY.heading3,
     color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '600',
     marginBottom: 8,
     textAlign: 'center',
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    letterSpacing: 0,
   },
   emptyStateSubtitle: {
+    ...TYPOGRAPHY.bodySmall,
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-    lineHeight: 20,
     textAlign: 'center',
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    fontWeight: '400',
   },
   interviewCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
@@ -337,14 +326,10 @@ const styles = StyleSheet.create({
     minWidth: 0, // Ensures text truncation works properly
   },
   interviewTitle: {
+    ...TYPOGRAPHY.heading5,
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    lineHeight: 22,
     flexShrink: 1,
     marginBottom: 8,
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    letterSpacing: 0,
   },
   interviewCompany: {
     flexDirection: 'row',
@@ -354,14 +339,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   companyText: {
+    ...TYPOGRAPHY.labelMedium,
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 14,
-    fontWeight: '500',
-    lineHeight: 18,
     marginLeft: 6,
     flexShrink: 1,
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    letterSpacing: 0.01,
   },
   interviewLocation: {
     flexDirection: 'row',
@@ -371,34 +352,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   locationText: {
+    ...TYPOGRAPHY.labelSmall,
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 12,
-    fontWeight: '500',
-    lineHeight: 16,
     marginLeft: 6,
     flexShrink: 1,
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    letterSpacing: 0.02,
   },
   interviewDate: {
+    ...TYPOGRAPHY.caption,
     color: 'rgba(255, 255, 255, 0.55)',
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 16,
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    letterSpacing: 0.02,
   },
 
   progressContainer: {
     marginTop: 8,
   },
   progressText: {
+    ...TYPOGRAPHY.labelSmall,
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 12,
-    fontWeight: '500',
     marginBottom: 8,
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    letterSpacing: 0.02,
   },
   progressBar: {
     height: 6,
@@ -419,11 +389,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingMoreText: {
+    ...TYPOGRAPHY.labelMedium,
     color: '#A855F7',
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    letterSpacing: 0.01,
   },
 });
 

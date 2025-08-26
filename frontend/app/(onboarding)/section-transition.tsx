@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const SectionTransition = () => {
   // Animation for content entrance
@@ -150,31 +151,20 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   mainMessage: {
-    fontSize: 28,        // Design system title size
-    fontWeight: '300',
-    fontFamily: 'SpaceGrotesk',
-    letterSpacing: 1,    // Design system spacing
+    ...TYPOGRAPHY.displaySmall,
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 36,      // Design system line height
     marginBottom: 8,
   },
   highlightMessage: {
-    fontSize: 48,        // Design system hero size
-    fontWeight: '800',   // Design system hero weight
-    fontFamily: 'SpaceGrotesk',
-    letterSpacing: 0,    // Design system hero spacing
-    color: '#A855F7',    // Design system brand purple
+    ...TYPOGRAPHY.hero,
+    color: '#A855F7',
     textAlign: 'center',
-    lineHeight: 60,      // Design system hero line height
     marginBottom: 32,
   },
   supportingText: {
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    lineHeight: 24,
-    color: 'rgba(255, 255, 255, 0.70)',  // Design system tertiary text color
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
     paddingHorizontal: 16,
   },
@@ -204,11 +194,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   continueButtonText: {
-    fontSize: 18,
-    lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
+    ...TYPOGRAPHY.buttonLarge,
     color: '#FFFFFF',
     marginRight: 8,
   },
