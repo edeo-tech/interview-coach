@@ -136,62 +136,34 @@ export default function Home() {
                 <TouchableOpacity
                   key={job._id}
                   onPress={() => handleJobPress(job._id)}
-                  style={styles.interviewCard}
+                  style={styles.jobItem}
                   activeOpacity={0.8}
                 >
-                  <View style={styles.interviewCardContent}>
-                    <View style={styles.cardLeftAccent}>
-                      <BrandfetchLogo
-                        identifierType={job.brandfetch_identifier_type}
-                        identifierValue={job.brandfetch_identifier_value}
-                        fallbackUrl={job.company_logo_url}
-                        size={32}
-                        imageStyle={styles.companyLogo}
-                        fallbackIconColor="rgba(255, 255, 255, 0.8)"
-                        fallbackIconName="briefcase-outline"
-                      />
-                    </View>
-                    
-                    <View style={styles.interviewCardMain}>
-                      <Text style={styles.interviewTitle}>
+                  <BrandfetchLogo
+                    identifierType={job.brandfetch_identifier_type}
+                    identifierValue={job.brandfetch_identifier_value}
+                    fallbackUrl={job.company_logo_url}
+                    size={24}
+                    imageStyle={styles.companyLogo}
+                    fallbackIconColor="rgba(255, 255, 255, 0.8)"
+                    fallbackIconName="briefcase-outline"
+                  />
+                  
+                  <View style={styles.jobItemContent}>
+                    <View style={styles.jobItemTop}>
+                      <Text style={styles.jobTitle} numberOfLines={1}>
                         {job.role_title}
                       </Text>
-                      
-                      <View style={styles.interviewCompany}>
-                        <Ionicons name="business-outline" size={14} color="rgba(255, 255, 255, 0.7)" style={{flexShrink: 0}} />
-                        <Text style={styles.companyText} numberOfLines={1}>
-                          {job.company.length > 30 ? job.company.substring(0, 30) + '...' : job.company}
-                        </Text>
-                      </View>
-                      
-                      <View style={styles.interviewLocation}>
-                        <Ionicons name="location-outline" size={14} color="rgba(255, 255, 255, 0.7)" style={{flexShrink: 0}} />
-                        <Text style={styles.locationText} numberOfLines={1}>
-                          {(job.location || 'Remote').length > 40 ? (job.location || 'Remote').substring(0, 40) + '...' : (job.location || 'Remote')}
-                        </Text>
-                      </View>
-                      
-                      <View style={styles.progressContainer}>
-                        <Text style={styles.progressText}>
-                          {job.stages_completed} / {job.interview_stages.length} interviews completed
-                        </Text>
-                        <View style={styles.progressBar}>
-                          <View 
-                            style={[
-                              styles.progressFill,
-                              { 
-                                width: `${(job.stages_completed / job.interview_stages.length) * 100}%`,
-                                backgroundColor: getJobProgressColor(job.stages_completed, job.interview_stages.length)
-                              }
-                            ]} 
-                          />
-                        </View>
-                        <Text style={styles.interviewDate}>
-                          Created {formatDate(job.created_at)}
-                        </Text>
-                      </View>
+                      <Text style={styles.jobProgress}>
+                        {job.stages_completed}/{job.interview_stages.length}
+                      </Text>
                     </View>
+                    <Text style={styles.jobCompany} numberOfLines={1}>
+                      {job.company}
+                    </Text>
                   </View>
+                  
+                  <Ionicons name="chevron-forward" size={20} color="rgba(255, 255, 255, 0.5)" />
                 </TouchableOpacity>
               ))
             )}
@@ -281,105 +253,47 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
   },
-  interviewCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 16,
-    marginBottom: 12,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      }
-    }),
-  },
-  interviewCardContent: {
+  jobItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    minHeight: 80,
-    gap: 16,
-  },
-  cardLeftAccent: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 50, // Pill-shaped like other touchables
+    paddingVertical: 16, // Increased from 14 to accommodate larger logo
+    paddingHorizontal: 18, // Slightly increased
+    marginBottom: 12,
+    gap: 14, // Increased gap for better spacing
   },
   companyLogo: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 32, // Increased from 24 to make room for images
+    height: 32, // Increased from 24 to make room for images
+    borderRadius: 8, // Increased border radius proportionally
     backgroundColor: '#ffffff',
   },
-  interviewCardMain: {
+  jobItemContent: {
     flex: 1,
-    minWidth: 0, // Ensures text truncation works properly
+    minWidth: 0,
   },
-  interviewTitle: {
-    ...TYPOGRAPHY.heading5,
+  jobItemTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  jobTitle: {
+    ...TYPOGRAPHY.itemTitle,
     color: '#FFFFFF',
-    flexShrink: 1,
-    marginBottom: 8,
+    flex: 1,
+    marginRight: 8, // Space between title and progress
   },
-  interviewCompany: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 1,
-    minWidth: 0,
-    marginBottom: 6,
+  jobCompany: {
+    ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.70)',
   },
-  companyText: {
+  jobProgress: {
     ...TYPOGRAPHY.labelMedium,
-    color: 'rgba(255, 255, 255, 0.85)',
-    marginLeft: 6,
-    flexShrink: 1,
-  },
-  interviewLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 1,
-    minWidth: 0,
-    marginBottom: 12,
-  },
-  locationText: {
-    ...TYPOGRAPHY.labelSmall,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginLeft: 6,
-    flexShrink: 1,
-  },
-  interviewDate: {
-    ...TYPOGRAPHY.caption,
-    color: 'rgba(255, 255, 255, 0.55)',
-  },
-
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressText: {
-    ...TYPOGRAPHY.labelSmall,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: 8,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
+    color: '#10b981',
+    fontWeight: '600',
+    flexShrink: 0, // Prevent shrinking
   },
   loadingMore: {
     flexDirection: 'row',

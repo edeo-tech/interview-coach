@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, Modal } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +11,7 @@ import { useJobDetails, useStartJobInterviewAttempt } from '../../../_queries/jo
 import { InterviewType } from '../../../_interfaces/interviews/interview-types';
 import { JobInterview } from '../../../_interfaces/jobs/job';
 import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 const getInterviewTypeDisplayName = (type: InterviewType | string): string => {
   const displayNames: Record<string, string> = {
@@ -49,7 +51,8 @@ const getInterviewTypeIcon = (type: InterviewType | string): string => {
   return iconMap[type] || 'chatbubble';
 };
 
-const getStatusColor = (status: string): string => {
+const getStatusColor = (status: string, isLocked: boolean = false): string => {
+  if (isLocked) return '#4b5563'; // Muted gray for locked
   switch (status) {
     case 'completed': return '#10b981';
     case 'active': return '#3b82f6';
@@ -58,14 +61,51 @@ const getStatusColor = (status: string): string => {
   }
 };
 
+const isStageUnlocked = (interviews: any[], currentIndex: number): boolean => {
+  // First stage is always unlocked
+  if (currentIndex === 0) return true;
+  
+  // Check if previous stage is completed
+  const previousInterview = interviews[currentIndex - 1];
+  return previousInterview && previousInterview.status === 'completed';
+};
+
+const isCurrentActiveStage = (interviews: any[], currentIndex: number): boolean => {
+  // Must be unlocked and not completed
+  const isUnlocked = isStageUnlocked(interviews, currentIndex);
+  const interview = interviews[currentIndex];
+  return isUnlocked && interview.status !== 'completed';
+};
+
 export default function JobDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: jobData, isLoading, error } = useJobDetails(id);
   const startAttempt = useStartJobInterviewAttempt();
+  const [showLockedPopup, setShowLockedPopup] = useState(false);
+  const [lockedStageInfo, setLockedStageInfo] = useState<{stageName: string, stageNumber: number} | null>(null);
 
-  const handleInterviewPress = (interview: any) => {
-    // Always navigate to interview details screen
-    router.push(`/interviews/${interview._id}/details` as any);
+  const handleInterviewPress = (interview: any, index: number) => {
+    const isUnlocked = isStageUnlocked(interviews, index);
+    if (isUnlocked) {
+      // Success haptic for unlocked stages
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      router.push(`/interviews/${interview._id}/details` as any);
+    } else {
+      // Warning haptic for locked stages
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      // Show popup for locked stage
+      setLockedStageInfo({
+        stageName: getInterviewTypeDisplayName(interview.interview_type),
+        stageNumber: index + 1
+      });
+      setShowLockedPopup(true);
+    }
+  };
+
+  const getPreviousStageName = (currentIndex: number): string => {
+    if (currentIndex === 0) return '';
+    const previousInterview = interviews[currentIndex - 1];
+    return getInterviewTypeDisplayName(previousInterview.interview_type);
   };
 
   if (isLoading) {
@@ -73,7 +113,7 @@ export default function JobDetails() {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#F59E0B" />
+            <ActivityIndicator size="large" color="#A855F7" />
             <Text style={styles.loadingText}>Loading job details...</Text>
           </View>
         </SafeAreaView>
@@ -116,119 +156,187 @@ export default function JobDetails() {
         <ScrollView style={styles.scrollView}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={24} color="white" />
+            <TouchableOpacity onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.back();
+            }}>
+              <Ionicons name="chevron-back" size={24} color="white" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Job Details</Text>
           </View>
 
-          {/* Job Info Card */}
-          <View style={styles.jobCard}>
-            <View style={styles.jobHeader}>
-              <BrandfetchLogo
-                identifierType={job.brandfetch_identifier_type}
-                identifierValue={job.brandfetch_identifier_value}
-                fallbackUrl={job.company_logo_url}
-                size={56}
-                style={styles.companyLogoContainer}
-                fallbackIconColor="#ffffff"
-                fallbackIconName="briefcase-outline"
-              />
-              <View style={styles.jobHeaderText}>
-                <Text style={styles.roleTitle}>{job.role_title}</Text>
-                <Text style={styles.company}>{job.company}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.jobMeta}>
-              <View style={styles.metaItem}>
-                <Ionicons name="location-outline" size={16} color={GlassTextColors.muted} />
-                <Text style={styles.metaText}>{job.location || 'Remote'}</Text>
-              </View>
-              <View style={styles.metaItem}>
-                <Ionicons name="briefcase-outline" size={16} color={GlassTextColors.muted} />
-                <Text style={styles.metaText}>{job.experience_level}</Text>
-              </View>
-            </View>
-
-            {/* Progress Overview */}
-            <View style={styles.progressOverview}>
-              <View style={styles.progressHeader}>
-                <Text style={styles.progressTitle}>Interview Progress</Text>
-                <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
-              </View>
-              <View style={styles.progressBar}>
-                <View 
-                  style={[
-                    styles.progressFill,
-                    { width: `${progress * 100}%` }
-                  ]} 
-                />
-              </View>
-              <Text style={styles.progressSubtext}>
-                {completedInterviews} of {interviews.length} interviews completed
-              </Text>
+          {/* Job Info - No container for static content */}
+          <View style={styles.jobHeader}>
+            <BrandfetchLogo
+              identifierType={job.brandfetch_identifier_type}
+              identifierValue={job.brandfetch_identifier_value}
+              fallbackUrl={job.company_logo_url}
+              size={56}
+              style={styles.companyLogoContainer}
+              fallbackIconColor="#ffffff"
+              fallbackIconName="briefcase-outline"
+            />
+            <View style={styles.jobHeaderText}>
+              <Text style={styles.roleTitle}>{job.role_title}</Text>
+              <Text style={styles.company}>Company: {job.company}</Text>
             </View>
           </View>
+          
+          <View style={styles.jobMeta}>
+            <View style={styles.metaItem}>
+              <Ionicons name="location-outline" size={16} color={GlassTextColors.muted} />
+              <Text style={styles.metaText}>{job.location || 'Remote'}</Text>
+            </View>
+            <View style={styles.metaItem}>
+              <Ionicons name="briefcase-outline" size={16} color={GlassTextColors.muted} />
+              <Text style={styles.metaText}>{job.experience_level}</Text>
+            </View>
+          </View>
+
+          {/* Progress Overview */}
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>Your Progress</Text>
+            <Text style={styles.progressPercentage}>{Math.round(progress * 100)}%</Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View 
+              style={[
+                styles.progressFill,
+                { width: `${progress * 100}%` }
+              ]} 
+            />
+          </View>
+          <Text style={styles.progressSubtext}>
+            {completedInterviews} of {interviews.length} interviews completed
+          </Text>
 
           {/* Interview Stages */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Interview Stages</Text>
             
             <View style={styles.stagesContainer}>
-              {interviews.map((interview, index) => (
-                <TouchableOpacity
-                  key={interview._id}
-                  onPress={() => handleInterviewPress(interview)}
-                  style={styles.stageCard}
-                >
-                  <View style={styles.stageNumber}>
-                    <Text style={styles.stageNumberText}>{index + 1}</Text>
-                  </View>
-                  
-                  <View style={styles.stageContent}>
-                    <View style={styles.stageHeader}>
-                      <View style={styles.stageIconContainer}>
-                        <Ionicons 
-                          name={getInterviewTypeIcon(interview.interview_type) as any} 
-                          size={20} 
-                          color={getStatusColor(interview.status)} 
-                        />
-                      </View>
-                      <Text style={styles.stageTitle}>
-                        {getInterviewTypeDisplayName(interview.interview_type)}
-                      </Text>
+              {interviews.map((interview, index) => {
+                const isUnlocked = isStageUnlocked(interviews, index);
+                const isActive = isCurrentActiveStage(interviews, index);
+                const isCompleted = interview.status === 'completed';
+                return (
+                  <TouchableOpacity
+                    key={interview._id}
+                    onPress={() => handleInterviewPress(interview, index)}
+                    style={[
+                      styles.stageCard,
+                      !isUnlocked && styles.stageCardLocked
+                    ]}
+                  >
+                    <View style={[
+                      styles.stageNumber,
+                      isActive && styles.stageNumberActive,
+                      isCompleted && styles.stageNumberCompleted
+                    ]}>
+                      <Text style={[
+                        styles.stageNumberText,
+                        isActive && styles.stageNumberTextActive,
+                        isCompleted && styles.stageNumberTextCompleted
+                      ]}>{index + 1}</Text>
                     </View>
                     
-                    <View style={styles.stageMeta}>
-                      <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(interview.status)}20` }]}>
-                        <Text style={[styles.statusText, { color: getStatusColor(interview.status) }]}>
-                          {interview.status}
+                    <View style={styles.stageContent}>
+                      <View style={styles.stageHeader}>
+                        <View style={styles.stageIconContainer}>
+                          <Ionicons 
+                            name={getInterviewTypeIcon(interview.interview_type) as any} 
+                            size={20} 
+                            color={getStatusColor(interview.status)} 
+                          />
+                        </View>
+                        <Text style={styles.stageTitle}>
+                          {getInterviewTypeDisplayName(interview.interview_type)}
                         </Text>
                       </View>
-                      <Text style={styles.difficultyText}>
-                        {interview.difficulty} difficulty
-                      </Text>
+                      
+                      {isUnlocked && interview.total_attempts > 0 && (
+                        <Text style={styles.attemptsText}>
+                          {interview.total_attempts} attempt{interview.total_attempts !== 1 ? 's' : ''}
+                        </Text>
+                      )}
                     </View>
                     
-                    {interview.total_attempts > 0 && (
-                      <Text style={styles.attemptsText}>
-                        {interview.total_attempts} attempt{interview.total_attempts !== 1 ? 's' : ''}
-                      </Text>
+                    <Ionicons 
+                      name="chevron-forward" 
+                      size={20} 
+                      color={GlassTextColors.muted} 
+                    />
+                    
+                    {/* Lock overlay for locked stages */}
+                    {!isUnlocked && (
+                      <View style={styles.lockOverlay}>
+                        <Ionicons 
+                          name="lock-closed" 
+                          size={24} 
+                          color="#ffffff" 
+                        />
+                      </View>
                     )}
-                  </View>
-                  
-                  <Ionicons 
-                    name="chevron-forward" 
-                    size={20} 
-                    color={GlassTextColors.muted} 
-                  />
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* Locked Stage Popup */}
+      <Modal
+        visible={showLockedPopup}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLockedPopup(false)}
+      >
+        <View style={styles.popupBackdrop}>
+          <TouchableOpacity 
+            style={styles.popupBackdropTouchable}
+            activeOpacity={1}
+            onPress={() => setShowLockedPopup(false)}
+          >
+            <View style={styles.popupContainer}>
+              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+                <View style={styles.popupContent}>
+                  {/* Lock Icon */}
+                  <View style={styles.popupIconContainer}>
+                    <Ionicons name="lock-closed" size={32} color="#A855F7" />
+                  </View>
+                  
+                  {/* Title */}
+                  <Text style={styles.popupTitle}>Stage Locked</Text>
+                  
+                  {/* Message */}
+                  <Text style={styles.popupMessage}>
+                    {lockedStageInfo ? (
+                      `To unlock "${lockedStageInfo.stageName}" (Stage ${lockedStageInfo.stageNumber}), you need to complete the previous stage first.`
+                    ) : (
+                      'Complete the previous stage to unlock this interview step.'
+                    )}
+                  </Text>
+                  
+                  
+                  {/* Close Button */}
+                  <TouchableOpacity 
+                    onPress={() => {
+                      // Light haptic for dismissal
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setShowLockedPopup(false);
+                    }}
+                    style={styles.popupButton}
+                    activeOpacity={0.9}
+                  >
+                    <Text style={styles.popupButtonText}>Got it</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </ChatGPTBackground>
   );
 }
@@ -251,6 +359,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
+    ...TYPOGRAPHY.bodyMedium,
     color: '#9ca3af',
     marginTop: 16,
   },
@@ -261,9 +370,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   errorTitle: {
+    ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '600',
     marginTop: 16,
   },
   errorButton: {
@@ -274,24 +382,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   headerTitle: {
+    ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
     marginLeft: 16,
-  },
-  jobCard: {
-    ...GlassStyles.card,
-    padding: 24,
-    marginBottom: 24,
   },
   jobHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    paddingHorizontal: 4,
   },
   companyLogoContainer: {
     width: 56,
@@ -305,20 +406,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   roleTitle: {
+    ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
-    fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 4,
   },
   company: {
-    color: '#60a5fa',
-    fontSize: 18,
-    fontWeight: '600',
+    ...TYPOGRAPHY.bodyMedium,
+    color: GlassTextColors.secondary,
   },
   jobMeta: {
-    flexDirection: 'row',
-    gap: 20,
-    marginBottom: 20,
+    flexDirection: 'column',
+    gap: 8,
+    marginBottom: 28,
+    paddingHorizontal: 4,
   },
   metaItem: {
     flexDirection: 'row',
@@ -326,29 +426,25 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   metaText: {
+    ...TYPOGRAPHY.bodySmall,
     color: '#d1d5db',
-    fontSize: 14,
-  },
-  progressOverview: {
-    ...GlassStyles.container,
-    borderRadius: 12,
-    padding: 16,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    marginTop: 8,
+    paddingHorizontal: 4,
   },
   progressTitle: {
+    ...TYPOGRAPHY.sectionHeader,
     color: GlassTextColors.primary,
-    fontSize: 16,
-    fontWeight: '600',
   },
   progressPercentage: {
+    ...TYPOGRAPHY.labelLarge,
+    fontWeight: '600' as const,
     color: '#10b981',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   progressBar: {
     height: 8,
@@ -356,6 +452,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
+    marginHorizontal: 4,
   },
   progressFill: {
     height: '100%',
@@ -363,16 +460,17 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressSubtext: {
+    ...TYPOGRAPHY.bodyMedium,
     color: GlassTextColors.muted,
-    fontSize: 13,
+    marginBottom: 24,
+    paddingHorizontal: 4,
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
+    ...TYPOGRAPHY.sectionHeader,
     color: GlassTextColors.primary,
-    fontSize: 18,
-    fontWeight: '600',
     marginBottom: 16,
   },
   stagesContainer: {
@@ -382,8 +480,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     ...GlassStyles.container,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 50,
+    borderColor: 'rgba(255, 255, 255, 0.00)',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    position: 'relative',
+  },
+  stageCardLocked: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    opacity: 0.4,
+  },
+  lockOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
   stageNumber: {
     width: 32,
@@ -394,10 +511,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
+  stageNumberActive: {
+    backgroundColor: 'rgba(168, 85, 247, 0.3)', // Opaque purple background
+    borderWidth: 2,
+    borderColor: '#A855F7', // Solid purple border
+  },
+  stageNumberCompleted: {
+    backgroundColor: 'rgba(16, 185, 129, 0.3)', // Opaque green background
+    borderWidth: 2,
+    borderColor: '#10b981', // Solid green border
+  },
   stageNumberText: {
+    ...TYPOGRAPHY.labelMedium,
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
+  },
+  stageNumberTextActive: {
+    color: '#ffffff',
+    fontWeight: '600' as const,
+  },
+  stageNumberTextCompleted: {
+    color: '#ffffff',
+    fontWeight: '600' as const,
   },
   stageContent: {
     flex: 1,
@@ -405,39 +539,17 @@ const styles = StyleSheet.create({
   stageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   stageIconContainer: {
     marginRight: 8,
   },
   stageTitle: {
+    ...TYPOGRAPHY.itemTitle,
     color: GlassTextColors.primary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  stageMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  difficultyText: {
-    color: GlassTextColors.muted,
-    fontSize: 12,
-    textTransform: 'capitalize',
   },
   attemptsText: {
+    ...TYPOGRAPHY.overline,
     color: '#6b7280',
-    fontSize: 11,
     marginTop: 4,
   },
   primaryButtonOuter: {
@@ -455,7 +567,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonInner: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 28,
+    borderRadius: 26,
     height: 52,
     paddingHorizontal: 24,
     flexDirection: 'row',
@@ -464,9 +576,79 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButtonText: {
+    ...TYPOGRAPHY.buttonMedium,
     color: GlassTextColors.primary,
-    fontWeight: '700',
-    fontSize: 16,
     marginHorizontal: 8,
+  },
+  // Popup Styles
+  popupBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  popupBackdropTouchable: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  popupContainer: {
+    paddingHorizontal: 20,
+    width: '100%',
+    maxWidth: 340,
+  },
+  popupContent: {
+    backgroundColor: 'rgba(0, 0, 0, 0.85)', // Solid dark background instead of glass
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 24,
+    alignItems: 'center',
+    borderRadius: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      }
+    }),
+  },
+  popupIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  popupTitle: {
+    ...TYPOGRAPHY.pageTitle,
+    color: GlassTextColors.primary,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  popupMessage: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: GlassTextColors.secondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  popupButton: {
+    backgroundColor: 'rgba(168, 85, 247, 0.3)',
+    borderWidth: 2,
+    borderColor: '#A855F7',
+    borderRadius: 28,
+    height: 56,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+  },
+  popupButtonText: {
+    ...TYPOGRAPHY.buttonMedium,
+    color: GlassTextColors.primary,
   },
 });

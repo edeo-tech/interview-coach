@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const ProfileCardIntro = () => {
   const { navigateWithTransition } = useOnboardingNavigation();
@@ -70,9 +71,8 @@ const styles = StyleSheet.create({
   titleMain: {
     // Design system title style (like "Get to the")
     fontSize: 28,
+    ...TYPOGRAPHY.overline,
     fontWeight: '300',
-    fontFamily: 'SpaceGrotesk',
-    letterSpacing: 1,
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 36,
@@ -80,8 +80,7 @@ const styles = StyleSheet.create({
   titleBrand: {
     // Design system hero style (like "nextround")
     fontSize: 48,
-    fontWeight: '800',
-    fontFamily: 'SpaceGrotesk',
+    ...TYPOGRAPHY.hero,
     lineHeight: 60,
     color: '#A855F7', // Brand purple
     textAlign: 'center',
@@ -90,9 +89,7 @@ const styles = StyleSheet.create({
   subtitle: {
     // Design system supporting text
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    lineHeight: 24,
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.70)', // Design system text.tertiary
     textAlign: 'center',
     maxWidth: 320, // Design system maxContentWidth
@@ -127,9 +124,7 @@ const styles = StyleSheet.create({
     // Design system button typography
     fontSize: 18,
     lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
+    ...TYPOGRAPHY.buttonMedium,
     color: '#FFFFFF',
     marginRight: 8,
   },

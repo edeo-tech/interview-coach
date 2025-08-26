@@ -196,168 +196,346 @@ glassDark: {
 
 ## 📝 Typography
 
-### Font Stack
+### Enhanced Font Stack
 ```typescript
 fonts: {
-  primary: 'Inter', // Main UI font - clean, readable
-  heading: 'SpaceGrotesk', // Headers and display text - modern, unique
-  mono: 'SF Mono', // Code and monospace needs
+  display: 'NunitoSans', // Primary display font - heroes, major headings, content hierarchy
+  heading: 'NunitoSans', // Heading font - all content structure and hierarchy
+  body: 'Inter', // Body and UI font - all interface text, UI elements, forms
+  mono: 'SF Mono', // Code and monospace needs (unchanged)
 }
 ```
 
-### Typography Scale
+#### Font Selection Rationale - Perfect for Interview Coaching
+
+**Nunito Sans** - *Primary Content Font*
+- **Complements rounded audio bar logo**: Rounded, friendly characteristics that perfectly match the app's visual identity
+- **Professional yet approachable**: Balanced geometric sans-serif that builds trust while remaining inviting
+- **Exceptional readability**: Designed with careful attention to letter spacing and character clarity
+- **Mobile optimized**: Clean, legible performance across all screen sizes and resolutions
+- **Unified hierarchy**: Single font family with multiple weights creates strong visual cohesion
+- **Used for**: All content structure - hero titles, headings, section headers, content titles
+
+**Inter** - *Interface & UI Font*
+- **Perfect UI partner**: Both Nunito Sans and Inter are modern interface fonts that complement each other beautifully
+- **Specifically designed for user interfaces**: Optimized for buttons, forms, navigation, metadata
+- **Comprehensive character set**: Excellent international support
+- **Proven readability**: Industry standard for interface text
+- **Used for**: All UI elements - buttons, forms, labels, metadata, supporting information
+
+### Enhanced Typography Scale
+
+Our typography system provides a comprehensive hierarchy optimized for interview coaching and professional development applications.
+
 ```typescript
 typography: {
-  // Display sizes for hero sections
-  display: {
-    large: {
-      fontSize: 48,
-      lineHeight: 56,
-      fontWeight: '800',
-      fontFamily: 'SpaceGrotesk',
-      letterSpacing: -0.02,
-    },
-    medium: {
-      fontSize: 36,
-      lineHeight: 44,
-      fontWeight: '700',
-      fontFamily: 'SpaceGrotesk',
-      letterSpacing: -0.015,
-    },
-    small: {
-      fontSize: 30,
-      lineHeight: 36,
-      fontWeight: '700',
-      fontFamily: 'SpaceGrotesk',
-      letterSpacing: -0.01,
-    }
+  // Hero/Display Sizes - For onboarding heroes and major brand moments
+  hero: {
+    fontSize: 56,
+    lineHeight: 64,
+    fontWeight: '800',
+    fontFamily: 'NunitoSans_800ExtraBold',
+    letterSpacing: -1.5,
   },
-
-  // Heading hierarchy
-  heading: {
-    h1: {
-      fontSize: 28,
-      lineHeight: 34,
-      fontWeight: '700',
-      fontFamily: 'SpaceGrotesk',
-      letterSpacing: -0.01,
-    },
-    h2: {
-      fontSize: 24,
-      lineHeight: 30,
-      fontWeight: '600',
-      fontFamily: 'SpaceGrotesk',
-      letterSpacing: -0.005,
-    },
-    h3: {
-      fontSize: 20,
-      lineHeight: 26,
-      fontWeight: '600',
-      fontFamily: 'Inter',
-      letterSpacing: 0,
-    },
-    h4: {
-      fontSize: 18,
-      lineHeight: 24,
-      fontWeight: '600',
-      fontFamily: 'Inter',
-      letterSpacing: 0,
-    },
-    h5: {
-      fontSize: 16,
-      lineHeight: 22,
-      fontWeight: '600',
-      fontFamily: 'Inter',
-      letterSpacing: 0,
-    },
-    h6: {
-      fontSize: 14,
-      lineHeight: 20,
-      fontWeight: '600',
-      fontFamily: 'Inter',
-      letterSpacing: 0,
-    }
+  
+  heroMedium: {
+    fontSize: 48,
+    lineHeight: 56,
+    fontWeight: '700',
+    fontFamily: 'NunitoSans_700Bold',
+    letterSpacing: -1,
   },
-
-  // Body text
-  body: {
-    large: {
-      fontSize: 18,
-      lineHeight: 26,
-      fontWeight: '400',
-      fontFamily: 'Inter',
-    },
-    medium: {
-      fontSize: 16,
-      lineHeight: 24,
-      fontWeight: '400',
-      fontFamily: 'Inter',
-    },
-    small: {
-      fontSize: 14,
-      lineHeight: 20,
-      fontWeight: '400',
-      fontFamily: 'Inter',
-    },
-    xsmall: {
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '400',
-      fontFamily: 'Inter',
-    }
+  
+  heroSmall: {
+    fontSize: 40,
+    lineHeight: 48,
+    fontWeight: '700',
+    fontFamily: 'NunitoSans_600SemiBold',
+    letterSpacing: -0.5,
   },
-
-  // Labels and captions
-  label: {
-    large: {
-      fontSize: 16,
-      lineHeight: 20,
-      fontWeight: '500',
-      fontFamily: 'Inter',
-      letterSpacing: 0.01,
-    },
-    medium: {
-      fontSize: 14,
-      lineHeight: 18,
-      fontWeight: '500',
-      fontFamily: 'Inter',
-      letterSpacing: 0.01,
-    },
-    small: {
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '500',
-      fontFamily: 'Inter',
-      letterSpacing: 0.02,
-    }
+  
+  // Display Sizes - For major headings
+  displayLarge: {
+    fontSize: 36,
+    lineHeight: 44,
+    fontWeight: '700',
+    fontFamily: 'NunitoSans_600SemiBold',
+    letterSpacing: -0.5,
   },
-
-  // Button text
-  button: {
-    large: {
-      fontSize: 18,
-      lineHeight: 22,
-      fontWeight: '600',
-      fontFamily: 'Inter',
-      letterSpacing: 0.005,
-    },
-    medium: {
-      fontSize: 16,
-      lineHeight: 20,
-      fontWeight: '600',
-      fontFamily: 'Inter',
-      letterSpacing: 0.005,
-    },
-    small: {
-      fontSize: 14,
-      lineHeight: 18,
-      fontWeight: '600',
-      fontFamily: 'Inter',
-      letterSpacing: 0.01,
-    }
-  }
+  
+  displayMedium: {
+    fontSize: 32,
+    lineHeight: 40,
+    fontWeight: '600',
+    fontFamily: 'NunitoSans_600SemiBold',
+    letterSpacing: -0.25,
+  },
+  
+  displaySmall: {
+    fontSize: 28,
+    lineHeight: 36,
+    fontWeight: '600',
+    fontFamily: 'NunitoSans_600SemiBold',
+    letterSpacing: 0,
+  },
+  
+  // Heading Hierarchy - For section headers
+  heading1: {
+    fontSize: 24,
+    lineHeight: 32,
+    fontWeight: '600',
+    fontFamily: 'NunitoSans_700Bold',
+    letterSpacing: 0,
+  },
+  
+  heading2: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '600',
+    fontFamily: 'NunitoSans_600SemiBold',
+    letterSpacing: 0,
+  },
+  
+  heading3: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '600',
+    fontFamily: 'SpaceGrotesk_500Medium',
+    letterSpacing: 0,
+  },
+  
+  heading4: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 0,
+  },
+  
+  heading5: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 0.1,
+  },
+  
+  // Body Text - For readable content
+  bodyLarge: {
+    fontSize: 18,
+    lineHeight: 28,
+    fontWeight: '400',
+    fontFamily: 'Inter_400Regular',
+    letterSpacing: 0,
+  },
+  
+  bodyMedium: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '400',
+    fontFamily: 'Inter_400Regular',
+    letterSpacing: 0,
+  },
+  
+  bodySmall: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
+    fontFamily: 'Inter_400Regular',
+    letterSpacing: 0.1,
+  },
+  
+  bodyXSmall: {
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '400',
+    fontFamily: 'Inter_400Regular',
+    letterSpacing: 0.2,
+  },
+  
+  // Labels & UI Elements
+  labelLarge: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '500',
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 0.1,
+  },
+  
+  labelMedium: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '500',
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 0.1,
+  },
+  
+  labelSmall: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 0.2,
+  },
+  
+  // Button Text
+  buttonLarge: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 0.1,
+  },
+  
+  buttonMedium: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 0.1,
+  },
+  
+  buttonSmall: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 0.15,
+  },
+  
+  // Special Cases
+  caption: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter_400Regular',
+    letterSpacing: 0.3,
+  },
+  
+  overline: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '500',
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
 }
 ```
+
+### Implementation Guidelines
+
+#### Font Loading
+All fonts are loaded at app startup via the main `_layout.tsx` using Expo Google Fonts:
+
+```typescript
+import {
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
+
+import {
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from '@expo-google-fonts/space-grotesk';
+
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+```
+
+#### Usage in Components
+Import and use the typography constants throughout your app:
+
+```typescript
+import { TYPOGRAPHY } from '../constants/Typography';
+
+// Example usage
+const styles = StyleSheet.create({
+  heroTitle: {
+    ...TYPOGRAPHY.hero,
+    color: '#A855F7',
+    textAlign: 'center',
+  },
+  sectionHeading: {
+    ...TYPOGRAPHY.heading2,
+    color: '#FFFFFF',
+    marginBottom: 16,
+  },
+  bodyText: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: 'rgba(255, 255, 255, 0.85)',
+  },
+});
+```
+
+#### Typography Hierarchy Guidelines
+
+#### **✨ Refined Content Hierarchy (Recommended)**
+*Use these for visually coherent interface design with proper font family consistency:*
+
+**Content Structure** - All Nunito Sans for consistent visual hierarchy
+- `contentTitle` - Primary content titles like job roles (26px - Nunito Sans Bold)
+- `pageTitle` - Navigation and page titles (22px - Nunito Sans Bold) 
+- `sectionHeader` - Section headings like "Interview Stages" (18px - Nunito Sans SemiBold)
+- `itemTitle` - Individual item titles within sections (16px - Nunito Sans Medium)
+
+**Interface Elements** - All Inter for UI consistency
+- Use `bodyLarge`, `bodyMedium`, `labelMedium`, `buttonMedium` etc. for all UI text
+- Company names, metadata, descriptions use Inter variants
+- Buttons, forms, navigation use Inter variants
+
+**Why This Works Better:**
+- **Visual Coherence**: Similar hierarchy levels use the same font family
+- **Clear Differentiation**: 4px+ size differences between each level  
+- **Consistent Application**: Content structure = Space Grotesk, Interface = Inter
+- **Mobile Optimized**: Proper sizing for iOS/Android readability
+
+#### **Legacy System (For Reference)**
+
+**Hero & Display** - Use for major brand moments and onboarding screens
+- `hero` - Main app title, onboarding heroes (56px)
+- `displayLarge` - Major section titles (36px)
+- `displaySmall` - Screen titles, important headings (28px)
+
+**Headings** - Use for content organization
+- `heading1` - Main page titles (24px - Space Grotesk)
+- `heading2` - Section headings (22px - Space Grotesk)  
+- `heading3` - Subsection headings (20px - Space Grotesk)
+- `heading4` - Component titles (18px - Inter)
+- `heading5` - Small headings, card titles (16px - Inter)
+
+**Body Text** - Use for readable content
+- `bodyLarge` - Emphasized content (18px)
+- `bodyMedium` - Primary body text (16px)
+- `bodySmall` - Secondary information (14px)
+- `bodyXSmall` - Captions, meta information (12px)
+
+**UI Elements** - Use for interface components
+- `buttonLarge` - Primary CTAs (18px)
+- `buttonMedium` - Standard buttons (16px)
+- `labelMedium` - Form labels, navigation (14px)
+- `caption` - Timestamps, helper text (12px)
+
+### Accessibility Considerations
+
+- **Minimum Size**: No text below 12px for accessibility compliance
+- **Line Height**: Optimized ratios (1.4-1.6) for comfortable reading
+- **Letter Spacing**: Carefully tuned for each size to optimize readability
+- **Color Contrast**: Always maintain WCAG AA contrast ratios (4.5:1 minimum)
+- **Responsive Scaling**: Typography scales appropriately on different screen sizes
+
+### Font Performance
+
+- **Preloaded**: All fonts loaded at app startup, preventing FOUC (Flash of Unstyled Content)
+- **Optimized Variants**: Only necessary font weights included to minimize bundle size
+- **Fallbacks**: Graceful degradation to system fonts if loading fails
 
 ## 📏 Spacing & Layout
 
@@ -629,4 +807,50 @@ easing: {
 }
 ```
 
-This design system provides a solid foundation for consistent, beautiful, and accessible interface design throughout the Interview Coach app while maintaining the stunning glassmorphic aesthetic.
+## 🚀 Enhanced Typography System (2024 Update)
+
+### Major Typography Improvements
+
+The Interview Coach design system has been significantly enhanced with a professional three-font hierarchy specifically optimized for career development and interview preparation applications.
+
+#### New Font Hierarchy - Nunito Sans + Inter System
+
+**Nunito Sans** → *Primary Content Font*
+- Perfect for interview coaching: professional yet confidence-building
+- Complements rounded audio bar logo with subtle curved characteristics
+- Exceptional readability - originally designed for long-form reading
+- Creates unified visual hierarchy across all content structure
+- Used for: Hero titles, page titles, section headers, content titles
+
+**Inter** → *Interface & UI Font*
+- Industry-leading interface font, perfect partner to Nunito Sans
+- Optimized for all UI contexts: buttons, forms, navigation, metadata
+- Maintains excellent readability across all interface elements
+- Used for: All UI text, forms, buttons, labels, supporting information
+
+#### Implementation Benefits
+
+✅ **Professional Aesthetic** - Creates trust and authority for interview coaching content  
+✅ **Enhanced Readability** - Optimized font sizes, line heights, and spacing  
+✅ **Scalable System** - 20+ predefined typography styles from hero (56px) to caption (12px)  
+✅ **Accessibility Focused** - WCAG compliance with proper contrast and minimum sizes  
+✅ **Performance Optimized** - Preloaded fonts prevent layout shifts  
+✅ **Developer Experience** - Simple import and usage with TypeScript constants  
+
+#### Migration from Previous System
+
+The enhanced typography system maintains backward compatibility while introducing new capabilities:
+
+- **Display Typography**: New hero and display sizes for impactful onboarding
+- **Enhanced Hierarchy**: More granular heading levels for better content organization  
+- **Improved Spacing**: Optimized line heights and letter spacing for mobile
+- **Consistent Naming**: Clear, semantic naming convention for all typography styles
+
+#### Files Updated
+
+- `constants/Typography.ts` - Complete typography system with all styles
+- `app/_layout.tsx` - Font loading configuration
+- `DESIGN_SYSTEM.md` - Updated documentation and guidelines
+- Onboarding screens - Applied new typography throughout flow
+
+This enhanced design system provides a solid foundation for consistent, beautiful, and accessible interface design throughout the Interview Coach app while maintaining the stunning glassmorphic aesthetic and elevating the professional appearance to match the serious nature of career development.

@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   screenTitle: {
-    ...TYPOGRAPHY.displaySmall,
+    ...TYPOGRAPHY.pageTitle,
     color: '#ffffff',
     textAlign: 'center',
     marginBottom: 12,

@@ -151,7 +151,7 @@ export default function AttemptGradingScreen() {
     return (
       <View style={styles.center}>
         <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#F59E0B" />
+          <ActivityIndicator size="large" color="#A855F7" />
           <Text style={styles.loadingTitle}>Generating Feedback</Text>
           <Text style={styles.loadingSubtitle}>
             Our AI is analyzing your interview performance to provide personalized feedback.

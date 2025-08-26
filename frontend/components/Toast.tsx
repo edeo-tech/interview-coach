@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Animated, StyleSheet, ViewStyle, Dimensions, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { TYPOGRAPHY } from '../constants/Typography';
 
 const { width } = Dimensions.get('window');
 
@@ -216,10 +217,8 @@ const styles = StyleSheet.create({
     marginRight: 4, // Design system spacing
   },
   message: {
+    ...TYPOGRAPHY.labelMedium,
     color: '#FFFFFF', // Design system text primary
-    fontSize: 14, // Design system body small
-    fontWeight: '500',
     flex: 1,
-    fontFamily: 'Inter', // Design system body font
   },
 });

@@ -7,6 +7,7 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -313,8 +314,7 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
+    ...TYPOGRAPHY.heading1,
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 30,
@@ -322,8 +322,7 @@ const styles = StyleSheet.create({
   },
   introText: {
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.70)',
     textAlign: 'center',
     lineHeight: 24,
@@ -332,16 +331,16 @@ const styles = StyleSheet.create({
   },
   highlightText: {
     fontSize: 18,
+    ...TYPOGRAPHY.labelMedium,
     fontWeight: '600',
-    fontFamily: 'Inter',
     color: '#A855F7',
     textAlign: 'center',
     marginBottom: 32,
   },
   subtitle: {
     fontSize: 16,
+    ...TYPOGRAPHY.labelMedium,
     fontWeight: '600',
-    fontFamily: 'Inter',
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 24,
@@ -356,8 +355,7 @@ const styles = StyleSheet.create({
   },
   insightItem: {
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center',
     lineHeight: 22,
@@ -389,9 +387,7 @@ const styles = StyleSheet.create({
   continueButtonText: {
     fontSize: 18,
     lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
+    ...TYPOGRAPHY.buttonMedium,
     color: '#FFFFFF',
     marginRight: 8,
   },

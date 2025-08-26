@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useToast } from '@/components/Toast';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -11,12 +13,12 @@ import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import { TYPOGRAPHY } from '../../../constants/Typography';
+import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
 
 const StatCard = ({ icon, label, value, color = '#A855F7' }: any) => (
     <View style={styles.statCard}>
-        <View style={styles.statIconContainer}>
-            <Ionicons name={icon} size={24} color={color} />
-        </View>
+        <Ionicons name={icon} size={24} color={color} />
         <Text style={styles.statValue}>{value}</Text>
         <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -47,9 +49,8 @@ const getScoreIconAndColor = (score: number | null | string) => {
 };
 
 const MenuItem = ({ icon, label, onPress }: any) => (
-    <TouchableOpacity style={styles.menuItem} onPress={() => {
-        // Light impact for menu navigation - minor action
-        useHapticsSafely().impactAsync(ImpactFeedbackStyle.Light);
+    <TouchableOpacity style={styles.menuButton} onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
     }} activeOpacity={0.8}>
         <View style={styles.menuIconContainer}>
@@ -206,59 +207,55 @@ export default function Profile() {
 
     return (
         <ChatGPTBackground style={styles.gradient}>
-        <View style={styles.container}>
-        <ScrollView 
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-        >
+            <SafeAreaView style={styles.container} edges={['left', 'right']}>
+                <ScrollView 
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+            {/* Profile Header */}
             <View style={styles.header}>
-                <Text style={styles.name}>{user.name}</Text>
-                <Text style={styles.email}>{user.email}</Text>
-                <View style={styles.profileDetailContainer}>
-                    <Text style={styles.profileDetailLabel}>Target Role:</Text>
-                    <Text style={styles.profileDetailValue}>{getIndustryRole().replace('Industry / Role: ', '').replace(/Industry \/ /, '')}</Text>
+                <View style={styles.headerContent}>
+                    <View style={styles.headerLeft}>
+                        <Text style={styles.name}>{user.name}</Text>
+                        <Text style={styles.email}>{user.email}</Text>
+                    </View>
+                    <View style={styles.headerRight}>
+                        <Text style={styles.industry}>{getIndustryRole().split(' / ')[0] || 'Tech'}</Text>
+                    </View>
                 </View>
-                <View style={styles.profileDetailContainer}>
-                    <Text style={styles.profileDetailLabel}>Experience:</Text>
-                    <Text style={styles.profileDetailValue}>{getExperienceText()}</Text>
-                </View>
-                <View style={styles.rankBadge}>
-                    <Ionicons name="trophy" size={16} color="#A855F7" />
-                    <Text style={styles.rankText}>{user.rank}</Text>
-                </View>
+                
             </View>
 
-            <View style={styles.cvSection}>
-                <TouchableOpacity 
-                    style={styles.cvContainer} 
-                    onPress={() => {
-                        // Medium impact for CV upload - important profile action
-                        impactAsync(ImpactFeedbackStyle.Medium);
-                        posthogCapture('navigate_to_cv_upload', {
-                            source: 'profile',
-                            has_existing_cv: !!currentCV
-                        });
-                        router.push('/interviews/cv-upload');
-                    }}
-                    activeOpacity={0.9}
-                >
-                    <View style={styles.cvLeft}>
-                        <Ionicons name="document-text" size={28} color={currentCV ? "#10B981" : "#A855F7"} />
-                    </View>
-                    <View style={styles.cvInfo}>
-                        <Text style={styles.cvTitle}>
-                            {currentCV ? "Your CV" : "Upload Your CV"}
-                        </Text>
-                        <Text style={styles.cvSubtitle}>
-                            {currentCV 
-                                ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
-                                : "Get personalized interview questions tailored to your background"
-                            }
-                        </Text>
-                    </View>
-                    <Ionicons name="create-outline" size={22} color="rgba(255, 255, 255, 0.7)" />
-                </TouchableOpacity>
-            </View>
+            {/* CV Section - Pill Button */}
+            <TouchableOpacity 
+                style={styles.cvButton} 
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    posthogCapture('navigate_to_cv_upload', {
+                        source: 'profile',
+                        has_existing_cv: !!currentCV
+                    });
+                    router.push('/interviews/cv-upload');
+                }}
+                activeOpacity={0.9}
+            >
+                <View style={styles.cvIcon}>
+                    <Ionicons name="document-text" size={20} color={currentCV ? "#10B981" : "#A855F7"} />
+                </View>
+                <View style={styles.cvInfo}>
+                    <Text style={styles.cvTitle}>
+                        {currentCV ? "Your CV" : "Upload Your CV"}
+                    </Text>
+                    <Text style={styles.cvSubtitle}>
+                        {currentCV 
+                            ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
+                            : "Get personalized interview questions"
+                        }
+                    </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={GlassTextColors.muted} />
+            </TouchableOpacity>
 
             <View style={styles.statsContainer}>
                 <StatCard
@@ -281,6 +278,7 @@ export default function Profile() {
                 />
             </View>
 
+            {/* Job History Section */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Job History</Text>
                 <View style={styles.menuContainer}>
@@ -297,11 +295,10 @@ export default function Profile() {
                             <TouchableOpacity
                                 key={job._id}
                                 onPress={() => {
-                                    // Selection haptic for job history items
-                                    selectionAsync();
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                                     handleJobPress(job._id);
                                 }}
-                                style={styles.jobItem}
+                                style={styles.jobButton}
                                 activeOpacity={0.8}
                             >
                                 <View style={styles.jobIcon}>
@@ -310,21 +307,15 @@ export default function Profile() {
                                 <View style={styles.jobInfo}>
                                     <Text style={styles.jobTitle}>{job.role_title}</Text>
                                     <Text style={styles.jobCompany}>{job.company}</Text>
-                                    <View style={styles.jobMetaContainer}>
-                                        <Text style={styles.jobLocation}>{job.location}</Text>
-                                        <Text style={styles.jobDate}>• {formatDate(job.created_at)}</Text>
-                                    </View>
                                 </View>
-                                <View style={styles.jobStatusContainer}>
-                                    <Text style={styles.jobStatus}>{job.status}</Text>
-                                    <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
-                                </View>
+                                <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
                             </TouchableOpacity>
                         ))
                     )}
                 </View>
             </View>
 
+            {/* Account Section */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Account</Text>
                 <View style={styles.menuContainer}>
@@ -351,11 +342,11 @@ export default function Profile() {
                 </View>
             </View>
 
+            {/* Logout Button */}
             <TouchableOpacity 
                 style={[styles.logoutButton, logoutLoading && styles.logoutButtonDisabled]} 
                 onPress={() => {
-                    // Heavy impact for logout - critical destructive action
-                    impactAsync(ImpactFeedbackStyle.Heavy);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                     handleLogout();
                 }} 
                 disabled={logoutLoading}
@@ -365,9 +356,8 @@ export default function Profile() {
                 <Text style={styles.logoutText}>{logoutLoading ? 'Logging Out...' : 'Log Out'}</Text>
             </TouchableOpacity>
 
-            <Text style={styles.joinedText}>Member since {user.joinedDate}</Text>
-        </ScrollView>
-        </View>
+                </ScrollView>
+            </SafeAreaView>
         </ChatGPTBackground>
     );
 }
@@ -380,88 +370,55 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
     },
-    scrollContent: {
-        paddingBottom: 120, // Extra space for nav bar + floating action button
-    },
-    header: {
-        alignItems: 'center',
-        paddingTop: 62,
-        paddingBottom: 24,
-    },
-    name: {
-        fontSize: 32,
-        fontWeight: '800',
-        color: '#FFFFFF',
-        marginBottom: 8,
-        marginTop: 8,
-        fontFamily: Platform.OS === 'ios' ? 'SpaceGrotesk' : 'sans-serif',
-        letterSpacing: -0.02,
-    },
-    email: {
-        fontSize: 16,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.7)',
-        marginBottom: 16,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        lineHeight: 24,
-    },
-    profileDetailContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
+    scrollView: {
+        flex: 1,
         paddingHorizontal: 20,
     },
-    profileDetailLabel: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: 'rgba(255, 255, 255, 0.7)',
-        marginRight: 8,
-        minWidth: 80,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
+    scrollContent: {
+        paddingBottom: 120,
     },
-    profileDetailValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#A855F7',
-        flex: 1,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
+    header: {
+        paddingTop: 60,
+        marginBottom: 20,
     },
-    rankBadge: {
+    headerContent: {
         flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(168, 85, 247, 0.3)',
-        gap: 6,
-        marginTop: 12,
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
     },
-    rankText: {
-        fontSize: 14,
-        fontWeight: '600',
+    headerLeft: {
+        flex: 1,
+    },
+    headerRight: {
+        alignItems: 'flex-end',
+    },
+    name: {
+        ...TYPOGRAPHY.pageTitle,
+        color: '#ffffff',
+        marginBottom: 4,
+    },
+    email: {
+        ...TYPOGRAPHY.bodyMedium,
+        color: 'rgba(255, 255, 255, 0.85)',
+    },
+    industry: {
+        ...TYPOGRAPHY.labelLarge,
         color: '#A855F7',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
+        fontWeight: '600' as const,
     },
     statsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        paddingHorizontal: 20,
-        marginBottom: 30,
+        gap: 12,
+        marginBottom: 32,
     },
     statCard: {
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.15)',
         borderRadius: 16,
         padding: 20,
         flex: 1,
-        marginHorizontal: 6,
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -483,80 +440,55 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     statValue: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#FFFFFF',
+        ...TYPOGRAPHY.pageTitle,
+        color: '#ffffff',
+        marginTop: 8,
         marginBottom: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     statLabel: {
-        fontSize: 12,
-        fontWeight: '500',
+        ...TYPOGRAPHY.bodySmall,
         color: 'rgba(255, 255, 255, 0.7)',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
     },
     section: {
-        paddingHorizontal: 20,
-        marginBottom: 24,
+        marginBottom: 28,
     },
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: '#FFFFFF',
+        ...TYPOGRAPHY.sectionHeader,
+        color: '#ffffff',
         marginBottom: 16,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     menuContainer: {
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.15)',
-        borderRadius: 16,
-        overflow: 'hidden',
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-            }
-        }),
+        gap: 12,
     },
-    menuItem: {
+    menuButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
     },
     menuIconContainer: {
         width: 32,
         height: 32,
-        borderRadius: 8,
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        borderRadius: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     menuLabel: {
         flex: 1,
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#FFFFFF',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
+        ...TYPOGRAPHY.itemTitle,
+        color: '#ffffff',
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(239, 68, 68, 0.15)',
-        marginHorizontal: 20,
-        marginBottom: 16,
+        marginTop: 8,
+        marginBottom: 40,
         padding: 16,
         borderRadius: 16,
         borderWidth: 1,
@@ -575,20 +507,9 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     logoutText: {
-        fontSize: 16,
-        fontWeight: '600',
+        ...TYPOGRAPHY.labelLarge,
+        fontWeight: '600' as const,
         color: '#EF4444',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
-    },
-    joinedText: {
-        textAlign: 'center',
-        fontSize: 14,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.55)',
-        marginBottom: 40,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
     },
     emptyState: {
         alignItems: 'center',
@@ -606,140 +527,73 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.12)',
     },
     emptyStateText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#FFFFFF',
+        ...TYPOGRAPHY.sectionHeader,
+        color: '#ffffff',
         marginBottom: 8,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
     },
     emptyStateSubtext: {
-        fontSize: 14,
-        fontWeight: '400',
+        ...TYPOGRAPHY.bodyMedium,
         color: 'rgba(255, 255, 255, 0.7)',
         textAlign: 'center',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
         lineHeight: 20,
     },
-    jobItem: {
+    jobButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
     },
     jobIcon: {
         width: 32,
         height: 32,
-        borderRadius: 8,
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.1)',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(168, 85, 247, 0.3)',
     },
     jobInfo: {
         flex: 1,
     },
     jobTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
-        marginBottom: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
+        ...TYPOGRAPHY.itemTitle,
+        color: '#ffffff',
+        marginBottom: 2,
     },
     jobCompany: {
-        fontSize: 14,
-        fontWeight: '500',
+        ...TYPOGRAPHY.bodySmall,
         color: 'rgba(255, 255, 255, 0.85)',
-        marginBottom: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        lineHeight: 18,
     },
-    jobMetaContainer: {
+    cvButton: {
         flexDirection: 'row',
         alignItems: 'center',
-    },
-    jobLocation: {
-        fontSize: 12,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.55)',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
-    },
-    jobDate: {
-        fontSize: 12,
-        fontWeight: '400',
-        color: 'rgba(255, 255, 255, 0.55)',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
-        marginLeft: 4,
-    },
-    jobStatusContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    jobStatus: {
-        fontSize: 12,
-        fontWeight: '500',
-        color: '#10B981',
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.02,
-        textTransform: 'capitalize',
-    },
-    cvSection: {
-        paddingHorizontal: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
         marginBottom: 24,
-        marginTop: 8,
     },
-    cvContainer: {
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
-        borderRadius: 20,
-        borderWidth: 2,
-        borderColor: 'rgba(168, 85, 247, 0.3)',
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 20,
-        ...Platform.select({
-            ios: {
-                shadowColor: '#A855F7',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-            }
-        }),
-    },
-    cvLeft: {
-        width: 56,
-        height: 56,
+    cvIcon: {
+        width: 32,
+        height: 32,
         borderRadius: 16,
-        backgroundColor: 'rgba(168, 85, 247, 0.25)',
+        backgroundColor: 'rgba(255,255,255,0.1)',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 16,
-        borderWidth: 2,
-        borderColor: 'rgba(168, 85, 247, 0.4)',
+        marginRight: 12,
     },
     cvInfo: {
         flex: 1,
     },
     cvTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#FFFFFF',
-        marginBottom: 6,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0,
+        ...TYPOGRAPHY.itemTitle,
+        color: '#ffffff',
+        marginBottom: 2,
     },
     cvSubtitle: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: 'rgba(255, 255, 255, 0.85)',
-        lineHeight: 20,
-        fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-        letterSpacing: 0.01,
+        ...TYPOGRAPHY.bodySmall,
+        color: 'rgba(255, 255, 255, 0.7)',
     },
 });

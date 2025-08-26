@@ -8,7 +8,9 @@ import CVUploadProgress from '../../../components/CVUploadProgress';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCV, useUploadCV, useDeleteCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import { useToast } from '../../../components/Toast';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 const CVUpload = () => {
   const { data: currentCV, isLoading: cvLoading } = useCV();
@@ -17,6 +19,7 @@ const CVUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { selectionAsync } = useHapticsSafely();
   const { showToast } = useToast();
 
   useFocusEffect(
@@ -134,23 +137,29 @@ const CVUpload = () => {
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Upload CV</Text>
-        </View>
-
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => {
+              selectionAsync();
+              router.back();
+            }}>
+              <Ionicons name="chevron-back" size={24} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Your CV</Text>
+          </View>
           {/* Current CV Status - Only show if CV exists */}
           {cvLoading ? (
             <View style={styles.loadingCard}>
-              <ActivityIndicator size="small" color="#F59E0B" />
+              <ActivityIndicator size="small" color="#A855F7" />
               <Text style={styles.loadingText}>Loading CV information...</Text>
             </View>
           ) : currentCV ? (
-            <View style={styles.cvCard}>
+            <View style={styles.cvSection}>
               <View style={styles.cvCardHeader}>
                 <Text style={styles.cvCardTitle}>Current CV</Text>
                 <View style={styles.activeStatus}>
@@ -186,7 +195,10 @@ const CVUpload = () => {
               </View>
 
               <TouchableOpacity
-                onPress={handleDelete}
+                onPress={() => {
+                  selectionAsync();
+                  handleDelete();
+                }}
                 disabled={deleteMutation.isPending}
                 style={styles.deleteButton}
               >
@@ -201,7 +213,10 @@ const CVUpload = () => {
           {/* Main Upload Area */}
           <View style={currentCV ? styles.uploadContainerWithCV : styles.uploadContainer}>
             <TouchableOpacity
-              onPress={handleUpload}
+              onPress={() => {
+                selectionAsync();
+                handleUpload();
+              }}
               disabled={uploadProgress}
               style={[
                 currentCV ? styles.uploadAreaCompact : styles.uploadArea,
@@ -229,19 +244,7 @@ const CVUpload = () => {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Trust Indicators */}
-          <View style={styles.trustIndicators}>
-            <View style={styles.trustItem}>
-              <Ionicons name="shield-checkmark" size={16} color="#10b981" />
-              <Text style={styles.trustText}>Secure & Private</Text>
-            </View>
-            <View style={styles.trustItem}>
-              <Ionicons name="time" size={16} color="#8b5cf6" />
-              <Text style={styles.trustText}>Processed in seconds</Text>
-            </View>
-          </View>
-        </View>
+        </ScrollView>
 
         {/* Progress Modal */}
         <Modal
@@ -265,27 +268,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20, // Consistent with other screens
+  },
+  scrollViewContent: {
+    paddingBottom: 100, // Extra space at bottom
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24, // layout.screenPaddingLarge
-    paddingTop: 60, // layout.safeAreaTop + spacing.4
-    paddingBottom: 20, // spacing.5
-  },
-  backButton: {
-    marginRight: 16, // spacing.4
+    paddingTop: 60,
+    paddingBottom: 20,
+    marginBottom: 8,
   },
   headerTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 24, // typography.heading.h2.fontSize
-    fontWeight: '600', // typography.heading.h2.fontWeight
-    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
-    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24, // layout.screenPaddingLarge
-    paddingBottom: 40, // spacing.10
+    ...TYPOGRAPHY.pageTitle,
+    color: '#FFFFFF',
+    marginLeft: 16,
   },
   loadingCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
@@ -305,32 +305,20 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
     marginTop: 8, // spacing.2
     fontSize: 16, // typography.body.medium.fontSize
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
-  cvCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
-    borderRadius: 16, // glass.borderRadius
-    padding: 24, // spacing.6
-    marginBottom: 24, // spacing.6
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4, // Android shadow
+  cvSection: {
+    marginBottom: 28,
   },
   cvCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20, // spacing.5
+    marginBottom: 16,
   },
   cvCardTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 18, // typography.heading.h4.fontSize
-    fontWeight: '600', // typography.heading.h4.fontWeight
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.sectionHeader,
+    color: '#FFFFFF',
   },
   activeStatus: {
     flexDirection: 'row',
@@ -341,7 +329,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.label.large.fontWeight
     marginLeft: 8, // spacing.2
     fontSize: 14, // typography.label.medium.fontSize
-    fontFamily: 'Inter', // typography.label.medium.fontFamily
+    ...TYPOGRAPHY.labelMedium,
   },
   cvInfo: {
     gap: 16, // spacing.4
@@ -351,21 +339,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cvInfoText: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    marginLeft: 12, // spacing.3
-    fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.70)',
+    marginLeft: 8,
   },
   cvInfoTextWrap: {
     flex: 1,
   },
   deleteButton: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)', // semantic.error.light
-    borderColor: 'rgba(239, 68, 68, 0.3)', // semantic.error.main with opacity
-    borderWidth: 1,
-    borderRadius: 12, // glassSecondary.borderRadius
-    padding: 16, // spacing.4
-    marginTop: 20, // spacing.5
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 50, // Pill-shaped like other buttons
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -375,7 +361,7 @@ const styles = StyleSheet.create({
     marginLeft: 8, // spacing.2
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
+    ...TYPOGRAPHY.buttonMedium,
   },
   uploadContainer: {
     flex: 1,
@@ -420,7 +406,7 @@ const styles = StyleSheet.create({
     fontWeight: '700', // typography.heading.h1.fontWeight
     textAlign: 'center',
     marginBottom: 12, // spacing.3
-    fontFamily: 'SpaceGrotesk', // typography.heading.h1.fontFamily
+    ...TYPOGRAPHY.heading1,
     letterSpacing: -0.01, // typography.heading.h1.letterSpacing
   },
   uploadTitleCompact: {
@@ -429,7 +415,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.heading.h3.fontWeight
     textAlign: 'center',
     marginBottom: 8, // spacing.2
-    fontFamily: 'SpaceGrotesk', // typography.heading.h3.fontFamily
+    ...TYPOGRAPHY.heading3,
     letterSpacing: -0.005, // typography.heading.h3.letterSpacing
   },
   uploadSubtitle: {
@@ -439,7 +425,7 @@ const styles = StyleSheet.create({
     marginBottom: 32, // spacing.8
     lineHeight: 24, // typography.body.medium.lineHeight
     maxWidth: 280,
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium,
   },
   uploadSubtitleCompact: {
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
@@ -448,49 +434,27 @@ const styles = StyleSheet.create({
     marginBottom: 24, // spacing.6
     lineHeight: 20, // typography.body.small.lineHeight
     maxWidth: 260,
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall,
   },
   uploadButton: {
-    backgroundColor: 'rgba(168, 85, 247, 1)', // purple.400
-    paddingHorizontal: 32, // spacing.8
-    paddingVertical: 16, // spacing.4
-    borderRadius: 12, // glassSecondary.borderRadius
-    marginBottom: 20, // spacing.5
-    shadowColor: '#A855F7', // purple.400
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4, // Android shadow
+    backgroundColor: 'rgba(168, 85, 247, 0.2)', // Semi-transparent purple
+    borderRadius: 50, // Pill-shaped
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    marginBottom: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(168, 85, 247, 0.8)',
   },
   uploadButtonText: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 16, // typography.button.medium.fontSize
-    fontWeight: '600', // typography.button.medium.fontWeight
-    fontFamily: 'Inter', // typography.button.medium.fontFamily
-    letterSpacing: 0.005, // typography.button.medium.letterSpacing
+    ...TYPOGRAPHY.labelMedium,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   formatHint: {
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
-    fontSize: 14, // typography.body.small.fontSize
+    ...TYPOGRAPHY.bodySmall,
+    color: 'rgba(255, 255, 255, 0.55)',
     textAlign: 'center',
-    fontFamily: 'Inter', // typography.body.small.fontFamily
-  },
-  trustIndicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 32, // spacing.8
-    paddingTop: 20, // spacing.5
-  },
-  trustItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8, // spacing.2
-  },
-  trustText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    fontSize: 14, // typography.body.small.fontSize
-    fontWeight: '500', // typography.label.medium.fontWeight
-    fontFamily: 'Inter', // typography.body.small.fontFamily
   },
 });
 

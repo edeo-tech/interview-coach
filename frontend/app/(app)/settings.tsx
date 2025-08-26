@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { TYPOGRAPHY } from '../../constants/Typography';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
@@ -251,7 +252,7 @@ const Settings = () => {
                     autoFocus
                   />
                   {updatePending && (
-                    <ActivityIndicator size="small" color="#F59E0B" style={{ marginLeft: 8 }} />
+                    <ActivityIndicator size="small" color="#A855F7" style={{ marginLeft: 8 }} />
                   )}
                 </View>
               ) : (
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
     fontSize: 24, // typography.heading.h2.fontSize
     fontWeight: '600', // typography.heading.h2.fontWeight
     color: '#FFFFFF', // text.primary
-    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
+    ...TYPOGRAPHY.contentTitle, // typography.heading.h2.fontFamily
     letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   scrollView: {
@@ -481,7 +482,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', // typography.heading.h4.fontWeight
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     marginBottom: 12, // spacing.3
-    fontFamily: 'Inter', // typography.heading.h4.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.heading.h4.fontFamily
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
@@ -504,12 +505,12 @@ const styles = StyleSheet.create({
     fontSize: 12, // typography.body.xsmall.fontSize
     color: 'rgba(255, 255, 255, 0.55)', // text.muted
     marginBottom: 4, // spacing.1
-    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.xsmall.fontFamily
   },
   fieldValue: {
     fontSize: 16, // typography.body.medium.fontSize
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   fieldValueContainer: {
     flexDirection: 'row',
@@ -528,7 +529,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
     paddingBottom: 4, // spacing.1
     marginRight: 12, // spacing.3
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   linkItem: {
     flexDirection: 'row',
@@ -542,7 +543,7 @@ const styles = StyleSheet.create({
     fontSize: 16, // typography.body.medium.fontSize
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     marginLeft: 12, // spacing.3
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   dangerButton: {
     flexDirection: 'row',
@@ -558,7 +559,7 @@ const styles = StyleSheet.create({
     fontWeight: '500', // typography.label.large.fontWeight
     color: 'rgba(239, 68, 68, 1)', // semantic.error.main
     marginLeft: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   appInfo: {
     alignItems: 'center',
@@ -567,7 +568,7 @@ const styles = StyleSheet.create({
   appInfoText: {
     fontSize: 14, // typography.body.small.fontSize
     color: 'rgba(255, 255, 255, 0.55)', // text.muted
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.small.fontFamily
   },
   loadingContainer: {
     alignItems: 'center',
@@ -577,13 +578,13 @@ const styles = StyleSheet.create({
     fontSize: 14, // typography.body.small.fontSize
     color: 'rgba(255, 255, 255, 0.55)', // text.muted
     marginTop: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.small.fontFamily
   },
   errorText: {
     fontSize: 14, // typography.body.small.fontSize
     fontWeight: '500', // typography.label.large.fontWeight
     color: 'rgba(239, 68, 68, 1)', // semantic.error.main
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.small.fontFamily
   },
   premiumStatus: {
     flexDirection: 'row',
@@ -598,7 +599,7 @@ const styles = StyleSheet.create({
     fontSize: 16, // typography.body.medium.fontSize
     fontWeight: '600', // typography.label.large.fontWeight
     marginLeft: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   upgradeButton: {
     backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
@@ -618,7 +619,7 @@ const styles = StyleSheet.create({
     fontSize: 14, // typography.button.small.fontSize
     fontWeight: '600', // typography.button.small.fontWeight
     marginLeft: 6, // spacing.1.5
-    fontFamily: 'Inter', // typography.button.small.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.button.small.fontFamily
     letterSpacing: 0.01, // typography.button.small.letterSpacing
   },
   divider: {
@@ -637,7 +638,7 @@ const styles = StyleSheet.create({
     color: 'rgba(252, 180, 0, 1)', // gold.400
     fontWeight: '500', // typography.label.large.fontWeight
     marginHorizontal: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   manageSubscriptionContainer: {
     flexDirection: 'row',
@@ -654,7 +655,7 @@ const styles = StyleSheet.create({
     fontSize: 16, // typography.body.medium.fontSize
     color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     marginLeft: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
 });
 

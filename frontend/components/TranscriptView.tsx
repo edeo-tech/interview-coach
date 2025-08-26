@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { TYPOGRAPHY } from '../constants/Typography';
 
 export type TranscriptTurn = {
   role: 'user' | 'agent';
@@ -124,9 +125,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(96, 165, 250, 0.20)', // Accent blue tint
   },
   speaker: {
-    fontSize: 12, // Design system label medium
+    ...TYPOGRAPHY.labelSmall,
     fontWeight: '600',
-    fontFamily: 'Inter',
   },
   userSpeaker: {
     color: 'rgba(255, 255, 255, 0.85)', // Text secondary
@@ -135,14 +135,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // Text primary
   },
   timestamp: {
-    fontSize: 12, // Label small per design system
+    ...TYPOGRAPHY.labelSmall,
     color: 'rgba(255, 255, 255, 0.55)', // Text muted
-    fontFamily: 'Inter',
   },
   messageText: {
-    fontSize: 16, // Body medium
-    lineHeight: 24, // Body medium line height
-    fontFamily: 'Inter',
+    ...TYPOGRAPHY.bodyMedium,
   },
   userText: {
     color: '#FFFFFF', // Text primary on purple glass
@@ -161,16 +158,15 @@ const styles = StyleSheet.create({
     fontSize: 18, // Heading h5
     fontWeight: '600',
     marginTop: 16,
+    ...TYPOGRAPHY.bodySmall,
     marginBottom: 8,
     textAlign: 'center',
-    fontFamily: 'Inter',
   },
   emptyText: {
     color: 'rgba(255, 255, 255, 0.70)', // Text tertiary
     fontSize: 14, // Body small
+    ...TYPOGRAPHY.bodySmall,
     textAlign: 'center',
-    lineHeight: 20, // Body small line height
-    fontFamily: 'Inter',
   },
 });
 
