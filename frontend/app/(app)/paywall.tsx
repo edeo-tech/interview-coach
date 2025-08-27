@@ -9,7 +9,8 @@ import {
   Alert,
   ScrollView,
   Modal,
-  Pressable
+  Pressable,
+  Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -196,6 +197,11 @@ const Paywall = () => {
     } finally {
       setIsRestoring(false);
     }
+  };
+
+  const handleLinkPress = (url: string, eventName: string) => {
+    posthogCapture(eventName, { source: 'paywall' });
+    Linking.openURL(url);
   };
 
   // Determine benefit order based on source
@@ -449,21 +455,44 @@ const Paywall = () => {
             </LinearGradient>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.restoreButton}
-            onPress={() => {
-              // Medium impact for restore - important but not critical
-              impactAsync(ImpactFeedbackStyle.Medium);
-              handleRestore();
-            }}
-            disabled={isRestoring || isPurchasing}
-          >
-            {isRestoring ? (
-              <ActivityIndicator size="small" color={Colors.text.primary} />
-            ) : (
-              <Text style={styles.restoreButtonText}>Restore</Text>
-            )}
-          </TouchableOpacity>
+          {/* Legal Links */}
+          <View style={styles.legalLinksContainer}>
+            <View style={styles.legalLinksRow}>
+              <TouchableOpacity
+                style={styles.legalLink}
+                onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_privacy_policy')}
+              >
+                <Text style={styles.legalLinkText}>Privacy</Text>
+              </TouchableOpacity>
+              
+              <View style={styles.legalDivider} />
+              
+              <TouchableOpacity
+                style={styles.legalLink}
+                onPress={() => handleLinkPress('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/', 'open_terms')}
+              >
+                <Text style={styles.legalLinkText}>Terms</Text>
+              </TouchableOpacity>
+              
+              <View style={styles.legalDivider} />
+              
+              <TouchableOpacity
+                style={styles.legalLink}
+                onPress={() => {
+                  // Medium impact for restore - important but not critical
+                  impactAsync(ImpactFeedbackStyle.Medium);
+                  handleRestore();
+                }}
+                disabled={isRestoring || isPurchasing}
+              >
+                {isRestoring ? (
+                  <ActivityIndicator size="small" color={Colors.text.primary} />
+                ) : (
+                  <Text style={styles.legalLinkText}>Restore</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         {/* Popular Info Modal */}
@@ -702,6 +731,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 32,
     paddingBottom: 16,
+  },
+  legalLinksContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  legalLinksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  legalLink: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  legalLinkText: {
+    color: GlassTextColors.muted,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  legalDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: GlassTextColors.muted,
+    opacity: 0.3,
+    marginHorizontal: 8,
   },
 });
 
