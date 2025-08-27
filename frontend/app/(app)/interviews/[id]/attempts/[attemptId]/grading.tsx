@@ -8,6 +8,7 @@ import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
+import InterviewGradingProgress from '../../../../../../components/InterviewGradingProgress';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
 import { getInterviewTypeConfig } from '../../../../../../config/interviewTypeConfigs';
@@ -150,15 +151,16 @@ export default function AttemptGradingScreen() {
 
   const renderLoadingState = () => {
     return (
-      <View style={styles.center}>
-        <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color={Colors.brand.primary} />
-          <Text style={styles.loadingTitle}>Generating Feedback</Text>
-          <Text style={styles.loadingSubtitle}>
-            Our AI is analyzing your interview performance to provide personalized feedback.
-          </Text>
-        </View>
-      </View>
+      <InterviewGradingProgress 
+        isFeedbackReady={!!data} // Pass whether feedback data is available
+        onComplete={() => {
+          // Animation completed - data should already be loaded
+          if (!data) {
+            console.log('⚠️ Animation completed but no data - forcing refetch');
+            refetch();
+          }
+        }}
+      />
     );
   };
 
@@ -346,7 +348,7 @@ export default function AttemptGradingScreen() {
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
         
-        {loading ? renderLoadingState() : data ? renderFeedback() : (
+        {!loading && (data ? renderFeedback() : (
           <View style={styles.center}>
             <View style={styles.emptyCard}>
               <Ionicons name="document-text" size={48} color={Colors.gray[500]} />
@@ -356,10 +358,10 @@ export default function AttemptGradingScreen() {
               </Text>
             </View>
           </View>
-        )}
+        ))}
         
         {/* Only show footer button if coming from interview */}
-        {is_from_interview === 'true' && (
+        {is_from_interview === 'true' && !loading && (
           <View style={styles.footer}>
             <TouchableOpacity 
               style={[
@@ -381,6 +383,9 @@ export default function AttemptGradingScreen() {
           </View>
         )}
       </View>
+      
+      {/* Full-screen loading animation overlay */}
+      {loading && renderLoadingState()}
     </ChatGPTBackground>
   );
 }
@@ -548,28 +553,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   
-  // Loading states
-  loadingCard: {
-    backgroundColor: Colors.glass.background,
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    maxWidth: 320,
-    marginHorizontal: 20,
-  },
-  loadingTitle: {
-    ...TYPOGRAPHY.sectionHeader,
-    color: Colors.text.primary,
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  loadingSubtitle: {
-    ...TYPOGRAPHY.bodyMedium,
-    color: Colors.text.tertiary,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
