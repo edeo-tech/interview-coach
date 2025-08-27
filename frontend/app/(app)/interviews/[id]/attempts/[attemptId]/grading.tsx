@@ -9,6 +9,7 @@ import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedba
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import InterviewGradingProgress from '../../../../../../components/InterviewGradingProgress';
+import InterviewLikelihoodReveal from '../../../../../../components/InterviewLikelihoodReveal';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumCheck';
 import { getInterviewTypeConfig } from '../../../../../../config/interviewTypeConfigs';
@@ -118,6 +119,7 @@ export default function AttemptGradingScreen() {
 
   const [pollCount, setPollCount] = useState(0);
   const [showAnimation, setShowAnimation] = useState(true); // Separate state for animation visibility
+  const [showReveal, setShowReveal] = useState(false); // State for likelihood reveal screen
   const [feedbackFadeAnim] = useState(new Animated.Value(0)); // Fade-in animation for feedback screen
 
   useFocusEffect(
@@ -156,16 +158,10 @@ export default function AttemptGradingScreen() {
       <InterviewGradingProgress 
         isFeedbackReady={!!data} // Pass whether feedback data is available
         onComplete={() => {
-          // Animation completed - hide animation and fade in feedback
-          console.log('🎊 Animation sequence complete - transitioning to feedback');
+          // Animation completed - show likelihood reveal screen
+          console.log('🎊 Animation sequence complete - showing likelihood reveal');
           setShowAnimation(false);
-          
-          // Start fade-in animation for feedback screen
-          Animated.timing(feedbackFadeAnim, {
-            toValue: 1,
-            duration: 800, // 0.8 second smooth fade-in
-            useNativeDriver: true,
-          }).start();
+          setShowReveal(true);
           
           if (!data) {
             console.log('⚠️ Animation completed but no data - forcing refetch');
@@ -176,6 +172,19 @@ export default function AttemptGradingScreen() {
     );
   };
 
+  const handleRevealContinue = () => {
+    // Hide reveal screen and fade in detailed feedback
+    console.log('📊 Transitioning from reveal to detailed feedback');
+    setShowReveal(false);
+    
+    // Start fade-in animation for feedback screen
+    Animated.timing(feedbackFadeAnim, {
+      toValue: 1,
+      duration: 800, // 0.8 second smooth fade-in
+      useNativeDriver: true,
+    }).start();
+  };
+
   const getScoreColor = (score: number) => {
     if (score >= 90) return Colors.semantic.successAlt;
     if (score >= 80) return Colors.accent.blueAlt;
@@ -184,12 +193,12 @@ export default function AttemptGradingScreen() {
     return Colors.semantic.error;
   };
 
-  const getScoreLabel = (score: number) => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 80) return 'Good';
-    if (score >= 70) return 'Fair';
-    if (score >= 60) return 'Needs Work';
-    return 'Poor';
+  const getAdvancementLabel = (score: number) => {
+    if (score >= 90) return 'Very High';
+    if (score >= 80) return 'High';
+    if (score >= 70) return 'Moderate';
+    if (score >= 60) return 'Low';
+    return 'Very Low';
   };
 
   const renderFeedback = () => {
@@ -199,35 +208,6 @@ export default function AttemptGradingScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Overall Score Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overall Performance</Text>
-          <View style={styles.scoreContainer}>
-            <View style={styles.scoreDisplay}>
-              <Text style={[styles.scoreNumber, { color: getScoreColor(data?.overall_score || 0) }]}>
-                {data?.overall_score}
-              </Text>
-              <Text style={styles.scoreLabel}>
-                {getScoreLabel(data?.overall_score || 0)}
-              </Text>
-            </View>
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBar}>
-                <View style={[
-                  styles.progressFill, 
-                  { 
-                    backgroundColor: getScoreColor(data?.overall_score || 0), 
-                    width: `${data?.overall_score || 0}%` 
-                  }
-                ]} />
-              </View>
-              <Text style={styles.progressText}>
-                {data?.overall_score}/100
-              </Text>
-            </View>
-          </View>
-        </View>
-
         {/* Performance Breakdown */}
         <BlurredSection 
           isBlurred={feedbackAccess.shouldBlur} 
@@ -360,7 +340,7 @@ export default function AttemptGradingScreen() {
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
         
-        {!showAnimation && (
+        {!showAnimation && !showReveal && (
           <Animated.View style={{ opacity: feedbackFadeAnim, flex: 1 }}>
             {data ? renderFeedback() : (
               <View style={styles.center}>
@@ -377,7 +357,7 @@ export default function AttemptGradingScreen() {
         )}
         
         {/* Only show footer button if coming from interview */}
-        {is_from_interview === 'true' && !showAnimation && (
+        {is_from_interview === 'true' && !showAnimation && !showReveal && (
           <Animated.View style={[styles.footer, { opacity: feedbackFadeAnim }]}>
             <TouchableOpacity 
               style={[
@@ -402,6 +382,14 @@ export default function AttemptGradingScreen() {
       
       {/* Full-screen loading animation overlay */}
       {showAnimation && renderLoadingState()}
+      
+      {/* Likelihood reveal screen overlay */}
+      {showReveal && data && (
+        <InterviewLikelihoodReveal 
+          score={data.overall_score || 0}
+          onContinue={handleRevealContinue}
+        />
+      )}
     </ChatGPTBackground>
   );
 }
@@ -446,43 +434,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginBottom: 16,
-  },
-  scoreContainer: {
-    alignItems: 'center',
-  },
-  scoreDisplay: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  scoreNumber: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  scoreLabel: {
-    ...TYPOGRAPHY.itemTitle,
-    color: Colors.text.primary,
-    marginBottom: 16,
-  },
-  progressContainer: {
-    width: '100%',
-  },
-  progressBar: {
-    width: '100%',
-    height: 8,
-    backgroundColor: Colors.glass.background,
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  progressText: {
-    ...TYPOGRAPHY.bodySmall,
-    color: Colors.text.tertiary,
-    textAlign: 'center',
   },
   bulletItem: {
     flexDirection: 'row',
