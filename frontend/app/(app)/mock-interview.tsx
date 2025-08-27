@@ -22,7 +22,7 @@ const AGENT_INTERVIEW_LINK = {
     "phone_screen": {
         "name": "Niamh Morissey",
         "agent_id": "agent_3201k2d96cp0fv7rvw0j3nbe3fd6",
-        "profile_picture": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face&auto=format"
+        "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756311206/niamh_pp_fcl0dj.png"
     },
     "initial_hr_interview": {
         "name": "Sam Tyldesley",
