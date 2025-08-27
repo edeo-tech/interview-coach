@@ -29,6 +29,7 @@ export interface Interview {
   source_url?: string;
   created_at: string;
   updated_at: string;
+  best_score: number;
 }
 
 export interface InterviewAttempt {

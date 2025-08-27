@@ -8,6 +8,7 @@ import ChatGPTBackground from '../../../../components/ChatGPTBackground';
 import BrandfetchLogo from '../../../../components/BrandfetchLogo';
 import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../_queries/interviews/interviews';
+import { attemptFeedback } from '../../../../_api/interviews/feedback';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../hooks/haptics/useHapticsSafely';
 import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
@@ -52,6 +53,35 @@ const getInterviewTypeIcon = (type: string): string => {
     [InterviewType.ExecutiveLeadershipRound]: 'trending-up',
   };
   return iconMap[type] || 'chatbubble';
+};
+
+// Helper functions for grade styling
+const getScoreColor = (score: number) => {
+  if (score >= 90) return Colors.semantic.successAlt;
+  if (score >= 80) return Colors.accent.blueAlt;
+  if (score >= 70) return Colors.accent.gold;
+  if (score >= 60) return Colors.semantic.warning;
+  return Colors.semantic.error;
+};
+
+const getScoreLabel = (score: number) => {
+  if (score >= 90) return 'Excellent';
+  if (score >= 80) return 'Good';
+  if (score >= 70) return 'Fair';
+  if (score >= 60) return 'Needs Work';
+  return 'Poor';
+};
+
+// Component to fetch and display attempt score
+const AttemptScore = ({ attemptId }: { attemptId: string }) => {
+  const { data: feedback } = useAttemptFeedback(attemptId);
+  const score = feedback?.overall_score || 0;
+  
+  return (
+    <Text style={[styles.scoreValue, { color: getScoreColor(score) }]}>
+      {score}
+    </Text>
+  );
 };
 
 const getInterviewStageInfo = (type: string) => {
@@ -99,19 +129,41 @@ export default function InterviewDetails() {
   const startAttempt = useStartAttempt();
   const { posthogScreen } = usePosthogSafely();
   const { selectionAsync } = useHapticsSafely();
-  const [attemptGrades, setAttemptGrades] = useState<{[key: string]: number}>({});
+  const [bestScore, setBestScore] = useState<number>(0);
   const { canRetryInterview, isPaywallEnabled } = useInterviewRetryCheck();
   const { showToast } = useToast();
   
   // Flatten the paginated attempts data
   const attempts = attemptsData?.pages.flatMap(page => page.attempts) || [];
   
-  // Pre-fetch feedback for the first 3 attempts to avoid conditional hooks
-  const recentAttempts = attempts.slice(0, 3);
-  const feedback1 = useAttemptFeedback(recentAttempts[0]?.id);
-  const feedback2 = useAttemptFeedback(recentAttempts[1]?.id);
-  const feedback3 = useAttemptFeedback(recentAttempts[2]?.id);
-  const feedbackData = [feedback1.data, feedback2.data, feedback3.data];
+  // Calculate best score from all attempts
+  useEffect(() => {
+    if (!interviewData?.interview) return;
+    
+    // Use best_score from interview if available
+    if (interviewData.interview.best_score !== undefined) {
+      setBestScore(interviewData.interview.best_score);
+    } else if (attempts.length > 0) {
+      // Fallback: calculate from attempts if best_score not available
+      const calculateBestScore = async () => {
+        let maxScore = 0;
+        for (const attempt of attempts) {
+          if (attempt.status === 'graded') {
+            try {
+              const { data: feedback } = await attemptFeedback(attempt.id);
+              if (feedback && feedback.overall_score > maxScore) {
+                maxScore = feedback.overall_score;
+              }
+            } catch (error) {
+              console.error('Error fetching feedback:', error);
+            }
+          }
+        }
+        setBestScore(maxScore);
+      };
+      calculateBestScore();
+    }
+  }, [interviewData, attempts]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -119,24 +171,6 @@ export default function InterviewDetails() {
       posthogScreen('interview_details');
     }, [posthogScreen])
   );
-
-  // Helper functions for grade styling
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return Colors.semantic.successAlt;
-    if (score >= 80) return Colors.accent.blueAlt;
-    if (score >= 70) return Colors.accent.gold;
-    if (score >= 60) return Colors.semantic.warning;
-    return Colors.semantic.error;
-  };
-
-  const getScoreLabel = (score: number) => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 80) return 'Good';
-    if (score >= 70) return 'Fair';
-    if (score >= 60) return 'Needs Work';
-    return 'Poor';
-  };
-
 
   const formatDuration = (seconds: number) => {
     if (!seconds) return 'N/A';
@@ -304,10 +338,7 @@ export default function InterviewDetails() {
                   </View>
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: Colors.semantic.successAlt }]}>
-                      {Math.max(...attempts.map(a => {
-                        const feedback = attemptGrades[a.id];
-                        return feedback || 0;
-                      }))}
+                      {bestScore}
                     </Text>
                     <Text style={styles.statLabel}>Best Score</Text>
                   </View>
@@ -318,11 +349,8 @@ export default function InterviewDetails() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Previous Attempts</Text>
                 <View style={styles.attemptsList}>
-                  {recentAttempts.map((attempt, index) => {
-                    const feedback = feedbackData[index];
-                    const grade = feedback?.overall_score || 0;
-                    
-                    return (
+                  {attempts.slice(0, 5).map((attempt, index) => (
+
                       <TouchableOpacity
                         key={attempt.id}
                         style={styles.attemptItem}
@@ -343,9 +371,7 @@ export default function InterviewDetails() {
                         </View>
                         <View style={styles.attemptScore}>
                           {attempt.status === 'graded' ? (
-                            <Text style={[styles.scoreValue, { color: getScoreColor(grade) }]}>
-                              {grade}
-                            </Text>
+                            <AttemptScore attemptId={attempt.id} />
                           ) : (
                             <Text style={styles.scorePending}>Pending</Text>
                           )}
@@ -354,8 +380,7 @@ export default function InterviewDetails() {
                           <Ionicons name="chevron-forward" size={16} color={Colors.text.disabled} />
                         )}
                       </TouchableOpacity>
-                    );
-                  })}
+                  ))}
                 </View>
               </View>
             </>

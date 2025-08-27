@@ -51,6 +51,9 @@ async def create_job_url(
     for interview in job_with_interviews["interviews"]:
         interview_dict = interview.model_dump()
         interview_dict['_id'] = str(interview.id)
+        # Ensure best_score is included (for backwards compatibility)
+        if 'best_score' not in interview_dict:
+            interview_dict['best_score'] = 0
         interviews_data.append(interview_dict)
     
     return JSONResponse(
@@ -105,6 +108,9 @@ async def create_job_file(
     for interview in job_with_interviews["interviews"]:
         interview_dict = interview.model_dump()
         interview_dict['_id'] = str(interview.id)
+        # Ensure best_score is included (for backwards compatibility)
+        if 'best_score' not in interview_dict:
+            interview_dict['best_score'] = 0
         interviews_data.append(interview_dict)
     
     return JSONResponse(

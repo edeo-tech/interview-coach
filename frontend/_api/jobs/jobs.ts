@@ -34,6 +34,7 @@ export interface Interview {
   difficulty: string;
   focus_areas: string[];
   total_attempts: number;
+  best_score: number;
   last_attempt_date?: string;
   created_at: string;
 }

@@ -66,16 +66,19 @@ const isStageUnlocked = (interviews: any[], currentIndex: number): boolean => {
   // First stage is always unlocked
   if (currentIndex === 0) return true;
   
-  // Check if previous stage is completed
+  // Check if previous stage has best_score >= 90
   const previousInterview = interviews[currentIndex - 1];
-  return previousInterview && previousInterview.status === 'completed';
+  return previousInterview && (
+    previousInterview.status === 'completed' || 
+    previousInterview.best_score >= 90
+  );
 };
 
 const isCurrentActiveStage = (interviews: any[], currentIndex: number): boolean => {
   // Must be unlocked and not completed
   const isUnlocked = isStageUnlocked(interviews, currentIndex);
   const interview = interviews[currentIndex];
-  return isUnlocked && interview.status !== 'completed';
+  return isUnlocked && interview.status !== 'completed' && interview.best_score < 90;
 };
 
 export default function JobDetails() {
@@ -148,7 +151,9 @@ export default function JobDetails() {
   }
 
   const { job, interviews } = jobData;
-  const completedInterviews = interviews.filter(i => i.status === 'completed').length;
+  const completedInterviews = interviews.filter(i => 
+    i.status === 'completed' || i.best_score >= 90
+  ).length;
   const progress = completedInterviews / interviews.length;
 
   return (
