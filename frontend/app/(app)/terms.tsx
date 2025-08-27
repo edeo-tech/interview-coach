@@ -28,7 +28,6 @@ const Terms = () => {
   );
 
   const termsContent = [
-    { type: 'h1', text: 'Terms and Conditions' },
     { type: 'p', text: 'Our iOS app, Interview Guide AI, is designed to help you prepare for job interviews through AI-powered mock interviews and personalized feedback. By accessing and using Interview Guide AI, you agree to the following terms and conditions, which we ask you to read carefully.' },
     
     { type: 'h2', text: 'Services Offered' },
@@ -95,12 +94,11 @@ const Terms = () => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            style={styles.backButton}
             onPress={() => router.back()}
           >
             <Ionicons name="chevron-back" size={24} color={Colors.white} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Terms of Service</Text>
+          <Text style={styles.headerTitle}>Terms and Conditions</Text>
           <View style={styles.headerSpacer} />
         </View>
 
@@ -110,9 +108,7 @@ const Terms = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.contentContainer}>
-            {termsContent.map((item, index) => renderContent(item, index))}
-          </View>
+          {termsContent.map((item, index) => renderContent(item, index))}
         </ScrollView>
       </View>
     </ChatGPTBackground>
@@ -133,37 +129,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.glass.border,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    ...GlassStyles.interactive,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: GlassTextColors.primary,
+    color: Colors.white,
     textAlign: 'center',
     flex: 1,
   },
   headerSpacer: {
-    width: 40,
+    width: 24,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 40,
-  },
-  contentContainer: {
-    ...GlassStyles.card,
-    marginHorizontal: 20,
-    marginTop: 20,
-    padding: 24,
   },
   h1: {
     fontSize: 28,

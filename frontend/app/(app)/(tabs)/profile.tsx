@@ -330,16 +330,6 @@ export default function Profile() {
                             router.push('/(app)/settings');
                         }}
                     />
-                    <MenuItem 
-                        icon="document-text-outline" 
-                        label="Terms of Service"
-                        onPress={() => {
-                            posthogCapture('view_terms_of_service', {
-                                source: 'profile'
-                            });
-                            router.push('/(app)/terms');
-                        }}
-                    />
                 </View>
             </View>
 

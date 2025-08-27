@@ -223,7 +223,7 @@ const Settings = () => {
     <ChatGPTBackground style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="white" />
+          <Ionicons name="chevron-back" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={{ width: 24 }} />
@@ -407,11 +407,16 @@ const Settings = () => {
 
           <TouchableOpacity
             style={styles.linkItem}
-            onPress={() => handleLinkPress('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/', 'open_terms')}
+            onPress={() => {
+              posthogCapture('view_terms_of_service', {
+                source: 'settings'
+              });
+              router.push('/(app)/terms');
+            }}
           >
             <Ionicons name="document-text-outline" size={20} color={Colors.gray[500]} />
             <Text style={styles.linkText}>Terms of Service</Text>
-            <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
+            <Ionicons name="chevron-forward" size={16} color={Colors.gray[500]} />
           </TouchableOpacity>
         </View>
 
