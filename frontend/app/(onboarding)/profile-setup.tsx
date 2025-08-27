@@ -17,6 +17,7 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -175,7 +176,7 @@ const ProfileSetup = () => {
         return (
           <View style={styles.content}>
             <View style={styles.iconContainer}>
-              <Ionicons name="person-outline" size={48} color="#A855F7" />
+              <Ionicons name="person-outline" size={48} color={Colors.brand.primary} />
             </View>
             
             <Text style={styles.screenTitle}>What's your name?</Text>
@@ -187,7 +188,7 @@ const ProfileSetup = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder="Enter your first name"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                placeholderTextColor={Colors.text.disabled}
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
@@ -202,7 +203,7 @@ const ProfileSetup = () => {
         return (
           <View style={styles.content}>
             <View style={styles.iconContainer}>
-              <Ionicons name="calendar-outline" size={48} color="#A855F7" />
+              <Ionicons name="calendar-outline" size={48} color={Colors.brand.primary} />
             </View>
             
             <Text style={styles.screenTitle}>What's your age?</Text>
@@ -214,7 +215,7 @@ const ProfileSetup = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder="25"
-                placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                placeholderTextColor={Colors.text.disabled}
                 value={age}
                 onChangeText={setAge}
                 keyboardType="number-pad"
@@ -287,7 +288,7 @@ const ProfileSetup = () => {
               activeOpacity={0.8}
             >
               <Text style={styles.primaryButtonText}>{getButtonText()}</Text>
-              <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+              <Ionicons name="arrow-forward" size={20} color={Colors.white} />
             </TouchableOpacity>
           </Animated.View>
         </KeyboardAvoidingView>
@@ -333,24 +334,24 @@ const styles = StyleSheet.create({
   // Typography - using enhanced typography system
   titleMain: {
     ...TYPOGRAPHY.displaySmall,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     textAlign: 'center',
   },
   titleBrand: {
     ...TYPOGRAPHY.hero,
-    color: '#A855F7',
+    color: Colors.brand.primary,
     textAlign: 'center',
     marginBottom: 60,
   },
   screenTitle: {
     ...TYPOGRAPHY.pageTitle,
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 12,
   },
   subtitle: {
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
     maxWidth: 320,
     paddingHorizontal: 32,
@@ -363,15 +364,15 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   textInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.glass.backgroundInput,
     height: 48,
     borderRadius: 24,
     paddingHorizontal: 20,
     fontSize: 18,
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.glass.borderInteractive,
   },
   
   // Button section
@@ -386,27 +387,27 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primaryRGB,
   },
   primaryButtonDisabled: {
-    backgroundColor: 'rgba(168, 85, 247, 0.05)',
-    borderColor: 'rgba(169, 85, 247, 0.3)',
+    backgroundColor: Colors.glass.purpleSubtle,
+    borderColor: Colors.glass.purpleLight,
     shadowOpacity: 0,
   },
   primaryButtonText: {
     ...TYPOGRAPHY.buttonLarge,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     marginRight: 8,
   },
 });

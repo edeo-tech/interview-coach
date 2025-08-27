@@ -7,6 +7,7 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
+import Colors from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -235,7 +236,7 @@ const PreparationRating = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
     paddingTop: Platform.OS === 'ios' ? 20 : 20,
   },
   animatedContent: {
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     fontFamily: 'SpaceGrotesk',
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     lineHeight: 30,
     marginBottom: 48,
@@ -278,43 +279,43 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   ratingButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: Colors.glass.borderSecondary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
   ratingButtonSelected: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-    borderColor: '#A855F7',
+    backgroundColor: Colors.glass.purple,
+    borderColor: Colors.brand.primary,
   },
   numberContainer: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: Colors.glass.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   numberContainerSelected: {
-    backgroundColor: 'rgba(168, 85, 247, 0.25)',
+    backgroundColor: Colors.glass.purpleTint,
   },
   ratingNumber: {
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: Colors.text.secondary,
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter',
   },
   ratingNumberSelected: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
   },
   ratingLabel: {
-    color: 'rgba(255, 255, 255, 1)',
+    color: Colors.text.primary,
     fontSize: 16,
     fontWeight: '400',
     fontFamily: 'Inter',
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   ratingLabelSelected: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
     fontWeight: '600',
   },
   bottomContainer: {
@@ -336,22 +337,22 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primaryRGB,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(168, 85, 247, 0.05)',
-    borderColor: 'rgba(169, 85, 247, 0.3)',
+    backgroundColor: Colors.glass.purpleSubtle,
+    borderColor: Colors.glass.purpleLight,
     shadowOpacity: 0,
   },
   continueButtonText: {
@@ -360,7 +361,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Inter',
     letterSpacing: 0.005,
-    color: '#FFFFFF',
+    color: Colors.white,
     marginRight: 8,
   },
 });

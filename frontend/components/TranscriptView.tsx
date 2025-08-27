@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TYPOGRAPHY } from '../constants/Typography';
+import Colors from '../constants/Colors';
 
 export type TranscriptTurn = {
   role: 'user' | 'agent';
@@ -32,7 +33,7 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
                   <Ionicons 
                     name={turn.role === 'user' ? 'person' : 'chatbubble-ellipses'} 
                     size={14} 
-                    color={turn.role === 'user' ? '#FFFFFF' : '#60A5FA'} 
+                    color={turn.role === 'user' ? Colors.white : Colors.accent.blue} 
                   />
                 </View>
                 <Text style={[styles.speaker, turn.role === 'user' ? styles.userSpeaker : styles.agentSpeaker]}>
@@ -53,7 +54,7 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
       ))}
       {transcript.length === 0 && (
         <View style={styles.emptyState}>
-          <Ionicons name="document-text-outline" size={48} color="rgba(255, 255, 255, 0.55)" />
+          <Ionicons name="document-text-outline" size={48} color={Colors.text.muted} />
           <Text style={styles.emptyTitle}>No transcript available</Text>
           <Text style={styles.emptyText}>The conversation transcript will appear here once the interview begins.</Text>
         </View>
@@ -65,7 +66,7 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
   },
   contentContainer: { 
     padding: 20, // Design system screen padding
@@ -86,19 +87,19 @@ const styles = StyleSheet.create({
     padding: 16, // Design system spacing
     borderWidth: 1,
     // Subtle shadow for depth
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
   },
   userBubble: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Purple glass
-    borderColor: 'rgba(168, 85, 247, 0.25)',
+    backgroundColor: Colors.glass.purple,
+    borderColor: Colors.glass.purpleTint,
   },
   agentBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Glass background
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: Colors.glass.background,
+    borderColor: Colors.glass.border,
   },
   messageHeader: {
     flexDirection: 'row',
@@ -119,33 +120,33 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   userAvatar: {
-    backgroundColor: 'rgba(168, 85, 247, 0.25)', // Purple tint
+    backgroundColor: Colors.glass.purpleTint,
   },
   agentAvatar: {
-    backgroundColor: 'rgba(96, 165, 250, 0.20)', // Accent blue tint
+    backgroundColor: Colors.glass.accentBlue,
   },
   speaker: {
     ...TYPOGRAPHY.labelSmall,
     fontWeight: '600',
   },
   userSpeaker: {
-    color: 'rgba(255, 255, 255, 0.85)', // Text secondary
+    color: Colors.text.secondary,
   },
   agentSpeaker: {
-    color: '#FFFFFF', // Text primary
+    color: Colors.text.primary,
   },
   timestamp: {
     ...TYPOGRAPHY.labelSmall,
-    color: 'rgba(255, 255, 255, 0.55)', // Text muted
+    color: Colors.text.muted,
   },
   messageText: {
     ...TYPOGRAPHY.bodyMedium,
   },
   userText: {
-    color: '#FFFFFF', // Text primary on purple glass
+    color: Colors.text.primary,
   },
   agentText: {
-    color: '#FFFFFF', // Text primary on glass
+    color: Colors.text.primary,
   },
   emptyState: {
     alignItems: 'center',
@@ -154,18 +155,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    color: '#FFFFFF', // Text primary
-    fontSize: 18, // Heading h5
-    fontWeight: '600',
+    ...TYPOGRAPHY.heading4,
+    color: Colors.text.primary,
     marginTop: 16,
-    ...TYPOGRAPHY.bodySmall,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptyText: {
-    color: 'rgba(255, 255, 255, 0.70)', // Text tertiary
-    fontSize: 14, // Body small
     ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
     textAlign: 'center',
   },
 });

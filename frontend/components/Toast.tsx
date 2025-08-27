@@ -3,6 +3,7 @@ import { View, Text, Animated, StyleSheet, ViewStyle, Dimensions, Platform } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { TYPOGRAPHY } from '../constants/Typography';
+import Colors from '../constants/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -69,37 +70,37 @@ const Toast: React.FC<ToastProps> = ({ toast, onHide }) => {
     switch (toast.type) {
       case 'success':
         return {
-          backgroundColor: 'rgba(34, 197, 94, 0.15)', // Design system success light
-          borderColor: 'rgba(34, 197, 94, 0.25)',
-          iconColor: '#22C55E', // Design system success
+          backgroundColor: Colors.glass.success, // Design system success light
+          borderColor: Colors.glass.successBorder,
+          iconColor: Colors.semantic.success, // Design system success
           iconName: 'checkmark-circle' as const,
         };
       case 'error':
         return {
-          backgroundColor: 'rgba(239, 68, 68, 0.15)', // Design system error light
-          borderColor: 'rgba(239, 68, 68, 0.25)',
-          iconColor: '#EF4444', // Design system error
+          backgroundColor: Colors.glass.error, // Design system error light
+          borderColor: Colors.glass.errorBorder,
+          iconColor: Colors.semantic.error, // Design system error
           iconName: 'close-circle' as const,
         };
       case 'warning':
         return {
-          backgroundColor: 'rgba(217, 119, 6, 0.15)', // Design system warning light
-          borderColor: 'rgba(217, 119, 6, 0.25)',
-          iconColor: '#D97706', // Design system warning
+          backgroundColor: Colors.glass.warning, // Design system warning light
+          borderColor: Colors.glass.warning,
+          iconColor: Colors.semantic.warningDark, // Design system warning
           iconName: 'warning' as const,
         };
       case 'info':
         return {
-          backgroundColor: 'rgba(59, 130, 246, 0.15)', // Design system info light
-          borderColor: 'rgba(59, 130, 246, 0.25)',
-          iconColor: '#3B82F6', // Design system info
+          backgroundColor: Colors.glass.info, // Design system info light
+          borderColor: Colors.glass.infoBorder,
+          iconColor: Colors.semantic.infoAlt, // Design system info
           iconName: 'information-circle' as const,
         };
       default:
         return {
-          backgroundColor: 'rgba(255, 255, 255, 0.12)', // Default glass
-          borderColor: 'rgba(255, 255, 255, 0.15)',
-          iconColor: '#60A5FA', // Design system accent
+          backgroundColor: Colors.glass.background, // Default glass
+          borderColor: Colors.glass.border,
+          iconColor: Colors.accent.blue, // Design system accent
           iconName: 'information-circle' as const,
         };
     }
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, // Design system border radius
     borderWidth: 1,
     // Design system shadow
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
   },
   message: {
     ...TYPOGRAPHY.labelMedium,
-    color: '#FFFFFF', // Design system text primary
+    color: Colors.white, // Design system text primary
     flex: 1,
   },
 });

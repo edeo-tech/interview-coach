@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const AnalyzingScreen = () => {
   const { data } = useOnboarding();
@@ -66,7 +67,7 @@ const AnalyzingScreen = () => {
               <Ionicons 
                 name={analysisSteps[currentStep]?.icon as any || 'analytics-outline'} 
                 size={64} 
-                color="#A855F7" 
+                color={Colors.brand.primary} 
               />
             </View>
             
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     ...TYPOGRAPHY.heading1,
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     lineHeight: 32,
     marginBottom: 48,
@@ -130,10 +131,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: Colors.glass.borderSecondary,
   },
   dotActive: {
-    backgroundColor: '#A855F7',
+    backgroundColor: Colors.brand.primary,
     transform: [{ scale: 1.2 }],
   },
 });

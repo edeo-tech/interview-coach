@@ -14,6 +14,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
@@ -246,13 +247,13 @@ const Settings = () => {
                     value={name}
                     onChangeText={setName}
                     placeholder="Enter your name"
-                    placeholderTextColor="#6b7280"
+                    placeholderTextColor={Colors.gray[500]}
                     onSubmitEditing={handleUpdateName}
                     onBlur={handleNameBlur}
                     autoFocus
                   />
                   {updatePending && (
-                    <ActivityIndicator size="small" color="#A855F7" style={{ marginLeft: 8 }} />
+                    <ActivityIndicator size="small" color={Colors.brand.primary} style={{ marginLeft: 8 }} />
                   )}
                 </View>
               ) : (
@@ -261,7 +262,7 @@ const Settings = () => {
                   onPress={() => setIsEditingName(true)}
                 >
                   <Text style={styles.fieldValue}>{auth?.name}</Text>
-                  <Ionicons name="pencil" size={16} color="#6b7280" />
+                  <Ionicons name="pencil" size={16} color={Colors.gray[500]} />
                 </TouchableOpacity>
               )}
             </View>
@@ -269,7 +270,7 @@ const Settings = () => {
             {/* Email Field */}
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Email</Text>
-              <Text style={[styles.fieldValue, { color: '#6b7280' }]}>
+              <Text style={[styles.fieldValue, { color: Colors.gray[500] }]}>
                 {auth?.email}
               </Text>
             </View>
@@ -296,11 +297,11 @@ const Settings = () => {
                   <Ionicons 
                     name={isPremium ? "diamond" : "gift"} 
                     size={16} 
-                    color={isPremium ? "#F59E0B" : "#6B7280"} 
+                    color={isPremium ? Colors.accent.gold : Colors.gray[500]} 
                   />
                   <Text style={[
                     styles.premiumText,
-                    { color: isPremium ? "#F59E0B" : "#6B7280" }
+                    { color: isPremium ? Colors.accent.gold : Colors.gray[500] }
                   ]}>
                     {isPremium ? "Premium" : "Free"}
                   </Text>
@@ -355,13 +356,13 @@ const Settings = () => {
                         <Ionicons 
                           name={getSubscriptionManagementInfo().icon as any} 
                           size={16} 
-                          color="#6b7280" 
+                          color={Colors.gray[500]} 
                         />
                         <Text style={styles.manageSubscriptionText}>
                           {getSubscriptionManagementInfo().title}
                         </Text>
                       </View>
-                      <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+                      <Ionicons name="chevron-forward" size={16} color={Colors.gray[500]} />
                     </TouchableOpacity>
                   </View>
                 </>
@@ -378,18 +379,18 @@ const Settings = () => {
               style={styles.linkItem}
               onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_help_center')}
             >
-              <Ionicons name="help-circle-outline" size={20} color="#6b7280" />
+              <Ionicons name="help-circle-outline" size={20} color={Colors.gray[500]} />
               <Text style={styles.linkText}>Help Center</Text>
-              <Ionicons name="open-outline" size={16} color="#6b7280" />
+              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.linkItem}
               onPress={() => handleLinkPress('mailto:ross@edio.cc', 'contact_support')}
             >
-              <Ionicons name="mail-outline" size={20} color="#6b7280" />
+              <Ionicons name="mail-outline" size={20} color={Colors.gray[500]} />
               <Text style={styles.linkText}>Contact Support</Text>
-              <Ionicons name="open-outline" size={16} color="#6b7280" />
+              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
             </TouchableOpacity>
           </View>
         </View>
@@ -402,36 +403,36 @@ const Settings = () => {
               style={styles.linkItem}
               onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_privacy_policy')}
             >
-              <Ionicons name="shield-checkmark-outline" size={20} color="#6b7280" />
+              <Ionicons name="shield-checkmark-outline" size={20} color={Colors.gray[500]} />
               <Text style={styles.linkText}>Privacy Policy</Text>
-              <Ionicons name="open-outline" size={16} color="#6b7280" />
+              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.linkItem}
               onPress={() => handleLinkPress('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/', 'open_terms')}
             >
-              <Ionicons name="document-text-outline" size={20} color="#6b7280" />
+              <Ionicons name="document-text-outline" size={20} color={Colors.gray[500]} />
               <Text style={styles.linkText}>Terms of Service</Text>
-              <Ionicons name="open-outline" size={16} color="#6b7280" />
+              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Danger Zone */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: '#ef4444' }]}>Danger Zone</Text>
-          <View style={[styles.card, { borderColor: '#ef444440' }]}>
+          <Text style={[styles.sectionTitle, { color: Colors.semantic.error }]}>Danger Zone</Text>
+          <View style={[styles.card, { borderColor: Colors.glass.errorBorder }]}>
             <TouchableOpacity
               style={styles.dangerButton}
               onPress={handleDeleteAccount}
               disabled={deletePending}
             >
               {deletePending ? (
-                <ActivityIndicator size="small" color="#ef4444" />
+                <ActivityIndicator size="small" color={Colors.semantic.error} />
               ) : (
                 <>
-                  <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                  <Ionicons name="trash-outline" size={20} color={Colors.semantic.error} />
                   <Text style={styles.dangerButtonText}>Delete Account</Text>
                 </>
               )}
@@ -464,11 +465,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20, // spacing.5
   },
   headerTitle: {
-    fontSize: 24, // typography.heading.h2.fontSize
-    fontWeight: '600', // typography.heading.h2.fontWeight
-    color: '#FFFFFF', // text.primary
     ...TYPOGRAPHY.contentTitle, // typography.heading.h2.fontFamily
-    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
+    color: Colors.white, // text.primary
   },
   scrollView: {
     flex: 1,
@@ -478,19 +476,17 @@ const styles = StyleSheet.create({
     marginBottom: 24, // spacing.6
   },
   sectionTitle: {
-    fontSize: 18, // typography.heading.h4.fontSize
-    fontWeight: '600', // typography.heading.h4.fontWeight
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    ...TYPOGRAPHY.sectionHeader,
+    color: Colors.text.secondary, // text.secondary
     marginBottom: 12, // spacing.3
-    ...TYPOGRAPHY.bodyMedium, // typography.heading.h4.fontFamily
   },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    backgroundColor: Colors.glass.background, // glass.background
     borderRadius: 16, // glass.borderRadius
     padding: 16, // spacing.4
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
+    borderColor: Colors.glass.border, // glass.border
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -499,18 +495,16 @@ const styles = StyleSheet.create({
   fieldContainer: {
     paddingVertical: 12, // spacing.3
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
+    borderBottomColor: Colors.glass.borderSecondary, // glassSecondary.border
   },
   fieldLabel: {
-    fontSize: 12, // typography.body.xsmall.fontSize
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    ...TYPOGRAPHY.labelSmall,
+    color: Colors.text.muted, // text.muted
     marginBottom: 4, // spacing.1
-    ...TYPOGRAPHY.bodyMedium, // typography.body.xsmall.fontFamily
   },
   fieldValue: {
-    fontSize: 16, // typography.body.medium.fontSize
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
     ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
+    color: Colors.text.secondary, // text.secondary
   },
   fieldValueContainer: {
     flexDirection: 'row',
@@ -523,27 +517,25 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16, // typography.body.medium.fontSize
-    color: '#FFFFFF', // text.primary
+    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
+    color: Colors.white, // text.primary
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
+    borderBottomColor: Colors.glass.border, // glassInput.border
     paddingBottom: 4, // spacing.1
     marginRight: 12, // spacing.3
-    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   linkItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16, // spacing.4
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
+    borderBottomColor: Colors.glass.borderSecondary, // glassSecondary.border
   },
   linkText: {
     flex: 1,
-    fontSize: 16, // typography.body.medium.fontSize
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    marginLeft: 12, // spacing.3
     ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
+    color: Colors.text.secondary, // text.secondary
+    marginLeft: 12, // spacing.3
   },
   dangerButton: {
     flexDirection: 'row',
@@ -555,36 +547,30 @@ const styles = StyleSheet.create({
     borderRadius: 8, // borderRadius.default
   },
   dangerButtonText: {
-    fontSize: 16, // typography.body.medium.fontSize
-    fontWeight: '500', // typography.label.large.fontWeight
-    color: 'rgba(239, 68, 68, 1)', // semantic.error.main
+    ...TYPOGRAPHY.labelLarge,
+    color: Colors.semantic.error, // semantic.error.main
     marginLeft: 8, // spacing.2
-    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   appInfo: {
     alignItems: 'center',
     paddingVertical: 32, // spacing.8
   },
   appInfoText: {
-    fontSize: 14, // typography.body.small.fontSize
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
-    ...TYPOGRAPHY.bodyMedium, // typography.body.small.fontFamily
+    ...TYPOGRAPHY.bodySmall, // typography.body.small.fontFamily
+    color: Colors.text.muted, // text.muted
   },
   loadingContainer: {
     alignItems: 'center',
     paddingVertical: 32, // spacing.8
   },
   loadingText: {
-    fontSize: 14, // typography.body.small.fontSize
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    ...TYPOGRAPHY.bodySmall, // typography.body.small.fontFamily
+    color: Colors.text.muted, // text.muted
     marginTop: 8, // spacing.2
-    ...TYPOGRAPHY.bodyMedium, // typography.body.small.fontFamily
   },
   errorText: {
-    fontSize: 14, // typography.body.small.fontSize
-    fontWeight: '500', // typography.label.large.fontWeight
-    color: 'rgba(239, 68, 68, 1)', // semantic.error.main
-    ...TYPOGRAPHY.bodyMedium, // typography.body.small.fontFamily
+    ...TYPOGRAPHY.labelMedium,
+    color: Colors.semantic.error, // semantic.error.main
   },
   premiumStatus: {
     flexDirection: 'row',
@@ -596,35 +582,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   premiumText: {
-    fontSize: 16, // typography.body.medium.fontSize
-    fontWeight: '600', // typography.label.large.fontWeight
+    ...TYPOGRAPHY.labelLarge,
+    fontWeight: '600',
     marginLeft: 8, // spacing.2
-    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   upgradeButton: {
-    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
+    backgroundColor: Colors.accent.goldAlt, // gold.400
     borderRadius: 12, // glassSecondary.borderRadius
     paddingVertical: 8, // spacing.2
     paddingHorizontal: 16, // spacing.4
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#F59E0B', // gold.400
+    shadowColor: Colors.accent.gold, // gold.400
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4, // Android shadow
   },
   upgradeButtonText: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 14, // typography.button.small.fontSize
-    fontWeight: '600', // typography.button.small.fontWeight
+    ...TYPOGRAPHY.buttonSmall,
+    color: Colors.white, // text.primary
     marginLeft: 6, // spacing.1.5
-    ...TYPOGRAPHY.bodyMedium, // typography.button.small.fontFamily
-    letterSpacing: 0.01, // typography.button.small.letterSpacing
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
+    backgroundColor: Colors.glass.borderSecondary, // glassSecondary.border
     marginVertical: 16, // spacing.4
   },
   manageButton: {
@@ -634,11 +616,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8, // spacing.2
   },
   manageButtonText: {
-    fontSize: 16, // typography.body.medium.fontSize
-    color: 'rgba(252, 180, 0, 1)', // gold.400
-    fontWeight: '500', // typography.label.large.fontWeight
+    ...TYPOGRAPHY.labelLarge,
+    color: Colors.accent.goldAlt, // gold.400
     marginHorizontal: 8, // spacing.2
-    ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
   },
   manageSubscriptionContainer: {
     flexDirection: 'row',
@@ -652,10 +632,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   manageSubscriptionText: {
-    fontSize: 16, // typography.body.medium.fontSize
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    marginLeft: 8, // spacing.2
     ...TYPOGRAPHY.bodyMedium, // typography.body.medium.fontFamily
+    color: Colors.text.secondary, // text.secondary
+    marginLeft: 8, // spacing.2
   },
 });
 

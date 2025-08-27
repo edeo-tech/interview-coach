@@ -13,6 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const SectionTransition = () => {
   // Animation for content entrance
@@ -86,7 +87,7 @@ const SectionTransition = () => {
           >
             {/* Subtle icon */}
             <View style={styles.iconContainer}>
-              <Ionicons name="analytics-outline" size={64} color="rgba(255, 255, 255, 0.9)" />
+              <Ionicons name="analytics-outline" size={64} color={Colors.text.secondary} />
             </View>
             
             {/* Main transition message */}
@@ -117,7 +118,7 @@ const SectionTransition = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
     paddingTop: Platform.OS === 'ios' ? 20 : 20,
   },
   content: {
@@ -152,19 +153,19 @@ const styles = StyleSheet.create({
   },
   mainMessage: {
     ...TYPOGRAPHY.displaySmall,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 8,
   },
   highlightMessage: {
     ...TYPOGRAPHY.hero,
-    color: '#A855F7',
+    color: Colors.brand.primary,
     textAlign: 'center',
     marginBottom: 32,
   },
   supportingText: {
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
     paddingHorizontal: 16,
   },
@@ -180,14 +181,14 @@ const styles = StyleSheet.create({
     maxWidth: 320,                                      // Design system constraint
     height: 56,
     borderRadius: 28,                                    // Design system pill shape
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',       // Design system purple background
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',                   // Design system purple border
+    borderColor: Colors.brand.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',                             // Design system purple shadow
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     ...TYPOGRAPHY.buttonLarge,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     marginRight: 8,
   },
 });

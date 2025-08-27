@@ -8,6 +8,7 @@ import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -278,7 +279,7 @@ const ProblemValidation = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>I want to be prepared</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -313,37 +314,31 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
   },
   screenTitle: {
-    fontSize: 24,
     ...TYPOGRAPHY.heading1,
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
     lineHeight: 30,
     marginBottom: 24,
   },
   introText: {
-    fontSize: 16,
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
-    lineHeight: 24,
     marginBottom: 16,
     paddingHorizontal: 16,
   },
   highlightText: {
-    fontSize: 18,
-    ...TYPOGRAPHY.labelMedium,
+    ...TYPOGRAPHY.bodyLarge,
     fontWeight: '600',
-    color: '#A855F7',
+    color: Colors.brand.primary,
     textAlign: 'center',
     marginBottom: 32,
   },
   subtitle: {
-    fontSize: 16,
-    ...TYPOGRAPHY.labelMedium,
+    ...TYPOGRAPHY.labelLarge,
     fontWeight: '600',
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
-    lineHeight: 24,
     marginBottom: 24,
   },
   insightContainer: {
@@ -354,9 +349,8 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   insightItem: {
-    fontSize: 16,
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -371,24 +365,22 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primaryRGB,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   continueButtonText: {
-    fontSize: 18,
-    lineHeight: 22,
-    ...TYPOGRAPHY.buttonMedium,
-    color: '#FFFFFF',
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.white,
     marginRight: 8,
   },
 });

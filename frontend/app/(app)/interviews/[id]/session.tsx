@@ -8,6 +8,7 @@ import { useStartAttempt, useFinishAttempt, useAddTranscript } from '../../../..
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useToast } from '../../../../components/Toast';
 import { TYPOGRAPHY } from '../../../../constants/Typography';
+import Colors from '../../../../constants/Colors';
 
 const InterviewSession = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -148,7 +149,7 @@ const InterviewSession = () => {
   if (!agentId) {
     return (
       <LinearGradient
-        colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+        colors={[Colors.background.primary, Colors.gray[800], Colors.gray[600]]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.gradient}
@@ -168,7 +169,7 @@ const InterviewSession = () => {
 
   return (
     <LinearGradient
-      colors={["#0B1023", "#0E2B3A", "#2C7A91"]}
+      colors={[Colors.background.primary, Colors.gray[800], Colors.gray[600]]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={styles.gradient}
@@ -195,7 +196,7 @@ const InterviewSession = () => {
       <ScrollView style={styles.transcriptContainer} contentContainerStyle={styles.transcriptContent}>
         {transcript.length === 0 ? (
           <View style={styles.emptyTranscript}>
-            <Ionicons name="mic" size={48} color="#6b7280" />
+            <Ionicons name="mic" size={48} color={Colors.gray[500]} />
             <Text style={styles.emptyTranscriptText}>
               Waiting for the interview to begin...
             </Text>
@@ -286,12 +287,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, // layout.screenPadding
   },
   loadingCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    backgroundColor: Colors.glass.background, // glass.background
     borderRadius: 16, // glass.borderRadius
     padding: 32, // spacing.8
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    borderColor: Colors.glass.border, // glass.border
     maxWidth: 320,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -303,13 +304,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderWidth: 2,
-    borderColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
+    borderColor: Colors.semantic.infoAlt, // semantic.info.main
     borderTopColor: 'transparent',
     borderRadius: 24,
     marginBottom: 16, // spacing.4
   },
   loadingTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.text.primary, // text.primary
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginBottom: 8, // spacing.2
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.heading3,
   },
   loadingSubtitle: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary, // text.tertiary
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textAlign: 'center',
     lineHeight: 20, // typography.body.medium.lineHeight
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, // layout.screenPadding
     paddingVertical: 16, // spacing.4
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
+    borderBottomColor: Colors.glass.borderSecondary, // glassSecondary.border
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -343,18 +344,18 @@ const styles = StyleSheet.create({
     marginRight: 12, // spacing.3
   },
   statusConnected: {
-    backgroundColor: 'rgba(34, 197, 94, 1)', // semantic.success.main
+    backgroundColor: Colors.semantic.success, // semantic.success.main
   },
   statusDisconnected: {
-    backgroundColor: 'rgba(239, 68, 68, 1)', // semantic.error.main
+    backgroundColor: Colors.semantic.error, // semantic.error.main
   },
   connectionText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.text.primary, // text.primary
     fontWeight: '600', // typography.label.large.fontWeight
     ...TYPOGRAPHY.labelLarge,
   },
   timerText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary, // text.tertiary
     ...TYPOGRAPHY.bodyMedium,
     fontSize: 14, // typography.body.small.fontSize
   },
@@ -369,13 +370,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    backgroundColor: Colors.glass.background, // glass.background
     borderRadius: 16, // glass.borderRadius
     padding: 32, // spacing.8
     marginHorizontal: 20, // layout.screenPadding
     marginVertical: 20, // spacing.5
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
+    borderColor: Colors.glass.border, // glass.border
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
     elevation: 4, // Android shadow
   },
   emptyTranscriptText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary, // text.tertiary
     textAlign: 'center',
     marginTop: 16, // spacing.4
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
@@ -405,20 +406,20 @@ const styles = StyleSheet.create({
     borderRadius: 12, // glassSecondary.borderRadius
   },
   userBubble: {
-    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
-    shadowColor: '#F59E0B', // gold.400
+    backgroundColor: Colors.accent.goldAlt, // gold.400
+    shadowColor: Colors.accent.gold, // gold.400
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4, // Android shadow
   },
   agentBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.background
+    backgroundColor: Colors.glass.backgroundSecondary, // glassSecondary.background
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)', // glassSecondary.border
+    borderColor: Colors.glass.borderSecondary, // glassSecondary.border
   },
   messageText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.text.primary, // text.primary
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     lineHeight: 20, // typography.body.medium.lineHeight
     ...TYPOGRAPHY.bodyMedium,
@@ -429,16 +430,16 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodyXSmall,
   },
   userMessageInfo: {
-    color: 'rgba(191, 219, 254, 1)', // semantic.info.main with higher opacity
+    color: Colors.accent.blue, // semantic.info.main with higher opacity
   },
   agentMessageInfo: {
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    color: Colors.text.muted, // text.muted
   },
   controls: {
     paddingHorizontal: 20, // layout.screenPadding
     paddingVertical: 24, // spacing.6
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
+    borderTopColor: Colors.glass.borderSecondary, // glassSecondary.border
   },
   statusContainer: {
     flexDirection: 'row',
@@ -453,13 +454,13 @@ const styles = StyleSheet.create({
     marginRight: 8, // spacing.2
   },
   recordingActive: {
-    backgroundColor: 'rgba(239, 68, 68, 1)', // semantic.error.main
+    backgroundColor: Colors.semantic.error, // semantic.error.main
   },
   recordingInactive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.55)', // text.muted
+    backgroundColor: Colors.text.muted, // text.muted
   },
   statusText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary, // text.tertiary
     fontSize: 14, // typography.body.small.fontSize
     ...TYPOGRAPHY.bodySmall,
   },
@@ -474,26 +475,26 @@ const styles = StyleSheet.create({
     borderRadius: 12, // glassSecondary.borderRadius
   },
   simulateButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.background
+    backgroundColor: Colors.glass.backgroundSecondary, // glassSecondary.background
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)', // glassSecondary.border
+    borderColor: Colors.glass.borderSecondary, // glassSecondary.border
   },
   endButton: {
-    backgroundColor: 'rgba(239, 68, 68, 1)', // semantic.error.main
-    shadowColor: '#EF4444', // semantic.error.main
+    backgroundColor: Colors.semantic.error, // semantic.error.main
+    shadowColor: Colors.semantic.error, // semantic.error.main
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4, // Android shadow
   },
   actionButtonText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.text.primary, // text.primary
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
     ...TYPOGRAPHY.buttonMedium,
   },
   instructionText: {
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
+    color: Colors.text.muted, // text.muted
     fontSize: 12, // typography.body.xsmall.fontSize
     textAlign: 'center',
     marginTop: 16, // spacing.4

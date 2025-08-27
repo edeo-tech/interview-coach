@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
+import Colors from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -200,7 +201,7 @@ const ReassuranceDataProof = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>I'm convinced!</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
     paddingTop: Platform.OS === 'ios' ? 20 : 20,
   },
   animatedContent: {
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     fontFamily: 'SpaceGrotesk',
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     lineHeight: 30,
     marginBottom: 32,
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: '800',
     fontFamily: 'SpaceGrotesk',
-    color: '#A855F7',
+    color: Colors.brand.primary,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -261,17 +262,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
   },
   testimonialContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     borderRadius: 12,
     padding: 20,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: Colors.glass.borderSecondary,
     width: '100%',
     maxWidth: 320,
   },
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
     fontStyle: 'italic',
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter',
-    color: '#A855F7',
+    color: Colors.brand.primary,
     textAlign: 'center',
   },
   benefitsContainer: {
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter',
-    color: '#ffffff',
+    color: Colors.text.primary,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -328,14 +329,14 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primaryRGB,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Inter',
     letterSpacing: 0.005,
-    color: '#FFFFFF',
+    color: Colors.white,
     marginRight: 8,
   },
 });

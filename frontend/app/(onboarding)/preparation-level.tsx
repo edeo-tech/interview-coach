@@ -5,17 +5,18 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import Colors from '../../constants/Colors';
 
 const PreparationLevel = () => {
   const { data, updateData } = useOnboarding();
   const [preparationLevel, setPreparationLevel] = useState(data.preparationLevel);
 
   const levels = [
-    { id: '1', name: 'Not prepared at all', description: 'I winged it', color: '#EF4444' },
-    { id: '2', name: 'Barely prepared', description: 'Looked up the company', color: '#F97316' },
-    { id: '3', name: 'Somewhat prepared', description: 'Did basic research', color: '#F59E0B' },
-    { id: '4', name: 'Well prepared', description: 'Practiced some answers', color: '#EAB308' },
-    { id: '5', name: 'Very well prepared', description: 'Rehearsed extensively', color: '#10B981' },
+    { id: '1', name: 'Not prepared at all', description: 'I winged it', color: Colors.semantic.error },
+    { id: '2', name: 'Barely prepared', description: 'Looked up the company', color: Colors.semantic.warning },
+    { id: '3', name: 'Somewhat prepared', description: 'Did basic research', color: Colors.accent.gold },
+    { id: '4', name: 'Well prepared', description: 'Practiced some answers', color: Colors.accent.goldAlt },
+    { id: '5', name: 'Very well prepared', description: 'Rehearsed extensively', color: Colors.semantic.successAlt },
   ];
 
   const handleContinue = () => {
@@ -71,7 +72,7 @@ const PreparationLevel = () => {
             disabled={!preparationLevel}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </View>
       </View>
@@ -96,13 +97,13 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 16,
   },
   subtitle: {
     fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: Colors.text.secondary,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
@@ -111,14 +112,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   levelCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.glass.borderSecondary,
   },
   levelCardSelected: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderWidth: 2,
   },
   levelHeader: {
@@ -135,18 +136,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   numberText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
   levelName: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: Colors.text.secondary,
     fontSize: 16,
     fontWeight: '600',
     flex: 1,
   },
   levelDescription: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: Colors.text.muted,
     fontSize: 14,
     marginLeft: 44,
   },
@@ -155,25 +156,25 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: Colors.accent.gold,
     borderRadius: 12,
     paddingVertical: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOpacity: 0.25,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(245, 158, 11, 0.5)',
+    backgroundColor: Colors.glass.goldMedium,
     shadowOpacity: 0,
   },
   continueButtonText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 18,
     fontWeight: '700',
   },

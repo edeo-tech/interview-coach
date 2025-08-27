@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
+import Colors from '../../constants/Colors';
 
 const Terms = () => {
   const router = useRouter();
@@ -97,7 +98,7 @@ const Terms = () => {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="chevron-back" size={24} color="#ffffff" />
+            <Ionicons name="chevron-back" size={24} color={Colors.white} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Terms of Service</Text>
           <View style={styles.headerSpacer} />
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
   },
   header: {
     flexDirection: 'row',
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.15)',
+    borderBottomColor: Colors.glass.border,
   },
   backButton: {
     width: 40,
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   h2: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#A855F7',
+    color: Colors.brand.primary,
     marginTop: 24,
     marginBottom: 12,
     letterSpacing: -0.3,

@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { View, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import Colors from '../../../constants/Colors';
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     return (
@@ -34,13 +35,13 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                                 activeOpacity={0.8}
                             >
                                 {options.tabBarIcon?.({
-                                    color: isFocused ? '#A855F7' : 'rgba(255, 255, 255, 0.7)',
+                                    color: isFocused ? Colors.brand.primary : Colors.text.tertiary,
                                     size: 24,
                                     focused: isFocused,
                                 })}
                                 <Text style={[
                                     styles.tabText,
-                                    { color: isFocused ? '#A855F7' : 'rgba(255, 255, 255, 0.7)' }
+                                    { color: isFocused ? Colors.brand.primary : Colors.text.tertiary }
                                 ]}>
                                     {options.title}
                                 </Text>
@@ -55,7 +56,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 >
                     <BlurView tint="dark" intensity={20} style={styles.centerButtonBlur}>
                         <View style={styles.centerButtonInner}>
-                            <Ionicons name="add" size={28} color="#FFFFFF" />
+                            <Ionicons name="add" size={28} color={Colors.white} />
                         </View>
                     </BlurView>
                 </TouchableOpacity>
@@ -71,9 +72,9 @@ export default function TabLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    backgroundColor: Colors.glass.background,
                     borderTopWidth: 1,
-                    borderTopColor: 'rgba(255, 255, 255, 0.15)',
+                    borderTopColor: Colors.glass.border,
                     height: 84,
                     paddingHorizontal: 30,
                 },
@@ -83,16 +84,16 @@ export default function TabLayout() {
                         intensity={20} 
                         style={{ 
                             flex: 1,
-                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                            backgroundColor: Colors.glass.background,
                         }} 
                     />
                 ),
-                tabBarActiveTintColor: '#A855F7',
-                tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.7)',
+                tabBarActiveTintColor: Colors.brand.primary,
+                tabBarInactiveTintColor: Colors.text.tertiary,
                 headerStyle: {
-                    backgroundColor: 'transparent',
+                    backgroundColor: Colors.transparent,
                 },
-                headerTintColor: '#FFFFFF',
+                headerTintColor: Colors.white,
                 headerTitleStyle: {
                     fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
                     fontWeight: '600',
@@ -129,10 +130,10 @@ const styles = StyleSheet.create({
         right: 0,
         height: 84,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255, 255, 255, 0.15)',
+        borderTopColor: Colors.glass.border,
         ...Platform.select({
             ios: {
-                shadowColor: '#000',
+                shadowColor: Colors.black,
                 shadowOffset: { width: 0, height: -2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 4,
@@ -142,11 +143,11 @@ const styles = StyleSheet.create({
     blurView: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        backgroundColor: Colors.glass.background,
         justifyContent: 'center',
         alignItems: 'center',
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255, 255, 255, 0.15)',
+        borderTopColor: Colors.glass.border,
     },
     tabContainer: {
         flexDirection: 'row', 
@@ -186,22 +187,22 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        backgroundColor: Colors.glass.background,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.15)',
+        borderColor: Colors.glass.border,
     },
     centerButtonInner: {
         width: 64,
         height: 64,
         borderRadius: 32,
         borderWidth: 2,
-        borderColor: '#A855F7',
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+        borderColor: Colors.brand.primary,
+        backgroundColor: Colors.glass.purple,
         alignItems: 'center',
         justifyContent: 'center',
         ...Platform.select({
             ios: {
-                shadowColor: '#A855F7',
+                shadowColor: Colors.brand.primary,
                 shadowOffset: {
                     width: 0,
                     height: 4,

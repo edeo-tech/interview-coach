@@ -13,6 +13,7 @@ import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumChec
 import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
 import { useToast } from '../../../../components/Toast';
 import { TYPOGRAPHY } from '../../../../constants/Typography';
+import Colors from '../../../../constants/Colors';
 
 const getInterviewTypeDisplayName = (type: string): string => {
   const displayNames: Record<string, string> = {
@@ -135,7 +136,7 @@ export default function InterviewDetails() {
             </View>
           ) : attempt.status === 'graded' ? (
             <View style={styles.gradeContainer}>
-              <ActivityIndicator size="small" color="#A855F7" />
+              <ActivityIndicator size="small" color={Colors.brand.primary} />
               <Text style={styles.gradeLabel}>Loading...</Text>
             </View>
           ) : (
@@ -149,11 +150,11 @@ export default function InterviewDetails() {
         {/* Details row */}
         <View style={styles.attemptDetails}>
           <View style={styles.detailItem}>
-            <Ionicons name="calendar-outline" size={14} color="#9ca3af" />
+            <Ionicons name="calendar-outline" size={14} color={Colors.gray[400]} />
             <Text style={styles.detailText}>{formatDate(attempt.created_at)}</Text>
           </View>
           <View style={styles.detailItem}>
-            <Ionicons name="time-outline" size={14} color="#9ca3af" />
+            <Ionicons name="time-outline" size={14} color={Colors.gray[400]} />
             <Text style={styles.detailText}>{formatDuration(attempt.duration_seconds)}</Text>
           </View>
           {hasGrade && (
@@ -185,16 +186,16 @@ export default function InterviewDetails() {
           <Ionicons 
             name="analytics-outline" 
             size={18} 
-            color={attempt.status === 'graded' ? '#10b981' : '#6b7280'} 
+            color={attempt.status === 'graded' ? Colors.semantic.success : Colors.gray[500]} 
           />
           <Text style={[
             styles.singleActionButtonText,
-            attempt.status === 'graded' ? { color: '#10b981' } : { color: '#6b7280' }
+            attempt.status === 'graded' ? { color: Colors.semantic.success } : { color: Colors.gray[500] }
           ]}>
             {attempt.status === 'graded' ? 'View Feedback & Results' : 'Feedback Pending'}
           </Text>
           {attempt.status === 'graded' && (
-            <Ionicons name="chevron-forward" size={16} color="#10b981" />
+            <Ionicons name="chevron-forward" size={16} color={Colors.semantic.success} />
           )}
         </TouchableOpacity>
       </View>
@@ -250,7 +251,7 @@ export default function InterviewDetails() {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#A855F7" />
+            <ActivityIndicator size="large" color={Colors.brand.primary} />
             <Text style={styles.loadingText}>Loading interview details...</Text>
           </View>
         </SafeAreaView>
@@ -263,7 +264,7 @@ export default function InterviewDetails() {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={64} color="#ef4444" />
+            <Ionicons name="alert-circle" size={64} color={Colors.semantic.error} />
             <Text style={styles.errorTitle}>Failed to load interview</Text>
             <TouchableOpacity onPress={() => router.back()} style={styles.errorButton}>
               <Text style={styles.errorButtonText}>Go Back</Text>
@@ -291,7 +292,7 @@ export default function InterviewDetails() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="white" />
+            <Ionicons name="arrow-back" size={24} color={Colors.white} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Interview Details</Text>
         </View>
@@ -315,7 +316,7 @@ export default function InterviewDetails() {
               </View>
             </View>
             <View style={styles.locationRow}>
-              <Ionicons name="location-outline" size={16} color="#9ca3af" />
+              <Ionicons name="location-outline" size={16} color={Colors.gray[400]} />
               <Text style={styles.location}>{interview.location || 'Remote'}</Text>
             </View>
             
@@ -367,7 +368,7 @@ export default function InterviewDetails() {
           
           {attempts.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="clipboard-outline" size={48} color="#6b7280" />
+              <Ionicons name="clipboard-outline" size={48} color={Colors.gray[500]} />
               <Text style={styles.emptyTitle}>No attempts yet</Text>
               <Text style={styles.emptySubtitle}>
                 Start your first mock interview to begin practicing
@@ -382,7 +383,7 @@ export default function InterviewDetails() {
               {/* Loading more indicator */}
               {isFetchingNextPage && (
                 <View style={styles.loadingMore}>
-                  <ActivityIndicator size="small" color="#8b5cf6" />
+                  <ActivityIndicator size="small" color={Colors.brand.secondary} />
                   <Text style={styles.loadingMoreText}>Loading more attempts...</Text>
                 </View>
               )}
@@ -413,7 +414,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
     marginTop: 16, // spacing.4
     fontSize: 16, // typography.body.medium.fontSize
     ...TYPOGRAPHY.bodyMedium,
@@ -425,26 +426,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, // layout.screenPadding
   },
   errorTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginTop: 16, // spacing.4
     ...TYPOGRAPHY.heading3,
   },
   errorButton: {
-    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
+    backgroundColor: Colors.accent.goldAlt,
     paddingHorizontal: 24, // spacing.6
     paddingVertical: 12, // spacing.3
     borderRadius: 12, // glassSecondary.borderRadius
     marginTop: 24, // spacing.6
-    shadowColor: '#F59E0B', // gold.400
+    shadowColor: Colors.accent.gold,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4, // Android shadow
   },
   errorButtonText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
     ...TYPOGRAPHY.buttonMedium,
@@ -456,20 +457,20 @@ const styles = StyleSheet.create({
     paddingBottom: 20, // spacing.5
   },
   headerTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginLeft: 16, // spacing.4
     ...TYPOGRAPHY.heading3,
   },
   jobCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    backgroundColor: Colors.glass.background,
     borderRadius: 16, // glass.borderRadius
     padding: 24, // spacing.6
     marginBottom: 24, // spacing.6
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
+    borderColor: Colors.glass.border,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -487,7 +488,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 8, // borderRadius.default
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     marginRight: 16, // spacing.4
     overflow: 'hidden',
   },
@@ -495,7 +496,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   roleTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 24, // typography.heading.h2.fontSize
     fontWeight: '600', // typography.heading.h2.fontWeight
     marginBottom: 4, // spacing.1
@@ -504,7 +505,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.005, // typography.heading.h2.letterSpacing
   },
   company: {
-    color: 'rgba(96, 165, 250, 1)', // text.accent
+    color: Colors.accent.blue,
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     ...TYPOGRAPHY.heading4,
@@ -515,7 +516,7 @@ const styles = StyleSheet.create({
     gap: 6, // spacing.1.5
   },
   location: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    color: Colors.text.secondary,
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     ...TYPOGRAPHY.bodyMedium,
   },
@@ -526,14 +527,14 @@ const styles = StyleSheet.create({
     marginTop: 8, // spacing.2
   },
   interviewType: {
-    color: 'rgba(139, 92, 246, 1)', // purple.500
+    color: Colors.brand.secondary,
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     fontWeight: '600', // typography.label.large.fontWeight
     ...TYPOGRAPHY.bodyMedium,
   },
   cardDivider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
+    backgroundColor: Colors.glass.backgroundSecondary,
     marginBottom: 20, // spacing.5
   },
   integratedStartButton: {
@@ -562,40 +563,40 @@ const styles = StyleSheet.create({
     letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   integratedStartButtonTextDisabled: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
   },
   section: {
     marginBottom: 24, // spacing.6
   },
   sectionTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginBottom: 16, // spacing.4
     ...TYPOGRAPHY.heading4,
   },
   emptyText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
     textAlign: 'center',
     padding: 20, // spacing.5
     fontSize: 16, // typography.body.medium.fontSize
     ...TYPOGRAPHY.bodyMedium,
   },
   emptyState: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderRadius: 16, // glass.borderRadius
     padding: 32, // spacing.8
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
-    shadowColor: '#000',
+    borderColor: Colors.glass.backgroundSecondary,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4, // Android shadow
   },
   emptyTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 16, // typography.body.medium.fontSize
     fontWeight: '600', // typography.label.large.fontWeight
     marginTop: 16, // spacing.4
@@ -603,7 +604,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodyMedium,
   },
   emptySubtitle: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
     fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
     lineHeight: 20, // typography.body.small.lineHeight
@@ -613,12 +614,12 @@ const styles = StyleSheet.create({
     gap: 16, // spacing.4
   },
   attemptCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    backgroundColor: Colors.glass.background,
     borderRadius: 16, // glass.borderRadius
     padding: 20, // spacing.5
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
+    borderColor: Colors.glass.border,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -631,7 +632,7 @@ const styles = StyleSheet.create({
     marginBottom: 14, // spacing.3.5
   },
   attemptTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 16, // typography.body.medium.fontSize
     fontWeight: '600', // typography.label.large.fontWeight
     ...TYPOGRAPHY.bodyMedium,
@@ -641,16 +642,13 @@ const styles = StyleSheet.create({
     minWidth: 55,
   },
   gradeScore: {
-    fontSize: 22, // typography.heading.h3.fontSize
-    fontWeight: '700', // typography.heading.h3.fontWeight
+    ...TYPOGRAPHY.heading2,
+    fontWeight: '700',
     marginBottom: 1, // spacing.0.25
-    ...TYPOGRAPHY.heading3,
   },
   gradeLabel: {
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
-    fontSize: 11, // typography.body.xsmall.fontSize (slightly smaller)
-    fontWeight: '500', // typography.label.small.fontWeight
-    ...TYPOGRAPHY.bodyXSmall,
+    ...TYPOGRAPHY.overline,
+    color: Colors.text.muted,
   },
   attemptDetails: {
     flexDirection: 'row',
@@ -664,7 +662,7 @@ const styles = StyleSheet.create({
     gap: 6, // spacing.1.5
   },
   detailText: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    color: Colors.text.secondary,
     fontSize: 13, // typography.body.small.fontSize (slightly smaller)
     ...TYPOGRAPHY.bodySmall,
   },
@@ -675,13 +673,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14, // spacing.3.5
     paddingHorizontal: 18, // spacing.4.5
     borderRadius: 10, // borderRadius.md
-    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
+    borderColor: Colors.glass.backgroundSecondary,
   },
   primaryAction: {
-    backgroundColor: 'rgba(34, 197, 94, 0.1)', // semantic.success.light
-    borderColor: 'rgba(34, 197, 94, 0.2)', // semantic.success.main with opacity
+    backgroundColor: Colors.glass.success,
+    borderColor: Colors.glass.successBorder,
   },
   disabledAction: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)', // glassInteractive.disabled.background
@@ -702,7 +700,7 @@ const styles = StyleSheet.create({
     gap: 8, // spacing.2
   },
   loadingMoreText: {
-    color: 'rgba(139, 92, 246, 1)', // purple.500
+    color: Colors.brand.secondary,
     fontSize: 14, // typography.body.small.fontSize
     fontWeight: '500', // typography.label.large.fontWeight
     ...TYPOGRAPHY.bodySmall,

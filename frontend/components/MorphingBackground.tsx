@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import Colors from '../constants/Colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -422,7 +423,7 @@ export default function MorphingBackground({
   return (
     <View style={[styles.container, style]}>
       {/* Pure black background */}
-      <View style={[styles.darkBase, { backgroundColor: '#000000' }]} />
+      <View style={[styles.darkBase, { backgroundColor: Colors.black }]} />
       
       {/* Animated colorful streaks - repositioning around expanded crystal */}
       <Animated.View
@@ -445,7 +446,7 @@ export default function MorphingBackground({
       >
         <LinearGradient
           colors={[
-            'rgba(124, 58, 237, 0.4)', // Purple
+            Colors.gradient.purple, // Purple
             'rgba(124, 58, 237, 0.1)',
             'rgba(124, 58, 237, 0)',
           ]}
@@ -475,7 +476,7 @@ export default function MorphingBackground({
       >
         <LinearGradient
           colors={[
-            'rgba(19, 0, 57, 0.17)', // Bright yellow-gold
+            Colors.gradient.darkPurple, // Bright yellow-gold
             'rgba(236, 72, 153, 0.5)', // Pink
             'rgba(245, 158, 11, 0.3)', // Orange
             'rgba(245, 158, 11, 0)',
@@ -508,9 +509,9 @@ export default function MorphingBackground({
           colors={
             mode === 'expanded' || mode === 'static'
               ? [
-                  'rgba(6, 182, 212, 0.25)', // Lighter cyan - professional
+                  Colors.gradient.cyan, // Lighter cyan - professional
                   'rgba(16, 185, 129, 0.2)', // Lighter emerald - professional
-                  'rgba(34, 197, 94, 0.15)', // Much lighter green - professional
+                  Colors.gradient.green, // Much lighter green - professional
                   'rgba(16, 185, 129, 0.08)', // Barely visible fade - professional
                 ]
               : [
@@ -714,7 +715,7 @@ export default function MorphingBackground({
       >
         <LinearGradient
           colors={[
-            'rgba(168, 85, 247, 0.8)', // Bright purple (back to normal)
+            Colors.gradient.iPhonePurple, // Bright purple (back to normal)
             'rgba(139, 92, 246, 0.6)', // Violet
             'rgba(236, 72, 153, 0.5)', // Pink
           ]}

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const ProfileCardIntro = () => {
   const { navigateWithTransition } = useOnboardingNavigation();
@@ -40,7 +41,7 @@ const ProfileCardIntro = () => {
           activeOpacity={0.8}
         >
           <Text style={styles.primaryButtonText}>Let's start building</Text>
-          <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+          <Ionicons name="arrow-forward" size={20} color={Colors.white} />
         </TouchableOpacity>
       </View>
     </OnboardingLayout>
@@ -70,27 +71,22 @@ const styles = StyleSheet.create({
   // Typography - following new design system
   titleMain: {
     // Design system title style (like "Get to the")
-    fontSize: 28,
-    ...TYPOGRAPHY.overline,
+    ...TYPOGRAPHY.displaySmall,
     fontWeight: '300',
-    color: '#FFFFFF',
+    color: Colors.white,
     textAlign: 'center',
-    lineHeight: 36,
   },
   titleBrand: {
     // Design system hero style (like "nextround")
-    fontSize: 48,
-    ...TYPOGRAPHY.hero,
-    lineHeight: 60,
-    color: '#A855F7', // Brand purple
+    ...TYPOGRAPHY.heroMedium,
+    color: Colors.brand.primary,
     textAlign: 'center',
     marginBottom: 60, // Design system xxl spacing
   },
   subtitle: {
     // Design system supporting text
-    fontSize: 16,
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.70)', // Design system text.tertiary
+    color: Colors.text.tertiary,
     textAlign: 'center',
     maxWidth: 320, // Design system maxContentWidth
     paddingHorizontal: 32,
@@ -107,25 +103,23 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 56,
     borderRadius: 28, // Perfect pill shape
-    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Subtle purple fill
+    backgroundColor: Colors.glass.purple,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)', // Purple border
+    borderColor: Colors.brand.primaryRGB,
   },
   primaryButtonText: {
     // Design system button typography
-    fontSize: 18,
-    lineHeight: 22,
-    ...TYPOGRAPHY.buttonMedium,
-    color: '#FFFFFF',
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.white,
     marginRight: 8,
   },
 });

@@ -7,6 +7,8 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
+import Colors from '../../constants/Colors';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -233,7 +235,7 @@ const SolutionFraming = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>I'm ready to start</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -247,7 +249,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
     paddingTop: Platform.OS === 'ios' ? 20 : 20,
   },
   animatedContent: {
@@ -268,19 +270,15 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
   },
   screenTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
-    color: '#ffffff',
+    ...TYPOGRAPHY.sectionHeader,
+    color: Colors.text.primary,
     textAlign: 'center',
     lineHeight: 30,
     marginBottom: 24,
   },
   subtitle: {
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.70)',
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.tertiary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,
@@ -300,52 +298,46 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: '#A855F7',
+    borderColor: Colors.brand.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
     flexShrink: 0,
   },
   stepNumberText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.labelMedium,
     fontWeight: '600',
-    fontFamily: 'Inter',
-    color: '#A855F7',
+    color: Colors.brand.primary,
   },
   stepContent: {
     flex: 1,
   },
   stepTitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.bodyLarge,
     fontWeight: '600',
-    fontFamily: 'Inter',
-    color: '#ffffff',
+    color: Colors.text.primary,
     lineHeight: 20,
     marginBottom: 4,
   },
   stepDescription: {
-    fontSize: 14,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.70)',
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
     lineHeight: 18,
   },
   messageContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: Colors.glass.backgroundSubtle,
     width: '100%',
     maxWidth: 320,
   },
   personalizedMessage: {
-    fontSize: 14,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.85)',
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -360,26 +352,22 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   continueButtonText: {
-    fontSize: 18,
-    lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
-    color: '#FFFFFF',
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.text.primary,
     marginRight: 8,
   },
 });

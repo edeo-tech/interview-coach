@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import Colors from '../../constants/Colors';
 
 const Terms = () => {
   const router = useRouter();
@@ -96,7 +97,7 @@ const Terms = () => {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="chevron-back" size={24} color="#ffffff" />
+            <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Terms of Service</Text>
           <View style={styles.headerSpacer} />
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.background.transparent,
   },
   header: {
     flexDirection: 'row',
@@ -132,22 +133,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: Colors.glass.backgroundSubtle,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: Colors.glass.backgroundSubtle,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     flex: 1,
   },
@@ -161,18 +162,18 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   contentContainer: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     marginHorizontal: 20,
     marginTop: 20,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: Colors.glass.backgroundSubtle,
     padding: 24,
   },
   h1: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.text.primary,
     marginBottom: 16,
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
   h2: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#F59E0B',
+    color: Colors.accent.gold,
     marginTop: 24,
     marginBottom: 12,
     letterSpacing: -0.3,
@@ -188,14 +189,14 @@ const styles = StyleSheet.create({
   paragraph: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#E5E7EB',
+    color: Colors.gray[300],
     marginBottom: 16,
     textAlign: 'left',
   },
   bullet: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#E5E7EB',
+    color: Colors.gray[300],
     marginBottom: 8,
     marginLeft: 8,
     textAlign: 'left',

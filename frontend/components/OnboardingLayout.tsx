@@ -3,6 +3,7 @@ import { View, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import ChatGPTBackground from './ChatGPTBackground';
 import OnboardingProgress from './OnboardingProgress';
+import Colors from '../constants/Colors';
 
 interface OnboardingLayoutProps {
   currentStep: number;
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
   },
   persistentHeader: {
     paddingTop: Platform.OS === 'ios' ? 20 : 20,

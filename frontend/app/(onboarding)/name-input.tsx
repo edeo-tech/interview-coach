@@ -5,6 +5,7 @@ import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const NameInput = () => {
   const { data, updateData } = useOnboarding();
@@ -23,7 +24,7 @@ const NameInput = () => {
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <Ionicons name="person-outline" size={48} color="#A855F7" />
+            <Ionicons name="person-outline" size={48} color={Colors.brand.primary} />
           </View>
           
           <Text style={styles.screenTitle}>What's your name?</Text>
@@ -50,7 +51,7 @@ const NameInput = () => {
             disabled={!name.trim()}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
           </TouchableOpacity>
         </View>
         </View>
@@ -77,13 +78,13 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     ...TYPOGRAPHY.displaySmall,
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 12,
   },
   subtitle: {
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -92,41 +93,41 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   textInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 12,
     paddingHorizontal: 20,
     paddingVertical: 18,
     fontSize: 18,
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.glass.borderSecondary,
   },
   bottomContainer: {
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: Colors.accent.gold,
     borderRadius: 12,
     paddingVertical: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOpacity: 0.25,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(245, 158, 11, 0.5)',
+    backgroundColor: Colors.glass.goldLight,
     shadowOpacity: 0,
   },
   continueButtonText: {
     ...TYPOGRAPHY.buttonLarge,
-    color: '#ffffff',
+    color: Colors.text.primary,
   },
 });
 

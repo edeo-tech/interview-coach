@@ -13,6 +13,7 @@ import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
 import { InterviewType } from '../../_interfaces/interviews/interview-types';
+import Colors from '../../constants/Colors';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -176,7 +177,7 @@ const SlideToAnswer = ({ onAnswer, onDecline }: { onAnswer: () => void; onDeclin
                     ]}
                     {...panResponder.panHandlers}
                 >
-                    <Ionicons name="call" size={28} color="#fff" />
+                    <Ionicons name="call" size={28} color={Colors.text.primary} />
                 </Animated.View>
             </View>
             
@@ -606,7 +607,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                             </View>
                         {callState === 'active' && (
                             <View style={styles.timer}>
-                                <Ionicons name="time-outline" size={16} color="#F59E0B" />
+                                <Ionicons name="time-outline" size={16} color={Colors.accent.gold} />
                                 <Text style={styles.timerText}>{formatDuration(duration)}</Text>
                             </View>
                         )}
@@ -644,7 +645,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                         {currentInterviewType === InterviewType.MockSalesCall ? (
                                             <View style={styles.salesInstructionsCard}>
                                                 <View style={styles.instructionsHeader}>
-                                                    <Ionicons name="trending-up" size={20} color="#F59E0B" />
+                                                    <Ionicons name="trending-up" size={20} color={Colors.accent.gold} />
                                                     <Text style={styles.instructionsTitle}>Sales Call Simulation</Text>
                                                 </View>
                                                 <Text style={styles.instructionsSubtitle}>You are the salesperson, they are the prospect</Text>
@@ -730,7 +731,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
 
                         {callState === 'ended' && (
                             <View style={styles.endedContainer}>
-                                <Ionicons name="checkmark-circle" size={64} color="#10B981" />
+                                <Ionicons name="checkmark-circle" size={64} color={Colors.semantic.successAlt} />
                                 <Text style={styles.endedTitle}>Interview Complete</Text>
                                 <Text style={styles.endedSubtitle}>
                                     Thank you for completing your interview with {interviewer.name}
@@ -760,7 +761,7 @@ Remember: This is a practice interview to help ${userName} improve their intervi
                                             endInterview(conversation);
                                         }}
                                     >
-                                        <Ionicons name="call" size={28} color="#fff" />
+                                        <Ionicons name="call" size={28} color={Colors.text.primary} />
                                     </TouchableOpacity>
                                 </View>
                                 
@@ -799,7 +800,7 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingTop: 60,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.15)',
+        borderBottomColor: Colors.glass.border,
     },
     backButton: {
         padding: 8,
@@ -822,23 +823,23 @@ const styles = StyleSheet.create({
     timer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: Colors.overlay.medium,
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 20,
         gap: 4,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: Colors.glass.backgroundInput,
     },
     timerText: {
         fontSize: 14,
         fontFamily: 'Inter_600SemiBold',
-        color: '#F59E0B',
+        color: Colors.accent.gold,
     },
     incomingIndicator: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        backgroundColor: Colors.glass.successSecondary,
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 20,
@@ -847,12 +848,12 @@ const styles = StyleSheet.create({
     incomingText: {
         fontSize: 14,
         fontFamily: 'Inter_600SemiBold',
-        color: '#10B981',
+        color: Colors.semantic.successAlt,
     },
     connectingIndicator: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        backgroundColor: Colors.glass.goldLight,
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 20,
@@ -861,7 +862,7 @@ const styles = StyleSheet.create({
     connectingText: {
         fontSize: 14,
         fontFamily: 'Inter_600SemiBold',
-        color: '#F59E0B',
+        color: Colors.accent.gold,
     },
     content: {
         flex: 1,
@@ -911,8 +912,8 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderWidth: 3,
-        borderColor: '#F59E0B',
-        borderTopColor: 'transparent',
+        borderColor: Colors.accent.gold,
+        borderTopColor: Colors.background.transparent,
         borderRadius: 16,
         marginBottom: 16,
     },
@@ -963,7 +964,7 @@ const styles = StyleSheet.create({
     interviewerCompany: {
         fontSize: 12,
         fontFamily: 'Inter_400Regular',
-        color: '#6B7280',
+        color: Colors.gray[500],
     },
     welcomeTitle: {
         fontSize: 28,
@@ -987,7 +988,7 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     topicBadge: {
-        backgroundColor: '#374151',
+        backgroundColor: Colors.gray[700],
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
@@ -995,7 +996,7 @@ const styles = StyleSheet.create({
     topicText: {
         fontSize: 14,
         fontFamily: 'Inter_500Medium',
-        color: '#D1D5DB',
+        color: Colors.gray[300],
     },
     instructions: {
         fontSize: 14,
@@ -1015,7 +1016,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         paddingHorizontal: 4,
         borderBottomWidth: 1,
-        borderBottomColor: '#333',
+        borderBottomColor: Colors.gray[700],
         marginBottom: 16,
     },
     interviewerProfileSmall: {
@@ -1044,13 +1045,13 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#EF4444',
+        backgroundColor: Colors.semantic.error,
         marginRight: 6,
     },
     callStatusText: {
         fontSize: 12,
         fontFamily: 'Inter_500Medium',
-        color: '#EF4444',
+        color: Colors.semantic.error,
     },
     notesContainer: {
         flex: 1,
@@ -1072,7 +1073,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
     },
     userNote: {
-        backgroundColor: '#F59E0B',
+        backgroundColor: Colors.accent.gold,
         alignSelf: 'flex-end',
         maxWidth: '80%',
     },
@@ -1084,7 +1085,7 @@ const styles = StyleSheet.create({
     noteText: {
         fontSize: 14,
         fontFamily: 'Inter_400Regular',
-        color: '#fff',
+        color: Colors.text.primary,
         lineHeight: 20,
     },
     footer: {
@@ -1095,7 +1096,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#F59E0B',
+        backgroundColor: Colors.accent.gold,
         paddingHorizontal: 32,
         paddingVertical: 16,
         borderRadius: 30,
@@ -1105,7 +1106,7 @@ const styles = StyleSheet.create({
     startButtonText: {
         fontSize: 18,
         fontFamily: 'Inter_600SemiBold',
-        color: '#fff',
+        color: Colors.text.primary,
     },
     callControls: {
         flexDirection: 'row',
@@ -1122,16 +1123,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     muteButton: {
-        backgroundColor: '#374151',
+        backgroundColor: Colors.gray[700],
     },
     endCallButton: {
-        backgroundColor: '#EF4444',
+        backgroundColor: Colors.semantic.error,
         width: 64,
         height: 64,
         borderRadius: 32,
     },
     speakerButton: {
-        backgroundColor: '#374151',
+        backgroundColor: Colors.gray[700],
     },
     incomingCallButtons: {
         flexDirection: 'row',
@@ -1148,7 +1149,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     acceptButton: {
-        backgroundColor: '#10B981',
+        backgroundColor: Colors.semantic.successAlt,
     },
     connectingFooter: {
         alignItems: 'center',
@@ -1212,11 +1213,11 @@ const styles = StyleSheet.create({
         width: 120,
         height: 120,
         borderRadius: 60,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        backgroundColor: Colors.glass.backgroundInput,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 2,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
+        borderColor: Colors.glass.borderInteractive,
     },
     iphoneAvatar: {
         fontSize: 50,
@@ -1245,7 +1246,7 @@ const styles = StyleSheet.create({
     slideTrack: {
         width: '100%',
         height: 80,
-        backgroundColor: 'rgba(128, 90, 168, 0.6)', // Purple/pink like iPhone
+        backgroundColor: Colors.gradient.iPhonePurple, // Purple/pink like iPhone
         borderRadius: 40,
         justifyContent: 'center',
         alignItems: 'center',
@@ -1262,7 +1263,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     slideText: {
-        color: 'rgba(255, 255, 255, 0.6)', // Darker style text
+        color: Colors.text.quaternary, // Darker style text
         fontSize: 20,
         fontFamily: 'Inter_400Regular',
         textAlign: 'center',
@@ -1271,14 +1272,14 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#34C759',
+        backgroundColor: Colors.semantic.success,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
         left: 0,
         ...Platform.select({
             ios: {
-                shadowColor: '#000',
+                shadowColor: Colors.black,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
                 shadowRadius: 8
@@ -1289,13 +1290,13 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#FF3B30',
+        backgroundColor: Colors.semantic.error,
         alignItems: 'center',
         justifyContent: 'center',
         transform: [{ rotate: '135deg' }],
         ...Platform.select({
             ios: {
-                shadowColor: '#000',
+                shadowColor: Colors.black,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
                 shadowRadius: 8,
@@ -1323,7 +1324,7 @@ const styles = StyleSheet.create({
     activeCallDuration: {
         fontSize: 18,
         fontFamily: 'Inter_600SemiBold',
-        color: '#F59E0B',
+        color: Colors.accent.gold,
         textAlign: 'center',
     },
     activeCallMiddle: {
@@ -1336,15 +1337,15 @@ const styles = StyleSheet.create({
         width: 160,
         height: 160,
         borderRadius: 80,
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: Colors.glass.backgroundSubtle,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 2,
-        borderColor: 'rgba(245, 158, 11, 0.3)',
+        borderColor: Colors.glass.goldMedium,
         marginBottom: 24,
         ...Platform.select({
             ios: {
-                shadowColor: '#F59E0B',
+                shadowColor: Colors.accent.gold,
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.2,
                 shadowRadius: 16,
@@ -1373,24 +1374,24 @@ const styles = StyleSheet.create({
     activeCallRecordingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(239, 68, 68, 0.12)',
+        backgroundColor: Colors.glass.error,
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: 'rgba(239, 68, 68, 0.25)',
+        borderColor: Colors.glass.errorBorder,
     },
     activeCallRecordingDot: {
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#EF4444',
+        backgroundColor: Colors.semantic.error,
         marginRight: 8,
     },
     activeCallRecordingText: {
         fontSize: 14,
         fontFamily: 'Inter_500Medium',
-        color: '#EF4444',
+        color: Colors.semantic.error,
     },
     // Instructions Card Styles
     instructionsContainer: {
@@ -1400,14 +1401,14 @@ const styles = StyleSheet.create({
     },
     salesInstructionsCard: {
         ...GlassStyles.card,
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        borderColor: 'rgba(245, 158, 11, 0.3)',
+        backgroundColor: Colors.glass.goldLight,
+        borderColor: Colors.glass.goldBorder,
         marginBottom: 20,
     },
     standardInstructionsCard: {
         ...GlassStyles.card,
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderColor: 'rgba(59, 130, 246, 0.3)',
+        backgroundColor: Colors.glass.accentBlue,
+        borderColor: Colors.glass.infoBorder,
         marginBottom: 20,
     },
     instructionsHeader: {
@@ -1424,7 +1425,7 @@ const styles = StyleSheet.create({
     instructionsSubtitle: {
         fontSize: 16,
         fontFamily: 'Inter_500Medium',
-        color: '#F59E0B',
+        color: Colors.accent.gold,
         marginBottom: 16,
         textAlign: 'center',
     },

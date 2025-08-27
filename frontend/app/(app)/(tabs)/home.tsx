@@ -10,6 +10,7 @@ import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { GlassStyles } from '../../../constants/GlassStyles';
 import BrandfetchLogo from '../../../components/BrandfetchLogo';
 import { TYPOGRAPHY } from '../../../constants/Typography';
+import Colors from '../../../constants/Colors';
 
 export default function Home() {
   const { 
@@ -66,19 +67,19 @@ export default function Home() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'junior': return '#10b981';
-      case 'mid': return '#f59e0b';
-      case 'senior': return '#ef4444';
-      default: return '#6b7280';
+      case 'junior': return Colors.semantic.successAlt;
+      case 'mid': return Colors.accent.gold;
+      case 'senior': return Colors.semantic.error;
+      default: return Colors.gray[500];
     }
   };
 
   const getJobProgressColor = (stagesCompleted: number, totalStages: number) => {
     const progress = stagesCompleted / totalStages;
-    if (progress === 0) return '#6b7280';
-    if (progress < 0.5) return '#f59e0b';
-    if (progress < 1) return '#3b82f6';
-    return '#10b981';
+    if (progress === 0) return Colors.gray[500];
+    if (progress < 0.5) return Colors.accent.gold;
+    if (progress < 1) return Colors.semantic.infoAlt;
+    return Colors.semantic.successAlt;
   };
 
   return (
@@ -114,7 +115,7 @@ export default function Home() {
           <View style={styles.section}>
             {jobsLoading ? (
               <View style={styles.emptyState}>
-                <ActivityIndicator size="large" color="#A855F7" />
+                <ActivityIndicator size="large" color={Colors.brand.primary} />
                 <Text style={styles.emptyStateTitle}>
                   Loading your jobs...
                 </Text>
@@ -122,7 +123,7 @@ export default function Home() {
             ) : !jobs || jobs.length === 0 ? (
               <View style={styles.emptyState}>
                 <View style={styles.emptyStateIcon}>
-                  <Ionicons name="briefcase-outline" size={32} color="rgba(255, 255, 255, 0.7)" />
+                  <Ionicons name="briefcase-outline" size={32} color={Colors.text.tertiary} />
                 </View>
                 <Text style={styles.emptyStateTitle}>
                   No jobs yet
@@ -145,7 +146,7 @@ export default function Home() {
                     fallbackUrl={job.company_logo_url}
                     size={24}
                     imageStyle={styles.companyLogo}
-                    fallbackIconColor="rgba(255, 255, 255, 0.8)"
+                    fallbackIconColor={Colors.text.secondary}
                     fallbackIconName="briefcase-outline"
                   />
                   
@@ -163,7 +164,7 @@ export default function Home() {
                     </Text>
                   </View>
                   
-                  <Ionicons name="chevron-forward" size={20} color="rgba(255, 255, 255, 0.5)" />
+                  <Ionicons name="chevron-forward" size={20} color={Colors.text.disabled} />
                 </TouchableOpacity>
               ))
             )}
@@ -171,7 +172,7 @@ export default function Home() {
             {/* Loading more indicator */}
             {isFetchingNextPage && (
               <View style={styles.loadingMore}>
-                <ActivityIndicator size="small" color="#A855F7" />
+                <ActivityIndicator size="small" color={Colors.brand.primary} />
                 <Text style={styles.loadingMoreText}>Loading more jobs...</Text>
               </View>
             )}
@@ -203,24 +204,24 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...TYPOGRAPHY.displayMedium,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     marginBottom: 6,
   },
   headerSubtitle: {
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: Colors.text.secondary,
   },
 
   section: {
     marginBottom: 24,
   },
   emptyState: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: Colors.glass.background,
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: Colors.glass.border,
     marginTop: 4,
     ...Platform.select({
       ios: {
@@ -235,28 +236,28 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: Colors.glass.borderSecondary,
   },
   emptyStateTitle: {
     ...TYPOGRAPHY.heading3,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptyStateSubtitle: {
     ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
   },
   jobItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: Colors.glass.background,
     borderRadius: 50, // Pill-shaped like other touchables
     paddingVertical: 16, // Increased from 14 to accommodate larger logo
     paddingHorizontal: 18, // Slightly increased
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
     width: 32, // Increased from 24 to make room for images
     height: 32, // Increased from 24 to make room for images
     borderRadius: 8, // Increased border radius proportionally
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
   },
   jobItemContent: {
     flex: 1,
@@ -281,17 +282,17 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     ...TYPOGRAPHY.itemTitle,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     flex: 1,
     marginRight: 8, // Space between title and progress
   },
   jobCompany: {
     ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: Colors.text.tertiary,
   },
   jobProgress: {
     ...TYPOGRAPHY.labelMedium,
-    color: '#10b981',
+    color: Colors.semantic.successAlt,
     fontWeight: '600',
     flexShrink: 0, // Prevent shrinking
   },
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
   },
   loadingMoreText: {
     ...TYPOGRAPHY.labelMedium,
-    color: '#A855F7',
+    color: Colors.brand.primary,
   },
 });
 

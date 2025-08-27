@@ -9,6 +9,7 @@ import OnboardingProgress from '../../components/OnboardingProgress';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -240,7 +241,7 @@ const OnboardingReviews = () => {
               {industryMatchedTestimonials.map((testimonial, index) => (
                 <View key={index} style={styles.testimonialCard}>
                   <View style={styles.quoteIcon}>
-                    <Ionicons name="quote" size={20} color="#A855F7" />
+                    <Ionicons name="quote" size={20} color={Colors.brand.primary} />
                   </View>
                   <Text style={styles.testimonialText}>{testimonial.text}</Text>
                   <View style={styles.testimonialFooter}>
@@ -257,7 +258,7 @@ const OnboardingReviews = () => {
             </View>
 
             <View style={styles.trustIndicator}>
-              <Ionicons name="shield-checkmark" size={24} color="#10B981" />
+              <Ionicons name="shield-checkmark" size={24} color={Colors.semantic.successAlt} />
               <Text style={styles.trustText}>Trusted by professionals worldwide</Text>
             </View>
           </View>
@@ -278,7 +279,7 @@ const OnboardingReviews = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>Get Started</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -307,9 +308,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   screenTitle: {
-    fontSize: 24,
     ...TYPOGRAPHY.heading1,
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
     lineHeight: 30,
     marginBottom: 16,
@@ -321,10 +321,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: Colors.glass.borderSecondary,
     width: '100%',
     maxWidth: 320,
   },
@@ -333,31 +333,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statNumber: {
-    fontSize: 28,
     ...TYPOGRAPHY.displaySmall,
     fontWeight: '700',
-    color: '#A855F7',
+    color: Colors.brand.primary,
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
-    ...TYPOGRAPHY.bodyMedium,
+    ...TYPOGRAPHY.labelSmall,
     fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: Colors.glass.borderInteractive,
     marginHorizontal: 20,
   },
   subtitle: {
-    fontSize: 16,
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
-    lineHeight: 24,
     marginBottom: 20,
     paddingHorizontal: 16,
   },
@@ -368,11 +364,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   testimonialCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: Colors.glass.border,
     position: 'relative',
   },
   quoteIcon: {
@@ -382,9 +378,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   testimonialText: {
-    fontSize: 15,
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: Colors.text.primary,
     lineHeight: 22,
     marginBottom: 16,
     paddingRight: 32,
@@ -398,45 +393,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   testimonialAuthor: {
-    fontSize: 14,
-    ...TYPOGRAPHY.buttonMedium,
-    color: '#ffffff',
+    ...TYPOGRAPHY.labelMedium,
+    fontWeight: '600',
+    color: Colors.white,
     marginBottom: 2,
   },
   testimonialRole: {
-    fontSize: 12,
-    ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.6)',
+    ...TYPOGRAPHY.bodyXSmall,
+    color: Colors.text.muted,
   },
   industryBadge: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: 'rgba(168, 85, 247, 0.3)',
+    borderColor: Colors.glass.purpleMedium,
   },
   industryText: {
-    fontSize: 10,
-    ...TYPOGRAPHY.labelMedium,
-    color: '#A855F7',
+    ...TYPOGRAPHY.overline,
+    color: Colors.brand.primary,
   },
   trustIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: Colors.glass.successSecondary,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: Colors.glass.successBorderAlt,
   },
   trustText: {
-    fontSize: 12,
-    ...TYPOGRAPHY.labelMedium,
-    color: '#10B981',
+    ...TYPOGRAPHY.labelSmall,
+    color: Colors.semantic.successAlt,
   },
   bottomContainer: {
     width: '100%',
@@ -449,24 +441,22 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primaryRGB,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   continueButtonText: {
-    fontSize: 18,
-    lineHeight: 22,
-    ...TYPOGRAPHY.buttonMedium,
-    color: '#FFFFFF',
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.white,
     marginRight: 8,
   },
 });

@@ -13,6 +13,7 @@ import { useFeedbackCheck } from '../../../../../../hooks/premium/usePremiumChec
 import { GlassStyles, GlassTextColors } from '../../../../../../constants/GlassStyles';
 import { getInterviewTypeConfig } from '../../../../../../config/interviewTypeConfigs';
 import { InterviewType } from '../../../../../../_api/interviews/feedback';
+import Colors from '../../../../../../constants/Colors';
 
 const BlurredSection = ({ 
   children, 
@@ -37,7 +38,7 @@ const BlurredSection = ({
       {showPaywall && (
         <BlurView intensity={30} tint="dark" style={blurredStyles.blurOverlay}>
           <View style={blurredStyles.upgradeOverlay}>
-            <Ionicons name="diamond" size={32} color="#f59e0b" />
+            <Ionicons name="diamond" size={32} color={Colors.accent.gold} />
             <Text style={blurredStyles.upgradeTitle}>Premium Feature</Text>
             <Text style={blurredStyles.upgradeMessage}>
               Upgrade to Premium to see detailed feedback and scores
@@ -75,33 +76,33 @@ const blurredStyles = StyleSheet.create({
   },
   upgradeOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: Colors.overlay.medium,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   upgradeTitle: {
-    color: '#f59e0b',
+    color: Colors.accent.gold,
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 8,
     marginBottom: 8,
   },
   upgradeMessage: {
-    color: '#ffffff',
+    color: Colors.text.primary,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 20,
   },
   upgradeButton: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: Colors.accent.gold,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
   upgradeButtonText: {
-    color: '#ffffff',
+    color: Colors.text.primary,
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -151,7 +152,7 @@ export default function AttemptGradingScreen() {
     return (
       <View style={styles.center}>
         <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#A855F7" />
+          <ActivityIndicator size="large" color={Colors.brand.primary} />
           <Text style={styles.loadingTitle}>Generating Feedback</Text>
           <Text style={styles.loadingSubtitle}>
             Our AI is analyzing your interview performance to provide personalized feedback.
@@ -162,11 +163,11 @@ export default function AttemptGradingScreen() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return '#10b981';
-    if (score >= 80) return '#3b82f6';
-    if (score >= 70) return '#f59e0b';
-    if (score >= 60) return '#f97316';
-    return '#ef4444';
+    if (score >= 90) return Colors.semantic.successAlt;
+    if (score >= 80) return Colors.accent.blueAlt;
+    if (score >= 70) return Colors.accent.gold;
+    if (score >= 60) return Colors.semantic.warning;
+    return Colors.semantic.error;
   };
 
   const getScoreLabel = (score: number) => {
@@ -195,7 +196,7 @@ export default function AttemptGradingScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.interviewTypeBadgeGradient}
             >
-              <Ionicons name={interviewConfig.icon as any} size={20} color="#fff" />
+              <Ionicons name={interviewConfig.icon as any} size={20} color={Colors.text.primary} />
               <Text style={styles.interviewTypeBadgeText}>{interviewConfig.displayName}</Text>
             </LinearGradient>
             <Text style={styles.interviewTypeDescription}>{interviewConfig.description}</Text>
@@ -267,7 +268,7 @@ export default function AttemptGradingScreen() {
       >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={20} color={Colors.semantic.successAlt} />
             <Text style={styles.sectionTitle}>Strengths</Text>
           </View>
           {data?.strengths.map((s, i) => (
@@ -286,12 +287,12 @@ export default function AttemptGradingScreen() {
       >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="trending-up" size={20} color="#F59E0B" />
+            <Ionicons name="trending-up" size={20} color={Colors.accent.gold} />
             <Text style={styles.sectionTitle}>Areas to Improve</Text>
           </View>
           {data?.improvement_areas.map((s, i) => (
             <View key={i} style={styles.listItem}>
-              <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
+              <Text style={[styles.bulletPoint, { color: Colors.semantic.warning }]}>•</Text>
               <Text style={styles.listText}>{s}</Text>
             </View>
           ))}
@@ -305,7 +306,7 @@ export default function AttemptGradingScreen() {
       >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="document-text" size={20} color="#3B82F6" />
+            <Ionicons name="document-text" size={20} color={Colors.accent.blueAlt} />
             <Text style={styles.sectionTitle}>Detailed Feedback</Text>
           </View>
           <Text style={styles.detailedFeedback}>{data?.detailed_feedback}</Text>
@@ -330,7 +331,7 @@ export default function AttemptGradingScreen() {
         <View style={styles.transcriptCardContent}>
           <View style={styles.transcriptCardLeft}>
             <View style={styles.transcriptIconContainer}>
-              <Ionicons name="document-text-outline" size={24} color={data ? "#F59E0B" : "#6B7280"} />
+              <Ionicons name="document-text-outline" size={24} color={data ? Colors.accent.gold : Colors.gray[500]} />
             </View>
             <View style={styles.transcriptTextContainer}>
               <Text style={[styles.transcriptTitle, !data && styles.transcriptTitleDisabled]}>
@@ -341,7 +342,7 @@ export default function AttemptGradingScreen() {
               </Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={data ? "#F59E0B" : "#6B7280"} />
+          <Ionicons name="chevron-forward" size={20} color={data ? Colors.accent.gold : Colors.gray[500]} />
         </View>
       </TouchableOpacity>
       </ScrollView>
@@ -362,7 +363,7 @@ export default function AttemptGradingScreen() {
                 router.back();
               }}
             >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
             </TouchableOpacity>
           )}
           <Text style={styles.headerTitle}>Interview Feedback</Text>
@@ -380,7 +381,7 @@ export default function AttemptGradingScreen() {
         {loading ? renderLoadingState() : data ? renderFeedback() : (
           <View style={styles.center}>
             <View style={styles.emptyCard}>
-              <Ionicons name="document-text" size={48} color="#6B7280" />
+              <Ionicons name="document-text" size={48} color={Colors.gray[500]} />
               <Text style={styles.emptyTitle}>No Feedback Available</Text>
               <Text style={styles.emptySubtitle}>
                 Your interview feedback will appear here once it's ready.
@@ -393,7 +394,7 @@ export default function AttemptGradingScreen() {
         {is_from_interview === 'true' && (
           <View style={styles.footer}>
             <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
+              colors={[Colors.brand.primary, Colors.special.pink]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={[styles.primaryButtonOuter, !data && styles.primaryButtonOuterDisabled]}
@@ -409,9 +410,9 @@ export default function AttemptGradingScreen() {
                 activeOpacity={0.9}
                 disabled={!data}
               >
-                <Ionicons name="refresh-circle" size={24} color={data ? "#fff" : "#6B7280"} />
+                <Ionicons name="refresh-circle" size={24} color={data ? Colors.text.primary : Colors.gray[500]} />
                 <Text style={[styles.practiceAgainText, !data && styles.practiceAgainTextDisabled]}>Practice Again & Improve</Text>
-                <Ionicons name="arrow-forward" size={20} color={data ? "#fff" : "#6B7280"} />
+                <Ionicons name="arrow-forward" size={20} color={data ? Colors.text.primary : Colors.gray[500]} />
               </TouchableOpacity>
             </LinearGradient>
           </View>
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
   },
   container: { 
     flex: 1, 
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.background.transparent,
   },
   header: { 
     flexDirection: 'row', 
@@ -436,7 +437,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, 
     paddingBottom: 16, 
     borderBottomWidth: 1, 
-    borderBottomColor: 'rgba(255,255,255,0.15)',
+    borderBottomColor: Colors.glass.border,
     justifyContent: 'space-between',
   },
   backButton: {
@@ -444,7 +445,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: { 
-    color: '#fff', 
+    color: Colors.text.primary, 
     fontSize: 20, 
     fontWeight: 'bold', 
     flex: 1,
@@ -460,7 +461,7 @@ const styles = StyleSheet.create({
   footer: { 
     padding: 20, 
     borderTopWidth: 1, 
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: Colors.glass.backgroundSubtle,
   },
   // Transcript Card Styles
   transcriptCard: {
@@ -485,7 +486,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    backgroundColor: Colors.glass.accentBlue,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -494,21 +495,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transcriptTitle: {
-    color: '#ffffff',
+    color: Colors.text.primary,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
   },
   transcriptTitleDisabled: {
-    color: '#6B7280',
+    color: Colors.gray[500],
   },
   transcriptSubtitle: {
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     fontSize: 14,
     lineHeight: 18,
   },
   transcriptSubtitleDisabled: {
-    color: '#6B7280',
+    color: Colors.gray[500],
   },
 
   // Practice Again Button Styles
@@ -518,7 +519,7 @@ const styles = StyleSheet.create({
     height: 56,
     ...Platform.select({
       ios: {
-        shadowColor: '#A855F7',
+        shadowColor: Colors.brand.primary,
         shadowOpacity: 0.3,
         shadowRadius: 12,
         shadowOffset: { width: 0, height: 4 },
@@ -529,7 +530,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   primaryButtonInner: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderRadius: 28,
     height: 52,
     paddingHorizontal: 24,
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButtonInnerDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: Colors.glass.backgroundSubtle,
   },
   practiceAgainText: {
     color: GlassTextColors.primary,
@@ -549,7 +550,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   practiceAgainTextDisabled: {
-    color: '#6B7280',
+    color: Colors.gray[500],
   },
   center: { 
     flex: 1, 
@@ -566,7 +567,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   loadingTitle: {
-    color: '#fff',
+    color: Colors.text.primary,
     fontSize: 20,
     fontWeight: '600',
     marginTop: 16,
@@ -574,7 +575,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loadingSubtitle: {
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 20,
@@ -591,13 +592,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   connected: {
-    backgroundColor: '#10B981',
+    backgroundColor: Colors.semantic.successAlt,
   },
   disconnected: {
-    backgroundColor: '#EF4444',
+    backgroundColor: Colors.semantic.error,
   },
   statusText: {
-    color: '#6B7280',
+    color: Colors.gray[500],
     fontSize: 12,
     fontWeight: '500',
   },
@@ -611,7 +612,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   emptyTitle: {
-    color: '#fff',
+    color: Colors.text.primary,
     fontSize: 18,
     fontWeight: '600',
     marginTop: 16,
@@ -619,7 +620,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptySubtitle: {
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 20,
@@ -655,7 +656,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   scoreOutOf: {
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     fontSize: 14,
   },
   scoreLabel: {
@@ -664,13 +665,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   performanceLevel: {
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     fontSize: 12,
   },
   overallProgressBar: {
     width: '100%',
     height: 8,
-    backgroundColor: '#374151',
+    backgroundColor: Colors.gray[700],
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -716,7 +717,7 @@ const styles = StyleSheet.create({
   },
   rubricBar: {
     height: 6,
-    backgroundColor: '#374151',
+    backgroundColor: Colors.gray[700],
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -730,7 +731,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   bulletPoint: {
-    color: '#10b981',
+    color: Colors.semantic.successAlt,
     marginRight: 12,
     fontSize: 16,
     lineHeight: 20,
@@ -761,7 +762,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   interviewTypeBadgeText: {
-    color: '#fff',
+    color: Colors.text.primary,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -776,7 +777,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: Colors.glass.backgroundInput,
     alignItems: 'center',
     justifyContent: 'center',
   },

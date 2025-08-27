@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 import { BlurView } from 'expo-blur';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
@@ -289,15 +290,14 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.displaySmall,
     fontWeight: '300' as const,
     letterSpacing: 1,
-    color: '#FFFFFF', // White for "Get to the"
+    color: Colors.white, // White for "Get to the"
     textAlign: 'center',
     maxWidth: 320,
   },
   brandText: {
-    color: '#A855F7', // Purple for "nextround"
+    ...TYPOGRAPHY.heroMedium,
+    color: Colors.brand.primary, // Purple for "nextround"
     lineHeight: 60,
-    fontSize: 48,
-    fontWeight: '800',
   },
   
   // Button section
@@ -312,23 +312,23 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Slightly opaque purple
+    backgroundColor: Colors.glass.purple, // Slightly opaque purple
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
     marginBottom: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primaryRGB,
   },
   getStartedText: {
     ...TYPOGRAPHY.buttonMedium,
-    color: '#ffffff',
+    color: Colors.white,
     marginRight: 8,
   },
   
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.65)',
+    color: Colors.text.quaternary,
     textAlign: 'center',
   },
   
@@ -367,9 +367,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: Colors.glass.border,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.20)',
+    borderColor: Colors.glass.borderInteractive,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 24,
@@ -380,20 +380,20 @@ const styles = StyleSheet.create({
   modalHandle: {
     width: 40,
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: Colors.glass.borderPressed,
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 24,
   },
   modalTitle: {
     ...TYPOGRAPHY.pageTitle,
-    color: '#FFFFFF', // Design system text.primary
+    color: Colors.text.primary, // Design system text.primary
     textAlign: 'center',
     marginBottom: 8,
   },
   modalSubtitle: {
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.70)', // Design system text.tertiary
+    color: Colors.text.tertiary, // Design system text.tertiary
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -410,19 +410,19 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)', // Glass border color
+    backgroundColor: Colors.glass.border, // Glass border color
   },
   dividerText: {
     ...TYPOGRAPHY.labelMedium,
-    color: 'rgba(255, 255, 255, 0.55)', // Design system text.muted
+    color: Colors.text.muted, // Design system text.muted
     marginHorizontal: 16,
   },
   emailButton: {
     height: 56, // Design system buttonHeight.large
     borderRadius: 12, // Design system borderRadius.md
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderColor: Colors.glass.goldBorder,
+    backgroundColor: Colors.glass.goldLight,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   },
   emailButtonText: {
     ...TYPOGRAPHY.buttonSmall,
-    color: '#F59E0B',
+    color: Colors.accent.gold,
     flex: 1,
     textAlign: 'center',
     marginLeft: -36, // Offset for icon to center text

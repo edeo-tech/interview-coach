@@ -15,8 +15,9 @@ import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { TYPOGRAPHY } from '../../../constants/Typography';
 import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
+import Colors from '../../../constants/Colors';
 
-const StatCard = ({ icon, label, value, color = '#A855F7' }: any) => (
+const StatCard = ({ icon, label, value, color = Colors.brand.primary }: any) => (
     <View style={styles.statCard}>
         <Ionicons name={icon} size={24} color={color} />
         <Text style={styles.statValue}>{value}</Text>
@@ -36,15 +37,15 @@ const getScoreIconAndColor = (score: number | null | string) => {
     }
     
     if (numericScore === null || numericScore === undefined) {
-        return { icon: 'trending-up', color: '#10B981' };
+        return { icon: 'trending-up', color: Colors.semantic.successAlt };
     }
     
     if (numericScore < 40) {
-        return { icon: 'trending-down', color: '#EF4444' }; // Red for low scores
+        return { icon: 'trending-down', color: Colors.semantic.error }; // Red for low scores
     } else if (numericScore >= 40 && numericScore < 70) {
-        return { icon: 'arrow-forward', color: '#F59E0B' }; // Yellow/orange for medium scores
+        return { icon: 'arrow-forward', color: Colors.semantic.warning }; // Yellow/orange for medium scores
     } else {
-        return { icon: 'trending-up', color: '#10B981' }; // Green for high scores
+        return { icon: 'trending-up', color: Colors.semantic.successAlt }; // Green for high scores
     }
 };
 
@@ -54,10 +55,10 @@ const MenuItem = ({ icon, label, onPress }: any) => (
         onPress();
     }} activeOpacity={0.8}>
         <View style={styles.menuIconContainer}>
-            <Ionicons name={icon} size={20} color="rgba(255, 255, 255, 0.7)" />
+            <Ionicons name={icon} size={20} color={Colors.text.tertiary} />
         </View>
         <Text style={styles.menuLabel}>{label}</Text>
-        <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
+        <Ionicons name="chevron-forward" size={16} color={Colors.text.tertiary} />
     </TouchableOpacity>
 );
 
@@ -241,7 +242,7 @@ export default function Profile() {
                 activeOpacity={0.9}
             >
                 <View style={styles.cvIcon}>
-                    <Ionicons name="document-text" size={20} color={currentCV ? "#10B981" : "#A855F7"} />
+                    <Ionicons name="document-text" size={20} color={currentCV ? Colors.semantic.successAlt : Colors.brand.primary} />
                 </View>
                 <View style={styles.cvInfo}>
                     <Text style={styles.cvTitle}>
@@ -262,7 +263,7 @@ export default function Profile() {
                     icon="bar-chart"
                     label="Total Interviews"
                     value={user.totalInterviews}
-                    color="#A855F7"
+                    color={Colors.brand.primary}
                 />
                 <StatCard
                     icon={getScoreIconAndColor(user.averageScore).icon}
@@ -274,7 +275,7 @@ export default function Profile() {
                     icon="flame"
                     label="Day Streak"
                     value={user.streak}
-                    color="#EF4444"
+                    color={Colors.semantic.error}
                 />
             </View>
 
@@ -285,7 +286,7 @@ export default function Profile() {
                     {(!jobs || jobs.length === 0) ? (
                         <View style={styles.emptyState}>
                             <View style={styles.emptyStateIcon}>
-                                <Ionicons name="briefcase-outline" size={32} color="rgba(255, 255, 255, 0.7)" />
+                                <Ionicons name="briefcase-outline" size={32} color={Colors.text.tertiary} />
                             </View>
                             <Text style={styles.emptyStateText}>No job applications yet</Text>
                             <Text style={styles.emptyStateSubtext}>Add your first job to start practicing interviews</Text>
@@ -302,13 +303,13 @@ export default function Profile() {
                                 activeOpacity={0.8}
                             >
                                 <View style={styles.jobIcon}>
-                                    <Ionicons name="briefcase" size={16} color="#A855F7" />
+                                    <Ionicons name="briefcase" size={16} color={Colors.brand.primary} />
                                 </View>
                                 <View style={styles.jobInfo}>
                                     <Text style={styles.jobTitle}>{job.role_title}</Text>
                                     <Text style={styles.jobCompany}>{job.company}</Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.7)" />
+                                <Ionicons name="chevron-forward" size={16} color={Colors.text.tertiary} />
                             </TouchableOpacity>
                         ))
                     )}
@@ -352,7 +353,7 @@ export default function Profile() {
                 disabled={logoutLoading}
                 activeOpacity={0.8}
             >
-                <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                <Ionicons name="log-out-outline" size={20} color={Colors.semantic.error} />
                 <Text style={styles.logoutText}>{logoutLoading ? 'Logging Out...' : 'Log Out'}</Text>
             </TouchableOpacity>
 
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: 'transparent',
+        backgroundColor: Colors.background.transparent,
     },
     scrollView: {
         flex: 1,
@@ -394,16 +395,16 @@ const styles = StyleSheet.create({
     },
     name: {
         ...TYPOGRAPHY.pageTitle,
-        color: '#ffffff',
+        color: Colors.text.primary,
         marginBottom: 4,
     },
     email: {
         ...TYPOGRAPHY.bodyMedium,
-        color: 'rgba(255, 255, 255, 0.85)',
+        color: Colors.text.secondary,
     },
     industry: {
         ...TYPOGRAPHY.labelLarge,
-        color: '#A855F7',
+        color: Colors.brand.primary,
         fontWeight: '600' as const,
     },
     statsContainer: {
@@ -413,15 +414,15 @@ const styles = StyleSheet.create({
     },
     statCard: {
         alignItems: 'center',
-        backgroundColor: 'transparent',
+        backgroundColor: Colors.background.transparent,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.15)',
+        borderColor: Colors.glass.border,
         borderRadius: 16,
         padding: 20,
         flex: 1,
         ...Platform.select({
             ios: {
-                shadowColor: '#000',
+                shadowColor: Colors.black,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 4,
@@ -432,29 +433,29 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 12,
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: Colors.glass.backgroundSubtle,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.12)',
+        borderColor: Colors.glass.borderSecondary,
     },
     statValue: {
         ...TYPOGRAPHY.pageTitle,
-        color: '#ffffff',
+        color: Colors.text.primary,
         marginTop: 8,
         marginBottom: 4,
     },
     statLabel: {
         ...TYPOGRAPHY.bodySmall,
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: Colors.text.tertiary,
     },
     section: {
         marginBottom: 28,
     },
     sectionTitle: {
         ...TYPOGRAPHY.sectionHeader,
-        color: '#ffffff',
+        color: Colors.text.primary,
         marginBottom: 16,
     },
     menuContainer: {
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
     menuButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        backgroundColor: Colors.glass.background,
         borderRadius: 50,
         paddingVertical: 14,
         paddingHorizontal: 16,
@@ -472,7 +473,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backgroundColor: Colors.glass.backgroundInput,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -480,23 +481,23 @@ const styles = StyleSheet.create({
     menuLabel: {
         flex: 1,
         ...TYPOGRAPHY.itemTitle,
-        color: '#ffffff',
+        color: Colors.text.primary,
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+        backgroundColor: Colors.glass.error,
         marginTop: 8,
         marginBottom: 40,
         padding: 16,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: 'rgba(239, 68, 68, 0.3)',
+        borderColor: Colors.glass.errorBorder,
         gap: 8,
         ...Platform.select({
             ios: {
-                shadowColor: '#EF4444',
+                shadowColor: Colors.semantic.error,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 4,
@@ -509,7 +510,7 @@ const styles = StyleSheet.create({
     logoutText: {
         ...TYPOGRAPHY.labelLarge,
         fontWeight: '600' as const,
-        color: '#EF4444',
+        color: Colors.semantic.error,
     },
     emptyState: {
         alignItems: 'center',
@@ -519,28 +520,28 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 16,
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: Colors.glass.backgroundSubtle,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.12)',
+        borderColor: Colors.glass.borderSecondary,
     },
     emptyStateText: {
         ...TYPOGRAPHY.sectionHeader,
-        color: '#ffffff',
+        color: Colors.text.primary,
         marginBottom: 8,
     },
     emptyStateSubtext: {
         ...TYPOGRAPHY.bodyMedium,
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: Colors.text.tertiary,
         textAlign: 'center',
         lineHeight: 20,
     },
     jobButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        backgroundColor: Colors.glass.background,
         borderRadius: 50,
         paddingVertical: 14,
         paddingHorizontal: 16,
@@ -549,7 +550,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: Colors.glass.backgroundInput,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -559,17 +560,17 @@ const styles = StyleSheet.create({
     },
     jobTitle: {
         ...TYPOGRAPHY.itemTitle,
-        color: '#ffffff',
+        color: Colors.text.primary,
         marginBottom: 2,
     },
     jobCompany: {
         ...TYPOGRAPHY.bodySmall,
-        color: 'rgba(255, 255, 255, 0.85)',
+        color: Colors.text.secondary,
     },
     cvButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        backgroundColor: Colors.glass.background,
         borderRadius: 50,
         paddingVertical: 14,
         paddingHorizontal: 16,
@@ -579,7 +580,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: Colors.glass.backgroundInput,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -589,11 +590,11 @@ const styles = StyleSheet.create({
     },
     cvTitle: {
         ...TYPOGRAPHY.itemTitle,
-        color: '#ffffff',
+        color: Colors.text.primary,
         marginBottom: 2,
     },
     cvSubtitle: {
         ...TYPOGRAPHY.bodySmall,
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: Colors.text.tertiary,
     },
 });

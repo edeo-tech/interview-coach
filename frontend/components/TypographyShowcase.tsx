@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { TYPOGRAPHY } from '../constants/Typography';
+import Colors from '../constants/Colors';
 import ChatGPTBackground from './ChatGPTBackground';
 
 /**
@@ -84,20 +85,20 @@ const TypographyShowcase = () => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Professional Context</Text>
-          <Text style={[TYPOGRAPHY.hero, { ...styles.demoText, color: '#A855F7' }]}>
+          <Text style={[TYPOGRAPHY.hero, { ...styles.demoText, color: Colors.brand.primary }]}>
             Interview Coach
           </Text>
           <Text style={[TYPOGRAPHY.bodyMedium, styles.demoText]}>
             Our enhanced typography system creates a professional, trustworthy, and modern aesthetic perfect for career development and interview preparation. The combination of Plus Jakarta Sans, Space Grotesk, and Inter provides:
           </Text>
           <Text style={[TYPOGRAPHY.bodyMedium, styles.demoText, { marginTop: 16 }]}>
-            • <Text style={[TYPOGRAPHY.labelMedium, { color: '#FFFFFF' }]}>Plus Jakarta Sans</Text> for impactful heroes and display text
+            • <Text style={[TYPOGRAPHY.labelMedium, { color: Colors.text.primary }]}>Plus Jakarta Sans</Text> for impactful heroes and display text
           </Text>
           <Text style={[TYPOGRAPHY.bodyMedium, styles.demoText]}>
-            • <Text style={[TYPOGRAPHY.labelMedium, { color: '#FFFFFF' }]}>Space Grotesk</Text> for distinctive section headings
+            • <Text style={[TYPOGRAPHY.labelMedium, { color: Colors.text.primary }]}>Space Grotesk</Text> for distinctive section headings
           </Text>
           <Text style={[TYPOGRAPHY.bodyMedium, styles.demoText]}>
-            • <Text style={[TYPOGRAPHY.labelMedium, { color: '#FFFFFF' }]}>Inter</Text> for excellent readability in all UI contexts
+            • <Text style={[TYPOGRAPHY.labelMedium, { color: Colors.text.primary }]}>Inter</Text> for excellent readability in all UI contexts
           </Text>
         </View>
       </ScrollView>
@@ -118,12 +119,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...TYPOGRAPHY.heading2,
-    color: '#60A5FA',
+    color: Colors.accent.blue,
     marginBottom: 16,
     textAlign: 'center',
   },
   demoText: {
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     marginBottom: 12,
   },
 });

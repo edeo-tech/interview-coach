@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import Colors from '../../constants/Colors';
 
 const Frustrations = () => {
   const { data, updateData } = useOnboarding();
@@ -53,7 +54,7 @@ const Frustrations = () => {
                   <Ionicons 
                     name={frustration.icon as any} 
                     size={24} 
-                    color={selectedFrustration === frustration.id ? '#F59E0B' : 'rgba(255, 255, 255, 0.7)'} 
+                    color={selectedFrustration === frustration.id ? Colors.accent.gold : Colors.text.tertiary} 
                   />
                   <Text style={[
                     styles.frustrationText,
@@ -74,7 +75,7 @@ const Frustrations = () => {
             disabled={!selectedFrustration}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </View>
       </View>
@@ -101,13 +102,13 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 16,
   },
   subtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: Colors.text.tertiary,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 22,
@@ -116,52 +117,52 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   frustrationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 12,
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.glass.borderSecondary,
   },
   frustrationCardSelected: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderColor: '#F59E0B',
+    backgroundColor: Colors.glass.gold,
+    borderColor: Colors.accent.gold,
   },
   frustrationText: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: Colors.text.tertiary,
     fontSize: 16,
     fontWeight: '600',
     flex: 1,
   },
   frustrationTextSelected: {
-    color: '#F59E0B',
+    color: Colors.accent.gold,
   },
   bottomContainer: {
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   continueButton: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: Colors.accent.gold,
     borderRadius: 12,
     paddingVertical: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOpacity: 0.25,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(245, 158, 11, 0.5)',
+    backgroundColor: Colors.glass.goldMedium,
     shadowOpacity: 0,
   },
   continueButtonText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 18,
     fontWeight: '700',
   },

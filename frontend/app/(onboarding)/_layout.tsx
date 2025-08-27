@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { OnboardingProvider } from '../../contexts/OnboardingContext';
+import Colors from '../../constants/Colors';
 
 const OnboardingLayout = () => {
   return (
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stackContent: {
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
   },
 });
 

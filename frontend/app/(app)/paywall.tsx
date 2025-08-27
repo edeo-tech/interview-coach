@@ -23,6 +23,7 @@ import Purchases, { PurchasesOffering, PurchasesPackage, CustomerInfo } from 're
 import { useToast } from '../../components/Toast';
 import { useCustomerInfo } from '../../context/purchases/CustomerInfo';
 import { GlassStyles, GlassTextColors } from '../../constants/GlassStyles';
+import Colors from '../../constants/Colors';
 
 type PaywallSource = 'retry' | 'feedback' | 'settings' | string;
 
@@ -262,7 +263,7 @@ const Paywall = () => {
                 }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Ionicons name="information-circle" size={16} color="#ffffff" />
+                <Ionicons name="information-circle" size={16} color={Colors.text.primary} />
               </TouchableOpacity>
             </View>
           )}
@@ -311,7 +312,7 @@ const Paywall = () => {
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="close" size={20} color="#6b7280" />
+              <Ionicons name="close" size={20} color={Colors.text.quaternary} />
             </TouchableOpacity>
           </View>
           <Text style={styles.modalMessage}>
@@ -327,7 +328,7 @@ const Paywall = () => {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#A855F7" />
+            <ActivityIndicator size="large" color={Colors.brand.primary} />
             <Text style={styles.loadingText}>Loading subscription options...</Text>
           </View>
         </SafeAreaView>
@@ -369,7 +370,7 @@ const Paywall = () => {
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="close" size={20} color="rgba(255,255,255,0.3)" />
+            <Ionicons name="close" size={20} color={Colors.text.quaternary} />
           </TouchableOpacity>
 
           {/* Main title */}
@@ -385,7 +386,7 @@ const Paywall = () => {
                 <Ionicons 
                   name={benefit.icon as any} 
                   size={24} 
-                  color={benefit.highlight || index === 0 ? '#A855F7' : '#ffffff'} 
+                  color={benefit.highlight || index === 0 ? Colors.brand.primary : Colors.text.primary} 
                 />
                 <Text style={[
                   styles.benefitText,
@@ -435,13 +436,13 @@ const Paywall = () => {
             disabled={isPurchasing || !selectedPackage}
           >
             <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
+              colors={[Colors.brand.primary, Colors.special.pink]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.continueButtonInner}
             >
               {isPurchasing ? (
-                <ActivityIndicator size="small" color="white" />
+                <ActivityIndicator size="small" color={Colors.text.primary} />
               ) : (
                 <Text style={styles.continueButtonText}>Continue</Text>
               )}
@@ -458,7 +459,7 @@ const Paywall = () => {
             disabled={isRestoring || isPurchasing}
           >
             {isRestoring ? (
-              <ActivityIndicator size="small" color="white" />
+              <ActivityIndicator size="small" color={Colors.text.primary} />
             ) : (
               <Text style={styles.restoreButtonText}>Restore</Text>
             )}
@@ -478,7 +479,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.background.transparent,
   },
   scrollView: {
     flex: 1,
@@ -540,7 +541,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   benefitTextHighlight: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
     fontWeight: '600',
   },
   offeringsContainer: {
@@ -551,11 +552,11 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: Colors.background.transparent,
   },
   offeringCardSelected: {
-    borderColor: '#A855F7',
-    backgroundColor: 'rgba(168, 85, 247, 0.1)',
+    borderColor: Colors.brand.primary,
+    backgroundColor: Colors.glass.purple,
   },
   offeringCardContent: {
     position: 'relative',
@@ -570,7 +571,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   offeringTitleSelected: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
   },
   offeringPrice: {
     color: GlassTextColors.primary,
@@ -579,20 +580,20 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   offeringPriceSelected: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
   },
   offeringDescription: {
     color: GlassTextColors.muted,
     fontSize: Platform.OS === 'ios' ? 14 : 12,
   },
   offeringDescriptionSelected: {
-    color: '#fbbf24',
+    color: Colors.accent.gold,
   },
   popularBadge: {
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#10b981',
+    backgroundColor: Colors.semantic.successAlt,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -601,7 +602,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   popularText: {
-    color: '#ffffff',
+    color: Colors.text.primary,
     fontSize: Platform.OS === 'ios' ? 12 : 10,
     fontWeight: 'bold',
   },
@@ -612,13 +613,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#A855F7',
+    backgroundColor: Colors.brand.primary,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
   savingsText: {
-    color: '#ffffff',
+    color: Colors.text.primary,
     fontSize: Platform.OS === 'ios' ? 12 : 10,
     fontWeight: 'bold',
   },
@@ -634,7 +635,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     ...Platform.select({
       ios: {
-        shadowColor: '#A855F7',
+        shadowColor: Colors.brand.primary,
         shadowOpacity: 0.3,
         shadowRadius: 12,
         shadowOffset: { width: 0, height: 4 },
@@ -645,7 +646,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   continueButtonInner: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderRadius: 28,
     height: 52,
     alignItems: 'center',
@@ -668,7 +669,7 @@ const styles = StyleSheet.create({
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: Colors.overlay.dark,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,

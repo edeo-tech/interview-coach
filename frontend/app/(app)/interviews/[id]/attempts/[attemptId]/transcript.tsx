@@ -10,6 +10,7 @@ import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import { GlassStyles, GlassTextColors } from '../../../../../../constants/GlassStyles';
+import Colors from '../../../../../../constants/Colors';
 
 export default function AttemptTranscriptScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
@@ -47,7 +48,7 @@ export default function AttemptTranscriptScreen() {
       <ChatGPTBackground style={styles.gradient}>
         <View style={styles.center}> 
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#A855F7" />
+            <ActivityIndicator size="large" color={Colors.brand.primary} />
             <Text style={styles.loadingTitle}>Loading interview...</Text>
           </View>
         </View>
@@ -60,7 +61,7 @@ export default function AttemptTranscriptScreen() {
       return (
         <View style={styles.center}>
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#A855F7" />
+            <ActivityIndicator size="large" color={Colors.brand.primary} />
             <Text style={styles.loadingTitle}>Processing Interview</Text>
             <Text style={styles.loadingSubtitle}>
               Your interview is being processed. The transcript will appear here shortly.
@@ -80,7 +81,7 @@ export default function AttemptTranscriptScreen() {
       return (
         <View style={styles.footer}>
           <LinearGradient
-            colors={["#A855F7", "#EC4899"]}
+            colors={[Colors.brand.primary, Colors.special.pink]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.primaryButtonOuter}
@@ -97,9 +98,9 @@ export default function AttemptTranscriptScreen() {
               }}
               activeOpacity={0.9}
             >
-              <Ionicons name="analytics-outline" size={24} color="#fff" />
+              <Ionicons name="analytics-outline" size={24} color={Colors.text.primary} />
               <Text style={styles.viewFeedbackText}>View Feedback & Analysis</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
+              <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
             </TouchableOpacity>
           </LinearGradient>
         </View>
@@ -119,7 +120,7 @@ export default function AttemptTranscriptScreen() {
             impactAsync(ImpactFeedbackStyle.Light);
             router.back();
           }}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Interview Transcript</Text>
         </View>
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
   },
   container: { 
     flex: 1, 
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.background.transparent,
   },
   header: { 
     flexDirection: 'row', 
@@ -145,14 +146,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, 
     paddingBottom: 16, 
     borderBottomWidth: 1, 
-    borderBottomColor: 'rgba(255,255,255,0.15)',
+    borderBottomColor: Colors.glass.border,
   },
   backButton: {
     padding: 8,
     marginRight: 12,
   },
   headerTitle: { 
-    color: '#fff', 
+    color: Colors.text.primary, 
     fontSize: 20, 
     fontWeight: 'bold', 
     flex: 1,
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     padding: 20, 
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1, 
-    borderTopColor: 'rgba(255,255,255,0.15)',
+    borderTopColor: Colors.glass.border,
   },
   primaryButtonOuter: {
     borderRadius: 28,
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
     height: 56,
     ...Platform.select({
       ios: {
-        shadowColor: '#A855F7',
+        shadowColor: Colors.brand.primary,
         shadowOpacity: 0.3,
         shadowRadius: 12,
         shadowOffset: { width: 0, height: 4 },
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     }),
   },
   primaryButtonInner: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderRadius: 28,
     height: 52,
     paddingHorizontal: 24,

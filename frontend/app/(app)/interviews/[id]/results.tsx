@@ -9,6 +9,7 @@ import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useFeedbackCheck } from '../../../../hooks/premium/usePremiumCheck';
 import { TYPOGRAPHY } from '../../../../constants/Typography';
+import Colors from '../../../../constants/Colors';
 
 const BlurredSection = ({ 
   children, 
@@ -32,7 +33,7 @@ const BlurredSection = ({
       </BlurView>
       {showPaywall && (
         <View style={styles.upgradeOverlay}>
-          <Ionicons name="diamond" size={32} color="#f59e0b" />
+          <Ionicons name="diamond" size={32} color={Colors.accent.gold} />
           <Text style={styles.upgradeTitle}>Premium Feature</Text>
           <Text style={styles.upgradeMessage}>
             Upgrade to Premium to see detailed feedback and scores
@@ -128,7 +129,7 @@ const InterviewResults = () => {
       >
         <SafeAreaView style={styles.container}>
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={64} color="#ef4444" />
+            <Ionicons name="alert-circle" size={64} color={Colors.semantic.error} />
             <Text style={styles.errorTitle}>Analysis Failed</Text>
             <Text style={styles.errorSubtitle}>
               We couldn't analyze your interview. Please try again.
@@ -163,7 +164,7 @@ const InterviewResults = () => {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.push('/interviews/index' as any)}>
-              <Ionicons name="close" size={24} color="white" />
+              <Ionicons name="close" size={24} color={Colors.white} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Interview Results</Text>
           </View>
@@ -209,7 +210,7 @@ const InterviewResults = () => {
           >
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                <Ionicons name="checkmark-circle" size={20} color={Colors.semantic.success} />
                 <Text style={styles.sectionTitle}>Strengths</Text>
               </View>
               {feedback.strengths.map((strength, index) => (
@@ -229,12 +230,12 @@ const InterviewResults = () => {
           >
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Ionicons name="trending-up" size={20} color="#f59e0b" />
+                <Ionicons name="trending-up" size={20} color={Colors.accent.gold} />
                 <Text style={styles.sectionTitle}>Areas for Improvement</Text>
               </View>
               {feedback.improvement_areas.map((area, index) => (
                 <View key={index} style={styles.listItem}>
-                  <Text style={[styles.bulletPoint, { color: '#f97316' }]}>•</Text>
+                  <Text style={[styles.bulletPoint, { color: Colors.semantic.warning }]}>•</Text>
                   <Text style={styles.listText}>{area}</Text>
                 </View>
               ))}
@@ -259,7 +260,7 @@ const InterviewResults = () => {
               onPress={() => router.push('/interviews/setup')}
               style={[styles.actionButton, styles.primaryButton]}
             >
-              <Ionicons name="refresh" size={20} color="white" />
+              <Ionicons name="refresh" size={20} color={Colors.white} />
               <Text style={styles.actionButtonText}>Practice Again</Text>
             </TouchableOpacity>
 
@@ -267,7 +268,7 @@ const InterviewResults = () => {
               onPress={() => router.push(`/interviews/${id}/details`)}
               style={[styles.actionButton, styles.secondaryButton]}
             >
-              <Ionicons name="list" size={20} color="white" />
+              <Ionicons name="list" size={20} color={Colors.white} />
               <Text style={styles.actionButtonText}>View All Attempts</Text>
             </TouchableOpacity>
 
@@ -275,7 +276,7 @@ const InterviewResults = () => {
               onPress={() => router.replace('/interviews/index' as any)}
               style={[styles.actionButton, styles.tertiaryButton]}
             >
-              <Ionicons name="home" size={20} color="white" />
+              <Ionicons name="home" size={20} color={Colors.white} />
               <Text style={styles.actionButtonText}>Back to Interviews</Text>
             </TouchableOpacity>
           </View>
@@ -319,20 +320,20 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderWidth: 2,
-    borderColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
+    borderColor: Colors.semantic.infoAlt,
     borderTopColor: 'transparent',
     borderRadius: 24,
     marginBottom: 16, // spacing.4
   },
   loadingTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginBottom: 8, // spacing.2
     ...TYPOGRAPHY.heading4,
   },
   loadingSubtitle: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
     fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
     ...TYPOGRAPHY.bodySmall,
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, // layout.screenPadding
   },
   errorTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginTop: 16, // spacing.4
@@ -352,7 +353,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.heading3,
   },
   errorSubtitle: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textAlign: 'center',
     marginTop: 8, // spacing.2
@@ -360,19 +361,19 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodyMedium,
   },
   errorButton: {
-    backgroundColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
+    backgroundColor: Colors.semantic.infoAlt,
     paddingHorizontal: 24, // spacing.6
     paddingVertical: 12, // spacing.3
     borderRadius: 12, // glassSecondary.borderRadius
     marginTop: 24, // spacing.6
-    shadowColor: '#3B82F6', // semantic.info.main
+    shadowColor: Colors.semantic.infoAlt,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4, // Android shadow
   },
   errorButtonText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
     ...TYPOGRAPHY.buttonMedium,
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20, // spacing.5
   },
   headerTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 20, // typography.heading.h3.fontSize
     fontWeight: '600', // typography.heading.h3.fontWeight
     marginLeft: 16, // spacing.4
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   sectionTitle: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginBottom: 16, // spacing.4
@@ -414,16 +415,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   overallScore: {
-    fontSize: 48, // typography.display.small.fontSize
-    fontWeight: '700', // typography.display.small.fontWeight
+    ...TYPOGRAPHY.heroMedium,
+    fontWeight: '700',
     marginBottom: 4, // spacing.1
-    ...TYPOGRAPHY.displaySmall,
-    letterSpacing: -0.01, // typography.display.small.letterSpacing
   },
   scoreOutOf: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    fontSize: 14, // typography.body.small.fontSize
     ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
   },
   scoreLabel: {
     fontSize: 18, // typography.heading.h4.fontSize
@@ -432,18 +430,18 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.heading4,
   },
   performanceLevel: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
     fontSize: 12, // typography.body.xsmall.fontSize
     ...TYPOGRAPHY.bodyXSmall,
   },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
+    backgroundColor: Colors.glass.background,
     borderRadius: 16, // glass.borderRadius
     padding: 20, // spacing.5
     marginBottom: 16, // spacing.4
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
+    borderColor: Colors.glass.border,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -460,10 +458,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12, // spacing.3
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.border
+    borderBottomColor: Colors.glass.borderSecondary,
   },
   rubricCategory: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     textTransform: 'capitalize',
     flex: 1,
@@ -482,7 +480,7 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     width: 64,
     height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassSecondary.background
+    backgroundColor: Colors.glass.borderSecondary,
     borderRadius: 4, // borderRadius.sm
     overflow: 'hidden',
   },
@@ -496,21 +494,21 @@ const styles = StyleSheet.create({
     marginBottom: 12, // spacing.3
   },
   bulletPoint: {
-    color: 'rgba(34, 197, 94, 1)', // semantic.success.main
+    color: Colors.semantic.success,
     marginRight: 12, // spacing.3
     fontSize: 16, // typography.body.medium.fontSize
     lineHeight: 20, // typography.body.medium.lineHeight
     ...TYPOGRAPHY.bodyMedium,
   },
   listText: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    color: Colors.text.secondary,
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     lineHeight: 20, // typography.body.medium.lineHeight
     flex: 1,
     ...TYPOGRAPHY.bodyMedium,
   },
   detailedText: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
+    color: Colors.text.secondary,
     fontSize: 15, // typography.body.medium.fontSize (slightly smaller)
     lineHeight: 22, // typography.body.medium.lineHeight
     ...TYPOGRAPHY.bodyMedium,
@@ -527,25 +525,25 @@ const styles = StyleSheet.create({
     marginBottom: 12, // spacing.3
   },
   primaryButton: {
-    backgroundColor: 'rgba(59, 130, 246, 1)', // semantic.info.main
-    shadowColor: '#3B82F6', // semantic.info.main
+    backgroundColor: Colors.semantic.infoAlt,
+    shadowColor: Colors.semantic.infoAlt,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4, // Android shadow
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.background
+    backgroundColor: Colors.glass.backgroundSecondary,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)', // glassSecondary.border
+    borderColor: Colors.glass.border,
   },
   tertiaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)', // glassSecondary.background with lower opacity
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)', // glassSecondary.border
+    borderColor: Colors.glass.backgroundSecondary,
   },
   actionButtonText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 16, // typography.button.medium.fontSize
     fontWeight: '600', // typography.button.medium.fontWeight
     marginLeft: 8, // spacing.2
@@ -553,22 +551,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.005, // typography.button.medium.letterSpacing
   },
   tipsCard: {
-    backgroundColor: 'rgba(59, 130, 246, 0.1)', // semantic.info.light
-    borderColor: 'rgba(59, 130, 246, 0.3)', // semantic.info.main with opacity
+    backgroundColor: Colors.glass.info,
+    borderColor: Colors.glass.infoBorder,
     borderWidth: 1,
     borderRadius: 12, // glassSecondary.borderRadius
     padding: 16, // spacing.4
     marginBottom: 24, // spacing.6
   },
   tipsTitle: {
-    color: 'rgba(96, 165, 250, 1)', // text.accent
+    color: Colors.accent.blue,
     fontSize: 16, // typography.body.medium.fontSize
     fontWeight: '600', // typography.label.large.fontWeight
     marginBottom: 12, // spacing.3
     ...TYPOGRAPHY.bodyMedium,
   },
   tipText: {
-    color: 'rgba(191, 219, 254, 1)', // semantic.info.main with higher opacity
+    color: 'rgba(191, 219, 254, 1)',
     fontSize: 14, // typography.body.small.fontSize
     lineHeight: 20, // typography.body.small.lineHeight
     marginBottom: 4, // spacing.1
@@ -595,7 +593,7 @@ const styles = StyleSheet.create({
     padding: 20, // spacing.5
   },
   upgradeTitle: {
-    color: 'rgba(252, 180, 0, 1)', // gold.400
+    color: Colors.accent.goldAlt,
     fontSize: 18, // typography.heading.h4.fontSize
     fontWeight: '600', // typography.heading.h4.fontWeight
     marginTop: 8, // spacing.2
@@ -603,7 +601,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.heading4,
   },
   upgradeMessage: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 14, // typography.body.small.fontSize
     textAlign: 'center',
     marginBottom: 16, // spacing.4
@@ -611,18 +609,18 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodySmall,
   },
   upgradeButton: {
-    backgroundColor: 'rgba(252, 180, 0, 1)', // gold.400
+    backgroundColor: Colors.accent.goldAlt,
     paddingHorizontal: 20, // spacing.5
     paddingVertical: 10, // spacing.2.5
     borderRadius: 8, // borderRadius.default
-    shadowColor: '#F59E0B', // gold.400
+    shadowColor: Colors.accent.gold,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4, // Android shadow
   },
   upgradeButtonText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.white,
     fontSize: 14, // typography.button.small.fontSize
     fontWeight: '600', // typography.button.small.fontWeight
     ...TYPOGRAPHY.buttonSmall,

@@ -12,6 +12,7 @@ import { InterviewType } from '../../../_interfaces/interviews/interview-types';
 import { JobInterview } from '../../../_interfaces/jobs/job';
 import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
 import { TYPOGRAPHY } from '../../../constants/Typography';
+import Colors from '../../../constants/Colors';
 
 const getInterviewTypeDisplayName = (type: InterviewType | string): string => {
   const displayNames: Record<string, string> = {
@@ -52,12 +53,12 @@ const getInterviewTypeIcon = (type: InterviewType | string): string => {
 };
 
 const getStatusColor = (status: string, isLocked: boolean = false): string => {
-  if (isLocked) return '#4b5563'; // Muted gray for locked
+  if (isLocked) return Colors.gray[500]; // Muted gray for locked
   switch (status) {
-    case 'completed': return '#10b981';
-    case 'active': return '#3b82f6';
-    case 'pending': return '#6b7280';
-    default: return '#6b7280';
+    case 'completed': return Colors.semantic.successAlt;
+    case 'active': return Colors.accent.blueAlt;
+    case 'pending': return Colors.gray[500];
+    default: return Colors.gray[500];
   }
 };
 
@@ -113,7 +114,7 @@ export default function JobDetails() {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#A855F7" />
+            <ActivityIndicator size="large" color={Colors.brand.primary} />
             <Text style={styles.loadingText}>Loading job details...</Text>
           </View>
         </SafeAreaView>
@@ -126,18 +127,18 @@ export default function JobDetails() {
       <ChatGPTBackground style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={64} color="#ef4444" />
+            <Ionicons name="alert-circle" size={64} color={Colors.semantic.error} />
             <Text style={styles.errorTitle}>Failed to load job</Text>
             <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
+              colors={[Colors.brand.primary, Colors.special.pink]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.primaryButtonOuter}
             >
               <TouchableOpacity onPress={() => router.back()} style={styles.primaryButtonInner} activeOpacity={0.9}>
-                <Ionicons name="arrow-back" size={20} color="#fff" />
+                <Ionicons name="arrow-back" size={20} color={Colors.text.primary} />
                 <Text style={styles.primaryButtonText}>Go Back</Text>
-                <Ionicons name="chevron-forward" size={20} color="#fff" />
+                <Ionicons name="chevron-forward" size={20} color={Colors.text.primary} />
               </TouchableOpacity>
             </LinearGradient>
           </View>
@@ -160,7 +161,7 @@ export default function JobDetails() {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.back();
             }}>
-              <Ionicons name="chevron-back" size={24} color="white" />
+              <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Job Details</Text>
           </View>
@@ -173,7 +174,7 @@ export default function JobDetails() {
               fallbackUrl={job.company_logo_url}
               size={56}
               style={styles.companyLogoContainer}
-              fallbackIconColor="#ffffff"
+              fallbackIconColor={Colors.text.primary}
               fallbackIconName="briefcase-outline"
             />
             <View style={styles.jobHeaderText}>
@@ -273,7 +274,7 @@ export default function JobDetails() {
                         <Ionicons 
                           name="lock-closed" 
                           size={24} 
-                          color="#ffffff" 
+                          color={Colors.text.primary} 
                         />
                       </View>
                     )}
@@ -303,7 +304,7 @@ export default function JobDetails() {
                 <View style={styles.popupContent}>
                   {/* Lock Icon */}
                   <View style={styles.popupIconContainer}>
-                    <Ionicons name="lock-closed" size={32} color="#A855F7" />
+                    <Ionicons name="lock-closed" size={32} color={Colors.brand.primary} />
                   </View>
                   
                   {/* Title */}
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.background.transparent,
   },
   scrollView: {
     flex: 1,
@@ -360,7 +361,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     ...TYPOGRAPHY.bodyMedium,
-    color: '#9ca3af',
+    color: Colors.gray[400],
     marginTop: 16,
   },
   errorContainer: {
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     ...TYPOGRAPHY.pageTitle,
-    color: '#ffffff',
+    color: Colors.text.primary,
     marginTop: 16,
   },
   errorButton: {
@@ -385,7 +386,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...TYPOGRAPHY.pageTitle,
-    color: '#ffffff',
+    color: Colors.text.primary,
     marginLeft: 16,
   },
   jobHeader: {
@@ -398,7 +399,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.text.primary,
     marginRight: 16,
     overflow: 'hidden',
   },
@@ -407,7 +408,7 @@ const styles = StyleSheet.create({
   },
   roleTitle: {
     ...TYPOGRAPHY.pageTitle,
-    color: '#ffffff',
+    color: Colors.text.primary,
     marginBottom: 4,
   },
   company: {
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     ...TYPOGRAPHY.bodySmall,
-    color: '#d1d5db',
+    color: Colors.gray[300],
   },
   progressHeader: {
     flexDirection: 'row',
@@ -444,11 +445,11 @@ const styles = StyleSheet.create({
   progressPercentage: {
     ...TYPOGRAPHY.labelLarge,
     fontWeight: '600' as const,
-    color: '#10b981',
+    color: Colors.semantic.successAlt,
   },
   progressBar: {
     height: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
@@ -456,7 +457,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#10b981',
+    backgroundColor: Colors.semantic.successAlt,
     borderRadius: 4,
   },
   progressSubtext: {
@@ -481,13 +482,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...GlassStyles.container,
     borderRadius: 50,
-    borderColor: 'rgba(255, 255, 255, 0.00)',
+    borderColor: Colors.background.transparent,
     paddingVertical: 14,
     paddingHorizontal: 16,
     position: 'relative',
   },
   stageCardLocked: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     opacity: 0.4,
   },
   lockOverlay: {
@@ -496,7 +497,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: Colors.overlay.medium,
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
@@ -506,31 +507,31 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: Colors.glass.backgroundInput,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   stageNumberActive: {
-    backgroundColor: 'rgba(168, 85, 247, 0.3)', // Opaque purple background
+    backgroundColor: Colors.glass.purpleMedium, // Opaque purple background
     borderWidth: 2,
-    borderColor: '#A855F7', // Solid purple border
+    borderColor: Colors.brand.primary, // Solid purple border
   },
   stageNumberCompleted: {
-    backgroundColor: 'rgba(16, 185, 129, 0.3)', // Opaque green background
+    backgroundColor: Colors.glass.successAlt, // Opaque green background
     borderWidth: 2,
-    borderColor: '#10b981', // Solid green border
+    borderColor: Colors.semantic.successAlt, // Solid green border
   },
   stageNumberText: {
     ...TYPOGRAPHY.labelMedium,
-    color: '#ffffff',
+    color: Colors.text.primary,
   },
   stageNumberTextActive: {
-    color: '#ffffff',
+    color: Colors.text.primary,
     fontWeight: '600' as const,
   },
   stageNumberTextCompleted: {
-    color: '#ffffff',
+    color: Colors.text.primary,
     fontWeight: '600' as const,
   },
   stageContent: {
@@ -549,7 +550,7 @@ const styles = StyleSheet.create({
   },
   attemptsText: {
     ...TYPOGRAPHY.overline,
-    color: '#6b7280',
+    color: Colors.gray[500],
     marginTop: 4,
   },
   primaryButtonOuter: {
@@ -558,7 +559,7 @@ const styles = StyleSheet.create({
     height: 56,
     ...Platform.select({
       ios: {
-        shadowColor: '#A855F7',
+        shadowColor: Colors.brand.primary,
         shadowOpacity: 0.3,
         shadowRadius: 12,
         shadowOffset: { width: 0, height: 4 },
@@ -566,7 +567,7 @@ const styles = StyleSheet.create({
     }),
   },
   primaryButtonInner: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     borderRadius: 26,
     height: 52,
     paddingHorizontal: 24,
@@ -583,7 +584,7 @@ const styles = StyleSheet.create({
   // Popup Styles
   popupBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: Colors.overlay.dark,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -599,15 +600,15 @@ const styles = StyleSheet.create({
     maxWidth: 340,
   },
   popupContent: {
-    backgroundColor: 'rgba(0, 0, 0, 0.85)', // Solid dark background instead of glass
+    backgroundColor: Colors.overlay.solid, // Solid dark background instead of glass
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.glass.borderInteractive,
     padding: 24,
     alignItems: 'center',
     borderRadius: 20,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.3,
         shadowRadius: 16,
@@ -618,7 +619,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -637,9 +638,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   popupButton: {
-    backgroundColor: 'rgba(168, 85, 247, 0.3)',
+    backgroundColor: Colors.glass.purpleMedium,
     borderWidth: 2,
-    borderColor: '#A855F7',
+    borderColor: Colors.brand.primary,
     borderRadius: 28,
     height: 56,
     paddingHorizontal: 24,

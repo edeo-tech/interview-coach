@@ -14,6 +14,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useToast } from '@/components/Toast';
+import Colors from '../../constants/Colors';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import { GlassStyles } from '../../constants/GlassStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -105,7 +106,7 @@ const Register = () => {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Ionicons name="person-add" size={48} color="#ffffff" />
+              <Ionicons name="person-add" size={48} color={Colors.white} />
             </View>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join us to start your interview preparation</Text>
@@ -116,11 +117,11 @@ const Register = () => {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Full Name</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <Ionicons name="person-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your full name"
-                  placeholderTextColor="#6B7280"
+                  placeholderTextColor={Colors.gray[500]}
                   value={name}
                   onChangeText={setName}
                   autoCapitalize="words"
@@ -132,11 +133,11 @@ const Register = () => {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <Ionicons name="mail-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your email"
-                  placeholderTextColor="#6B7280"
+                  placeholderTextColor={Colors.gray[500]}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -149,11 +150,11 @@ const Register = () => {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Password</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <Ionicons name="lock-closed-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="Minimum 8 characters"
-                  placeholderTextColor="#6B7280"
+                  placeholderTextColor={Colors.gray[500]}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
@@ -188,11 +189,11 @@ const Register = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#ffffff" size="small" />
+                <ActivityIndicator color={Colors.white} size="small" />
               ) : (
                 <>
                   <Text style={styles.buttonText}>Create Account</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#ffffff" style={styles.buttonIcon} />
+                  <Ionicons name="arrow-forward" size={20} color={Colors.white} style={styles.buttonIcon} />
                 </>
               )}
             </TouchableOpacity>
@@ -207,7 +208,7 @@ const Register = () => {
               onPress={() => router.replace('/(auth)/welcome')}
             >
               <Text style={styles.linkText}>Sign In</Text>
-              <Ionicons name="chevron-forward" size={16} color="#F59E0B" />
+              <Ionicons name="chevron-forward" size={16} color={Colors.accent.gold} />
             </TouchableOpacity>
           </View> */}
         </ScrollView>
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -237,24 +238,24 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: Colors.glass.borderSecondary,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.white,
     marginBottom: 8,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -263,14 +264,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: Colors.glass.borderSecondary,
     marginBottom: 32,
   },
   inputGroup: {
     marginBottom: 20,
   },
   inputLabel: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
@@ -278,10 +279,10 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: Colors.glass.borderSecondary,
     paddingHorizontal: 16,
   },
   inputIcon: {
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     fontSize: 16,
-    color: '#ffffff',
+    color: Colors.white,
   },
   passwordStrength: {
     flexDirection: 'row',
@@ -305,23 +306,23 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   strengthBarWeak: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: Colors.accent.gold,
   },
   strengthBarStrong: {
-    backgroundColor: '#10B981',
+    backgroundColor: Colors.semantic.successAlt,
   },
   strengthText: {
     fontSize: 12,
     fontWeight: '500',
   },
   strengthTextWeak: {
-    color: '#F59E0B',
+    color: Colors.accent.gold,
   },
   strengthTextStrong: {
-    color: '#10B981',
+    color: Colors.semantic.successAlt,
   },
   button: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: Colors.accent.gold,
     paddingVertical: 18,
     borderRadius: 12,
     flexDirection: 'row',
@@ -330,7 +331,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: Colors.black,
         shadowOpacity: 0.15,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: 3 },
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 18,
     fontWeight: '700',
   },
@@ -352,7 +353,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     fontSize: 15,
     marginBottom: 16,
     textAlign: 'center',
@@ -360,15 +361,15 @@ const styles = StyleSheet.create({
   linkButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: Colors.glass.backgroundSubtle,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: Colors.glass.borderSecondary,
   },
   linkText: {
-    color: '#F59E0B',
+    color: Colors.accent.gold,
     fontSize: 16,
     fontWeight: '600',
     marginRight: 4,
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: Colors.gray[400],
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   termsLinkText: {
-    color: '#F59E0B',
+    color: Colors.accent.gold,
     fontSize: 14,
     fontWeight: '500',
     textDecorationLine: 'underline',

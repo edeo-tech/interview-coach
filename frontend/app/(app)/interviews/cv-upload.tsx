@@ -11,6 +11,7 @@ import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import { useToast } from '../../../components/Toast';
 import { TYPOGRAPHY } from '../../../constants/Typography';
+import Colors from '../../../constants/Colors';
 
 const CVUpload = () => {
   const { data: currentCV, isLoading: cvLoading } = useCV();
@@ -148,14 +149,14 @@ const CVUpload = () => {
               selectionAsync();
               router.back();
             }}>
-              <Ionicons name="chevron-back" size={24} color="white" />
+              <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Your CV</Text>
           </View>
           {/* Current CV Status - Only show if CV exists */}
           {cvLoading ? (
             <View style={styles.loadingCard}>
-              <ActivityIndicator size="small" color="#A855F7" />
+              <ActivityIndicator size="small" color={Colors.brand.primary} />
               <Text style={styles.loadingText}>Loading CV information...</Text>
             </View>
           ) : currentCV ? (
@@ -163,21 +164,21 @@ const CVUpload = () => {
               <View style={styles.cvCardHeader}>
                 <Text style={styles.cvCardTitle}>Current CV</Text>
                 <View style={styles.activeStatus}>
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.semantic.successAlt} />
                   <Text style={styles.activeText}>Active</Text>
                 </View>
               </View>
               
               <View style={styles.cvInfo}>
                 <View style={styles.cvInfoItem}>
-                  <Ionicons name="briefcase" size={16} color="#9ca3af" />
+                  <Ionicons name="briefcase" size={16} color={Colors.gray[400]} />
                   <Text style={styles.cvInfoText}>
                     {currentCV.experience_years} years experience
                   </Text>
                 </View>
                 
                 <View style={styles.cvInfoItem}>
-                  <Ionicons name="code" size={16} color="#9ca3af" />
+                  <Ionicons name="code" size={16} color={Colors.gray[400]} />
                   <Text style={[styles.cvInfoText, styles.cvInfoTextWrap]}>
                     {currentCV.skills.length > 0 
                       ? formatSkills(currentCV.skills)
@@ -187,7 +188,7 @@ const CVUpload = () => {
                 </View>
                 
                 <View style={styles.cvInfoItem}>
-                  <Ionicons name="calendar" size={16} color="#9ca3af" />
+                  <Ionicons name="calendar" size={16} color={Colors.gray[400]} />
                   <Text style={styles.cvInfoText}>
                     Uploaded {new Date(currentCV.created_at).toLocaleDateString()}
                   </Text>
@@ -202,7 +203,7 @@ const CVUpload = () => {
                 disabled={deleteMutation.isPending}
                 style={styles.deleteButton}
               >
-                <Ionicons name="trash" size={16} color="#ef4444" />
+                <Ionicons name="trash" size={16} color={Colors.semantic.error} />
                 <Text style={styles.deleteButtonText}>
                   {deleteMutation.isPending ? 'Deleting...' : 'Delete CV'}
                 </Text>
@@ -224,7 +225,7 @@ const CVUpload = () => {
               ]}
             >
               <View style={styles.uploadIconContainer}>
-                <Ionicons name="cloud-upload" size={currentCV ? 48 : 64} color="#8b5cf6" />
+                <Ionicons name="cloud-upload" size={currentCV ? 48 : 64} color={Colors.brand.secondary} />
               </View>
               
               <Text style={currentCV ? styles.uploadTitleCompact : styles.uploadTitle}>
@@ -284,26 +285,26 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...TYPOGRAPHY.pageTitle,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     marginLeft: 16,
   },
   loadingCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
-    borderRadius: 16, // glass.borderRadius
-    padding: 24, // spacing.6
+    backgroundColor: Colors.glass.background,
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
     marginBottom: 24, // spacing.6
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
+    borderColor: Colors.glass.border,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4, // Android shadow
   },
   loadingText: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
-    marginTop: 8, // spacing.2
+    color: Colors.text.tertiary,
+    marginTop: 8,
     fontSize: 16, // typography.body.medium.fontSize
     ...TYPOGRAPHY.bodyMedium,
   },
@@ -318,15 +319,15 @@ const styles = StyleSheet.create({
   },
   cvCardTitle: {
     ...TYPOGRAPHY.sectionHeader,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
   },
   activeStatus: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   activeText: {
-    color: 'rgba(34, 197, 94, 1)', // semantic.success.main
-    fontWeight: '600', // typography.label.large.fontWeight
+    color: Colors.semantic.success,
+    fontWeight: '600',
     marginLeft: 8, // spacing.2
     fontSize: 14, // typography.label.medium.fontSize
     ...TYPOGRAPHY.labelMedium,
@@ -340,14 +341,14 @@ const styles = StyleSheet.create({
   },
   cvInfoText: {
     ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: Colors.text.tertiary,
     marginLeft: 8,
   },
   cvInfoTextWrap: {
     flex: 1,
   },
   deleteButton: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: Colors.glass.error,
     borderRadius: 50, // Pill-shaped like other buttons
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -357,8 +358,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   deleteButtonText: {
-    color: 'rgba(239, 68, 68, 1)', // semantic.error.main
-    marginLeft: 8, // spacing.2
+    color: Colors.semantic.error,
+    marginLeft: 8,
     fontWeight: '600', // typography.button.medium.fontWeight
     fontSize: 16, // typography.button.medium.fontSize
     ...TYPOGRAPHY.buttonMedium,
@@ -373,23 +374,23 @@ const styles = StyleSheet.create({
     marginBottom: 32, // spacing.8
   },
   uploadArea: {
-    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    backgroundColor: Colors.glass.backgroundInput,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: 'rgba(168, 85, 247, 0.3)', // purple.400 with opacity
-    borderRadius: 20, // borderRadius.lg
-    padding: 48, // spacing.12
+    borderColor: Colors.glass.purpleLight,
+    borderRadius: 20,
+    padding: 48,
     alignItems: 'center',
     minHeight: 320, // Custom height for large upload area
     justifyContent: 'center',
   },
   uploadAreaCompact: {
-    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
+    backgroundColor: Colors.glass.backgroundInput,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: 'rgba(168, 85, 247, 0.3)', // purple.400 with opacity
-    borderRadius: 20, // borderRadius.lg
-    padding: 32, // spacing.8
+    borderColor: Colors.glass.purpleLight,
+    borderRadius: 20,
+    padding: 32,
     alignItems: 'center',
     minHeight: 240, // Custom height for compact upload area
     justifyContent: 'center',
@@ -401,59 +402,49 @@ const styles = StyleSheet.create({
     marginBottom: 20, // spacing.5
   },
   uploadTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 28, // typography.heading.h1.fontSize
-    fontWeight: '700', // typography.heading.h1.fontWeight
+    color: Colors.text.primary,
     textAlign: 'center',
-    marginBottom: 12, // spacing.3
+    marginBottom: 12,
     ...TYPOGRAPHY.heading1,
-    letterSpacing: -0.01, // typography.heading.h1.letterSpacing
   },
   uploadTitleCompact: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 22, // typography.heading.h3.fontSize
-    fontWeight: '600', // typography.heading.h3.fontWeight
+    color: Colors.text.primary,
     textAlign: 'center',
-    marginBottom: 8, // spacing.2
+    marginBottom: 8,
     ...TYPOGRAPHY.heading3,
-    letterSpacing: -0.005, // typography.heading.h3.letterSpacing
   },
   uploadSubtitle: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    fontSize: 16, // typography.body.medium.fontSize
+    color: Colors.text.secondary,
     textAlign: 'center',
-    marginBottom: 32, // spacing.8
-    lineHeight: 24, // typography.body.medium.lineHeight
+    marginBottom: 32,
     maxWidth: 280,
     ...TYPOGRAPHY.bodyMedium,
   },
   uploadSubtitleCompact: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    fontSize: 14, // typography.body.small.fontSize
+    color: Colors.text.secondary,
     textAlign: 'center',
-    marginBottom: 24, // spacing.6
-    lineHeight: 20, // typography.body.small.lineHeight
+    marginBottom: 24,
     maxWidth: 260,
     ...TYPOGRAPHY.bodySmall,
   },
   uploadButton: {
-    backgroundColor: 'rgba(168, 85, 247, 0.2)', // Semi-transparent purple
+    backgroundColor: Colors.glass.purpleTint,
     borderRadius: 50, // Pill-shaped
     paddingVertical: 14,
     paddingHorizontal: 24,
     marginBottom: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(168, 85, 247, 0.8)',
+    borderColor: Colors.glass.purpleBright,
   },
   uploadButtonText: {
     ...TYPOGRAPHY.labelMedium,
-    color: '#FFFFFF',
+    color: Colors.text.primary,
     fontWeight: '600',
   },
   formatHint: {
     ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.55)',
+    color: Colors.text.muted,
     textAlign: 'center',
   },
 });

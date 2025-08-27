@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCreateInterviewFromURL } from '../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
+import Colors from '../../../constants/Colors';
+import { TYPOGRAPHY } from '../../../constants/Typography';
 
 const InterviewSetup = () => {
   const [formData, setFormData] = useState({
@@ -53,7 +55,7 @@ const InterviewSetup = () => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="white" />
+            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Setup Interview</Text>
         </View>
@@ -64,7 +66,7 @@ const InterviewSetup = () => {
           <TextInput
             style={styles.input}
             placeholder="e.g., Google, Microsoft, Startup Inc."
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={Colors.gray[500]}
             value={formData.company}
             onChangeText={(text) => setFormData({...formData, company: text})}
           />
@@ -75,7 +77,7 @@ const InterviewSetup = () => {
           <TextInput
             style={styles.input}
             placeholder="e.g., Software Engineer, Product Manager"
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={Colors.gray[500]}
             value={formData.role_title}
             onChangeText={(text) => setFormData({...formData, role_title: text})}
           />
@@ -111,7 +113,7 @@ const InterviewSetup = () => {
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Paste the full job description here. This helps me ask relevant questions based on the actual requirements..."
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={Colors.gray[500]}
             multiline
             textAlignVertical="top"
             value={formData.job_description}
@@ -155,7 +157,7 @@ const InterviewSetup = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
   },
   scrollView: {
     flex: 1,
@@ -170,11 +172,8 @@ const styles = StyleSheet.create({
     marginRight: 16, // spacing.4
   },
   headerTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 24, // typography.heading.h2.fontSize
-    fontWeight: '600', // typography.heading.h2.fontWeight
-    fontFamily: 'SpaceGrotesk', // typography.heading.h2.fontFamily
-    letterSpacing: -0.005, // typography.heading.h2.letterSpacing
+    color: Colors.text.primary,
+    ...TYPOGRAPHY.heading2,
   },
   inputGroup: {
     marginBottom: 24, // spacing.6
@@ -183,22 +182,19 @@ const styles = StyleSheet.create({
     marginBottom: 24, // spacing.6
   },
   label: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    fontSize: 16, // typography.label.large.fontSize
-    fontWeight: '600', // typography.label.large.fontWeight
-    marginBottom: 12, // spacing.3
-    fontFamily: 'Inter', // typography.label.large.fontFamily
+    color: Colors.text.secondary,
+    marginBottom: 12,
+    ...TYPOGRAPHY.labelLarge,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
-    color: '#FFFFFF', // text.primary
-    padding: 16, // spacing.4
-    borderRadius: 12, // glassInput.borderRadius
-    fontSize: 16, // typography.body.medium.fontSize
+    backgroundColor: Colors.glass.backgroundInput,
+    color: Colors.text.primary,
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
-    height: 56, // layout.inputHeight.medium
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    borderColor: Colors.glass.border,
+    height: 56,
+    ...TYPOGRAPHY.bodyMedium,
   },
   textArea: {
     minHeight: 120,
@@ -206,10 +202,9 @@ const styles = StyleSheet.create({
     height: undefined,
   },
   inputHint: {
-    color: 'rgba(255, 255, 255, 0.55)', // text.muted
-    fontSize: 12, // typography.body.xsmall.fontSize
-    marginTop: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.xsmall.fontFamily
+    color: Colors.text.muted,
+    marginTop: 8,
+    ...TYPOGRAPHY.bodyXSmall,
   },
   difficultyContainer: {
     flexDirection: 'row',
@@ -223,83 +218,75 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   difficultySelected: {
-    backgroundColor: 'rgba(252, 180, 0, 0.2)', // gold.400 with opacity
-    borderColor: 'rgba(252, 180, 0, 0.4)', // gold.400 with opacity
+    backgroundColor: Colors.glass.goldLight,
+    borderColor: Colors.glass.goldBorder,
   },
   difficultyUnselected: {
-    backgroundColor: 'rgba(255, 255, 255, 0.10)', // glassInput.background
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glassInput.border
+    backgroundColor: Colors.glass.backgroundInput,
+    borderColor: Colors.glass.border,
   },
   difficultyText: {
     textAlign: 'center',
-    fontWeight: '600', // typography.label.medium.fontWeight
     textTransform: 'capitalize',
-    fontSize: 14, // typography.label.medium.fontSize
-    fontFamily: 'Inter', // typography.label.medium.fontFamily
+    ...TYPOGRAPHY.labelMedium,
   },
   difficultyTextSelected: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.text.primary,
   },
   difficultyTextUnselected: {
-    color: 'rgba(255, 255, 255, 0.70)', // text.tertiary
+    color: Colors.text.tertiary,
   },
   startButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // glass-like transparent fill
-    borderRadius: 28, // pill (height/2 of 56)
-    padding: 16, // spacing.4
-    marginBottom: 32, // spacing.8
+    backgroundColor: Colors.glass.backgroundSecondary,
+    borderRadius: 28,
+    padding: 16,
+    marginBottom: 32,
     borderWidth: 2,
-    borderColor: 'rgba(168, 85, 247, 0.4)', // purple.400 with opacity
-    height: 56, // layout.buttonHeight.medium
+    borderColor: Colors.glass.purpleLight,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#A855F7', // purple.400
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 6,
   },
   startButtonDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)', // disabled glass
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSubtle,
+    borderColor: Colors.glass.backgroundSecondary,
     shadowOpacity: 0,
     elevation: 0,
   },
   startButtonText: {
-    color: '#FFFFFF', // text.primary
+    color: Colors.text.primary,
     textAlign: 'center',
-    fontSize: 18, // typography.button.large.fontSize
-    fontWeight: '600', // typography.button.large.fontWeight
-    fontFamily: 'Inter', // typography.button.large.fontFamily
-    letterSpacing: 0.005, // typography.button.large.letterSpacing
+    ...TYPOGRAPHY.buttonLarge,
   },
   tipsCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // glass.background
-    borderRadius: 16, // glass.borderRadius
-    padding: 16, // spacing.4
-    marginBottom: 24, // spacing.6
+    backgroundColor: Colors.glass.background,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)', // glass.border
-    shadowColor: '#000',
+    borderColor: Colors.glass.border,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
   },
   tipsTitle: {
-    color: '#FFFFFF', // text.primary
-    fontSize: 16, // typography.heading.h5.fontSize
-    fontWeight: '600', // typography.heading.h5.fontWeight
-    marginBottom: 8, // spacing.2
-    fontFamily: 'Inter', // typography.heading.h5.fontFamily
+    color: Colors.text.primary,
+    marginBottom: 8,
+    ...TYPOGRAPHY.heading5,
   },
   tipsList: {
     gap: 4, // spacing.1
   },
   tipText: {
-    color: 'rgba(255, 255, 255, 0.85)', // text.secondary
-    fontSize: 14, // typography.body.small.fontSize
-    fontFamily: 'Inter', // typography.body.small.fontFamily
+    color: Colors.text.secondary,
+    ...TYPOGRAPHY.bodySmall,
   },
 });
 

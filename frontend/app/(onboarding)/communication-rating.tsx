@@ -8,6 +8,7 @@ import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import Colors from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -236,7 +237,7 @@ const CommunicationRating = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     ...TYPOGRAPHY.heading1,
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
     lineHeight: 30,
     marginBottom: 48,
@@ -277,47 +278,47 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   ratingButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: Colors.glass.backgroundSecondary,
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: Colors.glass.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
   ratingButtonSelected: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-    borderColor: '#A855F7',
+    backgroundColor: Colors.glass.purple,
+    borderColor: Colors.brand.primary,
   },
   numberContainer: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: Colors.glass.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   numberContainerSelected: {
-    backgroundColor: 'rgba(168, 85, 247, 0.25)',
+    backgroundColor: Colors.glass.purpleTint,
   },
   ratingNumber: {
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: Colors.text.secondary,
     ...TYPOGRAPHY.labelMedium,
     fontWeight: '600',
   },
   ratingNumberSelected: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
   },
   ratingLabel: {
-    color: 'rgba(255, 255, 255, 1)',
+    color: Colors.text.primary,
     ...TYPOGRAPHY.bodyMedium,
     flex: 1,
   },
   ratingLabelSelected: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
     fontWeight: '600',
   },
   bottomContainer: {
@@ -331,28 +332,27 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primaryRGB,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(168, 85, 247, 0.05)',
-    borderColor: 'rgba(169, 85, 247, 0.3)',
+    backgroundColor: Colors.glass.purpleSubtle,
+    borderColor: Colors.glass.purpleMedium,
     shadowOpacity: 0,
   },
   continueButtonText: {
-    fontSize: 18,
-    ...TYPOGRAPHY.buttonMedium,
-    color: '#FFFFFF',
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.white,
     marginRight: 8,
   },
 });

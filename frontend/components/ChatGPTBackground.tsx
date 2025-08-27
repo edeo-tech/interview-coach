@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import Colors from '../constants/Colors';
 
 interface ChatGPTBackgroundProps {
   children: React.ReactNode;
@@ -12,7 +13,7 @@ export default function ChatGPTBackground({ children, style }: ChatGPTBackground
   return (
     <View style={[styles.container, style]}>
       {/* Pure black background */}
-      <View style={[styles.darkBase, { backgroundColor: '#000000' }]} />
+      <View style={[styles.darkBase, { backgroundColor: Colors.black }]} />
       
       {/* Content */}
       <View style={styles.content}>

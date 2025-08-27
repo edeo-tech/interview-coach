@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import ChatGPTBackground from './ChatGPTBackground';
 import { GlassStyles, GlassTextColors } from '../constants/GlassStyles';
+import Colors from '../constants/Colors';
 import { CVProfile } from '../_api/interviews/cv';
 import usePosthogSafely from '../hooks/posthog/usePosthogSafely';
 import { TYPOGRAPHY } from '../constants/Typography';
@@ -29,9 +30,9 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
   };
 
   const getExperienceLevel = () => {
-    if (profile.experience_years <= 2) return { level: 'Junior', color: '#10b981', icon: 'leaf-outline' };
-    if (profile.experience_years <= 5) return { level: 'Mid-Level', color: '#f59e0b', icon: 'trending-up-outline' };
-    return { level: 'Senior', color: '#8b5cf6', icon: 'star-outline' };
+    if (profile.experience_years <= 2) return { level: 'Junior', color: Colors.semantic.successAlt, icon: 'leaf-outline' };
+    if (profile.experience_years <= 5) return { level: 'Mid-Level', color: Colors.accent.gold, icon: 'trending-up-outline' };
+    return { level: 'Senior', color: Colors.brand.secondary, icon: 'star-outline' };
   };
 
   const experienceInfo = getExperienceLevel();
@@ -43,7 +44,7 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.successBadge}>
-              <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+              <Ionicons name="checkmark-circle" size={24} color={Colors.semantic.successAlt} />
             </View>
             <Text style={styles.headerTitle}>Profile Created!</Text>
             <Text style={styles.headerSubtitle}>
@@ -71,7 +72,7 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
             <View style={styles.sectionContainer}>
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Ionicons name="code-slash-outline" size={18} color="#60A5FA" />
+                  <Ionicons name="code-slash-outline" size={18} color={Colors.accent.blue} />
                   <Text style={styles.sectionTitle}>Core Skills</Text>
                 </View>
                 <View style={styles.skillsGrid}>
@@ -97,7 +98,7 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
               <View style={styles.halfSectionContainer}>
                 <View style={styles.halfSection}>
                   <View style={styles.sectionHeader}>
-                    <Ionicons name="school-outline" size={18} color="#60A5FA" />
+                    <Ionicons name="school-outline" size={18} color={Colors.accent.blue} />
                     <Text style={styles.sectionTitle}>Education</Text>
                   </View>
                   <View>
@@ -121,14 +122,14 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
               <View style={styles.halfSectionContainer}>
                 <View style={styles.halfSection}>
                   <View style={styles.sectionHeader}>
-                    <Ionicons name="ribbon-outline" size={18} color="#60A5FA" />
+                    <Ionicons name="ribbon-outline" size={18} color={Colors.accent.blue} />
                     <Text style={styles.sectionTitle}>Certifications</Text>
                   </View>
                   <View>
                     {profile.certifications.slice(0, 2).map((cert, index) => (
                       <View key={index} style={styles.compactItem}>
                         <View style={styles.certificationRow}>
-                          <Ionicons name="checkmark-circle" size={12} color="#10b981" />
+                          <Ionicons name="checkmark-circle" size={12} color={Colors.semantic.successAlt} />
                           <Text style={styles.compactTitle} numberOfLines={1}>{cert}</Text>
                         </View>
                       </View>
@@ -145,13 +146,13 @@ const CVProfileDisplay: React.FC<CVProfileDisplayProps> = ({ profile }) => {
           {/* Continue Button - Enhanced Design System Button */}
           <TouchableOpacity onPress={handleContinue} style={styles.continueButton}>
             <LinearGradient
-              colors={['#A855F7', '#EC4899']}
+              colors={[Colors.brand.primary, Colors.special.pink]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.continueGradient}
             >
               <Text style={styles.continueText}>Continue to Create Interview</Text>
-              <Ionicons name="arrow-forward" size={18} color="#ffffff" />
+              <Ionicons name="arrow-forward" size={18} color={Colors.white} />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -181,14 +182,14 @@ const styles = StyleSheet.create({
     width: 56, // Design system button height
     height: 56,
     borderRadius: 28, // Fully rounded
-    backgroundColor: 'rgba(16, 185, 129, 0.15)', // Enhanced glass effect
+    backgroundColor: Colors.glass.successSecondary, // Enhanced glass effect
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12, // Design system spacing
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.25)',
+    borderColor: Colors.glass.successBorderAlt,
     // Design system shadow
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -196,25 +197,25 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...TYPOGRAPHY.displaySmall,
-    color: '#FFFFFF', // Design system text primary
+    color: Colors.white, // Design system text primary
     marginBottom: 8, // Design system spacing
     textAlign: 'center',
   },
   headerSubtitle: {
     ...TYPOGRAPHY.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.85)', // Design system text secondary
+    color: Colors.text.secondary, // Design system text secondary
     textAlign: 'center',
     paddingHorizontal: 12,
   },
   experienceContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
-    borderColor: 'rgba(255, 255, 255, 0.15)', // Design system glass border
+    backgroundColor: Colors.glass.background, // Design system glass background
+    borderColor: Colors.glass.border, // Design system glass border
     borderWidth: 1,
     borderRadius: 16, // Design system card border radius
     padding: 20, // Design system card padding
     marginBottom: 16, // Design system spacing
     // Design system shadow
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -237,22 +238,22 @@ const styles = StyleSheet.create({
   },
   experienceLevel: {
     ...TYPOGRAPHY.heading3,
-    color: '#FFFFFF', // Design system text primary
+    color: Colors.white, // Design system text primary
     marginBottom: 4, // Design system spacing
   },
   experienceYears: {
     ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
+    color: Colors.text.tertiary, // Design system text tertiary
   },
   sectionContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
-    borderColor: 'rgba(255, 255, 255, 0.15)', // Design system glass border
+    backgroundColor: Colors.glass.background, // Design system glass background
+    borderColor: Colors.glass.border, // Design system glass border
     borderWidth: 1,
     borderRadius: 16, // Design system card border radius
     padding: 20, // Design system card padding
     marginBottom: 16, // Design system spacing
     // Design system shadow
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...TYPOGRAPHY.heading4,
-    color: '#FFFFFF', // Design system text primary
+    color: Colors.white, // Design system text primary
   },
   skillsGrid: {
     flexDirection: 'row',
@@ -277,16 +278,16 @@ const styles = StyleSheet.create({
     gap: 8, // Design system spacing
   },
   skillChip: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)', // Design system purple with opacity
+    backgroundColor: Colors.glass.purple, // Design system purple with opacity
     borderRadius: 12, // Design system border radius
     paddingHorizontal: 12, // Design system spacing
     paddingVertical: 8, // Design system spacing
     borderWidth: 1,
-    borderColor: 'rgba(168, 85, 247, 0.25)', // Design system purple with opacity
+    borderColor: Colors.glass.purpleTint, // Design system purple with opacity
   },
   skillText: {
     ...TYPOGRAPHY.labelMedium,
-    color: '#FFFFFF', // Design system text primary
+    color: Colors.white, // Design system text primary
   },
   bottomSections: {
     flexDirection: 'row',
@@ -295,13 +296,13 @@ const styles = StyleSheet.create({
   },
   halfSectionContainer: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)', // Design system glass background
-    borderColor: 'rgba(255, 255, 255, 0.15)', // Design system glass border
+    backgroundColor: Colors.glass.background, // Design system glass background
+    borderColor: Colors.glass.border, // Design system glass border
     borderWidth: 1,
     borderRadius: 16, // Design system card border radius
     padding: 16, // Design system card padding
     // Design system shadow
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -316,12 +317,12 @@ const styles = StyleSheet.create({
   compactTitle: {
     ...TYPOGRAPHY.labelMedium,
     fontWeight: '600',
-    color: '#FFFFFF', // Design system text primary
+    color: Colors.white, // Design system text primary
     marginBottom: 2, // Design system spacing
   },
   compactSubtitle: {
     ...TYPOGRAPHY.bodyXSmall,
-    color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
+    color: Colors.text.tertiary, // Design system text tertiary
   },
   certificationRow: {
     flexDirection: 'row',
@@ -330,7 +331,7 @@ const styles = StyleSheet.create({
   },
   moreText: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255, 255, 255, 0.55)', // Design system text muted
+    color: Colors.text.muted, // Design system text muted
     fontStyle: 'italic',
     marginTop: 4, // Design system spacing
   },
@@ -340,7 +341,7 @@ const styles = StyleSheet.create({
     marginTop: 8, // Design system spacing
     marginBottom: 4, // Design system spacing
     // Design system button primary shadow
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -357,7 +358,7 @@ const styles = StyleSheet.create({
   },
   continueText: {
     ...TYPOGRAPHY.buttonLarge,
-    color: '#ffffff',
+    color: Colors.white,
   },
 });
 

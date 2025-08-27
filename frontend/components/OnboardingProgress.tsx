@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import Colors from '../constants/Colors';
 
 interface OnboardingProgressProps {
   currentStep: number;
@@ -97,7 +98,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Ionicons name={icon_name as any || "arrow-back"} size={24} color="#ffffff" />
+        <Ionicons name={icon_name as any || "arrow-back"} size={24} color={Colors.white} />
       </TouchableOpacity>
       
       {showProgressBar && (
@@ -109,7 +110,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
               extrapolate: 'clamp'
             }) }]}>
               <LinearGradient
-                colors={['#F59E0B', '#F97316', '#EA580C']}
+                colors={[Colors.accent.gold, Colors.semantic.warning, Colors.semantic.warningAlt]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.gradient}
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
   },
   progressBackground: {
     height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.glass.borderSecondary,
     borderRadius: 4,
     overflow: 'hidden',
   },

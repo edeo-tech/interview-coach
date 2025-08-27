@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, ViewStyle, ImageStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Colors from '../constants/Colors';
 
 interface BrandfetchLogoProps {
   identifierType?: string;
@@ -22,7 +23,7 @@ const BrandfetchLogo: React.FC<BrandfetchLogoProps> = ({
   size = 32,
   style,
   imageStyle,
-  fallbackIconColor = '#ffffff',
+  fallbackIconColor = Colors.text.primary,
   fallbackIconName = 'briefcase-outline',
   variant = 'default',
   showBorder = false,
@@ -53,11 +54,11 @@ const BrandfetchLogo: React.FC<BrandfetchLogoProps> = ({
     switch (variant) {
       case 'glass':
         return {
-          background: 'rgba(255, 255, 255, 0.12)',
-          border: showBorder ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+          background: Colors.glass.background,
+          border: showBorder ? Colors.glass.border : Colors.transparent,
           borderRadius: Math.max(8, size * 0.25), // Responsive border radius
           shadow: {
-            color: '#000',
+            color: Colors.black,
             offset: { width: 0, height: 2 },
             opacity: 0.1,
             radius: 4,
@@ -65,11 +66,11 @@ const BrandfetchLogo: React.FC<BrandfetchLogoProps> = ({
         };
       case 'subtle':
         return {
-          background: 'rgba(255, 255, 255, 0.08)',
-          border: showBorder ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+          background: Colors.glass.backgroundSecondary,
+          border: showBorder ? Colors.glass.backgroundSubtle : Colors.transparent,
           borderRadius: Math.max(6, size * 0.2),
           shadow: {
-            color: '#000',
+            color: Colors.black,
             offset: { width: 0, height: 1 },
             opacity: 0.05,
             radius: 2,
@@ -77,8 +78,8 @@ const BrandfetchLogo: React.FC<BrandfetchLogoProps> = ({
         };
       default:
         return {
-          background: 'transparent',
-          border: showBorder ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+          background: Colors.transparent,
+          border: showBorder ? Colors.glass.border : Colors.transparent,
           borderRadius: Math.max(8, size * 0.25),
           shadow: null
         };
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
     // This would need to be implemented with native modules or libraries
   },
   logo: {
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
   },
   fallbackIcon: {
     // Ensure icon is properly centered and has consistent opacity

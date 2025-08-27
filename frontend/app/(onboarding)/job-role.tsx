@@ -7,6 +7,8 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
+import Colors from '../../constants/Colors';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -192,7 +194,7 @@ const OnboardingJobRole = () => {
                     <Ionicons 
                       name={industry.icon as any} 
                       size={32} 
-                      color={selectedIndustry === industry.id ? '#A855F7' : 'rgba(255, 255, 255, 0.7)'} 
+                      color={selectedIndustry === industry.id ? Colors.brand.primary : Colors.text.tertiary} 
                     />
                     <Text style={[
                       styles.industryText,
@@ -223,7 +225,7 @@ const OnboardingJobRole = () => {
             activeOpacity={0.8}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+            <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.transparent,
     paddingTop: Platform.OS === 'ios' ? 20 : 20,
   },
   scrollContent: {
@@ -254,19 +256,15 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   screenTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
-    color: '#ffffff',
+    ...TYPOGRAPHY.sectionHeader,
+    color: Colors.text.primary,
     textAlign: 'center',
     lineHeight: 30,
     marginBottom: 16,
   },
   subtitle: {
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    color: 'rgba(255, 255, 255, 0.70)',
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.tertiary,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
@@ -279,30 +277,29 @@ const styles = StyleSheet.create({
   },
   industryCard: {
     width: '47%',
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: Colors.glass.backgroundSubtle,
     minHeight: 100,
     justifyContent: 'center',
     marginBottom: 12,
   },
   industryCardSelected: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-    borderColor: '#A855F7',
+    backgroundColor: Colors.glass.purple,
+    borderColor: Colors.brand.primary,
   },
   industryText: {
-    color: 'rgba(255, 255, 255, 0.70)',
-    fontSize: 14,
+    ...TYPOGRAPHY.labelMedium,
+    color: Colors.text.tertiary,
     fontWeight: '600',
-    fontFamily: 'Inter',
     textAlign: 'center',
     marginTop: 8,
   },
   industryTextSelected: {
-    color: '#A855F7',
+    color: Colors.brand.primary,
   },
   bottomContainer: {
     width: '100%',
@@ -315,31 +312,27 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    backgroundColor: Colors.glass.purple,
     borderWidth: 1,
-    borderColor: 'rgb(169, 85, 247)',
+    borderColor: Colors.brand.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    shadowColor: '#A855F7',
+    shadowColor: Colors.brand.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(168, 85, 247, 0.05)',
-    borderColor: 'rgba(169, 85, 247, 0.3)',
+    backgroundColor: Colors.glass.purpleSubtle,
+    borderColor: Colors.glass.purpleLight,
     shadowOpacity: 0,
   },
   continueButtonText: {
-    fontSize: 18,
-    lineHeight: 22,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    letterSpacing: 0.005,
-    color: '#FFFFFF',
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.text.primary,
     marginRight: 8,
   },
 });
