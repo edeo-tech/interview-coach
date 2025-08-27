@@ -236,208 +236,203 @@ const Settings = () => {
         {/* Profile Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Profile</Text>
-          <View style={styles.card}>
-            {/* Name Field */}
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Name</Text>
-              {isEditingName ? (
-                <View style={styles.editContainer}>
-                  <TextInput
-                    style={styles.input}
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Enter your name"
-                    placeholderTextColor={Colors.gray[500]}
-                    onSubmitEditing={handleUpdateName}
-                    onBlur={handleNameBlur}
-                    autoFocus
-                  />
-                  {updatePending && (
-                    <ActivityIndicator size="small" color={Colors.brand.primary} style={{ marginLeft: 8 }} />
-                  )}
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={styles.fieldValueContainer}
-                  onPress={() => setIsEditingName(true)}
-                >
-                  <Text style={styles.fieldValue}>{auth?.name}</Text>
-                  <Ionicons name="pencil" size={16} color={Colors.gray[500]} />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {/* Email Field */}
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Email</Text>
-              <Text style={[styles.fieldValue, { color: Colors.gray[500] }]}>
-                {auth?.email}
-              </Text>
-            </View>
-
-            {/* Member Since */}
-            {auth?.created_at && (
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Member Since</Text>
-                <Text style={styles.fieldValue}>
-                  {formatDate(auth.created_at)}
-                </Text>
+          
+          {/* Name Field */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Name</Text>
+            {isEditingName ? (
+              <View style={styles.editContainer}>
+                <TextInput
+                  style={styles.input}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Enter your name"
+                  placeholderTextColor={Colors.gray[500]}
+                  onSubmitEditing={handleUpdateName}
+                  onBlur={handleNameBlur}
+                  autoFocus
+                />
+                {updatePending && (
+                  <ActivityIndicator size="small" color={Colors.brand.primary} style={{ marginLeft: 8 }} />
+                )}
               </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.fieldValueContainer}
+                onPress={() => setIsEditingName(true)}
+              >
+                <Text style={styles.fieldValue}>{auth?.name}</Text>
+                <Ionicons name="pencil" size={16} color={Colors.gray[500]} />
+              </TouchableOpacity>
             )}
           </View>
+
+          {/* Email Field */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Email</Text>
+            <Text style={[styles.fieldValue, { color: Colors.gray[500] }]}>
+              {auth?.email}
+            </Text>
+          </View>
+
+          {/* Member Since */}
+          {auth?.created_at && (
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Member Since</Text>
+              <Text style={styles.fieldValue}>
+                {formatDate(auth.created_at)}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Premium Section */}
         {getCachedFeatureFlags().paywallEnabled && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Premium</Text>
-            <View style={styles.card}>
-              <View style={styles.premiumStatus}>
-                <View style={styles.premiumBadge}>
-                  <Ionicons 
-                    name={isPremium ? "diamond" : "gift"} 
-                    size={16} 
-                    color={isPremium ? Colors.accent.gold : Colors.gray[500]} 
-                  />
-                  <Text style={[
-                    styles.premiumText,
-                    { color: isPremium ? Colors.accent.gold : Colors.gray[500] }
-                  ]}>
-                    {isPremium ? "Premium" : "Free"}
-                  </Text>
-                </View>
-                {!isPremium && (
-                  <TouchableOpacity
-                    style={styles.upgradeButton}
-                    onPress={() => router.push('/(app)/paywall?source=settings')}
-                  >
-                    <Ionicons name="diamond" size={20} color="white" />
-                    <Text style={styles.upgradeButtonText}>Upgrade</Text>
-                  </TouchableOpacity>
-                )}
+            
+            <View style={styles.premiumStatus}>
+              <View style={styles.premiumBadge}>
+                <Ionicons 
+                  name={isPremium ? "diamond" : "gift"} 
+                  size={16} 
+                  color={isPremium ? Colors.accent.gold : Colors.gray[500]} 
+                />
+                <Text style={[
+                  styles.premiumText,
+                  { color: isPremium ? Colors.accent.gold : Colors.gray[500] }
+                ]}>
+                  {isPremium ? "Premium" : "Free"}
+                </Text>
               </View>
-              
-              {/* Premium subscription details */}
-              {isPremium && (
-                <>
-                  {/* Subscription start date */}
-                  {(() => {
-                    const startDate = getPremiumStartDate();
-                    return startDate ? (
-                      <View style={styles.fieldContainer}>
-                        <Text style={styles.fieldLabel}>Premium Since</Text>
-                        <Text style={styles.fieldValue}>
-                          {formatDate(startDate.toISOString())}
-                        </Text>
-                      </View>
-                    ) : null;
-                  })()}
-                  
-                  {/* Subscription management */}
-                  <View style={styles.fieldContainer}>
-                    <Text style={styles.fieldLabel}>Subscription Management</Text>
-                    <TouchableOpacity
-                      style={styles.manageSubscriptionContainer}
-                      onPress={() => {
-                        const info = getSubscriptionManagementInfo();
-                        try {
-                          info.action();
-                        } catch (error) {
-                          // Fallback to showing instructions if direct link fails
-                          Alert.alert(
-                            info.title,
-                            info.description,
-                            [{ text: 'OK' }]
-                          );
-                        }
-                      }}
-                    >
-                      <View style={styles.manageSubscriptionInfo}>
-                        <Ionicons 
-                          name={getSubscriptionManagementInfo().icon as any} 
-                          size={16} 
-                          color={Colors.gray[500]} 
-                        />
-                        <Text style={styles.manageSubscriptionText}>
-                          {getSubscriptionManagementInfo().title}
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={Colors.gray[500]} />
-                    </TouchableOpacity>
-                  </View>
-                </>
+              {!isPremium && (
+                <TouchableOpacity
+                  style={styles.upgradeButton}
+                  onPress={() => router.push('/(app)/paywall?source=settings')}
+                >
+                  <Ionicons name="diamond" size={20} color="white" />
+                  <Text style={styles.upgradeButtonText}>Upgrade</Text>
+                </TouchableOpacity>
               )}
             </View>
+            
+            {/* Premium subscription details */}
+            {isPremium && (
+              <>
+                {/* Subscription start date */}
+                {(() => {
+                  const startDate = getPremiumStartDate();
+                  return startDate ? (
+                    <View style={styles.fieldContainer}>
+                      <Text style={styles.fieldLabel}>Premium Since</Text>
+                      <Text style={styles.fieldValue}>
+                        {formatDate(startDate.toISOString())}
+                      </Text>
+                    </View>
+                  ) : null;
+                })()}
+                
+                {/* Subscription management */}
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Subscription Management</Text>
+                  <TouchableOpacity
+                    style={styles.manageSubscriptionContainer}
+                    onPress={() => {
+                      const info = getSubscriptionManagementInfo();
+                      try {
+                        info.action();
+                      } catch (error) {
+                        // Fallback to showing instructions if direct link fails
+                        Alert.alert(
+                          info.title,
+                          info.description,
+                          [{ text: 'OK' }]
+                        );
+                      }
+                    }}
+                  >
+                    <View style={styles.manageSubscriptionInfo}>
+                      <Ionicons 
+                        name={getSubscriptionManagementInfo().icon as any} 
+                        size={16} 
+                        color={Colors.gray[500]} 
+                      />
+                      <Text style={styles.manageSubscriptionText}>
+                        {getSubscriptionManagementInfo().title}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={Colors.gray[500]} />
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         )}
 
         {/* Support Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support</Text>
-          <View style={styles.card}>
-            <TouchableOpacity
-              style={styles.linkItem}
-              onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_help_center')}
-            >
-              <Ionicons name="help-circle-outline" size={20} color={Colors.gray[500]} />
-              <Text style={styles.linkText}>Help Center</Text>
-              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
-            </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.linkItem}
+            onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_help_center')}
+          >
+            <Ionicons name="help-circle-outline" size={20} color={Colors.gray[500]} />
+            <Text style={styles.linkText}>Help Center</Text>
+            <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.linkItem}
-              onPress={() => handleLinkPress('mailto:ross@edio.cc', 'contact_support')}
-            >
-              <Ionicons name="mail-outline" size={20} color={Colors.gray[500]} />
-              <Text style={styles.linkText}>Contact Support</Text>
-              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.linkItem}
+            onPress={() => handleLinkPress('mailto:ross@edio.cc', 'contact_support')}
+          >
+            <Ionicons name="mail-outline" size={20} color={Colors.gray[500]} />
+            <Text style={styles.linkText}>Contact Support</Text>
+            <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
+          </TouchableOpacity>
         </View>
 
         {/* Legal Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Legal</Text>
-          <View style={styles.card}>
-            <TouchableOpacity
-              style={styles.linkItem}
-              onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_privacy_policy')}
-            >
-              <Ionicons name="shield-checkmark-outline" size={20} color={Colors.gray[500]} />
-              <Text style={styles.linkText}>Privacy Policy</Text>
-              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
-            </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.linkItem}
+            onPress={() => handleLinkPress('https://edio.cc/privacy', 'open_privacy_policy')}
+          >
+            <Ionicons name="shield-checkmark-outline" size={20} color={Colors.gray[500]} />
+            <Text style={styles.linkText}>Privacy Policy</Text>
+            <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.linkItem}
-              onPress={() => handleLinkPress('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/', 'open_terms')}
-            >
-              <Ionicons name="document-text-outline" size={20} color={Colors.gray[500]} />
-              <Text style={styles.linkText}>Terms of Service</Text>
-              <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.linkItem}
+            onPress={() => handleLinkPress('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/', 'open_terms')}
+          >
+            <Ionicons name="document-text-outline" size={20} color={Colors.gray[500]} />
+            <Text style={styles.linkText}>Terms of Service</Text>
+            <Ionicons name="open-outline" size={16} color={Colors.gray[500]} />
+          </TouchableOpacity>
         </View>
 
         {/* Danger Zone */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: Colors.semantic.error }]}>Danger Zone</Text>
-          <View style={[styles.card, { borderColor: Colors.glass.errorBorder }]}>
-            <TouchableOpacity
-              style={styles.dangerButton}
-              onPress={handleDeleteAccount}
-              disabled={deletePending}
-            >
-              {deletePending ? (
-                <ActivityIndicator size="small" color={Colors.semantic.error} />
-              ) : (
-                <>
-                  <Ionicons name="trash-outline" size={20} color={Colors.semantic.error} />
-                  <Text style={styles.dangerButtonText}>Delete Account</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
+          
+          <TouchableOpacity
+            style={styles.dangerButton}
+            onPress={handleDeleteAccount}
+            disabled={deletePending}
+          >
+            {deletePending ? (
+              <ActivityIndicator size="small" color={Colors.semantic.error} />
+            ) : (
+              <>
+                <Ionicons name="trash-outline" size={20} color={Colors.semantic.error} />
+                <Text style={styles.dangerButtonText}>Delete Account</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* App Info */}
@@ -480,22 +475,9 @@ const styles = StyleSheet.create({
     color: Colors.text.secondary, // text.secondary
     marginBottom: 12, // spacing.3
   },
-  card: {
-    backgroundColor: Colors.glass.background, // glass.background
-    borderRadius: 16, // glass.borderRadius
-    padding: 16, // spacing.4
-    borderWidth: 1,
-    borderColor: Colors.glass.border, // glass.border
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4, // Android shadow
-  },
   fieldContainer: {
-    paddingVertical: 12, // spacing.3
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.glass.borderSecondary, // glassSecondary.border
+    paddingVertical: 16,
+    marginBottom: 12,
   },
   fieldLabel: {
     ...TYPOGRAPHY.labelSmall,
@@ -527,9 +509,8 @@ const styles = StyleSheet.create({
   linkItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16, // spacing.4
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.glass.borderSecondary, // glassSecondary.border
+    paddingVertical: 16,
+    marginBottom: 12,
   },
   linkText: {
     flex: 1,
@@ -541,10 +522,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4, // spacing.1
+    paddingVertical: 16,
     paddingHorizontal: 0,
     alignSelf: 'flex-start',
-    borderRadius: 8, // borderRadius.default
+    borderRadius: 50, // Pill-shaped to match app design
+    marginBottom: 12,
   },
   dangerButtonText: {
     ...TYPOGRAPHY.labelLarge,
@@ -576,6 +558,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: 16,
+    marginBottom: 12,
   },
   premiumBadge: {
     flexDirection: 'row',
@@ -588,7 +572,7 @@ const styles = StyleSheet.create({
   },
   upgradeButton: {
     backgroundColor: Colors.accent.goldAlt, // gold.400
-    borderRadius: 12, // glassSecondary.borderRadius
+    borderRadius: 50, // Pill-shaped to match app design
     paddingVertical: 8, // spacing.2
     paddingHorizontal: 16, // spacing.4
     flexDirection: 'row',

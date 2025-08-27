@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
         marginBottom: 40,
         padding: 16,
-        borderRadius: 16,
+        borderRadius: 50,
         borderWidth: 1,
         borderColor: Colors.glass.errorBorder,
         gap: 8,
