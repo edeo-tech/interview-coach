@@ -8,6 +8,7 @@ import logging
 from models.users.users import User, UpdateUserProfile, SubscriptionDetails
 from models.users.authenticated_user import AuthenticatedUser
 from crud._generic import _db_actions
+from utils.referral_codes import generate_unique_referral_code
 
 from authentication import Authorization
 
@@ -27,6 +28,14 @@ async def create_user(req:Request, user:User):
     ## check that email is not already taken
     if await check_if_email_is_taken(req, user.email):
         raise HTTPException(status_code=400, detail='Email already exists')
+
+    ## generate unique referral code for new user
+    referral_code = await generate_unique_referral_code(req)
+    if not referral_code:
+        raise HTTPException(status_code=500, detail='Failed to generate referral code')
+    
+    # Set referral code on user
+    user.referral_code = referral_code
 
     ## create user
     user = await _db_actions.createDocument(

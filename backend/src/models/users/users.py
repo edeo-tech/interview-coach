@@ -77,6 +77,18 @@ class User(MongoBaseModel):
         default=SignUpType.EMAIL,
         description='The type of sign up used by the user'
     )
+    referral_code:str = Field(
+        default='',
+        description='Unique 4-character referral code for this user'
+    )
+    free_calls_remaining:int = Field(
+        default=1,
+        description='Number of free interview calls remaining for this user'
+    )
+    referred_by:Optional[str] = Field(
+        default=None,
+        description='Referral code of the user who referred this user'
+    )
 
 class LoginUser(BaseModel):
     email:EmailStr = Field(

@@ -258,6 +258,22 @@ export default function Profile() {
                 <Ionicons name="chevron-forward" size={20} color={GlassTextColors.muted} />
             </TouchableOpacity>
 
+            {/* Referral Code Section - between CV and Stats */}
+            {auth?.referral_code && (
+                <View style={styles.referralSection}>
+                    <View style={styles.referralHeader}>
+                        <Ionicons name="people-outline" size={20} color={Colors.brand.primary} />
+                        <Text style={styles.referralTitle}>Your Referral Code</Text>
+                    </View>
+                    <View style={styles.referralCodeContainer}>
+                        <Text style={styles.referralCode}>{auth.referral_code}</Text>
+                    </View>
+                    <Text style={styles.referralSubtitle}>
+                        Get a free interview when your friend signs up and uses your code
+                    </Text>
+                </View>
+            )}
+
             <View style={styles.statsContainer}>
                 <StatCard
                     icon="bar-chart"
@@ -586,5 +602,45 @@ const styles = StyleSheet.create({
     cvSubtitle: {
         ...TYPOGRAPHY.bodySmall,
         color: Colors.text.tertiary,
+    },
+    referralSection: {
+        backgroundColor: Colors.glass.background,
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 24,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: Colors.glass.border,
+    },
+    referralHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 16,
+    },
+    referralTitle: {
+        ...TYPOGRAPHY.itemTitle,
+        color: Colors.text.primary,
+    },
+    referralCodeContainer: {
+        backgroundColor: Colors.glass.backgroundInput,
+        borderRadius: 12,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: Colors.glass.borderSecondary,
+    },
+    referralCode: {
+        ...TYPOGRAPHY.pageTitle,
+        color: Colors.brand.primary,
+        fontWeight: '700',
+        letterSpacing: 2,
+        textAlign: 'center',
+    },
+    referralSubtitle: {
+        ...TYPOGRAPHY.bodySmall,
+        color: Colors.text.tertiary,
+        textAlign: 'center',
     },
 });

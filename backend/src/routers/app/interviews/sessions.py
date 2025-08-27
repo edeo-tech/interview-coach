@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 
 from authentication import Authorization
 from utils.__errors__.error_decorator_routes import error_decorator
+from crud.users.auth.users import get_user_by_id
+from crud._generic import _db_actions
+from models.users.users import User
 from crud.interviews.interviews import (
     create_interview_from_url as create_interview_from_url_crud,
     create_interview_from_file as create_interview_from_file_crud,
@@ -26,6 +29,9 @@ class CreateInterviewFromURLRequest(BaseModel):
 
 class CreateInterviewFromFileRequest(BaseModel):
     interview_type: str = "technical"  # technical, behavioral, leadership, sales
+
+class StartAttemptRequest(BaseModel):
+    is_premium: bool = False  # Frontend will determine this and pass it
 
 class StartAttemptResponse(BaseModel):
     attempt_id: str
@@ -272,12 +278,14 @@ async def get_interview_attempts_paginated_route(
 async def start_interview_attempt(
     req: Request,
     interview_id: str,
+    request: StartAttemptRequest,
     user_id: str = Depends(auth.auth_wrapper)
 ) -> StartAttemptResponse:
     """Start a new interview attempt"""
     print(f"\n▶️  [API] Received start interview request:")
     print(f"   - Interview ID: {interview_id}")
     print(f"   - User ID: {user_id}")
+    print(f"   - Is Premium: {request.is_premium}")
     
     # Verify interview exists and belongs to user
     interview = await get_interview(req, interview_id)
@@ -291,6 +299,43 @@ async def start_interview_attempt(
         raise HTTPException(status_code=403, detail="Access denied")
     
     print(f"   - Interview details: {interview.role_title} at {interview.company}")
+    
+    # Handle free calls deduction for non-premium users
+    if not request.is_premium:
+        print(f"   - User is not premium, checking free calls remaining...")
+        
+        # Get current user to check free calls
+        user = await get_user_by_id(req, user_id)
+        if not user:
+            print(f"   ❌ ERROR: User {user_id} not found")
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        print(f"   - User has {user.free_calls_remaining} free calls remaining")
+        
+        # Check if user has free calls remaining
+        if user.free_calls_remaining <= 0:
+            print(f"   ❌ ERROR: No free calls remaining for non-premium user")
+            raise HTTPException(
+                status_code=402, 
+                detail="No free interviews remaining. Please upgrade to premium or use a referral code to get more free interviews."
+            )
+        
+        # Deduct one free call
+        try:
+            await _db_actions.incrementDocumentField(
+                req=req,
+                collection_name='users',
+                BaseModel=User,
+                document_id=user_id,
+                field_name='free_calls_remaining',
+                increment_by=-1
+            )
+            print(f"   ✅ Deducted 1 free call, user now has {user.free_calls_remaining - 1} remaining")
+        except Exception as e:
+            print(f"   ❌ ERROR: Failed to deduct free call: {e}")
+            raise HTTPException(status_code=500, detail="Failed to process free call deduction")
+    else:
+        print(f"   - User is premium, no free call deduction needed")
     
     # Create attempt record (frontend handles ElevenLabs entirely)
     attempt = await create_attempt(req, interview_id, interview.job_id, interview.user_id)

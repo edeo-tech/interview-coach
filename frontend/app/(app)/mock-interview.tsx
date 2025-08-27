@@ -7,6 +7,7 @@ import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useCV } from '../../_queries/interviews/cv';
 import { useStartAttempt, useAddTranscript, useFinishAttempt, useInterview } from '../../_queries/interviews/interviews';
 import { useAuth } from '../../context/authentication/AuthContext';
+import { usePremiumCheck } from '../../hooks/premium/usePremiumCheck';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
@@ -199,6 +200,7 @@ export default function MockInterview() {
     // Fetch user data and CV
     const { auth } = useAuth();
     const { data: cvProfile } = useCV();
+    const { isPremium } = usePremiumCheck();
     const { data: interviewData } = useInterview(params.interviewId as string);
     const startAttempt = useStartAttempt();
     const addTranscript = useAddTranscript();
@@ -427,7 +429,10 @@ Remember: This is a practice interview to help ${userName} improve their intervi
         // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
         let newAttemptId: string | null = null;
         try {
-            const res = await startAttempt.mutateAsync(params.interviewId as string);
+            const res = await startAttempt.mutateAsync({
+                interviewId: params.interviewId as string,
+                isPremium: isPremium
+            });
             newAttemptId = res.data.attempt_id;
             
             if (!newAttemptId) {

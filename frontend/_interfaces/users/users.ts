@@ -50,6 +50,8 @@ export interface AuthenticatedUser
     created_at: string;
     streak: number;
     streak_record: number;
+    referral_code: string;
+    free_calls_remaining: number;
 }
 
 export interface UpdateUserProfile
@@ -65,4 +67,16 @@ export interface SubscriptionDetails
     status: string;
     current_period_end?: string;
     stripe_portal_url?: string;
+}
+
+export interface ReferralSubmission
+{
+    referral_code: string;
+}
+
+export interface ReferralResponse
+{
+    success: boolean;
+    message: string;
+    referrer_name?: string;
 }

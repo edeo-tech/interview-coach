@@ -203,8 +203,8 @@ const OnboardingReviews = () => {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={17} 
-          totalSteps={17}
+          currentStep={18} 
+          totalSteps={18}
           onBack={handleBack}
         />
         

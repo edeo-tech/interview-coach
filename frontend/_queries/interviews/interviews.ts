@@ -93,8 +93,9 @@ export const useStartAttempt = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (interviewId: string) => interviewsApi.startAttempt(interviewId),
-    onSuccess: (_, interviewId) => {
+    mutationFn: ({ interviewId, isPremium }: { interviewId: string; isPremium: boolean }) => 
+      interviewsApi.startAttempt(interviewId, isPremium),
+    onSuccess: (_, { interviewId }) => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.detail(interviewId) });
     },
   });

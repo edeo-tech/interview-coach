@@ -14,4 +14,6 @@ class AuthenticatedUser(BaseModel):
     # is_premium: bool = Field(default=False, description="Whether the user has an active premium subscription")
     created_at: datetime = Field(..., description="When the user account was created")
     streak: int = Field(default=0, description="Current login streak in days")
-    streak_record: int = Field(default=0, description="Highest login streak ever achieved") 
+    streak_record: int = Field(default=0, description="Highest login streak ever achieved")
+    referral_code: str = Field(default='', description="Unique 4-character referral code for this user")
+    free_calls_remaining: int = Field(default=1, description="Number of free interview calls remaining for this user") 

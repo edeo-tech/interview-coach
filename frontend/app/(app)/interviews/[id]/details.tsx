@@ -11,7 +11,8 @@ import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewA
 import { attemptFeedback } from '../../../../_api/interviews/feedback';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../hooks/haptics/useHapticsSafely';
-import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
+import { useInterviewRetryCheck, usePremiumCheck } from '../../../../hooks/premium/usePremiumCheck';
+import { useAuth } from '../../../../context/authentication/AuthContext';
 import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
 import { useToast } from '../../../../components/Toast';
 import { TYPOGRAPHY } from '../../../../constants/Typography';
@@ -131,6 +132,8 @@ export default function InterviewDetails() {
   const { selectionAsync } = useHapticsSafely();
   const [bestScore, setBestScore] = useState<number>(0);
   const { canRetryInterview, isPaywallEnabled } = useInterviewRetryCheck();
+  const { isPremium } = usePremiumCheck();
+  const { auth } = useAuth();
   const { showToast } = useToast();
   
   // Flatten the paginated attempts data
@@ -192,13 +195,20 @@ export default function InterviewDetails() {
 
   const handleStartInterview = async () => {
     try {
-      // Check if user can retry this interview
+      // Check if user can retry this interview (for existing attempts)
       const hasExistingAttempts = attemptsCountData?.has_attempts || false;
       const retryCheck = canRetryInterview(hasExistingAttempts);
       
       if (!retryCheck.canRetry && retryCheck.requiresUpgrade && isPaywallEnabled) {
         // Show paywall for premium upgrade
         router.push('/paywall?source=retry');
+        return;
+      }
+
+      // Check free calls for new users (frontend validation)
+      if (!hasExistingAttempts && !isPremium && (!auth?.free_calls_remaining || auth.free_calls_remaining <= 0)) {
+        // Show paywall for free calls exhausted
+        router.push('/paywall?source=free-calls-exhausted');
         return;
       }
 

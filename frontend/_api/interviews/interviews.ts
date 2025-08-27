@@ -1,4 +1,4 @@
-import { protectedApi } from '../axiosConfig';
+import axiosConfig from '../axiosConfig';
 
 export interface CreateInterviewFromURLRequest {
   job_url: string;
@@ -76,46 +76,48 @@ export interface PaginatedAttemptsResponse {
 export const interviewsApi = {
   // Interview management
   createFromURL: (data: CreateInterviewFromURLRequest) => 
-    protectedApi.post<Interview>('/app/interviews/create/url', data),
+    axiosConfig.protectedApi.post<Interview>('/app/interviews/create/url', data),
   
   createFromFile: (formData: FormData, interviewType?: string) => {
     if (interviewType) {
       formData.append('interview_type', interviewType);
     }
-    return protectedApi.post<Interview>('/app/interviews/create/file', formData, {
+    return axiosConfig.protectedApi.post<Interview>('/app/interviews/create/file', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
   
   list: (limit?: number) => 
-    protectedApi.get<Interview[]>('/app/interviews/', {
+    axiosConfig.protectedApi.get<Interview[]>('/app/interviews/', {
       params: limit ? { limit } : {}
     }),
   
   get: (interviewId: string) =>
-    protectedApi.get<InterviewWithAttempts>(`/app/interviews/${interviewId}`),
+    axiosConfig.protectedApi.get<InterviewWithAttempts>(`/app/interviews/${interviewId}`),
 
   getAttemptsCount: (interviewId: string) =>
-    protectedApi.get<AttemptsCountResponse>(`/app/interviews/${interviewId}/attempts-count`),
+    axiosConfig.protectedApi.get<AttemptsCountResponse>(`/app/interviews/${interviewId}/attempts-count`),
 
   getAttemptsPaginated: (interviewId: string, pageSize: number = 10, pageNumber: number = 1) =>
-    protectedApi.get<PaginatedAttemptsResponse>(`/app/interviews/${interviewId}/attempts`, {
+    axiosConfig.protectedApi.get<PaginatedAttemptsResponse>(`/app/interviews/${interviewId}/attempts`, {
       params: { page_size: pageSize, page_number: pageNumber }
     }),
 
   // Interview attempts
-  startAttempt: (interviewId: string) =>
-    protectedApi.post<StartAttemptResponse>(`/app/interviews/${interviewId}/start`),
+  startAttempt: (interviewId: string, isPremium: boolean = false) =>
+    axiosConfig.protectedApi.post<StartAttemptResponse>(`/app/interviews/${interviewId}/start`, { 
+      is_premium: isPremium 
+    }),
   
   addTranscript: (interviewId: string, turn: {
     role: 'user' | 'agent';
     message: string;
     time_in_call_secs?: number;
   }) =>
-    protectedApi.post(`/app/interviews/${interviewId}/transcript`, turn),
+    axiosConfig.protectedApi.post(`/app/interviews/${interviewId}/transcript`, turn),
 
   finishAttempt: (interviewId: string, attemptId: string, durationSeconds?: number, conversationId?: string) =>
-    protectedApi.post(`/app/interviews/${interviewId}/finish`, { 
+    axiosConfig.protectedApi.post(`/app/interviews/${interviewId}/finish`, { 
       attempt_id: attemptId,
       duration_seconds: durationSeconds,
       conversation_id: conversationId
