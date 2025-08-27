@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Platform, Animated } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -118,6 +118,7 @@ export default function AttemptGradingScreen() {
 
   const [pollCount, setPollCount] = useState(0);
   const [showAnimation, setShowAnimation] = useState(true); // Separate state for animation visibility
+  const [feedbackFadeAnim] = useState(new Animated.Value(0)); // Fade-in animation for feedback screen
 
   useFocusEffect(
     React.useCallback(() => {
@@ -155,9 +156,17 @@ export default function AttemptGradingScreen() {
       <InterviewGradingProgress 
         isFeedbackReady={!!data} // Pass whether feedback data is available
         onComplete={() => {
-          // Animation completed - hide animation and show feedback
-          console.log('🎊 Animation sequence complete - showing feedback');
+          // Animation completed - hide animation and fade in feedback
+          console.log('🎊 Animation sequence complete - transitioning to feedback');
           setShowAnimation(false);
+          
+          // Start fade-in animation for feedback screen
+          Animated.timing(feedbackFadeAnim, {
+            toValue: 1,
+            duration: 800, // 0.8 second smooth fade-in
+            useNativeDriver: true,
+          }).start();
+          
           if (!data) {
             console.log('⚠️ Animation completed but no data - forcing refetch');
             refetch();
@@ -351,21 +360,25 @@ export default function AttemptGradingScreen() {
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
         
-        {!showAnimation && (data ? renderFeedback() : (
-          <View style={styles.center}>
-            <View style={styles.emptyCard}>
-              <Ionicons name="document-text" size={48} color={Colors.gray[500]} />
-              <Text style={styles.emptyTitle}>No Feedback Available</Text>
-              <Text style={styles.emptySubtitle}>
-                Your interview feedback will appear here once it's ready.
-              </Text>
-            </View>
-          </View>
-        ))}
+        {!showAnimation && (
+          <Animated.View style={{ opacity: feedbackFadeAnim, flex: 1 }}>
+            {data ? renderFeedback() : (
+              <View style={styles.center}>
+                <View style={styles.emptyCard}>
+                  <Ionicons name="document-text" size={48} color={Colors.gray[500]} />
+                  <Text style={styles.emptyTitle}>No Feedback Available</Text>
+                  <Text style={styles.emptySubtitle}>
+                    Your interview feedback will appear here once it's ready.
+                  </Text>
+                </View>
+              </View>
+            )}
+          </Animated.View>
+        )}
         
         {/* Only show footer button if coming from interview */}
         {is_from_interview === 'true' && !showAnimation && (
-          <View style={styles.footer}>
+          <Animated.View style={[styles.footer, { opacity: feedbackFadeAnim }]}>
             <TouchableOpacity 
               style={[
                 styles.primaryButton, 
@@ -383,7 +396,7 @@ export default function AttemptGradingScreen() {
               <Text style={[styles.primaryButtonText, !data && styles.primaryButtonTextDisabled]}>Practice Again & Improve</Text>
               <Ionicons name="arrow-forward" size={20} color={data ? Colors.text.primary : Colors.gray[500]} />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         )}
       </View>
       
