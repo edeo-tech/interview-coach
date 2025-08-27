@@ -404,3 +404,7 @@ async def get_job_interviews(req: Request, job_id: str) -> List[Interview]:
 async def update_interview_status(req: Request, interview_id: str, status: str) -> Optional[Interview]:
     """Update interview status"""
     return await updateDocument(req, "interviews", Interview, interview_id, status=status)
+
+async def update_interview(req: Request, interview_id: str, **kwargs) -> Optional[Interview]:
+    """Update interview with any fields"""
+    return await updateDocument(req, "interviews", Interview, interview_id, **kwargs)

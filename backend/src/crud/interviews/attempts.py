@@ -246,7 +246,51 @@ async def create_feedback(
     else:
         print(f"   ❌ ERROR: Failed to create feedback!")
     
+    # Update interview best score after creating feedback
+    if result:
+        await update_interview_best_score(req, interview_id, overall_score)
+    
     return result
+
+async def update_interview_best_score(req: Request, interview_id: str, score: int):
+    """Update interview's best score and status if threshold met"""
+    from .interviews import get_interview, update_interview
+    from ..jobs.jobs import get_job, update_job
+    
+    print(f"\n🏆 [BEST SCORE] Updating best score for interview {interview_id}")
+    print(f"   - New score: {score}")
+    
+    interview = await get_interview(req, interview_id)
+    if not interview:
+        print(f"   ❌ ERROR: Interview not found!")
+        return
+    
+    print(f"   - Current best score: {interview.best_score}")
+    print(f"   - Current status: {interview.status}")
+    
+    # Update best score if this is higher
+    if score > interview.best_score:
+        updates = {"best_score": score}
+        print(f"   - New best score! Updating from {interview.best_score} to {score}")
+        
+        # Mark as completed if score >= 90
+        if score >= 90 and interview.status != "completed":
+            updates["status"] = "completed"
+            print(f"   - Score >= 90, marking interview as completed!")
+            
+            # Update parent job's stages_completed
+            if interview.job_id:
+                job = await get_job(req, interview.job_id)
+                if job:
+                    new_stages_completed = job.stages_completed + 1
+                    print(f"   - Updating job stages_completed from {job.stages_completed} to {new_stages_completed}")
+                    await update_job(req, interview.job_id, 
+                                   stages_completed=new_stages_completed)
+        
+        await update_interview(req, interview_id, **updates)
+        print(f"   ✅ SUCCESS: Interview updated with best score {score}")
+    else:
+        print(f"   - Score {score} is not better than current best {interview.best_score}, no update needed")
 
 async def get_attempt_feedback(req: Request, attempt_id: str) -> Optional[InterviewFeedback]:
     """Get feedback for a specific attempt"""

@@ -18,6 +18,7 @@ class Interview(MongoBaseModel):
     
     # Metadata
     total_attempts: int = 0
+    best_score: int = 0  # Track highest score achieved across all attempts
     last_attempt_date: Optional[str] = None
     
     # Legacy fields for backward compatibility during migration
