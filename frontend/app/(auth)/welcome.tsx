@@ -14,7 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TYPOGRAPHY } from '../../constants/Typography';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
@@ -185,13 +184,13 @@ const Welcome = () => {
             <Text style={styles.loginLinkText}>Already have an account?</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={[styles.loginLink, { marginTop: 8 }]} 
             onPress={() => router.push('/(onboarding)/profile-setup')}
             activeOpacity={0.7}
           >
             <Text style={[styles.loginLinkText, { color: '#F59E0B' }]}>Test Onboarding Flow</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </Animated.View>
 
         {/* Bottom Sheet Modal */}
@@ -223,8 +222,8 @@ const Welcome = () => {
                 </Text>
 
                 <View style={styles.signInOptions}>
-                  <GoogleSignIn setLoginErrorMessage={setLoginErrorMessage} />
-                  <AppleSignIn setLoginErrorMessage={setLoginErrorMessage} />
+                  <GoogleSignIn />
+                  <AppleSignIn />
                   
                   <View style={styles.dividerContainer}>
                     <View style={styles.divider} />
@@ -328,7 +327,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgb(169, 85, 247)',
   },
   getStartedText: {
-    fontSize: 18, // Design system typography.button.large
     ...TYPOGRAPHY.buttonMedium,
     color: '#ffffff',
     marginRight: 8,
@@ -348,7 +346,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   loginLinkText: {
-    fontSize: 15,
     ...TYPOGRAPHY.bodySmall,
     color: 'rgba(255, 255, 255, 0.65)',
     textAlign: 'center',
@@ -395,7 +392,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalSubtitle: {
-    fontSize: 16, // Design system typography.body.medium
     ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.70)', // Design system text.tertiary
     textAlign: 'center',
@@ -417,7 +413,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.15)', // Glass border color
   },
   dividerText: {
-    fontSize: 14, // Design system typography.label.medium
     ...TYPOGRAPHY.labelMedium,
     color: 'rgba(255, 255, 255, 0.55)', // Design system text.muted
     marginHorizontal: 16,
@@ -436,7 +431,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   emailButtonText: {
-    fontSize: 16, // Design system typography.button.medium
     ...TYPOGRAPHY.buttonSmall,
     color: '#F59E0B',
     flex: 1,
