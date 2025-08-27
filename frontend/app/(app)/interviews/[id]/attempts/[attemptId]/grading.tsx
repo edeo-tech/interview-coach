@@ -117,6 +117,7 @@ export default function AttemptGradingScreen() {
   const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
 
   const [pollCount, setPollCount] = useState(0);
+  const [showAnimation, setShowAnimation] = useState(true); // Separate state for animation visibility
 
   useFocusEffect(
     React.useCallback(() => {
@@ -146,7 +147,7 @@ export default function AttemptGradingScreen() {
     };
   }, [data, refetch, pollCount]);
 
-  const loading = isLoading || !data;
+  const loading = isLoading && !data; // Only show loading when actually loading and no data
   const feedbackAccess = canViewDetailedFeedback();
 
   const renderLoadingState = () => {
@@ -154,7 +155,9 @@ export default function AttemptGradingScreen() {
       <InterviewGradingProgress 
         isFeedbackReady={!!data} // Pass whether feedback data is available
         onComplete={() => {
-          // Animation completed - data should already be loaded
+          // Animation completed - hide animation and show feedback
+          console.log('🎊 Animation sequence complete - showing feedback');
+          setShowAnimation(false);
           if (!data) {
             console.log('⚠️ Animation completed but no data - forcing refetch');
             refetch();
@@ -348,7 +351,7 @@ export default function AttemptGradingScreen() {
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
         
-        {!loading && (data ? renderFeedback() : (
+        {!showAnimation && (data ? renderFeedback() : (
           <View style={styles.center}>
             <View style={styles.emptyCard}>
               <Ionicons name="document-text" size={48} color={Colors.gray[500]} />
@@ -361,7 +364,7 @@ export default function AttemptGradingScreen() {
         ))}
         
         {/* Only show footer button if coming from interview */}
-        {is_from_interview === 'true' && !loading && (
+        {is_from_interview === 'true' && !showAnimation && (
           <View style={styles.footer}>
             <TouchableOpacity 
               style={[
@@ -385,7 +388,7 @@ export default function AttemptGradingScreen() {
       </View>
       
       {/* Full-screen loading animation overlay */}
-      {loading && renderLoadingState()}
+      {showAnimation && renderLoadingState()}
     </ChatGPTBackground>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -71,6 +71,7 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [waitingForFeedback, setWaitingForFeedback] = useState(false);
+  const isMountedRef = useRef(true);
   const { impactAsync, notificationAsync } = useHapticsSafely();
   
   // Animation values
@@ -101,11 +102,25 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
   useEffect(() => {
     startProgressAnimation();
     startPulseAnimation();
+    
+    // Cleanup on unmount
+    return () => {
+      isMountedRef.current = false;
+      // Stop all animations
+      progressAnim.stopAnimation();
+      pulseAnim.stopAnimation();
+      fadeAnim.stopAnimation();
+      scaleAnim.stopAnimation();
+      successAnim.stopAnimation();
+      ringAnim.stopAnimation();
+      stageTextOpacity.stopAnimation();
+      stageIconOpacity.stopAnimation();
+    };
   }, []);
 
   // Monitor feedback ready status
   useEffect(() => {
-    if (isFeedbackReady && waitingForFeedback) {
+    if (isFeedbackReady && waitingForFeedback && isMountedRef.current) {
       console.log('✅ Feedback is ready, completing animation...');
       completeFromWaiting();
     }
@@ -160,6 +175,8 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
           useNativeDriver: true,
         }),
       ]).start(() => {
+        if (!isMountedRef.current) return;
+        
         // Update stage after fade out
         setCurrentStageIndex(stageIndex);
         
@@ -191,6 +208,11 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
 
       // Update progress state for display
       const progressInterval = setInterval(() => {
+        if (!isMountedRef.current) {
+          clearInterval(progressInterval);
+          return;
+        }
+        
         const isLastStage = stageIndex === GRADING_STAGES.length - 1;
         const maxProgress = isLastStage ? 98 : targetProgress; // Stop at 98% on last stage
         
@@ -200,6 +222,8 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
         if (currentProgress >= maxProgress - 0.5) {
           clearInterval(progressInterval);
           
+          if (!isMountedRef.current) return;
+          
           if (isLastStage) {
             // Last stage reached 98% - wait for feedback to be ready
             console.log('🔄 Reached 98%, waiting for feedback to be ready...');
@@ -208,8 +232,10 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
           }
           
           setTimeout(() => {
-            stageIndex++;
-            animateStage();
+            if (isMountedRef.current) {
+              stageIndex++;
+              animateStage();
+            }
           }, 500); // Slightly longer pause between stages
         }
       }, 80); // Slower update interval
@@ -231,22 +257,151 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
 
     // Update progress to 100% with smooth animation
     const finalProgressInterval = setInterval(() => {
+      if (!isMountedRef.current) {
+        clearInterval(finalProgressInterval);
+        return;
+      }
+      
       setProgress(prev => {
         const newProgress = prev + (100 - prev) * 0.12;
         if (newProgress >= 99.8) {
           clearInterval(finalProgressInterval);
-          setProgress(100);
-          
-          // Wait a moment then trigger success animation
-          setTimeout(() => {
-            console.log('🎉 Starting success animation...');
-            setIsComplete(true);
-            triggerSuccessAnimation();
-          }, 400);
+          if (isMountedRef.current) {
+            setProgress(100);
+            
+            // Wait a moment then trigger success animation  
+            setTimeout(() => {
+              if (isMountedRef.current) {
+                console.log('🎉 Starting success animation sequence...');
+                setIsComplete(true);
+                triggerSuccessAnimationThenComplete();
+              }
+            }, 500); // Slightly longer pause to see 100%
+          }
         }
         return newProgress;
       });
     }, 60);
+  };
+
+  const triggerSuccessAnimationThenComplete = () => {
+    // Stop pulse animation
+    pulseAnim.stopAnimation();
+    
+    // Success haptic feedback
+    notificationAsync(NotificationFeedbackType.Success);
+    
+    console.log('🎊 Playing full success animation before transition...');
+    
+    // Success animation sequence
+    Animated.sequence([
+      // Scale up the circle with bounce
+      Animated.timing(scaleAnim, {
+        toValue: 1.25,
+        duration: 400,
+        easing: Easing.out(Easing.back(1.8)),
+        useNativeDriver: true,
+      }),
+      // Scale back to normal and trigger effects
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        // Ring expansion for celebration
+        Animated.timing(ringAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+      // Show success checkmark
+      Animated.timing(successAnim, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.out(Easing.back(1.5)),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      console.log('✅ Success animation complete - starting sparkles...');
+    });
+    
+    // Animate sparkle particles
+    const sparkleAnimations = sparkleParticles.map((particle, index) => {
+      const angle = (particle.rotation * Math.PI) / 180;
+      const distance = 90 + (index % 2) * 20; // Varied distances
+      const endX = Math.cos(angle) * distance;
+      const endY = Math.sin(angle) * distance;
+      
+      return Animated.sequence([
+        Animated.delay(particle.delay),
+        Animated.parallel([
+          Animated.timing(particle.scale, {
+            toValue: 0.8 + (index % 3) * 0.2, // Varied sizes
+            duration: 400,
+            easing: Easing.out(Easing.back(2)),
+            useNativeDriver: true,
+          }),
+          Animated.timing(particle.translateX, {
+            toValue: endX,
+            duration: 800,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(particle.translateY, {
+            toValue: endY,
+            duration: 800,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(particle.opacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Twinkle effect
+        Animated.sequence([
+          Animated.timing(particle.opacity, {
+            toValue: 0.4,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(particle.opacity, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Fade out sparkles
+        Animated.timing(particle.opacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]);
+    });
+    
+    Animated.parallel(sparkleAnimations).start();
+    
+    // Wait for FULL celebration sequence to complete before transitioning
+    setTimeout(() => {
+      if (!isMountedRef.current) return;
+      
+      console.log('🎊 Full success celebration complete - transitioning to feedback...');
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }).start(() => {
+        if (isMountedRef.current) {
+          onComplete();
+        }
+      });
+    }, 4500); // Extended timing to ensure full celebration plays (400 + 300 + 500 + 3300 sparkle time)
   };
 
   const triggerSuccessAnimation = () => {
@@ -350,13 +505,17 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
     
     // Wait for full celebration sequence to complete
     setTimeout(() => {
+      if (!isMounted) return;
+      
       console.log('🎊 Success animation complete - transitioning to feedback...');
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 800,
         useNativeDriver: true,
       }).start(() => {
-        onComplete();
+        if (isMountedRef.current) {
+          onComplete();
+        }
       });
     }, 4000); // Extended from 3000 to 4000ms for full celebration
   };
@@ -366,31 +525,7 @@ const InterviewGradingProgress: React.FC<InterviewGradingProgressProps> = ({ onC
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <View style={styles.container}>
-      {/* Grading-specific gradient background */}
-      <LinearGradient
-        colors={[
-          '#0F172A', // slate 900
-          '#1E293B', // slate 800
-          '#334155', // slate 700
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.gradientBackground}
-      />
-      
-      {/* Animated accent streaks for feedback analysis */}
-      <LinearGradient
-        colors={[
-          'rgba(168, 85, 247, 0.12)', // purple 500
-          'rgba(34, 197, 94, 0.08)',  // emerald 500
-          'rgba(245, 158, 11, 0.06)', // amber 500
-          'rgba(59, 130, 246, 0)',    // blue 500
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0.8 }}
-        style={styles.accentStreak}
-      />
+    <View style={[styles.container, { backgroundColor: Colors.black }]}>
       
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Progress Circle */}
