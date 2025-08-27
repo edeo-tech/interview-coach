@@ -330,16 +330,6 @@ export default function Profile() {
                             router.push('/(app)/settings');
                         }}
                     />
-                    <MenuItem 
-                        icon="document-text-outline" 
-                        label="Terms of Service"
-                        onPress={() => {
-                            posthogCapture('view_terms_of_service', {
-                                source: 'profile'
-                            });
-                            router.push('/(app)/terms');
-                        }}
-                    />
                 </View>
             </View>
 
@@ -491,7 +481,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
         marginBottom: 40,
         padding: 16,
-        borderRadius: 16,
+        borderRadius: 50,
         borderWidth: 1,
         borderColor: Colors.glass.errorBorder,
         gap: 8,

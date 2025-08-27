@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { View, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import * as Haptics from 'expo-haptics';
 import Colors from '../../../constants/Colors';
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -51,12 +52,15 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 </View>
                 <TouchableOpacity
                     style={styles.centerButton}
-                    onPress={() => router.push('/interviews/create')}
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        router.push('/interviews/create');
+                    }}
                     activeOpacity={0.9}
                 >
                     <BlurView tint="dark" intensity={20} style={styles.centerButtonBlur}>
                         <View style={styles.centerButtonInner}>
-                            <Ionicons name="add" size={28} color={Colors.white} />
+                            <Ionicons name="add" size={32} color={Colors.white} style={{ fontWeight: 'bold' }} />
                         </View>
                     </BlurView>
                 </TouchableOpacity>
@@ -187,8 +191,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: Colors.glass.background,
-        borderWidth: 1,
+        backgroundColor: 'transparent',
+        borderWidth: 0,
         borderColor: Colors.glass.border,
     },
     centerButtonInner: {
