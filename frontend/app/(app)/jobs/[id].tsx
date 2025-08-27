@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -52,8 +52,7 @@ const getInterviewTypeIcon = (type: InterviewType | string): string => {
   return iconMap[type] || 'chatbubble';
 };
 
-const getStatusColor = (status: string, isLocked: boolean = false): string => {
-  if (isLocked) return Colors.gray[500]; // Muted gray for locked
+const getStatusColor = (status: string): string => {
   switch (status) {
     case 'completed': return Colors.semantic.successAlt;
     case 'active': return Colors.accent.blueAlt;
@@ -62,55 +61,22 @@ const getStatusColor = (status: string, isLocked: boolean = false): string => {
   }
 };
 
-const isStageUnlocked = (interviews: any[], currentIndex: number): boolean => {
-  // First stage is always unlocked
-  if (currentIndex === 0) return true;
-  
-  // Check if previous stage has best_score >= 90
-  const previousInterview = interviews[currentIndex - 1];
-  return previousInterview && (
-    previousInterview.status === 'completed' || 
-    previousInterview.best_score >= 90
-  );
-};
-
-const isCurrentActiveStage = (interviews: any[], currentIndex: number): boolean => {
-  // Must be unlocked and not completed
-  const isUnlocked = isStageUnlocked(interviews, currentIndex);
-  const interview = interviews[currentIndex];
-  return isUnlocked && interview.status !== 'completed' && interview.best_score < 90;
+const isCurrentActiveStage = (interview: any): boolean => {
+  // Active if not completed
+  return interview.status !== 'completed' && interview.best_score < 90;
 };
 
 export default function JobDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: jobData, isLoading, error } = useJobDetails(id);
   const startAttempt = useStartJobInterviewAttempt();
-  const [showLockedPopup, setShowLockedPopup] = useState(false);
-  const [lockedStageInfo, setLockedStageInfo] = useState<{stageName: string, stageNumber: number} | null>(null);
 
-  const handleInterviewPress = (interview: any, index: number) => {
-    const isUnlocked = isStageUnlocked(interviews, index);
-    if (isUnlocked) {
-      // Success haptic for unlocked stages
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      router.push(`/interviews/${interview._id}/details` as any);
-    } else {
-      // Warning haptic for locked stages
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      // Show popup for locked stage
-      setLockedStageInfo({
-        stageName: getInterviewTypeDisplayName(interview.interview_type),
-        stageNumber: index + 1
-      });
-      setShowLockedPopup(true);
-    }
+  const handleInterviewPress = (interview: any) => {
+    // Success haptic for all stages
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push(`/interviews/${interview._id}/details` as any);
   };
 
-  const getPreviousStageName = (currentIndex: number): string => {
-    if (currentIndex === 0) return '';
-    const previousInterview = interviews[currentIndex - 1];
-    return getInterviewTypeDisplayName(previousInterview.interview_type);
-  };
 
   if (isLoading) {
     return (
@@ -222,17 +188,13 @@ export default function JobDetails() {
             
             <View style={styles.stagesContainer}>
               {interviews.map((interview, index) => {
-                const isUnlocked = isStageUnlocked(interviews, index);
-                const isActive = isCurrentActiveStage(interviews, index);
+                const isActive = isCurrentActiveStage(interview);
                 const isCompleted = interview.status === 'completed';
                 return (
                   <TouchableOpacity
                     key={interview._id}
-                    onPress={() => handleInterviewPress(interview, index)}
-                    style={[
-                      styles.stageCard,
-                      !isUnlocked && styles.stageCardLocked
-                    ]}
+                    onPress={() => handleInterviewPress(interview)}
+                    style={styles.stageCard}
                   >
                     <View style={[
                       styles.stageNumber,
@@ -260,7 +222,7 @@ export default function JobDetails() {
                         </Text>
                       </View>
                       
-                      {isUnlocked && interview.total_attempts > 0 && (
+                      {interview.total_attempts > 0 && (
                         <Text style={styles.attemptsText}>
                           {interview.total_attempts} attempt{interview.total_attempts !== 1 ? 's' : ''}
                         </Text>
@@ -272,17 +234,6 @@ export default function JobDetails() {
                       size={20} 
                       color={GlassTextColors.muted} 
                     />
-                    
-                    {/* Lock overlay for locked stages */}
-                    {!isUnlocked && (
-                      <View style={styles.lockOverlay}>
-                        <Ionicons 
-                          name="lock-closed" 
-                          size={24} 
-                          color={Colors.text.primary} 
-                        />
-                      </View>
-                    )}
                   </TouchableOpacity>
                 );
               })}
@@ -290,59 +241,6 @@ export default function JobDetails() {
           </View>
         </ScrollView>
       </SafeAreaView>
-
-      {/* Locked Stage Popup */}
-      <Modal
-        visible={showLockedPopup}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowLockedPopup(false)}
-      >
-        <View style={styles.popupBackdrop}>
-          <TouchableOpacity 
-            style={styles.popupBackdropTouchable}
-            activeOpacity={1}
-            onPress={() => setShowLockedPopup(false)}
-          >
-            <View style={styles.popupContainer}>
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <View style={styles.popupContent}>
-                  {/* Lock Icon */}
-                  <View style={styles.popupIconContainer}>
-                    <Ionicons name="lock-closed" size={32} color={Colors.brand.primary} />
-                  </View>
-                  
-                  {/* Title */}
-                  <Text style={styles.popupTitle}>Stage Locked</Text>
-                  
-                  {/* Message */}
-                  <Text style={styles.popupMessage}>
-                    {lockedStageInfo ? (
-                      `To unlock "${lockedStageInfo.stageName}" (Stage ${lockedStageInfo.stageNumber}), you need to complete the previous stage first.`
-                    ) : (
-                      'Complete the previous stage to unlock this interview step.'
-                    )}
-                  </Text>
-                  
-                  
-                  {/* Close Button */}
-                  <TouchableOpacity 
-                    onPress={() => {
-                      // Light haptic for dismissal
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setShowLockedPopup(false);
-                    }}
-                    style={styles.popupButton}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.popupButtonText}>Got it</Text>
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </Modal>
     </ChatGPTBackground>
   );
 }
@@ -492,22 +390,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     position: 'relative',
   },
-  stageCardLocked: {
-    backgroundColor: Colors.glass.backgroundSubtle,
-    opacity: 0.4,
-  },
-  lockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: Colors.overlay.medium,
-    borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
   stageNumber: {
     width: 32,
     height: 32,
@@ -585,76 +467,5 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.buttonMedium,
     color: GlassTextColors.primary,
     marginHorizontal: 8,
-  },
-  // Popup Styles
-  popupBackdrop: {
-    flex: 1,
-    backgroundColor: Colors.overlay.dark,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  popupBackdropTouchable: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  popupContainer: {
-    paddingHorizontal: 20,
-    width: '100%',
-    maxWidth: 340,
-  },
-  popupContent: {
-    backgroundColor: Colors.overlay.solid, // Solid dark background instead of glass
-    borderWidth: 1,
-    borderColor: Colors.glass.borderInteractive,
-    padding: 24,
-    alignItems: 'center',
-    borderRadius: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.black,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.3,
-        shadowRadius: 16,
-      }
-    }),
-  },
-  popupIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.glass.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  popupTitle: {
-    ...TYPOGRAPHY.pageTitle,
-    color: GlassTextColors.primary,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  popupMessage: {
-    ...TYPOGRAPHY.bodyMedium,
-    color: GlassTextColors.secondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-  popupButton: {
-    backgroundColor: Colors.glass.purpleMedium,
-    borderWidth: 2,
-    borderColor: Colors.brand.primary,
-    borderRadius: 28,
-    height: 56,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 120,
-  },
-  popupButtonText: {
-    ...TYPOGRAPHY.buttonMedium,
-    color: GlassTextColors.primary,
   },
 });

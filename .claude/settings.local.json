@@ -27,7 +27,8 @@
       "Bash(pkill:*)",
       "Bash(npm search:*)",
       "Bash(npm install:*)",
-      "Bash(npm info:*)"
+      "Bash(npm info:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
