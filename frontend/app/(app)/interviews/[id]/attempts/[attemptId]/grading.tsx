@@ -210,6 +210,37 @@ export default function AttemptGradingScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Likelihood Reminder */}
+        <View style={styles.likelihoodReminder}>
+          <View style={styles.likelihoodHeader}>
+            <Ionicons name="trophy" size={20} color={getScoreColor(data?.overall_score || 0)} />
+            <Text style={styles.likelihoodTitle}>Your Advancement Likelihood</Text>
+          </View>
+          <View style={styles.likelihoodContent}>
+            <View style={styles.likelihoodScoreContainer}>
+              <Text style={[styles.likelihoodScore, { color: getScoreColor(data?.overall_score || 0) }]}>
+                {data?.overall_score || 0}%
+              </Text>
+              <Text style={styles.likelihoodLabel}>
+                {getAdvancementLabel(data?.overall_score || 0)}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.likelihoodProgressContainer}>
+            <View style={styles.likelihoodProgressBar}>
+              <View 
+                style={[
+                  styles.likelihoodProgress, 
+                  { 
+                    backgroundColor: getScoreColor(data?.overall_score || 0), 
+                    width: `${data?.overall_score || 0}%` 
+                  }
+                ]} 
+              />
+            </View>
+          </View>
+        </View>
+
         {/* Performance Breakdown */}
         <BlurredSection 
           isBlurred={feedbackAccess.shouldBlur} 
@@ -697,4 +728,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  // Likelihood Reminder Styles
+  likelihoodReminder: {
+    backgroundColor: Colors.glass.background,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: Colors.glass.border,
+  },
+  likelihoodHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  likelihoodTitle: {
+    ...TYPOGRAPHY.sectionHeader,
+    color: Colors.text.primary,
+  },
+     likelihoodContent: {
+     alignItems: 'center',
+     marginBottom: 16,
+   },
+   likelihoodScoreContainer: {
+     alignItems: 'center',
+     marginBottom: 12,
+   },
+   likelihoodScore: {
+     fontSize: 36,
+     fontWeight: 'bold',
+     marginBottom: 4,
+   },
+   likelihoodLabel: {
+     ...TYPOGRAPHY.bodyMedium,
+     color: Colors.text.secondary,
+   },
+   likelihoodProgressContainer: {
+     width: '100%',
+   },
+   likelihoodProgressBar: {
+     height: 8,
+     backgroundColor: Colors.glass.background,
+     borderRadius: 4,
+     overflow: 'hidden',
+   },
+   likelihoodProgress: {
+     height: '100%',
+     borderRadius: 4,
+   },
 });
