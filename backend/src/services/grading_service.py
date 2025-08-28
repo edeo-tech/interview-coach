@@ -123,18 +123,8 @@ class InterviewGradingService:
     async def _save_feedback(self, req: Request, attempt_id: str, interview: Dict, 
                            interview_type: InterviewType, feedback_data: Dict):
         """Save feedback to database and mark attempt as graded"""
-        print(f"\n[GRADING-SAVE] Starting feedback save process...")
-        print(f"[GRADING-SAVE] Feedback data to save:")
-        print(f"  - Attempt ID: {attempt_id}")
-        print(f"  - Interview ID: {interview.get('id') or interview.get('_id')}")
-        print(f"  - Job ID: {interview.get('job_id', 'N/A')}")
-        print(f"  - User ID: {interview.get('user_id')}")
-        print(f"  - Interview type: {interview_type.value}")
-        print(f"  - Overall score: {feedback_data['overall_score']}")
-        print(f"  - Rubric scores: {feedback_data['rubric_scores']}")
         
         try:
-            print(f"\n[GRADING-SAVE] Creating feedback record in database...")
             await create_feedback(
                 req,
                 attempt_id,
@@ -148,20 +138,13 @@ class InterviewGradingService:
                 detailed_feedback=feedback_data["detailed_feedback"],
                 rubric_scores=feedback_data["rubric_scores"],
             )
-            print(f"[GRADING-SAVE] ✓ Feedback record created successfully")
-            
-            print(f"\n[GRADING-SAVE] Updating attempt status to 'graded'...")
             await update_attempt(req, attempt_id, status="graded")
-            print(f"[GRADING-SAVE] ✓ Attempt status updated to 'graded'")
             
         except Exception as save_error:
-            print(f"[GRADING-SAVE] ❌ ERROR during save: {str(save_error)}")
-            print(f"[GRADING-SAVE] Error type: {type(save_error).__name__}")
             raise
     
     def _format_transcript(self, transcript: List[Dict]) -> str:
         """Format transcript for AI analysis"""
-        print(f"\n[GRADING-FORMAT] Processing transcript entries...")
         formatted = []
         
         for i, turn in enumerate(transcript):
@@ -170,60 +153,43 @@ class InterviewGradingService:
             text = turn.get('message', turn.get('text', ''))
             timestamp = turn.get('time_in_call_secs', turn.get('timestamp', ''))
             
-            print(f"[GRADING-FORMAT] Turn {i+1}/{len(transcript)}:")
-            print(f"  - Speaker/Role: {speaker}")
-            print(f"  - Message length: {len(text)} chars")
-            print(f"  - Time in call: {timestamp}s")
-            print(f"  - First 100 chars: {text[:100]}..." if len(text) > 100 else f"  - Full message: {text}")
-            
             if text.strip():
                 formatted.append(f"{speaker.upper()}: {text}")
             else:
-                print(f"  - ⚠️  Skipping empty message")
-        
-        print(f"\n[GRADING-FORMAT] Transcript formatting complete:")
-        print(f"  - Total turns processed: {len(transcript)}")
-        print(f"  - Valid turns kept: {len(formatted)}")
-        print(f"  - Empty turns skipped: {len(transcript) - len(formatted)}")
+                pass
         
         return "\n".join(formatted)
     
     def _build_grading_prompt(self, interview: Dict, transcript: str, interview_type: InterviewType) -> str:
         """Build the grading prompt using interview type configuration"""
-        print(f"\n[GRADING-PROMPT] Building grading prompt...")
-        
         config = get_interview_config(interview_type)
-        print(f"[GRADING-PROMPT] Using config for: {config.display_name}")
+
+        print(f"[GRADING] Config: {config}")
+        print(f"[GRADING] Interview: {interview}")
+        print(f"[GRADING] Transcript: {transcript}")
+        print(f"[GRADING] Interview type: {interview_type}")
         
         role = interview.get('role_title', 'Software Engineer')
+        print(f"[GRADING] Role: {role}")
         company = interview.get('company', 'the company')
+        print(f"[GRADING] Company: {company}")
         difficulty = interview.get('difficulty', 'mid')
-        
-        print(f"[GRADING-PROMPT] Interview details:")
-        print(f"  - Role: {role}")
-        print(f"  - Company: {company}")
-        print(f"  - Difficulty: {difficulty}")
-        
+        print(f"[GRADING] Difficulty: {difficulty}")
+
         jd_structured = interview.get('jd_structured', {})
         requirements = jd_structured.get('requirements', 'Standard requirements')
-        print(f"[GRADING-PROMPT] Requirements: {requirements[:200]}..." if len(requirements) > 200 else f"[GRADING-PROMPT] Requirements: {requirements}")
+        print(f"[GRADING] Jd structured: {jd_structured}")
+        print(f"[GRADING] Requirements: {requirements}")
         
         # Get company values if it's a values interview
         company_values = ''
         if interview_type == InterviewType.VALUES_INTERVIEW:
             # Extract company values from job description or use defaults
             company_values = jd_structured.get('company_values', 'Innovation, Collaboration, Integrity, Customer Focus')
-            print(f"[GRADING-PROMPT] Company values: {company_values}")
+            print(f"[GRADING] Company values: {company_values}")
+
         
         # Use the configured prompt template
-        print(f"[GRADING-PROMPT] Template variables:")
-        print(f"  - role: {role}")
-        print(f"  - company: {company}")
-        print(f"  - difficulty: {difficulty}")
-        print(f"  - requirements length: {len(requirements)} chars")
-        print(f"  - transcript length: {len(transcript)} chars")
-        if company_values:
-            print(f"  - company_values: {company_values}")
         
         prompt = config.prompt_template.format(
             role=role,
@@ -233,11 +199,7 @@ class InterviewGradingService:
             transcript=transcript,
             company_values=company_values
         )
-        
-        print(f"[GRADING-PROMPT] Final prompt built:")
-        print(f"  - Total length: {len(prompt)} chars")
-        print(f"  - Rubric criteria count: {len(config.rubric_criteria)}")
-        print(f"  - Rubric keys: {[c.key for c in config.rubric_criteria]}")
+        print(f"[GRADING] Prompt: {prompt}")
         
         return prompt
     
@@ -371,16 +333,9 @@ grading_service = InterviewGradingService()
 
 async def trigger_interview_grading(req: Request, attempt_id: str):
     """Trigger grading for an interview attempt"""
-    print(f"\n[GRADING-TRIGGER] Interview grading triggered")
-    print(f"[GRADING-TRIGGER] Attempt ID: {attempt_id}")
     
     try:
         feedback_data = await grading_service.grade_interview(req, attempt_id)
-        print(f"[GRADING-TRIGGER] ✅ Interview {attempt_id} graded successfully")
-        print(f"[GRADING-TRIGGER] Overall score: {feedback_data.get('overall_score', 'N/A')}")
         return feedback_data
     except Exception as e:
-        print(f"[GRADING-TRIGGER] ❌ Failed to grade interview {attempt_id}")
-        print(f"[GRADING-TRIGGER] Error: {str(e)}")
-        print(f"[GRADING-TRIGGER] Error type: {type(e).__name__}")
         return None
