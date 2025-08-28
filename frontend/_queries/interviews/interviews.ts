@@ -96,6 +96,7 @@ export const useStartAttempt = () => {
     mutationFn: (interviewId: string) => interviewsApi.startAttempt(interviewId),
     onSuccess: (_, interviewId) => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.detail(interviewId) });
+      queryClient.invalidateQueries({ queryKey: interviewKeys.attemptsList(interviewId) });
     },
   });
 };

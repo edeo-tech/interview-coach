@@ -172,7 +172,7 @@ export default function Profile() {
             source: 'profile',
             job_id: jobId
         });
-        router.push(`/jobs/${jobId}` as any);
+        router.push(`/home/jobs/${jobId}` as any);
     };
 
     const handleLogout = () => {

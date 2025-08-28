@@ -6,6 +6,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
+import { useInterview } from '../../../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import InterviewGradingProgress from '../../../../../../components/InterviewGradingProgress';
@@ -113,6 +114,7 @@ const blurredStyles = StyleSheet.create({
 export default function AttemptGradingScreen() {
   const { id, attemptId, is_from_interview } = useLocalSearchParams<{ id: string; attemptId: string; is_from_interview?: string }>();
   const { data, isLoading, isFetching, refetch } = useAttemptFeedback(attemptId);
+  const { data: interviewData } = useInterview(id);
   const { posthogScreen } = usePosthogSafely();
   const { impactAsync } = useHapticsSafely();
   const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
@@ -367,7 +369,15 @@ export default function AttemptGradingScreen() {
               onPress={() => {
                 if (data) {
                   impactAsync(ImpactFeedbackStyle.Medium);
-                  router.replace('/(app)/(tabs)/home');
+                  
+                  const score = data.overall_score || 0;
+                  if (score >= 90 && interviewData?.interview?.job_id) {
+                    // High score - route to job details
+                    router.replace(`/home/jobs/${interviewData.interview.job_id}` as any);
+                  } else {
+                    // Low score - route to interview details for improvement
+                    router.replace(`/home/interviews/${id}/details` as any);
+                  }
                 }
               }}
               disabled={!data}

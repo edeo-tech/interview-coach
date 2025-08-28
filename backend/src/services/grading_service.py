@@ -22,34 +22,32 @@ class InterviewGradingService:
     
     async def grade_interview(self, req: Request, attempt_id: str) -> Dict:
         """Grade an interview attempt using AI"""
-        print(f"\n🤖 [GRADING] Starting interview grading process:")
-        print(f"   - Attempt ID: {attempt_id}")
+
+        print(f"[GRADING] Attempt ID: {attempt_id}")
         
         try:
             # Get attempt and interview data
             attempt = await self._get_attempt_data(req, attempt_id)
-            print(f"   - Attempt status: {attempt.get('status')}")
-            print(f"   - Transcript length: {len(attempt.get('transcript', []))}")
+            print(f"[GRADING] Attempt: {attempt}")
             
             interview = await self._get_interview_data(req, attempt['interview_id'])
-            print(f"   - Interview role: {interview.get('role_title')}")
-            print(f"   - Company: {interview.get('company')}")
+            print(f"[GRADING] Interview: {interview}")
             
             # Get interview type
             interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
-            print(f"   - Interview type: {interview_type.value}")
+            print(f"[GRADING] Interview type: {interview_type}")
             
             if not attempt or not interview:
                 raise ValueError("Required interview data not found")
             
             # Format transcript for analysis
             transcript_text = self._format_transcript(attempt.get('transcript', []))
-            print(f"   - Formatted transcript length: {len(transcript_text)} characters")
+            print(f"[GRADING] Transcript text: {transcript_text}")
             
             if not transcript_text.strip():
                 # No transcript to grade - should get very low score
-                print(f"   ⚠️  WARNING: No transcript content found! Using minimal score feedback.")
                 default_feedback = await self._create_no_interview_feedback(attempt_id, interview)
+                print(f"[GRADING] Default feedback: {default_feedback}")
                 
                 # Save to database
                 await self._save_feedback(req, attempt_id, interview, interview_type, default_feedback)
@@ -57,19 +55,19 @@ class InterviewGradingService:
             
             # Create grading prompt using interview type config
             grading_prompt = self._build_grading_prompt(interview, transcript_text, interview_type)
-            print(f"   - Grading prompt length: {len(grading_prompt)} characters")
+            print(f"[GRADING] Grading prompt: {grading_prompt}")
             
             # Check if API key is configured
             if not OPENAI_API_KEY:
-                print(f"   ❌ ERROR: OPENAI_API_KEY not configured! Using default feedback.")
                 default_feedback = await self._create_fallback_feedback(attempt_id, interview)
-                
+                print(f"[GRADING] Default feedback: {default_feedback}")
+
                 # Save to database
                 await self._save_feedback(req, attempt_id, interview, interview_type, default_feedback)
                 return default_feedback
             
             # Call OpenAI API
-            print(f"   - Calling OpenAI API...")
+            
             response = await self.client.post(
                 "/chat/completions",
                 json={
@@ -79,29 +77,29 @@ class InterviewGradingService:
                     "temperature": 0.3
                 }
             )
-            
+            print(f"[GRADING] Response: {response}")
+
             response.raise_for_status()
             result = response.json()
-            print(f"   - OpenAI API response received")
+            print(f"[GRADING] Result: {result}")
             
             # Parse the AI response
             feedback_data = json.loads(result['choices'][0]['message']['content'])
-            print(f"   - Parsed feedback data successfully")
+            print(f"[GRADING] Feedback data 1: {feedback_data}")
             
             # Ensure required fields exist
             feedback_data = self._validate_feedback_data(feedback_data, interview_type)
-            print(f"   - Validated feedback data")
+            print(f"[GRADING] Feedback data 2: {feedback_data}")
             
             # Save feedback to database
             await self._save_feedback(req, attempt_id, interview, interview_type, feedback_data)
             
-            print(f"   ✅ SUCCESS: Interview grading completed!")
             return feedback_data
             
         except Exception as e:
-            print(f"   ❌ ERROR grading interview: {str(e)}")
             import traceback
             traceback.print_exc()
+            print(f"[GRADING] Error: {e}")
             
             # Try to get interview data if not already loaded
             try:
@@ -110,8 +108,7 @@ class InterviewGradingService:
                 if 'interview' not in locals():
                     interview = await self._get_interview_data(req, attempt['interview_id'])
                 interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
-            except:
-                print(f"   ❌ Could not load interview data for fallback")
+            except Exception as recovery_error:
                 return {"error": "Failed to grade interview and could not create fallback"}
             
             # Create default feedback and still save it
@@ -119,69 +116,81 @@ class InterviewGradingService:
             
             try:
                 await self._save_feedback(req, attempt_id, interview, interview_type, default_feedback)
-                print(f"   ✅ Default feedback saved successfully")
             except Exception as save_error:
-                print(f"   ❌ ERROR saving default feedback: {str(save_error)}")
-            
+                pass
             return default_feedback
     
     async def _save_feedback(self, req: Request, attempt_id: str, interview: Dict, 
                            interview_type: InterviewType, feedback_data: Dict):
         """Save feedback to database and mark attempt as graded"""
-        print(f"   - Saving feedback to database...")
-        await create_feedback(
-            req,
-            attempt_id,
-            interview['id'] if 'id' in interview else interview.get('_id'),
-            interview.get('job_id', ''),
-            interview['user_id'],
-            interview_type=interview_type,
-            overall_score=feedback_data["overall_score"],
-            strengths=feedback_data["strengths"],
-            improvement_areas=feedback_data["improvement_areas"],
-            detailed_feedback=feedback_data["detailed_feedback"],
-            rubric_scores=feedback_data["rubric_scores"],
-        )
         
-        print(f"   - Updating attempt status to 'graded'...")
-        await update_attempt(req, attempt_id, status="graded")
+        try:
+            await create_feedback(
+                req,
+                attempt_id,
+                interview['id'] if 'id' in interview else interview.get('_id'),
+                interview.get('job_id', ''),
+                interview['user_id'],
+                interview_type=interview_type,
+                overall_score=feedback_data["overall_score"],
+                strengths=feedback_data["strengths"],
+                improvement_areas=feedback_data["improvement_areas"],
+                detailed_feedback=feedback_data["detailed_feedback"],
+                rubric_scores=feedback_data["rubric_scores"],
+            )
+            await update_attempt(req, attempt_id, status="graded")
+            
+        except Exception as save_error:
+            raise
     
     def _format_transcript(self, transcript: List[Dict]) -> str:
         """Format transcript for AI analysis"""
         formatted = []
-        for turn in transcript:
+        
+        for i, turn in enumerate(transcript):
             # Handle ElevenLabs format: role/message/time_in_call_secs
             speaker = turn.get('role', turn.get('speaker', 'unknown'))
             text = turn.get('message', turn.get('text', ''))
             timestamp = turn.get('time_in_call_secs', turn.get('timestamp', ''))
             
-            print(f"   - Processing turn: role={speaker}, message_length={len(text)}, time={timestamp}")
-            
             if text.strip():
                 formatted.append(f"{speaker.upper()}: {text}")
+            else:
+                pass
         
-        print(f"   - Total formatted turns: {len(formatted)}")
         return "\n".join(formatted)
     
     def _build_grading_prompt(self, interview: Dict, transcript: str, interview_type: InterviewType) -> str:
         """Build the grading prompt using interview type configuration"""
-        
         config = get_interview_config(interview_type)
+
+        print(f"[GRADING] Config: {config}")
+        print(f"[GRADING] Interview: {interview}")
+        print(f"[GRADING] Transcript: {transcript}")
+        print(f"[GRADING] Interview type: {interview_type}")
         
         role = interview.get('role_title', 'Software Engineer')
+        print(f"[GRADING] Role: {role}")
         company = interview.get('company', 'the company')
+        print(f"[GRADING] Company: {company}")
         difficulty = interview.get('difficulty', 'mid')
-        
+        print(f"[GRADING] Difficulty: {difficulty}")
+
         jd_structured = interview.get('jd_structured', {})
         requirements = jd_structured.get('requirements', 'Standard requirements')
+        print(f"[GRADING] Jd structured: {jd_structured}")
+        print(f"[GRADING] Requirements: {requirements}")
         
         # Get company values if it's a values interview
         company_values = ''
         if interview_type == InterviewType.VALUES_INTERVIEW:
             # Extract company values from job description or use defaults
             company_values = jd_structured.get('company_values', 'Innovation, Collaboration, Integrity, Customer Focus')
+            print(f"[GRADING] Company values: {company_values}")
+
         
         # Use the configured prompt template
+        
         prompt = config.prompt_template.format(
             role=role,
             company=company,
@@ -190,6 +199,7 @@ class InterviewGradingService:
             transcript=transcript,
             company_values=company_values
         )
+        print(f"[GRADING] Prompt: {prompt}")
         
         return prompt
     
@@ -323,10 +333,9 @@ grading_service = InterviewGradingService()
 
 async def trigger_interview_grading(req: Request, attempt_id: str):
     """Trigger grading for an interview attempt"""
+    
     try:
         feedback_data = await grading_service.grade_interview(req, attempt_id)
-        print(f"Interview {attempt_id} graded successfully")
         return feedback_data
     except Exception as e:
-        print(f"Failed to grade interview {attempt_id}: {e}")
         return None

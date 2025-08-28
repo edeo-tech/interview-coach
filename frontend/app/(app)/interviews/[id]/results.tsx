@@ -265,7 +265,7 @@ const InterviewResults = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.push(`/interviews/${id}/details`)}
+              onPress={() => router.push(`/home/interviews/${id}/details`)}
               style={[styles.actionButton, styles.secondaryButton]}
             >
               <Ionicons name="list" size={20} color={Colors.white} />

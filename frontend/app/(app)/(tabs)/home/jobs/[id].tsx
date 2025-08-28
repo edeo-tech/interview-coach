@@ -5,14 +5,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import ChatGPTBackground from '../../../components/ChatGPTBackground';
-import BrandfetchLogo from '../../../components/BrandfetchLogo';
-import { useJobDetails, useStartJobInterviewAttempt } from '../../../_queries/jobs/jobs';
-import { InterviewType } from '../../../_interfaces/interviews/interview-types';
-import { JobInterview } from '../../../_interfaces/jobs/job';
-import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
-import { TYPOGRAPHY } from '../../../constants/Typography';
-import Colors from '../../../constants/Colors';
+import ChatGPTBackground from '../../../../../components/ChatGPTBackground';
+import BrandfetchLogo from '../../../../../components/BrandfetchLogo';
+import { useJobDetails, useStartJobInterviewAttempt } from '../../../../../_queries/jobs/jobs';
+import { InterviewType } from '../../../../../_interfaces/interviews/interview-types';
+import { JobInterview } from '../../../../../_interfaces/jobs/job';
+import { GlassStyles, GlassTextColors } from '../../../../../constants/GlassStyles';
+import { TYPOGRAPHY } from '../../../../../constants/Typography';
+import Colors from '../../../../../constants/Colors';
 
 const getInterviewTypeDisplayName = (type: InterviewType | string): string => {
   const displayNames: Record<string, string> = {
@@ -71,10 +71,22 @@ export default function JobDetails() {
   const { data: jobData, isLoading, error } = useJobDetails(id);
   const startAttempt = useStartJobInterviewAttempt();
 
-  const handleInterviewPress = (interview: any) => {
-    // Success haptic for all stages
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push(`/interviews/${interview._id}/details` as any);
+  const handleInterviewPress = (interview: any, index: number) => {
+    const isUnlocked = isStageUnlocked(interviews, index);
+    if (isUnlocked) {
+      // Success haptic for unlocked stages
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      router.push(`/home/interviews/${interview._id}/details` as any);
+    } else {
+      // Warning haptic for locked stages
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      // Show popup for locked stage
+      setLockedStageInfo({
+        stageName: getInterviewTypeDisplayName(interview.interview_type),
+        stageNumber: index + 1
+      });
+      setShowLockedPopup(true);
+    }
   };
 
 
@@ -125,7 +137,11 @@ export default function JobDetails() {
   return (
     <ChatGPTBackground style={styles.gradient}>
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => {
@@ -256,6 +272,9 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingBottom: 100, // Extra padding to account for tab bar
   },
   loadingContainer: {
     flex: 1,

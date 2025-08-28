@@ -22,9 +22,8 @@ export const useAttemptFeedback = (
       return response.data;
     },
     enabled: !!attemptId,
-    // Note: Polling removed - WebSocket updates handle real-time feedback notifications
-    // The query will be refetched manually when WebSocket events are received
-    retry: 3, // Reduced retry count since WebSocket handles updates
+    // Note: Frontend should poll or manually refetch to check for feedback updates
+    retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     ...(options || {}),
   });

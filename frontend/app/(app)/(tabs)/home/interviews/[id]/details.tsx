@@ -4,18 +4,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import ChatGPTBackground from '../../../../components/ChatGPTBackground';
-import BrandfetchLogo from '../../../../components/BrandfetchLogo';
-import { useAttemptFeedback } from '../../../../_queries/interviews/feedback';
-import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../_queries/interviews/interviews';
-import { attemptFeedback } from '../../../../_api/interviews/feedback';
-import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
-import useHapticsSafely from '../../../../hooks/haptics/useHapticsSafely';
-import { useInterviewRetryCheck } from '../../../../hooks/premium/usePremiumCheck';
-import { InterviewType } from '../../../../_interfaces/interviews/interview-types';
-import { useToast } from '../../../../components/Toast';
-import { TYPOGRAPHY } from '../../../../constants/Typography';
-import Colors from '../../../../constants/Colors';
+import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
+import BrandfetchLogo from '../../../../../../components/BrandfetchLogo';
+import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
+import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../../../_queries/interviews/interviews';
+import { attemptFeedback } from '../../../../../../_api/interviews/feedback';
+import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
+import { useInterviewRetryCheck } from '../../../../../../hooks/premium/usePremiumCheck';
+import { InterviewType } from '../../../../../../_interfaces/interviews/interview-types';
+import { useToast } from '../../../../../../components/Toast';
+import { TYPOGRAPHY } from '../../../../../../constants/Typography';
+import Colors from '../../../../../../constants/Colors';
 
 const getInterviewTypeDisplayName = (type: string): string => {
   const displayNames: Record<string, string> = {
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 100, // Extra padding to account for tab bar
   },
   loadingContainer: {
     flex: 1,
