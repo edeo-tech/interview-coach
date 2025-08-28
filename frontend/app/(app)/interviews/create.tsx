@@ -168,12 +168,13 @@ export default function CreateJob() {
     // Navigate to the job details page
     const result = (window as any).pendingJobResult;
     if (result && result.job) {
-      router.push(`/home/jobs/${result.job._id}` as any);
+      // Use replace to prevent going back to create screen
+      router.replace(`/home/jobs/${result.job._id}` as any);
       // Clean up the stored result
       delete (window as any).pendingJobResult;
     } else {
       // Fallback: navigate back to home
-      router.push('/home');
+      router.replace('/(app)/(tabs)/home');
     }
     
     // Delay modal close to prevent UI flash

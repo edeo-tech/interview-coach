@@ -13,8 +13,12 @@ class SignUpType(str, Enum):
 
 class User(MongoBaseModel):
     name:str = Field(
-        ...,
+        default='',
         description='The full name of the user'
+    )
+    age:Optional[int] = Field(
+        default=None,
+        description='The age of the user'
     )
     email:EmailStr = Field(
         ...,
@@ -92,6 +96,10 @@ class UpdateUserProfile(BaseModel):
     name:Optional[str] = Field(
         default=None,
         description='The updated name of the user'
+    )
+    age:Optional[int] = Field(
+        default=None,
+        description='The updated age of the user'
     )
     email:Optional[EmailStr] = Field(
         default=None,

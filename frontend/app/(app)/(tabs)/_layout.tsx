@@ -23,8 +23,17 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                                 canPreventDefault: true,
                             });
 
-                            if (!isFocused && !event.defaultPrevented) {
-                                navigation.navigate(route.name as never);
+                            if (!event.defaultPrevented) {
+                                if (isFocused) {
+                                    // If already on this tab, reset to root
+                                    navigation.reset({
+                                        index: 0,
+                                        routes: [{ name: route.name }],
+                                    });
+                                } else {
+                                    // Navigate to the tab
+                                    navigation.navigate(route.name as never);
+                                }
                             }
                         };
 

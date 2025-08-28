@@ -17,6 +17,7 @@ import { getInterviewTypeConfig } from '../../../../../../config/interviewTypeCo
 import { InterviewType } from '../../../../../../_api/interviews/feedback';
 import Colors from '../../../../../../constants/Colors';
 import { TYPOGRAPHY } from '../../../../../../constants/Typography';
+import { navigateFromDeepScreen } from '../../../../../../utils/navigation/tabNavigation';
 
 const BlurredSection = ({ 
   children, 
@@ -404,10 +405,10 @@ export default function AttemptGradingScreen() {
                   const score = data.overall_score || 0;
                   if (score >= 90 && interviewData?.interview?.job_id) {
                     // High score - route to job details
-                    router.replace(`/home/jobs/${interviewData.interview.job_id}` as any);
+                    navigateFromDeepScreen('job-details', { jobId: interviewData.interview.job_id });
                   } else {
                     // Low score - route to interview details for improvement
-                    router.replace(`/home/interviews/${id}/details` as any);
+                    navigateFromDeepScreen('interview-details', { interviewId: id });
                   }
                 }
               }}

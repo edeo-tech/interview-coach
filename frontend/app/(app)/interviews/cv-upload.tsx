@@ -85,7 +85,8 @@ const CVUpload = () => {
 
   const handleProgressComplete = () => {
     // Navigate immediately to prevent any intermediate screens
-    router.push('/interviews/create');
+    // Use replace to prevent going back to CV upload
+    router.replace('/interviews/create');
     
     // Delay modal close to prevent UI flash
     setTimeout(() => {

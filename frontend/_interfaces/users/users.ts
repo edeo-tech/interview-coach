@@ -1,6 +1,5 @@
 export interface RegisterUser
 {
-    name: string;
     email: string;
     password: string;
 }
@@ -41,6 +40,7 @@ export interface AuthenticatedUser
 {
     id: string;
     name: string;
+    age?: number;
     email: string;
     profile_picture?: string;
     profile_qrcode?: string;
@@ -55,6 +55,7 @@ export interface AuthenticatedUser
 export interface UpdateUserProfile
 {
     name?: string;
+    age?: number;
     email?: string;
 }
 

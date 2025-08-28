@@ -4,18 +4,33 @@ import { Ionicons } from '@expo/vector-icons';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useUpdateProfile } from '../../_queries/users/auth/users';
+import { useToast } from '../../components/Toast';
 import Colors from '../../constants/Colors';
 import { TYPOGRAPHY } from '../../constants/Typography';
 
 const AgeInput = () => {
   const { data, updateData } = useOnboarding();
+  const { showToast } = useToast();
   const [age, setAge] = useState(data.age);
   const { navigateWithTransition } = useOnboardingNavigation();
+  
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
 
   const handleContinue = () => {
     if (age.trim() && !isNaN(Number(age)) && Number(age) > 0) {
+      const ageNumber = Number(age);
       updateData('age', age.trim());
-      navigateWithTransition('/(onboarding)/job-role');
+      
+      updateProfile({ age: ageNumber }, {
+        onSuccess: () => {
+          navigateWithTransition('/(onboarding)/job-role');
+        },
+        onError: (error: any) => {
+          const errorMessage = error.response?.data?.detail || 'Failed to save age';
+          showToast(errorMessage, 'error');
+        }
+      });
     }
   };
 
@@ -48,12 +63,14 @@ const AgeInput = () => {
           </View>
         <View style={styles.bottomContainer}>
           <TouchableOpacity 
-            style={[styles.continueButton, !isValidAge && styles.continueButtonDisabled]} 
+            style={[styles.continueButton, (!isValidAge || isUpdating) && styles.continueButtonDisabled]} 
             onPress={handleContinue}
-            disabled={!isValidAge}
+            disabled={!isValidAge || isUpdating}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
+            <Text style={styles.continueButtonText}>
+              {isUpdating ? 'Saving...' : 'Continue'}
+            </Text>
+            {!isUpdating && <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />}
           </TouchableOpacity>
         </View>
         </View>

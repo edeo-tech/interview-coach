@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: Platform.OS === 'ios' ? 44 : 32,
     paddingTop: 16,
-    maxHeight: '75%',
+    flexShrink: 1,
   },
   modalHandle: {
     width: 40,

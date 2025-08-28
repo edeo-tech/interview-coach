@@ -1,21 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboardingNavigation } from '../../hooks/useOnboardingNavigation';
 import OnboardingLayout from '../../components/OnboardingLayout';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useAuth } from '../../context/authentication/AuthContext';
+import { useUpdateProfile } from '../../_queries/users/auth/users';
+import { useToast } from '../../components/Toast';
 import { TYPOGRAPHY } from '../../constants/Typography';
 import Colors from '../../constants/Colors';
 
 const NameInput = () => {
   const { data, updateData } = useOnboarding();
-  const [name, setName] = useState(data.name);
+  const { auth } = useAuth();
+  const { showToast } = useToast();
   const { navigateWithTransition } = useOnboardingNavigation();
+  
+  const [name, setName] = useState(auth?.name || '');
+
+  console.log('name', name);
+  
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
+
+  useEffect(() => {
+    // Use auth name as initial value if available, otherwise empty string
+    const authName = auth?.name || '';
+    console.log('authName', authName);
+    updateData('name', authName);
+  }, []);
 
   const handleContinue = () => {
-    if (name.trim()) {
-      updateData('name', name.trim());
-      navigateWithTransition('/(onboarding)/age-input');
+    const trimmedName = name.trim();
+    if (trimmedName) {
+      updateData('name', trimmedName);
+      
+      // Only make API call if name has changed from the auth name
+      if (trimmedName !== name) {
+        updateProfile({ name: trimmedName }, {
+          onSuccess: () => {
+            navigateWithTransition('/(onboarding)/age-input');
+          },
+          onError: (error: any) => {
+            const errorMessage = error.response?.data?.detail || 'Failed to update name';
+            showToast(errorMessage, 'error');
+          }
+        });
+      } else {
+        navigateWithTransition('/(onboarding)/age-input');
+      }
     }
   };
 
@@ -46,12 +78,14 @@ const NameInput = () => {
           </View>
         <View style={styles.bottomContainer}>
           <TouchableOpacity 
-            style={[styles.continueButton, !name.trim() && styles.continueButtonDisabled]} 
+            style={[styles.continueButton, (!name.trim() || isUpdating) && styles.continueButtonDisabled]} 
             onPress={handleContinue}
-            disabled={!name.trim()}
+            disabled={!name.trim() || isUpdating}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
+            <Text style={styles.continueButtonText}>
+              {isUpdating ? 'Saving...' : 'Continue'}
+            </Text>
+            {!isUpdating && <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />}
           </TouchableOpacity>
         </View>
         </View>

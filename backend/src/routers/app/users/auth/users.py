@@ -23,10 +23,20 @@ from authentication import Authorization
 router = APIRouter()
 auth = Authorization()
 
+class RegisterBody(BaseModel):
+    email: str = Field(...)
+    password: str = Field(...)
+
 @router.post('/register')
 @error_decorator
-async def register(req:Request, user:User):
-    user.password = auth.hash_password(user.password)
+async def register(req:Request, body: RegisterBody):
+    # Create user with empty name (to be filled during onboarding)
+    user = User(
+        name='',
+        email=body.email,
+        password=auth.hash_password(body.password),
+        sign_up_type=SignUpType.EMAIL
+    )
     return await create_user(req, user)
 
 
@@ -109,7 +119,7 @@ async def handle_third_party_login(
     # Otherwise create a new account for the user's information provided
     print(f"🔑 GOOGLE/APPLE LOGIN: Email {payload['email']} not found - creating new user")
     new_user = User(
-        name=payload.get('name', payload['email'].split('@')[0]),
+        name=payload.get('name', ''),
         email=payload['email'],
         password='',
         sign_up_type=third_party,

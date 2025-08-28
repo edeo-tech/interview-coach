@@ -22,7 +22,6 @@ import { useRegister, useLogin } from '@/_queries/users/auth/users';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 
 const Register = () => {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { showToast } = useToast();
@@ -63,7 +62,7 @@ const Register = () => {
 
   const handleRegister = () => {
     // Validation
-    if (!name || !email || !password) {
+    if (!email || !password) {
       showToast('Please fill in all fields', 'warning');
       return;
     }
@@ -81,10 +80,9 @@ const Register = () => {
 
     posthogCapture('registration_attempted', {
       email_domain: email.split('@')[1] || 'unknown',
-      password_length: password.length,
-      name_provided: !!name
+      password_length: password.length
     });
-    register({ name, email, password });
+    register({ email, password });
   };
 
   const isLoading = registerLoading || loginLoading;
@@ -114,22 +112,6 @@ const Register = () => {
 
           {/* Form Card */}
           <View style={styles.formCard}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="person-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your full name"
-                  placeholderTextColor={Colors.gray[500]}
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                />
-              </View>
-            </View>
-
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
               <View style={styles.inputContainer}>
