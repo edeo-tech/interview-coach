@@ -393,10 +393,10 @@ export default function AttemptGradingScreen() {
                   const score = data.overall_score || 0;
                   if (score >= 90 && interviewData?.interview?.job_id) {
                     // High score - route to job details
-                    router.push(`/home/jobs/${interviewData.interview.job_id}` as any);
+                    router.replace(`/home/jobs/${interviewData.interview.job_id}` as any);
                   } else {
                     // Low score - route to interview details for improvement
-                    router.push(`/home/interviews/${id}/details` as any);
+                    router.replace(`/home/interviews/${id}/details` as any);
                   }
                 }
               }}
