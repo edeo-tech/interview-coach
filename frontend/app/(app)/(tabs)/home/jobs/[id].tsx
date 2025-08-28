@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -7,9 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import ChatGPTBackground from '../../../../../components/ChatGPTBackground';
 import BrandfetchLogo from '../../../../../components/BrandfetchLogo';
-import { useJobDetails, useStartJobInterviewAttempt } from '../../../../../_queries/jobs/jobs';
+import { useJobDetails } from '../../../../../_queries/jobs/jobs';
 import { InterviewType } from '../../../../../_interfaces/interviews/interview-types';
-import { JobInterview } from '../../../../../_interfaces/jobs/job';
 import { GlassStyles, GlassTextColors } from '../../../../../constants/GlassStyles';
 import { TYPOGRAPHY } from '../../../../../constants/Typography';
 import Colors from '../../../../../constants/Colors';
@@ -69,24 +68,11 @@ const isCurrentActiveStage = (interview: any): boolean => {
 export default function JobDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: jobData, isLoading, error } = useJobDetails(id);
-  const startAttempt = useStartJobInterviewAttempt();
 
   const handleInterviewPress = (interview: any, index: number) => {
-    const isUnlocked = isStageUnlocked(interviews, index);
-    if (isUnlocked) {
-      // Success haptic for unlocked stages
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      router.push(`/home/interviews/${interview._id}/details` as any);
-    } else {
-      // Warning haptic for locked stages
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      // Show popup for locked stage
-      setLockedStageInfo({
-        stageName: getInterviewTypeDisplayName(interview.interview_type),
-        stageNumber: index + 1
-      });
-      setShowLockedPopup(true);
-    }
+    // Success haptic for stage selection
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push(`/home/interviews/${interview._id}/details` as any);
   };
 
 
@@ -209,7 +195,7 @@ export default function JobDetails() {
                 return (
                   <TouchableOpacity
                     key={interview._id}
-                    onPress={() => handleInterviewPress(interview)}
+                    onPress={() => handleInterviewPress(interview, index)}
                     style={styles.stageCard}
                   >
                     <View style={[

@@ -22,42 +22,42 @@ const GRADING_STAGES: GradingStage[] = [
     title: 'Processing interview',
     subtitle: 'Converting your conversation to text',
     icon: 'mic-outline',
-    duration: 4500, // Increased from 3500
+    duration: 1900, // Reduced to 12s total (proportionally scaled)
   },
   {
     id: 'analyzing',
     title: 'Analyzing responses',
     subtitle: 'Understanding your answers and approach',
     icon: 'analytics-outline',
-    duration: 5400, // Increased from 4200
+    duration: 2300, // Reduced to 12s total (proportionally scaled)
   },
   {
     id: 'evaluating',
     title: 'Evaluating performance',
     subtitle: 'Assessing communication and technical skills',
     icon: 'trending-up-outline',
-    duration: 6200, // Increased from 4800
+    duration: 2600, // Reduced to 12s total (proportionally scaled)
   },
   {
     id: 'comparing',
     title: 'Comparing to standards',
     subtitle: 'Benchmarking against role requirements',
     icon: 'bar-chart-outline',
-    duration: 5000, // Increased from 3800
+    duration: 2100, // Reduced to 12s total (proportionally scaled)
   },
   {
     id: 'personalizing',
     title: 'Creating feedback',
     subtitle: 'Generating personalized insights',
     icon: 'bulb-outline',
-    duration: 4200, // Increased from 3200
+    duration: 1800, // Reduced to 12s total (proportionally scaled)
   },
   {
     id: 'finalizing',
     title: 'Finalizing results',
     subtitle: 'Preparing your comprehensive report',
     icon: 'checkmark-circle-outline',
-    duration: 3200, // This stage will wait at 98% until feedback is ready
+    duration: 1400, // Reduced to 12s total (proportionally scaled) - will wait at 98%
   },
 ];
 
