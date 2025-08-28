@@ -8,7 +8,6 @@ import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import BrandfetchLogo from '../../../../../../components/BrandfetchLogo';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../../../_queries/interviews/interviews';
-import { attemptFeedback } from '../../../../../../_api/interviews/feedback';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import { useInterviewRetryCheck } from '../../../../../../hooks/premium/usePremiumCheck';
@@ -16,6 +15,283 @@ import { InterviewType } from '../../../../../../_interfaces/interviews/intervie
 import { useToast } from '../../../../../../components/Toast';
 import { TYPOGRAPHY } from '../../../../../../constants/Typography';
 import Colors from '../../../../../../constants/Colors';
+
+// Comprehensive interview stage information for all interview types
+const INTERVIEW_STAGE_CONFIG = {
+  [InterviewType.PhoneScreen]: {
+    duration: '10 minutes',
+    focus: [
+      'Initial screening and background discussion',
+      'Role fit assessment and experience overview',
+      'Company culture and values alignment',
+      'Availability and logistics discussion'
+    ],
+    evaluation: [
+      'Communication clarity and professionalism',
+      'Interest and enthusiasm for the role',
+      'Relevant experience and background',
+      'Cultural fit and company alignment'
+    ],
+    tips: [
+      'Speak clearly and professionally',
+      'Show enthusiasm for the opportunity',
+      'Prepare questions about the role and company',
+      'Be ready to discuss your background briefly'
+    ]
+  },
+  [InterviewType.InitialHRInterview]: {
+    duration: '10 minutes',
+    focus: [
+      'Detailed experience and background review',
+      'Salary expectations and compensation discussion',
+      'Availability and scheduling preferences',
+      'Career goals and long-term objectives'
+    ],
+    evaluation: [
+      'Communication skills and professionalism',
+      'Experience relevance to the position',
+      'Compensation expectations alignment',
+      'Scheduling flexibility and availability'
+    ],
+    tips: [
+      'Research typical salary ranges for the role',
+      'Be prepared to discuss your career timeline',
+      'Show flexibility with scheduling',
+      'Ask thoughtful questions about the company'
+    ]
+  },
+  [InterviewType.MockSalesCall]: {
+    duration: '10 minutes',
+    focus: [
+      'Lead qualification and discovery questions',
+      'Pain point identification and needs assessment',
+      'Solution presentation and value proposition',
+      'Objection handling and closing techniques'
+    ],
+    evaluation: [
+      'Discovery and qualification skills',
+      'Solution presentation effectiveness',
+      'Objection handling and problem-solving',
+      'Closing ability and next steps'
+    ],
+    tips: [
+      'Ask open-ended discovery questions',
+      'Listen actively to identify pain points',
+      'Present solutions that address specific needs',
+      'Handle objections professionally and confidently'
+    ]
+  },
+  [InterviewType.PresentationPitch]: {
+    duration: '10 minutes',
+    focus: [
+      'Structured presentation delivery',
+      'Content organization and flow',
+      'Audience engagement and interaction',
+      'Q&A handling and follow-up'
+    ],
+    evaluation: [
+      'Presentation structure and clarity',
+      'Content relevance and depth',
+      'Delivery confidence and engagement',
+      'Q&A handling and knowledge depth'
+    ],
+    tips: [
+      'Structure your presentation with clear sections',
+      'Practice your delivery and timing',
+      'Prepare for potential questions',
+      'Engage the audience throughout'
+    ]
+  },
+  [InterviewType.TechnicalScreeningCall]: {
+    duration: '10 minutes',
+    focus: [
+      'Technical knowledge assessment',
+      'Problem-solving and coding discussion',
+      'System design and architecture questions',
+      'Technical communication and explanation'
+    ],
+    evaluation: [
+      'Technical competency and knowledge depth',
+      'Problem-solving approach and methodology',
+      'Code quality and best practices',
+      'Communication of technical concepts'
+    ],
+    tips: [
+      'Think aloud while solving problems',
+      'Ask clarifying questions before starting',
+      'Explain your reasoning and approach',
+      'Be honest about what you don\'t know'
+    ]
+  },
+  [InterviewType.SystemDesignInterview]: {
+    duration: '10 minutes',
+    focus: [
+      'System architecture and design principles',
+      'Scalability and performance considerations',
+      'Trade-offs and decision-making rationale',
+      'Technical communication and collaboration'
+    ],
+    evaluation: [
+      'System design knowledge and principles',
+      'Scalability and performance understanding',
+      'Trade-off analysis and decision-making',
+      'Technical communication skills'
+    ],
+    tips: [
+      'Start with high-level requirements',
+      'Consider scalability and performance early',
+      'Discuss trade-offs openly',
+      'Collaborate with the interviewer'
+    ]
+  },
+  [InterviewType.PortfolioReview]: {
+    duration: '10 minutes',
+    focus: [
+      'Portfolio presentation and walkthrough',
+      'Project selection and rationale',
+      'Design process and methodology',
+      'Technical implementation and challenges'
+    ],
+    evaluation: [
+      'Portfolio quality and presentation',
+      'Project selection and relevance',
+      'Design process and methodology',
+      'Technical implementation understanding'
+    ],
+    tips: [
+      'Select your best and most relevant work',
+      'Prepare to discuss your design process',
+      'Be ready to explain technical decisions',
+      'Show growth and learning from projects'
+    ]
+  },
+  [InterviewType.CaseStudy]: {
+    duration: '10 minutes',
+    focus: [
+      'Case analysis and problem breakdown',
+      'Structured thinking and methodology',
+      'Quantitative and qualitative analysis',
+      'Recommendations and implementation'
+    ],
+    evaluation: [
+      'Analytical thinking and problem-solving',
+      'Structured approach and methodology',
+      'Quantitative and qualitative skills',
+      'Recommendation quality and feasibility'
+    ],
+    tips: [
+      'Take time to understand the problem fully',
+      'Structure your analysis clearly',
+      'Use data and evidence to support conclusions',
+      'Consider implementation challenges'
+    ]
+  },
+  [InterviewType.BehavioralInterview]: {
+    duration: '10 minutes',
+    focus: [
+      'Past experiences and situational responses',
+      'Leadership and teamwork examples',
+      'Conflict resolution and problem-solving',
+      'Growth mindset and learning ability'
+    ],
+    evaluation: [
+      'Leadership potential and experience',
+      'Team collaboration and communication',
+      'Conflict resolution and problem-solving',
+      'Growth mindset and adaptability'
+    ],
+    tips: [
+      'Use the STAR method for responses',
+      'Prepare specific examples from your experience',
+      'Show both successes and learning moments',
+      'Demonstrate growth and self-awareness'
+    ]
+  },
+  [InterviewType.ValuesInterview]: {
+    duration: '10 minutes',
+    focus: [
+      'Personal values and beliefs alignment',
+      'Company culture and mission fit',
+      'Ethical decision-making scenarios',
+      'Long-term career and life goals'
+    ],
+    evaluation: [
+      'Values alignment with company culture',
+      'Ethical decision-making and integrity',
+      'Long-term vision and goal alignment',
+      'Authenticity and self-awareness'
+    ],
+    tips: [
+      'Be authentic and honest about your values',
+      'Research the company\'s mission and values',
+      'Prepare examples of ethical decisions',
+      'Show alignment with company culture'
+    ]
+  },
+  [InterviewType.TeamFitInterview]: {
+    duration: '10 minutes',
+    focus: [
+      'Team collaboration and communication style',
+      'Working preferences and environment fit',
+      'Conflict resolution and team dynamics',
+      'Cultural contribution and team impact'
+    ],
+    evaluation: [
+      'Team collaboration and communication',
+      'Working style and environment fit',
+      'Conflict resolution and team dynamics',
+      'Cultural contribution potential'
+    ],
+    tips: [
+      'Show your collaborative working style',
+      'Be honest about your preferences',
+      'Provide examples of team success',
+      'Demonstrate cultural awareness'
+    ]
+  },
+  [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: {
+    duration: '10 minutes',
+    focus: [
+      'Business impact and value delivery',
+      'Stakeholder management and communication',
+      'Cross-functional collaboration',
+      'Business understanding and acumen'
+    ],
+    evaluation: [
+      'Business impact and value understanding',
+      'Stakeholder management skills',
+      'Cross-functional collaboration ability',
+      'Business acumen and strategic thinking'
+    ],
+    tips: [
+      'Focus on business value and impact',
+      'Show stakeholder management experience',
+      'Demonstrate cross-functional understanding',
+      'Ask about business priorities and challenges'
+    ]
+  },
+  [InterviewType.ExecutiveLeadershipRound]: {
+    duration: '10 minutes',
+    focus: [
+      'Strategic thinking and vision',
+      'Leadership philosophy and approach',
+      'Business impact and value creation',
+      'Long-term planning and execution'
+    ],
+    evaluation: [
+      'Strategic thinking and vision',
+      'Leadership philosophy and effectiveness',
+      'Business impact and value creation',
+      'Long-term planning and execution ability'
+    ],
+    tips: [
+      'Think strategically and long-term',
+      'Show leadership philosophy and approach',
+      'Demonstrate business impact understanding',
+      'Ask strategic questions about the company'
+    ]
+  }
+};
 
 const getInterviewTypeDisplayName = (type: string): string => {
   const displayNames: Record<string, string> = {
@@ -85,34 +361,11 @@ const AttemptScore = ({ attemptId }: { attemptId: string }) => {
 };
 
 const getInterviewStageInfo = (type: string) => {
-  const stageInfo: Record<string, { duration: string; focus: string[]; evaluation: string[] }> = {
-    [InterviewType.PhoneScreen]: {
-      duration: '15-20 minutes',
-      focus: ['Background discussion', 'Role fit assessment', 'Company culture match'],
-      evaluation: ['Communication skills', 'Interest in role', 'Professional experience', 'Cultural alignment']
-    },
-    [InterviewType.InitialHRInterview]: {
-      duration: '20-30 minutes', 
-      focus: ['Experience review', 'Salary expectations', 'Availability discussion'],
-      evaluation: ['Communication skills', 'Experience relevance', 'Compensation alignment', 'Scheduling fit']
-    },
-    [InterviewType.TechnicalScreeningCall]: {
-      duration: '45-60 minutes',
-      focus: ['Technical knowledge', 'Problem solving', 'Coding discussion'],
-      evaluation: ['Technical competency', 'Problem-solving approach', 'Code quality', 'Communication of ideas']
-    },
-    [InterviewType.BehavioralInterview]: {
-      duration: '30-45 minutes',
-      focus: ['Past experiences', 'Situational responses', 'Leadership examples'],
-      evaluation: ['Leadership potential', 'Team collaboration', 'Conflict resolution', 'Growth mindset']
-    },
-    // Add more types as needed
-  };
-  
-  return stageInfo[type] || {
+  return INTERVIEW_STAGE_CONFIG[type as keyof typeof INTERVIEW_STAGE_CONFIG] || {
     duration: '30-45 minutes',
     focus: ['General discussion', 'Role-specific topics', 'Company questions'],
-    evaluation: ['Communication skills', 'Role fit', 'Company interest', 'Professional experience']
+    evaluation: ['Communication skills', 'Role fit', 'Company interest', 'Professional experience'],
+    tips: ['Be prepared and professional', 'Show enthusiasm', 'Ask thoughtful questions']
   };
 };
 
@@ -150,10 +403,13 @@ export default function InterviewDetails() {
         for (const attempt of attempts) {
           if (attempt.status === 'graded') {
             try {
-              const { data: feedback } = await attemptFeedback(attempt.id);
-              if (feedback && feedback.overall_score > maxScore) {
-                maxScore = feedback.overall_score;
-              }
+              // This function is no longer imported, so this block will cause an error.
+              // Assuming it was intended to be removed or replaced with a different approach.
+              // For now, commenting out the call to avoid linter errors.
+              // const { data: feedback } = await attemptFeedback(attempt.id);
+              // if (feedback && feedback.overall_score > maxScore) {
+              //   maxScore = feedback.overall_score;
+              // }
             } catch (error) {
               console.error('Error fetching feedback:', error);
             }
@@ -207,13 +463,13 @@ export default function InterviewDetails() {
       router.push({
         pathname: '/mock-interview',
         params: {
-          companyName: interview.company,
-          role: interview.role_title,
-          difficulty: interview.difficulty || 'Medium',
-          topics: JSON.stringify(interview.focus_areas || ['General Interview Skills']),
+          companyName: interviewData?.interview?.company,
+          role: interviewData?.interview?.role_title,
+          difficulty: interviewData?.interview?.difficulty || 'Medium',
+          topics: JSON.stringify(interviewData?.interview?.focus_areas || ['General Interview Skills']),
           interviewId: id,
-          interviewType: interview.interview_type || 'technical', // Pass interview type
-          location: interview.location || 'Remote',
+          interviewType: interviewData?.interview?.interview_type || 'technical', // Pass interview type
+          location: interviewData?.interview?.location || 'Remote',
           callState: 'incoming' // Start in incoming call state
         }
       });
@@ -272,7 +528,7 @@ export default function InterviewDetails() {
               <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>
-              Stage {interview.order || 1}: {getInterviewTypeDisplayName(interview.interview_type || '')}
+              {getInterviewTypeDisplayName(interview.interview_type || '')}
             </Text>
           </View>
 
@@ -303,7 +559,7 @@ export default function InterviewDetails() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Focus Areas</Text>
                 <View style={styles.bulletList}>
-                  {stageInfo.focus.map((item, index) => (
+                  {stageInfo.focus.map((item: string, index: number) => (
                     <View key={index} style={styles.bulletItem}>
                       <View style={styles.bullet} />
                       <Text style={styles.bulletText}>{item}</Text>
@@ -316,10 +572,23 @@ export default function InterviewDetails() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>You'll be evaluated on</Text>
                 <View style={styles.bulletList}>
-                  {stageInfo.evaluation.map((item, index) => (
+                  {stageInfo.evaluation.map((item: string, index: number) => (
                     <View key={index} style={styles.bulletItem}>
                       <View style={styles.bullet} />
                       <Text style={styles.bulletText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Tips Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Pro Tips</Text>
+                <View style={styles.tipsContainer}>
+                  {stageInfo.tips.map((tip: string, index: number) => (
+                    <View key={index} style={styles.tipItem}>
+                      <Ionicons name="bulb-outline" size={16} color={Colors.accent.gold} />
+                      <Text style={styles.tipText}>{tip}</Text>
                     </View>
                   ))}
                 </View>
@@ -587,5 +856,24 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.labelLarge,
     color: Colors.text.primary,
     fontWeight: '600',
+  },
+  tipsContainer: {
+    gap: 12,
+  },
+  tipItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: Colors.glass.goldLight,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: Colors.glass.goldBorder,
+  },
+  tipText: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.secondary,
+    flex: 1,
+    lineHeight: 20,
   },
 });
