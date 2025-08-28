@@ -3,14 +3,14 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Activit
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useUserJobs } from '../../../_queries/jobs/jobs';
-import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
-import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
-import ChatGPTBackground from '../../../components/ChatGPTBackground';
-import { GlassStyles } from '../../../constants/GlassStyles';
-import BrandfetchLogo from '../../../components/BrandfetchLogo';
-import { TYPOGRAPHY } from '../../../constants/Typography';
-import Colors from '../../../constants/Colors';
+import { useUserJobs } from '../../../../_queries/jobs/jobs';
+import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../../../hooks/haptics/useHapticsSafely';
+import ChatGPTBackground from '../../../../components/ChatGPTBackground';
+import { GlassStyles } from '../../../../constants/GlassStyles';
+import BrandfetchLogo from '../../../../components/BrandfetchLogo';
+import { TYPOGRAPHY } from '../../../../constants/Typography';
+import Colors from '../../../../constants/Colors';
 
 export default function Home() {
   const { 
@@ -53,7 +53,7 @@ export default function Home() {
       source: 'home',
       job_id: jobId
     });
-    router.push(`/jobs/${jobId}` as any);
+    router.push(`/home/jobs/${jobId}` as any);
   };
 
   const formatDate = (dateString: string) => {
@@ -308,4 +308,3 @@ const styles = StyleSheet.create({
     color: Colors.brand.primary,
   },
 });
-

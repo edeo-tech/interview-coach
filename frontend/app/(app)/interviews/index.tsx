@@ -39,7 +39,7 @@ const InterviewsHome = () => {
   };
 
   const handleInterviewPress = (interviewId: string) => {
-    router.push(`/interviews/${interviewId}/details` as any);
+    router.push(`/home/interviews/${interviewId}/details` as any);
   };
 
   const formatDate = (dateString: string) => {

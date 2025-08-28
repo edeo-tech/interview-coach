@@ -168,7 +168,7 @@ export default function CreateJob() {
     // Navigate to the job details page
     const result = (window as any).pendingJobResult;
     if (result && result.job) {
-      router.push(`/jobs/${result.job._id}` as any);
+      router.push(`/home/jobs/${result.job._id}` as any);
       // Clean up the stored result
       delete (window as any).pendingJobResult;
     } else {
