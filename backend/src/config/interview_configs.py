@@ -40,6 +40,12 @@ INTERVIEW_CONFIGS: Dict[InterviewType, InterviewTypeConfig] = {
 
 This is an INITIAL PHONE SCREEN - evaluate the candidate's basic communication, enthusiasm, and general fit.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to engage: Score below 10%
+- Minimal participation, one-word answers, or early termination: Score 0-10%
+- Brief answers without elaboration throughout: Score 10-25%
+- Full engagement with detailed responses is the minimum expectation
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -54,6 +60,8 @@ Evaluate the candidate's phone screen performance focusing on:
 2. Genuine enthusiasm for the role and company
 3. Basic alignment with job requirements
 4. Professional phone etiquette and demeanor
+
+BE HARSH: This is a competitive process. Short answers, lack of enthusiasm, or minimal engagement should result in very low scores. If the candidate ended the interview early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -93,6 +101,12 @@ Return your response as valid JSON with these exact fields:
 
 Focus on assessing cultural fit, career alignment, and soft skills rather than deep technical abilities.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to engage: Score below 10%
+- Minimal participation, one-word answers, or early termination: Score 0-10%
+- Brief answers without elaboration throughout: Score 10-25%
+- Full engagement with detailed responses is the minimum expectation
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -107,6 +121,8 @@ Evaluate the candidate's HR interview performance focusing on:
 2. Career goals and growth mindset
 3. Relevant work experience and achievements
 4. Soft skills and team collaboration
+
+BE HARSH: HR interviews require thoughtful, detailed responses about values and experiences. Short answers or minimal engagement demonstrates lack of preparation and interest. If the candidate ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -146,6 +162,12 @@ Return your response as valid JSON with these exact fields:
 
 IMPORTANT: This was a SALES CALL SIMULATION where the candidate acted as the salesperson and the AI acted as a prospect.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short responses or fail to engage: Score below 10%
+- Minimal participation, giving up quickly, or early termination: Score 0-10%
+- Brief answers without attempting discovery or objection handling: Score 10-25%
+- Sales requires persistence and engagement - anything less is failure
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -166,6 +188,8 @@ SALES-SPECIFIC EVALUATION:
 - Quality of questions to uncover pain points
 - How they handled "we already have a solution" or budget objections
 - Professional persistence without being pushy
+
+BE EXTREMELY HARSH: Sales roles require exceptional persistence and engagement. A salesperson who gives up after 1-2 attempts or provides short answers has failed completely. If they ended early or showed minimal effort, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -205,6 +229,12 @@ Return your response as valid JSON with these exact fields:
 
 The candidate needs to demonstrate strong presentation and communication skills.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short statements or fail to present: Score below 10%
+- Minimal presentation, no structure, or early termination: Score 0-10%
+- Brief, unstructured responses without proper presentation flow: Score 10-25%
+- Full presentations with clear structure are the minimum expectation
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -219,6 +249,8 @@ Evaluate the candidate's presentation performance focusing on:
 2. Quality and depth of content
 3. Delivery skills and audience engagement
 4. Use of examples and visual communication
+
+BE HARSH: Presentations require preparation and engagement. A candidate who gives minimal effort, provides only brief statements, or fails to structure their presentation has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -258,6 +290,12 @@ Return your response as valid JSON with these exact fields:
 
 Focus on assessing technical fundamentals and problem-solving approach.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to engage: Score below 10%
+- Minimal participation, "I don't know" without attempts, or early termination: Score 0-10%
+- Brief answers without technical depth or problem-solving effort: Score 10-25%
+- Technical interviews require detailed explanations and problem-solving attempts
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -272,6 +310,8 @@ Evaluate the candidate's technical screening performance focusing on:
 2. Problem-solving approach and methodology
 3. Understanding of coding fundamentals
 4. Ability to communicate technical concepts
+
+BE HARSH: Technical roles demand expertise and engagement. A candidate who gives up quickly, provides minimal technical detail, or shows no problem-solving effort has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -311,6 +351,12 @@ Return your response as valid JSON with these exact fields:
 
 Focus on assessing their ability to design large-scale distributed systems.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to design: Score below 10%
+- Minimal participation, no architecture discussion, or early termination: Score 0-10%
+- Brief answers without system thinking or scalability considerations: Score 10-25%
+- System design requires comprehensive thinking and detailed explanations
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -325,6 +371,8 @@ Evaluate the candidate's system design performance focusing on:
 2. Scalability and performance considerations
 3. Trade-off analysis and decision making
 4. Component design and integration
+
+BE HARSH: System design interviews test senior-level thinking. A candidate who provides minimal design details, avoids complexity, or shows no distributed systems knowledge has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -364,6 +412,12 @@ Return your response as valid JSON with these exact fields:
 
 The candidate is presenting their past projects and technical achievements.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short project mentions or fail to engage: Score below 10%
+- Minimal participation, no project details, or early termination: Score 0-10%
+- Brief descriptions without technical depth or impact metrics: Score 10-25%
+- Portfolio reviews require detailed project explanations and ownership demonstration
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -378,6 +432,8 @@ Evaluate the candidate's portfolio review performance focusing on:
 2. Depth of technical understanding and ownership
 3. Business impact and value delivered
 4. Innovation and creative problem solving
+
+BE HARSH: Portfolio reviews test technical depth and ownership. A candidate who provides superficial project descriptions, avoids technical details, or shows minimal ownership has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -417,6 +473,12 @@ Return your response as valid JSON with these exact fields:
 
 The candidate is analyzing a business case and proposing solutions.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to analyze: Score below 10%
+- Minimal participation, no structured thinking, or early termination: Score 0-10%
+- Brief answers without problem analysis or solution development: Score 10-25%
+- Case studies require comprehensive analysis and structured problem-solving
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -431,6 +493,8 @@ Evaluate the candidate's case study performance focusing on:
 2. Structured approach to solution development
 3. Business acumen and commercial awareness
 4. Data-driven analysis and metrics
+
+BE HARSH: Case studies test analytical thinking and business acumen. A candidate who provides superficial analysis, lacks structure, or shows no business understanding has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -470,6 +534,12 @@ Return your response as valid JSON with these exact fields:
 
 Focus on assessing past behaviors, leadership, and interpersonal skills through their examples.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to give examples: Score below 10%
+- Minimal participation, no STAR examples, or early termination: Score 0-10%
+- Brief answers without detailed behavioral examples or results: Score 10-25%
+- Behavioral interviews require specific, detailed examples with clear outcomes
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -484,6 +554,8 @@ Evaluate the candidate's behavioral interview performance focusing on:
 2. Self-awareness and growth mindset
 3. Leadership and influence examples
 4. Conflict resolution and difficult situations
+
+BE HARSH: Behavioral interviews test experience and leadership through detailed examples. A candidate who provides vague answers, lacks specific examples, or shows no measurable results has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -523,6 +595,12 @@ Return your response as valid JSON with these exact fields:
 
 Focus on assessing alignment with company values and ethical principles.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to engage: Score below 10%
+- Minimal participation, no values examples, or early termination: Score 0-10%
+- Brief answers without ethical reasoning or values demonstration: Score 10-25%
+- Values interviews require thoughtful reflection and specific examples
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -538,6 +616,8 @@ Evaluate the candidate's values interview performance focusing on:
 2. Ethical reasoning and integrity
 3. Potential cultural contribution
 4. Authenticity and genuine beliefs
+
+BE HARSH: Values interviews test cultural fit and ethical foundation. A candidate who provides shallow responses, avoids ethical discussions, or shows no alignment with company values has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -577,6 +657,12 @@ Return your response as valid JSON with these exact fields:
 
 Focus on assessing how well the candidate would work within the existing team.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to engage: Score below 10%
+- Minimal participation, no team examples, or early termination: Score 0-10%
+- Brief answers without collaboration examples or team impact: Score 10-25%
+- Team fit requires detailed examples of successful collaboration
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -591,6 +677,8 @@ Evaluate the candidate's team fit performance focusing on:
 2. Communication within team contexts
 3. Adaptability to different team dynamics
 4. Examples of team contributions and impact
+
+BE HARSH: Team fit interviews test collaboration and interpersonal skills. A candidate who provides generic answers, lacks team examples, or shows poor communication skills has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -630,6 +718,12 @@ Return your response as valid JSON with these exact fields:
 
 The candidate is meeting with business partners/clients to assess stakeholder management skills.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to engage: Score below 10%
+- Minimal participation, no stakeholder questions, or early termination: Score 0-10%
+- Brief answers without business understanding or relationship building: Score 10-25%
+- Stakeholder management requires active engagement and business acumen
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -644,6 +738,8 @@ Evaluate the candidate's stakeholder interaction performance focusing on:
 2. Understanding and addressing business needs
 3. Building trust and credibility
 4. Gathering and clarifying requirements
+
+BE HARSH: Stakeholder interviews test business communication and relationship skills. A candidate who provides technical jargon without clarity, fails to ask business questions, or shows no relationship-building skills has failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{
@@ -683,6 +779,12 @@ Return your response as valid JSON with these exact fields:
 
 This is a senior-level assessment focusing on leadership and strategic capabilities.
 
+CRITICAL SCORING GUIDELINES:
+- Candidates who provide only 1-2 short answers or fail to engage: Score below 10%
+- Minimal participation, no strategic thinking, or early termination: Score 0-10%
+- Brief answers without leadership examples or business judgment: Score 10-25%
+- Executive interviews require comprehensive strategic thinking and leadership demonstration
+
 JOB DETAILS:
 - Role: {role}
 - Company: {company}
@@ -697,6 +799,8 @@ Evaluate the candidate's executive interview performance focusing on:
 2. Leadership presence and influence
 3. Business judgment and decision making
 4. Ability to drive organizational impact
+
+BE EXTREMELY HARSH: Executive interviews test senior leadership capabilities. A candidate who provides superficial answers, lacks strategic vision, or shows no leadership presence has completely failed. If they ended early or gave only 1-2 responses, their overall score MUST be below 10%.
 
 Return your response as valid JSON with these exact fields:
 {{

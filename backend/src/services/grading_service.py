@@ -307,22 +307,23 @@ class InterviewGradingService:
         interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
         config = get_interview_config(interview_type)
         
-        # Create minimal rubric scores
+        # Create minimal rubric scores for no engagement
         minimal_rubric_scores = {}
         for criteria in config.rubric_criteria:
-            minimal_rubric_scores[criteria.key] = 5
+            minimal_rubric_scores[criteria.key] = 2  # Even lower for no transcript
         
         return {
-            "overall_score": 5,
+            "overall_score": 2,
             "strengths": [
-                f"Started the {config.display_name} session"
+                "Interview session was initiated"
             ],
             "improvement_areas": [
-                f"Complete the full {config.display_name} by engaging throughout",
-                f"Provide detailed responses demonstrating {config.improvement_focus[0]}",
-                f"Actively participate to show {config.improvement_focus[1]}"
+                f"Must actively participate in the full {config.display_name}",
+                f"Provide comprehensive responses demonstrating {config.improvement_focus[0]}",
+                f"Show genuine engagement and preparation for {config.improvement_focus[1]}",
+                "Demonstrate commitment by completing the entire interview process"
             ],
-            "detailed_feedback": f"The {config.display_name} was not completed or there was minimal participation. {config.description}. To improve your score, make sure to participate fully by providing detailed, thoughtful responses that demonstrate your capabilities.",
+            "detailed_feedback": f"CRITICAL FAILURE: The {config.display_name} was not completed or had no meaningful participation. {config.description}. This represents a complete lack of engagement. Candidates must participate fully with detailed, thoughtful responses throughout the entire interview to demonstrate their capabilities and commitment.",
             "rubric_scores": minimal_rubric_scores
         }
 
@@ -331,26 +332,27 @@ class InterviewGradingService:
         interview_type = InterviewType(interview.get('interview_type', InterviewType.TECHNICAL_SCREENING_CALL))
         config = get_interview_config(interview_type)
         
-        # Create moderate rubric scores
-        moderate_rubric_scores = {}
+        # Create lower fallback scores - this is used when AI grading fails but interview content exists
+        # Still should be harsh if the content suggests minimal engagement
+        fallback_rubric_scores = {}
         for i, criteria in enumerate(config.rubric_criteria):
-            # Slightly vary scores for realism
-            moderate_rubric_scores[criteria.key] = 60 + (i * 5) % 15
+            # Lower baseline scores for fallback when AI can't grade properly
+            fallback_rubric_scores[criteria.key] = 40 + (i * 3) % 10  # 40-50 range
         
         return {
-            "overall_score": 60,
+            "overall_score": 40,  # Lower baseline
             "strengths": [
-                f"Completed the {config.display_name} session",
-                "Maintained professional communication",
-                f"Showed understanding of {config.improvement_focus[0]}"
+                f"Participated in the {config.display_name} session",
+                "Maintained basic communication"
             ],
             "improvement_areas": [
-                f"Deepen knowledge in {config.improvement_focus[0]}",
-                f"Practice {config.improvement_focus[1]} skills",
-                f"Prepare more examples demonstrating {config.improvement_focus[2] if len(config.improvement_focus) > 2 else 'relevant experience'}"
+                f"Provide more detailed responses in {config.improvement_focus[0]}",
+                f"Demonstrate stronger preparation for {config.improvement_focus[1]}",
+                f"Show greater engagement and depth in {config.improvement_focus[2] if len(config.improvement_focus) > 2 else 'relevant areas'}",
+                "Consider dedicating more time to thorough interview preparation"
             ],
-            "detailed_feedback": f"Thank you for completing the {config.display_name}. {config.description}. Focus on strengthening the key areas evaluated to enhance your performance in future interviews.",
-            "rubric_scores": moderate_rubric_scores
+            "detailed_feedback": f"The {config.display_name} was completed, however the assessment system encountered technical issues during evaluation. {config.description}. While we cannot provide detailed AI-powered feedback, focus on strengthening engagement, preparation depth, and providing more comprehensive responses in future interviews.",
+            "rubric_scores": fallback_rubric_scores
         }
     
     async def _get_attempt_data(self, req: Request, attempt_id: str) -> Dict:
