@@ -54,7 +54,7 @@ class InterviewGradingService:
                 return default_feedback
             
             # Create grading prompt using interview type config
-            grading_prompt = self._build_grading_prompt(interview, transcript_text, interview_type)
+            grading_prompt = await self._build_grading_prompt(req, interview, transcript_text, interview_type)
             print(f"[GRADING] Grading prompt: {grading_prompt}")
             
             # Check if API key is configured
@@ -160,7 +160,7 @@ class InterviewGradingService:
         
         return "\n".join(formatted)
     
-    def _build_grading_prompt(self, interview: Dict, transcript: str, interview_type: InterviewType) -> str:
+    async def _build_grading_prompt(self, req: Request, interview: Dict, transcript: str, interview_type: InterviewType) -> str:
         """Build the grading prompt using interview type configuration"""
         config = get_interview_config(interview_type)
 
@@ -169,23 +169,63 @@ class InterviewGradingService:
         print(f"[GRADING] Transcript: {transcript}")
         print(f"[GRADING] Interview type: {interview_type}")
         
-        role = interview.get('role_title', 'Software Engineer')
-        print(f"[GRADING] Role: {role}")
-        company = interview.get('company', 'the company')
-        print(f"[GRADING] Company: {company}")
+        # Try to get real company and role from job document
+        role = 'Software Engineer'
+        company = 'the company'
+        jd_structured = {}
+        
+        if interview.get('job_id'):
+            try:
+                from crud.jobs.jobs import get_job
+                job = await get_job(req, interview['job_id'])
+                if job:
+                    role = job.role_title
+                    company = job.company
+                    jd_structured = job.job_description or {}
+                    print(f"[GRADING] Fetched job details - Role: {role}, Company: {company}")
+                else:
+                    print(f"[GRADING] Job not found for job_id: {interview['job_id']}")
+            except Exception as e:
+                print(f"[GRADING] Error fetching job details: {str(e)}")
+        
+        # Fallback to interview fields if job fetch failed
+        if role == 'Software Engineer':
+            role = interview.get('role_title', 'Software Engineer')
+        if company == 'the company':
+            company = interview.get('company', 'the company')
+        if not jd_structured:
+            jd_structured = interview.get('jd_structured', {})
+        
+        print(f"[GRADING] Final Role: {role}")
+        print(f"[GRADING] Final Company: {company}")
         difficulty = interview.get('difficulty', 'mid')
         print(f"[GRADING] Difficulty: {difficulty}")
 
-        jd_structured = interview.get('jd_structured', {})
-        requirements = jd_structured.get('requirements', 'Standard requirements')
         print(f"[GRADING] Jd structured: {jd_structured}")
+        
+        # Check if jd_structured is None or empty, and handle requirements accordingly
+        if jd_structured is None or not jd_structured:
+            requirements = "Standard requirements for this role."
+        else:
+            requirements_data = jd_structured.get('requirements', [])
+            # Ensure requirements is a list
+            if not isinstance(requirements_data, list):
+                requirements_data = [requirements_data] if requirements_data else []
+            
+            # Convert list to string for prompt template
+            if requirements_data:
+                requirements = "\n".join([f"• {req}" for req in requirements_data])
+            else:
+                requirements = "Standard requirements for this role."
+        
         print(f"[GRADING] Requirements: {requirements}")
         
         # Get company values if it's a values interview
-        company_values = ''
+        company_values = 'Innovation, Collaboration, Integrity, Customer Focus'
         if interview_type == InterviewType.VALUES_INTERVIEW:
             # Extract company values from job description or use defaults
-            company_values = jd_structured.get('company_values', 'Innovation, Collaboration, Integrity, Customer Focus')
+            if jd_structured and jd_structured.get('company_values'):
+                company_values = jd_structured.get('company_values')
             print(f"[GRADING] Company values: {company_values}")
 
         
