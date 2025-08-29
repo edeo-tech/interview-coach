@@ -142,9 +142,8 @@ const Welcome = () => {
               }
             ]}
           >
-            <Text style={styles.messageText}>
-              Get to the <Text style={styles.brandText}>nextround</Text>
-            </Text>
+            <Text style={styles.messageText}>Get to the</Text>
+            <Text style={styles.brandText}>nextround</Text>
           </Animated.View>
 
           {/* Animated Button */}
@@ -273,7 +272,7 @@ const styles = StyleSheet.create({
   // Logo section
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
   },
   logoImage: {
     width: 120,
@@ -283,21 +282,25 @@ const styles = StyleSheet.create({
   // Message section
   messageContainer: {
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 50,
     paddingHorizontal: 32,
   },
   messageText: {
     ...TYPOGRAPHY.displaySmall,
-    fontWeight: '300' as const,
-    letterSpacing: 1,
-    color: Colors.white, // White for "Get to the"
+    fontFamily: 'Nunito_600SemiBold',
+    fontWeight: '600' as const,
+    letterSpacing: 0.5,
+    color: Colors.white,
     textAlign: 'center',
     maxWidth: 320,
+    lineHeight: 32,
   },
   brandText: {
     ...TYPOGRAPHY.heroMedium,
-    color: Colors.brand.primary, // Purple for "nextround"
-    lineHeight: 60,
+    fontFamily: 'Nunito_700Bold',
+    color: Colors.brand.primary,
+    lineHeight: 56,
+    marginTop: -12,
   },
   
   // Button section
@@ -327,7 +330,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.brand.primaryRGB,
   },
   getStartedText: {
-    ...TYPOGRAPHY.buttonMedium,
+    ...TYPOGRAPHY.buttonLarge,
+    fontFamily: 'Inter_600SemiBold',
     color: Colors.white,
     marginRight: 8,
   },
