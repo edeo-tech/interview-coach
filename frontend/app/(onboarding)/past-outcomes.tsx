@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   optionButton: {
-    backgroundColor: Colors.glass.backgroundSecondary,
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
