@@ -441,18 +441,13 @@ const Paywall = () => {
             }}
             disabled={isPurchasing || !selectedPackage}
           >
-            <LinearGradient
-              colors={[Colors.brand.primary, Colors.special.pink]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.continueButtonInner}
-            >
+            <View style={styles.continueButtonInner}>
               {isPurchasing ? (
                 <ActivityIndicator size="small" color={Colors.text.primary} />
               ) : (
                 <Text style={styles.continueButtonText}>Continue</Text>
               )}
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
 
           {/* Legal Links */}
@@ -657,34 +652,36 @@ const styles = StyleSheet.create({
     paddingBottom: 20
   },
   continueButton: {
+    backgroundColor: Colors.glass.purple,
+    borderWidth: 1,
+    borderColor: Colors.brand.primary,
     borderRadius: 28,
-    padding: 2,
     height: 56,
     marginTop: 20,
     marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.brand.primary,
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 4 },
-      }
-    })
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.brand.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   continueButtonDisabled: {
     opacity: 0.6,
   },
   continueButtonInner: {
-    backgroundColor: Colors.glass.backgroundSubtle,
-    borderRadius: 28,
-    height: 52,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   continueButtonText: {
-    color: GlassTextColors.primary,
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
   },
   restoreButton: {
     alignItems: 'center',
