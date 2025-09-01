@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimension
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -182,12 +183,13 @@ const PreparationRating = () => {
                     selectedRating === rating.value && styles.ratingButtonSelected
                   ]}
                   onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     setSelectedRating(rating.value);
                     updateData('preparationRating', rating.value);
                     // Auto-continue after brief delay
                     setTimeout(() => {
                       handleContinue(rating.value);
-                    }, 800);
+                    }, 600);
                   }}
                 >
                   <View style={[

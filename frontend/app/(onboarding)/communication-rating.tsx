@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimension
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -201,7 +202,10 @@ const CommunicationRating = () => {
                     styles.ratingButton,
                     selectedRating === rating.value && styles.ratingButtonSelected
                   ]}
-                  onPress={() => setSelectedRating(rating.value)}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    setSelectedRating(rating.value);
+                  }}
                 >
                   <View style={[
                     styles.numberContainer,

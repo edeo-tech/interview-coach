@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimension
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -158,12 +159,13 @@ const PastOutcomes = () => {
                   hasFailed === false && styles.optionButtonSelected
                 ]}
                 onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   setHasFailed(false);
                   updateData('hasFailed', false);
                   // Auto-continue after brief delay
                   setTimeout(() => {
                     handleContinue(false);
-                  }, 800);
+                  }, 600);
                 }}
               >
                 <View style={[
@@ -191,12 +193,13 @@ const PastOutcomes = () => {
                   hasFailed === true && styles.optionButtonSelected
                 ]}
                 onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   setHasFailed(true);
                   updateData('hasFailed', true);
                   // Auto-continue after brief delay
                   setTimeout(() => {
                     handleContinue(true);
-                  }, 800);
+                  }, 600);
                 }}
               >
                 <View style={[
