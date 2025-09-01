@@ -79,14 +79,16 @@ const GoogleSignIn = () =>
                 promptAsync();
             }}
         >
-            <View style={styles.iconContainer}>
-                <Ionicons name="logo-google" size={22} color="#4285F4" />
-            </View>
             {
                 googleLoginLoading ? (
                     <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
-                    <Text style={styles.signupOptionButtonText}>Continue with Google</Text>
+                    <View style={styles.contentContainer}>
+                        <View style={styles.iconContainer}>
+                            <Ionicons name="logo-google" size={22} color="#4285F4" />
+                        </View>
+                        <Text style={styles.signupOptionButtonText}>Continue with Google</Text>
+                    </View>
                 )
             }
         </TouchableOpacity>
@@ -96,14 +98,12 @@ export default GoogleSignIn;
 
 const styles = StyleSheet.create({
     signupOptionButton: {
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 28,
+        
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 16,
-        gap: 12,
         width: '100%',
         height: 56,
         backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -116,17 +116,19 @@ const styles = StyleSheet.create({
             }
         }),
     },
+    contentContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     signupOptionButtonText: {
         color: '#ffffff',
         fontSize: 16,
         fontWeight: '600',
-        flex: 1,
-        textAlign: 'center',
-        marginLeft: -36, // Offset for icon to center text
     },
     iconContainer: {
-        width: 24,
-        height: 24,
+        width: 22,
+        height: 22,
         alignItems: 'center',
         justifyContent: 'center',
     }

@@ -366,8 +366,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.glass.background,
     borderRadius: 28,
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: Colors.glass.backgroundInput,
     height: 56,
   },
   inputIcon: {
@@ -377,7 +375,8 @@ const styles = StyleSheet.create({
     flex: 1,
     ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.primary,
-    paddingVertical: 0,
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
   
   // Login button
