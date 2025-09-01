@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -47,10 +47,10 @@ const Login = () => {
       posthogScreen('auth_login');
       loadUserMetadata();
       startAnimationSequence();
-    }, [posthogScreen])
+    }, [posthogScreen, loadUserMetadata, startAnimationSequence])
   );
   
-  const startAnimationSequence = () => {
+  const startAnimationSequence = useCallback(() => {
     // Reset animation values
     logoOpacity.setValue(0);
     contentTranslateY.setValue(30);
@@ -78,9 +78,9 @@ const Login = () => {
         }),
       ]).start();
     }, 400);
-  };
+  }, [logoOpacity, contentTranslateY, contentOpacity]);
 
-  const loadUserMetadata = async () => {
+  const loadUserMetadata = useCallback(async () => {
     try {
       const storedUserName = await getItem('user_name');
       const storedLastSignInType = await getItem('last_sign_in_type');
@@ -94,18 +94,23 @@ const Login = () => {
     } catch (error) {
       console.error('Error loading user metadata:', error);
     }
-  };
+  }, [getItem]);
+
+  // Memoize email domain to prevent recalculation on every render
+  const emailDomain = useMemo(() => {
+    return email.split('@')[1] || 'unknown';
+  }, [email]);
 
   useEffect(() => {
     if (loginErrorMessage) {
       posthogCapture('login_failed', {
         error_message: loginErrorMessage,
-        email_domain: email.split('@')[1] || 'unknown'
+        email_domain: emailDomain
       });
       showToast(loginErrorMessage, 'error');
       clearLoginError();
     }
-  }, [loginErrorMessage, posthogCapture, email, showToast, clearLoginError]);
+  }, [loginErrorMessage, posthogCapture, emailDomain, showToast, clearLoginError]);
 
   useEffect(() => {
     if (loginSuccess && hasAttemptedLogin) {
@@ -133,7 +138,7 @@ const Login = () => {
     }
   }, [appleLoginErrorMessage, showToast, clearAppleLoginError]);
 
-  const handleLogin = () => {
+  const handleLogin = useCallback(() => {
     if (!email || !password) {
       showToast('Please enter both email and password', 'warning');
       return;
@@ -146,11 +151,20 @@ const Login = () => {
     }
 
     posthogCapture('login_attempted', {
-      email_domain: email.split('@')[1] || 'unknown'
+      email_domain: emailDomain
     });
     setHasAttemptedLogin(true);
     login({ email, password });
-  };
+  }, [email, password, emailDomain, showToast, posthogCapture, login]);
+
+  // Memoize text input handlers to prevent unnecessary re-renders
+  const handleEmailChange = useCallback((text: string) => {
+    setEmail(text);
+  }, []);
+
+  const handlePasswordChange = useCallback((text: string) => {
+    setPassword(text);
+  }, []);
 
   return (
     <ChatGPTBackground style={styles.gradient}>
@@ -211,7 +225,7 @@ const Login = () => {
                       placeholder="Enter your email"
                       placeholderTextColor={Colors.text.tertiary}
                       value={email}
-                      onChangeText={setEmail}
+                      onChangeText={handleEmailChange}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoCorrect={false}
@@ -227,7 +241,7 @@ const Login = () => {
                       placeholder="Enter your password"
                       placeholderTextColor={Colors.text.tertiary}
                       value={password}
-                      onChangeText={setPassword}
+                      onChangeText={handlePasswordChange}
                       secureTextEntry
                       autoCapitalize="none"
                     />

@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../constants/Colors';
+import useHapticsSafely from '../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 interface OnboardingProgressProps {
   currentStep: number;
@@ -20,6 +22,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   icon_name,
   shouldShowProgress = true
 }) => {
+  const { impactAsync } = useHapticsSafely();
   // Progress calculation for screens 3-11 only (profile-setup to nerves-rating, before analyzing)
   // Screen 3 (profile-setup) = 0%, Screen 11 (nerves-rating) = 100%
   const calculateProgress = () => {
@@ -85,6 +88,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   }, [progress]);
 
   const handleBack = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     if (onBack) {
       onBack();
     } else {

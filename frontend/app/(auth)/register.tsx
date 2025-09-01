@@ -20,6 +20,8 @@ import { GlassStyles } from '../../constants/GlassStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegister, useLogin } from '@/_queries/users/auth/users';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -27,6 +29,7 @@ const Register = () => {
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture, posthogIdentify } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
   
   useFocusEffect(() => {
     posthogScreen('auth_register');
@@ -61,6 +64,8 @@ const Register = () => {
 
 
   const handleRegister = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    
     // Validation
     if (!email || !password) {
       showToast('Please fill in all fields', 'warning');
@@ -157,7 +162,10 @@ const Register = () => {
               <Text style={styles.termsText}>
                 By registering you accept our{' '}
                 <TouchableOpacity
-                  onPress={() => router.push('/(auth)/terms')}
+                  onPress={() => {
+                    impactAsync(ImpactFeedbackStyle.Light);
+                    router.push('/(auth)/terms');
+                  }}
                   style={styles.termsLink}
                 >
                   <Text style={styles.termsLinkText}>terms of service</Text>

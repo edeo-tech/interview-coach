@@ -18,6 +18,8 @@ import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TYPOGRAPHY } from '../../constants/Typography';
 import Colors from '../../constants/Colors';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -28,6 +30,7 @@ const ProfileSetup = () => {
   const [currentStep, setCurrentStep] = useState<Step>('profile');
   const [name, setName] = useState(data.name || '');
   const [age, setAge] = useState(data.age || '');
+  const { impactAsync } = useHapticsSafely();
 
   // Animation values
   const contentTranslateX = useRef(new Animated.Value(0)).current;
@@ -114,6 +117,8 @@ const ProfileSetup = () => {
   };
 
   const handleNext = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    
     if (currentStep === 'profile') {
       animateToStep('forward', 'name');
     } else if (currentStep === 'name' && name.trim()) {
@@ -127,6 +132,8 @@ const ProfileSetup = () => {
   };
 
   const handleBack = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    
     if (currentStep === 'age') {
       animateToStep('back', 'name');
     } else if (currentStep === 'name') {

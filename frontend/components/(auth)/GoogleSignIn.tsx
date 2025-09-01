@@ -10,6 +10,8 @@ import Colors from '@/constants/Colors';
 // context
 import { useAuth } from '@/context/authentication/AuthContext';
 import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '@/hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 
 const EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID;
@@ -21,6 +23,7 @@ const GoogleSignIn = () =>
 {
     const { googleLogin, googleLoginErrorMessage, googleLoginLoading } = useAuth();
     const { posthogCapture } = usePosthogSafely();
+    const { impactAsync } = useHapticsSafely();
 
     const redirectUri = makeRedirectUri({
         scheme: Platform.OS === 'ios' ? 'com.interview-coach.app' : 'com.interviewcoach.app',
@@ -75,6 +78,7 @@ const GoogleSignIn = () =>
         <TouchableOpacity 
             style={styles.signupOptionButton} 
             onPress={() => {
+                impactAsync(ImpactFeedbackStyle.Light);
                 posthogCapture('google_signin_button_clicked');
                 promptAsync();
             }}

@@ -21,6 +21,8 @@ import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
 import AppleSignIn from '../../components/(auth)/AppleSignIn';
 import { useToast } from '../../components/Toast';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { fonts } from '../../constants/Fonts';
 
 const Welcome = () => {
@@ -28,6 +30,7 @@ const Welcome = () => {
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
   const { showToast } = useToast();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
 
   // Animation values - Let's use useRef to ensure they persist
   const logoTranslateY = React.useRef(new Animated.Value(0)).current;
@@ -97,11 +100,13 @@ const Welcome = () => {
 
 
   const handleGetStarted = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     posthogCapture('onboarding_get_started_clicked');
     setIsModalVisible(true);
   };
 
   const handleEmailSignIn = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     posthogCapture('onboarding_email_signin_clicked');
     setIsModalVisible(false);
     router.push('/(auth)/register');
@@ -179,7 +184,10 @@ const Welcome = () => {
         >
           <TouchableOpacity 
             style={styles.loginLink} 
-            onPress={() => router.push('/(auth)/login')}
+            onPress={() => {
+              impactAsync(ImpactFeedbackStyle.Light);
+              router.push('/(auth)/login');
+            }}
             activeOpacity={0.7}
           >
             <Text style={styles.loginLinkText}>Already have an account?</Text>
