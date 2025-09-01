@@ -238,7 +238,7 @@ const Welcome = () => {
                     activeOpacity={0.8}
                   >
                     <View style={styles.iconContainer}>
-                      <Ionicons name="mail" size={22} color="#F59E0B" />
+                      <Ionicons name="mail" size={22} color="#ffffff" />
                     </View>
                     <Text style={styles.emailButtonText}>Continue with Email</Text>
                   </TouchableOpacity>
@@ -417,11 +417,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   emailButton: {
-    height: 56, // Design system buttonHeight.large
-    borderRadius: 12, // Design system borderRadius.md
-    borderWidth: 1,
-    borderColor: Colors.glass.goldBorder,
-    backgroundColor: Colors.glass.goldLight,
+    height: 56,
+    borderRadius: 28, // Match Google/Apple buttons
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // Match glass effect
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -430,15 +428,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   emailButtonText: {
-    ...TYPOGRAPHY.buttonSmall,
-    color: Colors.accent.gold,
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: -36, // Offset for icon to center text
+    color: '#ffffff', // Match Google/Apple button text
+    fontSize: 16,
+    fontWeight: '600',
   },
   iconContainer: {
-    width: 24,
-    height: 24,
+    width: 22, // Match Google/Apple icon size
+    height: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
