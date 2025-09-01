@@ -160,18 +160,16 @@ const ProfileSetup = () => {
       case 'profile':
         return (
           <View style={styles.content}>
-            {/* Simple icon - following welcome screen approach */}
+            {/* Building-related icon */}
             <View style={styles.iconContainer}>
-              <Image 
-                source={require('../../assets/images/FinalAppIconTransparent.png')}
-                style={styles.iconImage}
-                resizeMode="contain"
-              />
+              <Ionicons name="construct-outline" size={64} color={Colors.brand.primary} />
             </View>
             
             {/* Typography following design system hierarchy */}
-            <Text style={styles.titleMain}>Let's build your</Text>
-            <Text style={styles.titleBrand}>profile</Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleMain}>Let's build your</Text>
+              <Text style={styles.titleBrand}>profile</Text>
+            </View>
             
             <Text style={styles.subtitle}>
               We'll create a personalized interview prep plan tailored just for you.
@@ -331,7 +329,7 @@ const styles = StyleSheet.create({
   // Icon section - simplified like welcome screen
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 32,
   },
   iconImage: {
     width: 80,
@@ -339,16 +337,20 @@ const styles = StyleSheet.create({
   },
   
   // Typography - using enhanced typography system
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
   titleMain: {
     ...TYPOGRAPHY.displaySmall,
     color: Colors.text.primary,
     textAlign: 'center',
+    marginBottom: 4,
   },
   titleBrand: {
-    ...TYPOGRAPHY.hero,
+    ...TYPOGRAPHY.heroMedium,
     color: Colors.brand.primary,
     textAlign: 'center',
-    marginBottom: 60,
   },
   screenTitle: {
     ...TYPOGRAPHY.pageTitle,
@@ -362,7 +364,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 320,
     paddingHorizontal: 32,
-    marginBottom: 32,
+    lineHeight: 24,
   },
   
   // Input styling

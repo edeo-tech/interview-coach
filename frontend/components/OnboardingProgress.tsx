@@ -98,12 +98,19 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
 
   // Don't show progress bar for screens at or after analyzing (step 12)
   const showProgressBar = shouldShowProgress && currentStep < 12;
+  
+  // Don't show back button on the first onboarding screen (step 3 - profile setup)
+  const showBackButton = currentStep > 3;
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Ionicons name={icon_name as any || "arrow-back"} size={24} color={Colors.white} />
-      </TouchableOpacity>
+      <View style={styles.leftSection}>
+        {showBackButton && (
+          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <Ionicons name={icon_name as any || "chevron-back"} size={24} color={Colors.white} />
+          </TouchableOpacity>
+        )}
+      </View>
       
       {showProgressBar && (
         <View style={styles.progressContainer}>
@@ -135,6 +142,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     gap: 20,
+  },
+  leftSection: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButton: {
     width: 40,
