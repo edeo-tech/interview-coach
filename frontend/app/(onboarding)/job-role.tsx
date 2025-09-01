@@ -9,12 +9,15 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import Colors from '../../constants/Colors';
 import { TYPOGRAPHY } from '../../constants/Typography';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const OnboardingJobRole = () => {
   const { data, updateData } = useOnboarding();
   const [selectedIndustry, setSelectedIndustry] = useState(data.industry);
+  const { impactAsync } = useHapticsSafely();
 
   // Animation values - exactly like profile-setup
   const contentTranslateX = useRef(new Animated.Value(0)).current;
@@ -90,6 +93,8 @@ const OnboardingJobRole = () => {
   ];
 
   const handleContinue = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    
     if (selectedIndustry) {
       updateData('industry', selectedIndustry);
       
@@ -169,11 +174,7 @@ const OnboardingJobRole = () => {
           onBack={handleBack}
         />
         
-        <ScrollView 
-          style={styles.scrollContent} 
-          contentContainerStyle={styles.scrollContentContainer}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.scrollContent}>
           {/* Animated content container - exactly like profile-setup */}
           <Animated.View 
             style={[
@@ -185,10 +186,12 @@ const OnboardingJobRole = () => {
             ]}
           >
             <View style={styles.content}>
-              <Text style={styles.screenTitle}>What industry are you in?</Text>
-              <Text style={styles.subtitle}>
-                Which industry are you applying in? We'll tailor advice and prep to this field.
-              </Text>
+              <View style={styles.headerSection}>
+                <Text style={styles.screenTitle}>What industry are you in?</Text>
+                <Text style={styles.subtitle}>
+                  We'll tailor advice to your field
+                </Text>
+              </View>
               
               <View style={styles.industryGrid}>
                 {industries.map((industry) => (
@@ -198,17 +201,24 @@ const OnboardingJobRole = () => {
                       styles.industryCard,
                       selectedIndustry === industry.id && styles.industryCardSelected
                     ]}
-                    onPress={() => setSelectedIndustry(industry.id)}
+                    onPress={() => {
+                      impactAsync(ImpactFeedbackStyle.Light);
+                      setSelectedIndustry(industry.id);
+                    }}
+                    activeOpacity={0.7}
                   >
                     <Ionicons 
                       name={industry.icon as any} 
-                      size={32} 
+                      size={20} 
                       color={selectedIndustry === industry.id ? Colors.brand.primary : Colors.text.tertiary} 
                     />
-                    <Text style={[
-                      styles.industryText,
-                      selectedIndustry === industry.id && styles.industryTextSelected
-                    ]}>
+                    <Text 
+                      style={[
+                        styles.industryText,
+                        selectedIndustry === industry.id && styles.industryTextSelected
+                      ]}
+                      numberOfLines={2}
+                    >
                       {industry.name}
                     </Text>
                   </TouchableOpacity>
@@ -216,7 +226,7 @@ const OnboardingJobRole = () => {
               </View>
             </View>
           </Animated.View>
-        </ScrollView>
+        </View>
 
         <Animated.View 
           style={[
@@ -254,58 +264,58 @@ const styles = StyleSheet.create({
   scrollContent: {
     flex: 1,
   },
-  scrollContentContainer: {
-    paddingBottom: 100, // Space for button container
-  },
   animatedContent: {
     flex: 1,
+    justifyContent: 'center',
   },
   content: {
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 24,
   },
   screenTitle: {
     ...TYPOGRAPHY.sectionHeader,
     color: Colors.text.primary,
     textAlign: 'center',
     lineHeight: 30,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   subtitle: {
-    ...TYPOGRAPHY.bodyMedium,
+    ...TYPOGRAPHY.bodySmall,
     color: Colors.text.tertiary,
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
-    paddingHorizontal: 16,
+    lineHeight: 20,
   },
   industryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 8,
   },
   industryCard: {
-    width: '47%',
+    width: '31%',
     backgroundColor: Colors.glass.backgroundInput,
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.glass.backgroundSubtle,
-    minHeight: 100,
+    height: 72,
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   industryCardSelected: {
     backgroundColor: Colors.glass.purple,
-    borderColor: Colors.brand.primary,
   },
   industryText: {
-    ...TYPOGRAPHY.labelMedium,
+    ...TYPOGRAPHY.labelSmall,
     color: Colors.text.tertiary,
-    fontWeight: '600',
+    fontWeight: '500',
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: 4,
+    lineHeight: 16,
   },
   industryTextSelected: {
     color: Colors.brand.primary,

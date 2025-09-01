@@ -14,8 +14,12 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { TYPOGRAPHY } from '../../constants/Typography';
 import Colors from '../../constants/Colors';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 const SectionTransition = () => {
+  const { impactAsync } = useHapticsSafely();
+  
   // Animation for content entrance
   const contentOpacity = useRef(new Animated.Value(0)).current;
   const contentTranslateY = useRef(new Animated.Value(30)).current;
@@ -58,10 +62,12 @@ const SectionTransition = () => {
   );
 
   const handleContinue = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     router.push('/(onboarding)/job-role');
   };
 
   const handleBack = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
 
