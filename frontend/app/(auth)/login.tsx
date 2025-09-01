@@ -331,17 +331,12 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     ...TYPOGRAPHY.displaySmall,
-    fontFamily: 'Nunito_600SemiBold',
-    fontWeight: '600',
-    letterSpacing: 0.5,
     color: Colors.white,
     textAlign: 'center',
   },
   nameText: {
     ...TYPOGRAPHY.heroMedium,
-    fontFamily: 'Nunito_700Bold',
     color: Colors.brand.primary,
-    lineHeight: 56,
     marginTop: -12,
     marginBottom: 8,
     textAlign: 'center',
@@ -373,8 +368,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.primary,
     textAlign: 'left',
     textAlignVertical: 'center',
@@ -406,7 +400,6 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     ...TYPOGRAPHY.buttonLarge,
-    fontFamily: 'Inter_600SemiBold',
     color: Colors.text.primary,
   },
   // Footer section

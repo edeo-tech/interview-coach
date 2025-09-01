@@ -1,26 +1,5 @@
-import {
-    useFonts,
-    Inter_100Thin,
-    Inter_200ExtraLight,
-    Inter_300Light,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_800ExtraBold,
-    Inter_900Black,
-} from '@expo-google-fonts/inter';
-
-import {
-    Nunito_200ExtraLight,
-    Nunito_300Light,
-    Nunito_400Regular,
-    Nunito_500Medium,
-    Nunito_600SemiBold,
-    Nunito_700Bold,
-    Nunito_800ExtraBold,
-    Nunito_900Black,
-} from '@expo-google-fonts/nunito';
+// Import our centralized font loading system
+import { useAppFonts } from '@/hooks/useFonts';
 
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -106,25 +85,7 @@ export default function RootLayoutWrapper() {
 
 function RootLayout() {
     const { setFontsLoaded } = useSplashScreen();
-    const [fontsLoaded, error] = useFonts({
-        Inter_100Thin,
-        Inter_200ExtraLight,
-        Inter_300Light,
-        Inter_400Regular,
-        Inter_500Medium,
-        Inter_600SemiBold,
-        Inter_700Bold,
-        Inter_800ExtraBold,
-        Inter_900Black,
-        Nunito_200ExtraLight,
-        Nunito_300Light,
-        Nunito_400Regular,
-        Nunito_500Medium,
-        Nunito_600SemiBold,
-        Nunito_700Bold,
-        Nunito_800ExtraBold,
-        Nunito_900Black,
-    });
+    const { fontsLoaded, fontError: error } = useAppFonts();
 
     useEffect(() => {
         if (error) throw error;

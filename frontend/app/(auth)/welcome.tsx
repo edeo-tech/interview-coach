@@ -287,21 +287,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   messageText: {
-    ...TYPOGRAPHY.displaySmall,
-    fontFamily: 'Nunito_600SemiBold',
-    fontWeight: '600' as const,
-    letterSpacing: 0.5,
+    ...TYPOGRAPHY.welcomeIntro,
     color: Colors.white,
     textAlign: 'center',
-    maxWidth: 320,
-    lineHeight: 32,
+    maxWidth: 360, // Increased for larger text
   },
   brandText: {
-    ...TYPOGRAPHY.heroMedium,
-    fontFamily: fonts.primary.bold,
+    ...TYPOGRAPHY.welcomeHero,
     color: Colors.brand.primary,
-    lineHeight: 56,
-    marginTop: -12,
+    marginTop: -8, // Adjusted for larger text
   },
   
   // Button section
@@ -314,8 +308,8 @@ const styles = StyleSheet.create({
   // Primary CTA button
   getStartedButton: {
     width: '100%',
-    height: 56,
-    borderRadius: 28,
+    height: 60, // Increased from 56 to accommodate larger text
+    borderRadius: 30, // Adjusted proportionally
     backgroundColor: Colors.glass.purple, // Slightly opaque purple
     flexDirection: 'row',
     alignItems: 'center',
@@ -331,10 +325,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.brand.primaryRGB,
   },
   getStartedText: {
-    ...TYPOGRAPHY.buttonLarge,
-    fontFamily: 'Inter_600SemiBold',
+    ...TYPOGRAPHY.primaryCTA,
     color: Colors.white,
     marginRight: 8,
+    textAlignVertical: 'center', // Ensure vertical centering
   },
   
   // Login section
