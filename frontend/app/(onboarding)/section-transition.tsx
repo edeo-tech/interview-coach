@@ -91,12 +91,14 @@ const SectionTransition = () => {
             </View>
             
             {/* Main transition message */}
-            <Text style={styles.mainMessage}>
-              Now let's understand
-            </Text>
-            <Text style={styles.highlightMessage}>
-              how you interview
-            </Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.mainMessage}>
+                Now let's understand
+              </Text>
+              <Text style={styles.highlightMessage}>
+                how you interview
+              </Text>
+            </View>
             
             {/* Supporting text */}
             <Text style={styles.supportingText}>
@@ -145,29 +147,33 @@ const styles = StyleSheet.create({
   // Message content
   messageContainer: {
     alignItems: 'center',
-    maxWidth: 320,  // Design system standard
+    maxWidth: 340,
   },
   iconContainer: {
     marginBottom: 32,
     opacity: 0.8,
   },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
   mainMessage: {
     ...TYPOGRAPHY.displaySmall,
     color: Colors.text.primary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   highlightMessage: {
-    ...TYPOGRAPHY.hero,
+    ...TYPOGRAPHY.heroMedium,
     color: Colors.brand.primary,
     textAlign: 'center',
-    marginBottom: 32,
   },
   supportingText: {
     ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.tertiary,
     textAlign: 'center',
-    paddingHorizontal: 16,
+    lineHeight: 24,
+    maxWidth: 300,
   },
   
   // Button section

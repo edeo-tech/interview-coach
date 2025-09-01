@@ -184,10 +184,12 @@ const ProfileSetup = () => {
               <Ionicons name="person-outline" size={48} color={Colors.brand.primary} />
             </View>
             
-            <Text style={styles.screenTitle}>What's your name?</Text>
-            <Text style={styles.subtitle}>
-              We'll use this to personalize your experience
-            </Text>
+            <View style={styles.titleSection}>
+              <Text style={styles.screenTitle}>What's your name?</Text>
+              <Text style={styles.subtitle}>
+                We'll use this to personalize your experience
+              </Text>
+            </View>
             
             <View style={styles.inputContainer}>
               <TextInput
@@ -211,10 +213,12 @@ const ProfileSetup = () => {
               <Ionicons name="calendar-outline" size={48} color={Colors.brand.primary} />
             </View>
             
-            <Text style={styles.screenTitle}>What's your age?</Text>
-            <Text style={styles.subtitle}>
-              Thanks, {name}. We'll tailor this to you.
-            </Text>
+            <View style={styles.titleSection}>
+              <Text style={styles.screenTitle}>What's your age?</Text>
+              <Text style={styles.subtitle}>
+                Thanks, {name}. We'll tailor this to you.
+              </Text>
+            </View>
             
             <View style={styles.inputContainer}>
               <TextInput
@@ -352,6 +356,10 @@ const styles = StyleSheet.create({
     color: Colors.brand.primary,
     textAlign: 'center',
   },
+  titleSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
   screenTitle: {
     ...TYPOGRAPHY.pageTitle,
     color: Colors.text.primary,
@@ -362,8 +370,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.tertiary,
     textAlign: 'center',
-    maxWidth: 320,
-    paddingHorizontal: 32,
+    maxWidth: 280,
     lineHeight: 24,
   },
   
@@ -371,17 +378,17 @@ const styles = StyleSheet.create({
   inputContainer: {
     width: '100%',
     maxWidth: 320,
+    alignItems: 'center',
   },
   textInput: {
     backgroundColor: Colors.glass.backgroundInput,
-    height: 48,
-    borderRadius: 24,
-    paddingHorizontal: 20,
+    height: 56,
+    borderRadius: 28,
+    paddingHorizontal: 24,
     fontSize: 18,
     color: Colors.text.primary,
     textAlign: 'center',
-    borderWidth: 1,
-    borderColor: Colors.glass.borderInteractive,
+    width: '100%',
   },
   
   // Button section
