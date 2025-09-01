@@ -373,10 +373,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    ...TYPOGRAPHY.bodyMedium,
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
     color: Colors.text.primary,
+    textAlign: 'left',
     textAlignVertical: 'center',
     includeFontPadding: false,
+    paddingVertical: 0,
+    lineHeight: undefined, // Remove line height to let the container handle vertical centering
   },
   
   // Login button
