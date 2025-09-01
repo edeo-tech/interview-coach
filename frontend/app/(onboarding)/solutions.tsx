@@ -239,26 +239,81 @@ const ProblemValidation = () => {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.content}>
-              <Text style={styles.screenTitle}>Here's what we found</Text>
-              
-              <Text style={styles.introText}>
-                {getInsightText()}
-              </Text>
+              {/* Header Section */}
+              <View style={styles.headerSection}>
+                <View style={styles.iconContainer}>
+                  <Ionicons 
+                    name="analytics" 
+                    size={48} 
+                    color={Colors.brand.primary} 
+                  />
+                </View>
+                <Text style={styles.screenTitle}>Here's what we found</Text>
+                <Text style={styles.introText}>
+                  {getInsightText()}
+                </Text>
+              </View>
 
-              <Text style={styles.highlightText}>
-                {primaryProblem.name}
-              </Text>
+              {/* Problem Highlight Card */}
+              <View style={styles.problemCard}>
+                <View style={styles.problemHeader}>
+                  <View style={styles.problemIcon}>
+                    <Ionicons 
+                      name={primaryProblem.area === 'preparation' ? 'library' : 
+                            primaryProblem.area === 'communication' ? 'chatbubbles' : 'heart'} 
+                      size={24} 
+                      color={Colors.brand.primary} 
+                    />
+                  </View>
+                  <Text style={styles.problemLabel}>Primary Challenge</Text>
+                </View>
+                <Text style={styles.highlightText}>
+                  {primaryProblem.name}
+                </Text>
+                <View style={styles.ratingIndicator}>
+                  <Text style={styles.ratingText}>Severity: {primaryProblem.rating}/5</Text>
+                  <View style={styles.ratingBar}>
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <View 
+                        key={level}
+                        style={[
+                          styles.ratingDot,
+                          level <= primaryProblem.rating && styles.ratingDotActive
+                        ]}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </View>
               
-              <Text style={styles.subtitle}>
-                {getSolutionTitle()}
-              </Text>
-              
-              <View style={styles.insightContainer}>
-                {getInsightBullets().map((insight, index) => (
-                  <Text key={index} style={styles.insightItem}>
-                    • {insight}
-                  </Text>
-                ))}
+              {/* Insights Section */}
+              <View style={styles.insightsSection}>
+                <Text style={styles.sectionTitle}>
+                  {getSolutionTitle()}
+                </Text>
+                <View style={styles.insightContainer}>
+                  {getInsightBullets().map((insight, index) => (
+                    <View key={index} style={styles.insightRow}>
+                      <View style={styles.insightBullet}>
+                        <Ionicons name="checkmark" size={14} color={Colors.brand.primary} />
+                      </View>
+                      <Text style={styles.insightItem}>
+                        {insight}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Next Steps Preview */}
+              <View style={styles.nextStepsCard}>
+                <View style={styles.nextStepsHeader}>
+                  <Ionicons name="rocket" size={20} color={Colors.accent.gold} />
+                  <Text style={styles.nextStepsTitle}>What's next?</Text>
+                </View>
+                <Text style={styles.nextStepsText}>
+                  We'll show you exactly how to tackle {primaryProblem.name} with personalized practice sessions.
+                </Text>
               </View>
             </View>
           </ScrollView>
@@ -308,51 +363,166 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingTop: 20,
     paddingVertical: 32,
   },
+  
+  // Header Section
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.glass.backgroundInput,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
   screenTitle: {
-    ...TYPOGRAPHY.heading1,
-    color: Colors.white,
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
     textAlign: 'center',
-    lineHeight: 30,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   introText: {
     ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.tertiary,
     textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
+    lineHeight: 22,
   },
-  highlightText: {
-    ...TYPOGRAPHY.bodyLarge,
-    fontWeight: '600',
-    color: Colors.brand.primary,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  subtitle: {
-    ...TYPOGRAPHY.labelLarge,
-    fontWeight: '600',
-    color: Colors.white,
-    textAlign: 'center',
+  
+  // Problem Card
+  problemCard: {
+    backgroundColor: Colors.glass.backgroundInput,
+    borderRadius: 24,
+    padding: 24,
     marginBottom: 24,
   },
-  insightContainer: {
-    gap: 8,
-    marginBottom: 48,
+  problemHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-    maxWidth: 320,
+    marginBottom: 12,
+  },
+  problemIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.glass.purpleTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  problemLabel: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  highlightText: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.brand.primary,
+    marginBottom: 16,
+  },
+  ratingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ratingText: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.tertiary,
+  },
+  ratingBar: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  ratingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.glass.border,
+  },
+  ratingDotActive: {
+    backgroundColor: Colors.brand.primary,
+  },
+  
+  // Insights Section
+  insightsSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  insightContainer: {
+    gap: 12,
+  },
+  insightRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 8,
+  },
+  insightBullet: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.glass.purpleTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 2,
   },
   insightItem: {
     ...TYPOGRAPHY.bodyMedium,
-    color: Colors.text.secondary,
-    textAlign: 'center',
+    color: Colors.text.primary,
+    flex: 1,
     lineHeight: 22,
+  },
+  
+  // Next Steps Card
+  nextStepsCard: {
+    backgroundColor: Colors.glass.backgroundInput,
+    borderRadius: 24,
+    padding: 20,
+  },
+  nextStepsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  nextStepsTitle: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.accent.gold,
+    marginLeft: 8,
+  },
+  nextStepsText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.secondary,
+    lineHeight: 20,
   },
   bottomContainer: {
     width: '100%',

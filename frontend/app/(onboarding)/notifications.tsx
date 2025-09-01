@@ -156,30 +156,76 @@ const ReassuranceDataProof = () => {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.content}>
-              <Text style={styles.screenTitle}>You're in good hands</Text>
-              
-              <View style={styles.statContainer}>
-                <Text style={styles.statNumber}>9x</Text>
+              {/* Header Section */}
+              <View style={styles.headerSection}>
+                <View style={styles.iconContainer}>
+                  <Ionicons 
+                    name="shield-checkmark" 
+                    size={48} 
+                    color={Colors.brand.primary} 
+                  />
+                </View>
+                <Text style={styles.screenTitle}>You're in good hands</Text>
+              </View>
+
+              {/* Stats Card */}
+              <View style={styles.statsCard}>
+                <View style={styles.statHighlight}>
+                  <Text style={styles.statNumber}>9x</Text>
+                  <Text style={styles.statLabel}>More Likely</Text>
+                </View>
                 <Text style={styles.statDescription}>
                   Users who complete 8 mocks are 9x more likely to reach the next round
                 </Text>
               </View>
 
-              <View style={styles.testimonialContainer}>
+              {/* Testimonial Card */}
+              <View style={styles.testimonialCard}>
+                <View style={styles.quoteIcon}>
+                  <Ionicons name="quote" size={20} color={Colors.brand.primary} />
+                </View>
                 <Text style={styles.testimonialText}>
-                  "I froze in 3 real interviews. After 6 mocks with NextRound, I landed my dream offer."
+                  I froze in 3 real interviews. After 6 mocks with NextRound, I landed my dream offer.
                 </Text>
-                <Text style={styles.testimonialAuthor}>— Sarah M., Marketing Manager</Text>
+                <View style={styles.testimonialAuthor}>
+                  <View style={styles.authorAvatar}>
+                    <Text style={styles.avatarText}>S</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.authorName}>Sarah M.</Text>
+                    <Text style={styles.authorRole}>Marketing Manager</Text>
+                  </View>
+                </View>
               </View>
 
-              <View style={styles.benefitsContainer}>
-                <Text style={styles.benefitsTitle}>What you'll get:</Text>
-                
+              {/* Benefits Section */}
+              <View style={styles.benefitsSection}>
+                <Text style={styles.sectionTitle}>What you'll get</Text>
                 <View style={styles.benefitsList}>
-                  <Text style={styles.benefitItem}>• AI-powered mock interviews</Text>
-                  <Text style={styles.benefitItem}>• Personalized feedback on every answer</Text>
-                  <Text style={styles.benefitItem}>• Industry-specific question preparation</Text>
-                  <Text style={styles.benefitItem}>• Confidence building through practice</Text>
+                  <View style={styles.benefitRow}>
+                    <View style={styles.benefitIcon}>
+                      <Ionicons name="checkmark" size={16} color={Colors.brand.primary} />
+                    </View>
+                    <Text style={styles.benefitItem}>AI-powered mock interviews</Text>
+                  </View>
+                  <View style={styles.benefitRow}>
+                    <View style={styles.benefitIcon}>
+                      <Ionicons name="checkmark" size={16} color={Colors.brand.primary} />
+                    </View>
+                    <Text style={styles.benefitItem}>Personalized feedback on every answer</Text>
+                  </View>
+                  <View style={styles.benefitRow}>
+                    <View style={styles.benefitIcon}>
+                      <Ionicons name="checkmark" size={16} color={Colors.brand.primary} />
+                    </View>
+                    <Text style={styles.benefitItem}>Industry-specific question preparation</Text>
+                  </View>
+                  <View style={styles.benefitRow}>
+                    <View style={styles.benefitIcon}>
+                      <Ionicons name="checkmark" size={16} color={Colors.brand.primary} />
+                    </View>
+                    <Text style={styles.benefitItem}>Confidence building through practice</Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -230,93 +276,168 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingTop: 20,
     paddingVertical: 32,
   },
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
-    color: Colors.text.primary,
-    textAlign: 'center',
-    lineHeight: 30,
-    marginBottom: 32,
-  },
-  statContainer: {
+  
+  // Header Section
+  headerSection: {
     alignItems: 'center',
     marginBottom: 32,
-    width: '100%',
-    maxWidth: 320,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.glass.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  screenTitle: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
+    textAlign: 'center',
+  },
+  
+  // Stats Card
+  statsCard: {
+    backgroundColor: Colors.glass.background,
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  statHighlight: {
+    alignItems: 'center',
+    marginBottom: 16,
   },
   statNumber: {
     fontSize: 48,
-    fontWeight: '800',
-    fontFamily: 'SpaceGrotesk',
+    fontWeight: '700',
+    fontFamily: 'Nunito-Bold',
     color: Colors.brand.primary,
-    textAlign: 'center',
-    marginBottom: 8,
+    lineHeight: 52,
+  },
+  statLabel: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   statDescription: {
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    color: Colors.text.secondary,
-    textAlign: 'center',
     lineHeight: 22,
+    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.primary,
+    textAlign: 'center',
+    paddingHorizontal: 8,
   },
-  testimonialContainer: {
-    backgroundColor: Colors.glass.backgroundSecondary,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 32,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
-    width: '100%',
-    maxWidth: 320,
+  
+  // Testimonial Card
+  testimonialCard: {
+    backgroundColor: Colors.glass.background,
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 24,
+    position: 'relative',
+  },
+  quoteIcon: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    opacity: 0.6,
   },
   testimonialText: {
     fontSize: 16,
+    lineHeight: 24,
     fontWeight: '400',
-    fontFamily: 'Inter',
-    color: Colors.text.secondary,
-    textAlign: 'center',
-    lineHeight: 22,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.primary,
     fontStyle: 'italic',
-    marginBottom: 8,
+    marginBottom: 16,
+    paddingRight: 32,
   },
   testimonialAuthor: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    color: Colors.brand.primary,
-    textAlign: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  benefitsContainer: {
+  authorAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.glass.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.brand.primary,
+  },
+  authorName: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
+    marginBottom: 2,
+  },
+  authorRole: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
+  },
+  
+  // Benefits Section
+  benefitsSection: {
     width: '100%',
-    maxWidth: 320,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
+    textAlign: 'center',
     marginBottom: 20,
   },
-  benefitsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter',
-    color: Colors.text.primary,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
   benefitsList: {
-    gap: 8,
+    gap: 12,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  benefitIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.glass.purpleTint,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 1,
   },
   benefitItem: {
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    color: Colors.text.secondary,
-    textAlign: 'center',
     lineHeight: 22,
+    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.primary,
+    flex: 1,
   },
   bottomContainer: {
     width: '100%',
