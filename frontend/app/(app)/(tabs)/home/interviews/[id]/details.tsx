@@ -360,6 +360,7 @@ const AttemptScore = ({ attemptId }: { attemptId: string }) => {
   );
 };
 
+
 const getInterviewStageInfo = (type: string) => {
   return INTERVIEW_STAGE_CONFIG[type as keyof typeof INTERVIEW_STAGE_CONFIG] || {
     duration: '30-45 minutes',
@@ -388,6 +389,7 @@ export default function InterviewDetails() {
   
   // Flatten the paginated attempts data
   const attempts = attemptsData?.pages.flatMap(page => page.attempts) || [];
+  
   
   // Calculate best score from all attempts
   useEffect(() => {
@@ -614,6 +616,25 @@ export default function InterviewDetails() {
                 </View>
               </View>
 
+              {/* New Attempt Button - Primary placement for easy access */}
+              <TouchableOpacity
+                onPress={() => {
+                  selectionAsync();
+                  handleStartInterview();
+                }}
+                disabled={startAttempt.isPending}
+                style={styles.primaryActionButton}
+              >
+                {startAttempt.isPending ? (
+                  <ActivityIndicator color={Colors.text.primary} size="small" />
+                ) : (
+                  <Ionicons name="play" size={20} color={Colors.text.primary} />
+                )}
+                <Text style={styles.primaryActionButtonText}>
+                  New Attempt
+                </Text>
+              </TouchableOpacity>
+
               {/* Previous Attempts */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Previous Attempts</Text>
@@ -655,24 +676,6 @@ export default function InterviewDetails() {
             </>
           )}
 
-          {/* Start/Retry Button */}
-          <TouchableOpacity
-            onPress={() => {
-              selectionAsync();
-              handleStartInterview();
-            }}
-            disabled={startAttempt.isPending}
-            style={styles.mainButton}
-          >
-            {startAttempt.isPending ? (
-              <ActivityIndicator color={Colors.text.primary} size="small" />
-            ) : (
-              <Ionicons name="play" size={20} color={Colors.text.primary} />
-            )}
-            <Text style={styles.mainButtonText}>
-              {hasAttempts ? 'New Attempt' : 'Start Interview'}
-            </Text>
-          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     </ChatGPTBackground>
@@ -841,18 +844,20 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodySmall,
     color: Colors.text.disabled,
   },
-  mainButton: {
+  primaryActionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.brand.primary,
+    backgroundColor: Colors.glass.purpleMedium,
+    borderWidth: 2,
+    borderColor: Colors.brand.primary,
     borderRadius: 50,
     paddingVertical: 18,
     paddingHorizontal: 32,
     gap: 12,
-    marginTop: 8,
+    marginBottom: 8,
   },
-  mainButtonText: {
+  primaryActionButtonText: {
     ...TYPOGRAPHY.labelLarge,
     color: Colors.text.primary,
     fontWeight: '600',
