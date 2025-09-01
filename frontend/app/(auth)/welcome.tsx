@@ -21,6 +21,7 @@ import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
 import AppleSignIn from '../../components/(auth)/AppleSignIn';
 import { useToast } from '../../components/Toast';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import { fonts } from '../../constants/Fonts';
 
 const Welcome = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -184,13 +185,13 @@ const Welcome = () => {
             <Text style={styles.loginLinkText}>Already have an account?</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={[styles.loginLink, { marginTop: 8 }]} 
             onPress={() => router.push('/(onboarding)/profile-setup')}
             activeOpacity={0.7}
           >
             <Text style={[styles.loginLinkText, { color: '#F59E0B' }]}>Test Onboarding Flow</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </Animated.View>
 
         {/* Bottom Sheet Modal */}
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
   },
   brandText: {
     ...TYPOGRAPHY.heroMedium,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.primary.bold,
     color: Colors.brand.primary,
     lineHeight: 56,
     marginTop: -12,

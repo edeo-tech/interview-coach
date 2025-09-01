@@ -10,13 +10,18 @@ import {
     Inter_800ExtraBold,
     Inter_900Black,
 } from '@expo-google-fonts/inter';
+
 import {
-    NunitoSans_400Regular,
-    NunitoSans_500Medium,
-    NunitoSans_600SemiBold,
-    NunitoSans_700Bold,
-    NunitoSans_800ExtraBold,
-} from '@expo-google-fonts/nunito-sans';
+    Nunito_200ExtraLight,
+    Nunito_300Light,
+    Nunito_400Regular,
+    Nunito_500Medium,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
+} from '@expo-google-fonts/nunito';
+
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
@@ -57,6 +62,8 @@ Notifications.setNotificationHandler({
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
     }),
 });
 
@@ -109,11 +116,14 @@ function RootLayout() {
         Inter_700Bold,
         Inter_800ExtraBold,
         Inter_900Black,
-        NunitoSans_400Regular,
-        NunitoSans_500Medium,
-        NunitoSans_600SemiBold,
-        NunitoSans_700Bold,
-        NunitoSans_800ExtraBold,
+        Nunito_200ExtraLight,
+        Nunito_300Light,
+        Nunito_400Regular,
+        Nunito_500Medium,
+        Nunito_600SemiBold,
+        Nunito_700Bold,
+        Nunito_800ExtraBold,
+        Nunito_900Black,
     });
 
     useEffect(() => {
