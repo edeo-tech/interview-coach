@@ -184,13 +184,13 @@ const Welcome = () => {
             <Text style={styles.loginLinkText}>Already have an account?</Text>
           </TouchableOpacity>
           
-          {/* <TouchableOpacity 
+          <TouchableOpacity 
             style={[styles.loginLink, { marginTop: 8 }]} 
             onPress={() => router.push('/(onboarding)/profile-setup')}
             activeOpacity={0.7}
           >
             <Text style={[styles.loginLinkText, { color: '#F59E0B' }]}>Test Onboarding Flow</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Bottom Sheet Modal */}

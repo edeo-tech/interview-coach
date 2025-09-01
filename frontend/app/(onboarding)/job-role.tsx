@@ -72,11 +72,20 @@ const OnboardingJobRole = () => {
   const industries = [
     { id: 'technology', name: 'Technology', icon: 'laptop-outline' },
     { id: 'marketing', name: 'Marketing', icon: 'trending-up-outline' },
-    { id: 'sales', name: 'Sales', icon: 'handshake-outline' },
+    { id: 'sales', name: 'Sales', icon: 'card-outline' },
     { id: 'finance', name: 'Finance', icon: 'calculator-outline' },
     { id: 'healthcare', name: 'Healthcare', icon: 'medical-outline' },
     { id: 'education', name: 'Education', icon: 'school-outline' },
     { id: 'consulting', name: 'Consulting', icon: 'business-outline' },
+    { id: 'law', name: 'Law', icon: 'library-outline' },
+    { id: 'engineering', name: 'Engineering', icon: 'construct-outline' },
+    { id: 'media', name: 'Media & Entertainment', icon: 'play-circle-outline' },
+    { id: 'retail', name: 'Retail', icon: 'bag-outline' },
+    { id: 'manufacturing', name: 'Manufacturing', icon: 'build-outline' },
+    { id: 'government', name: 'Government', icon: 'shield-outline' },
+    { id: 'nonprofit', name: 'Non-Profit', icon: 'heart-outline' },
+    { id: 'real-estate', name: 'Real Estate', icon: 'home-outline' },
+    { id: 'transportation', name: 'Transportation', icon: 'car-outline' },
     { id: 'other', name: 'Other', icon: 'help-circle-outline' },
   ];
 
