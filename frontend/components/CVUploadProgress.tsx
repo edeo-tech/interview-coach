@@ -439,14 +439,14 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
                   }
                 ]}
               >
-                <Ionicons name="checkmark" size={60} color="#22C55E" /> {/* Design system success */}
+                <Ionicons name="checkmark" size={60} color="#22C55E" />
               </Animated.View>
             ) : (
               <Animated.View style={[styles.iconContainer, { opacity: stageIconOpacity }]}>
                 <Ionicons 
                   name={currentStage?.icon as any} 
                   size={52} 
-                  color="#A855F7" // Design system purple 400
+                  color="#A855F7"
                 />
                 <Text style={styles.progressText}>
                   {Math.round(progress)}%
@@ -461,25 +461,14 @@ const CVUploadProgress: React.FC<CVUploadProgressProps> = ({ onComplete }) => {
         <View style={styles.stageInfoContainer}>
           <Animated.View style={[styles.stageInfo, { opacity: stageTextOpacity }]}>
             <Text style={styles.stageTitle}>
-              {isComplete ? '✨ Success!' : currentStage?.title}
+              {isComplete ? 'Success!' : currentStage?.title || ''}
             </Text>
             <Text style={styles.stageSubtitle}>
-              {isComplete ? 'Your CV has been processed successfully' : currentStage?.subtitle}
+              {isComplete ? 'Your CV has been processed successfully' : currentStage?.subtitle || ''}
             </Text>
           </Animated.View>
         </View>
 
-        {/* Additional Info - Enhanced Design System Styling */}
-        <View style={styles.additionalInfo}>
-          <View style={styles.infoItem}>
-            <Ionicons name="shield-checkmark" size={16} color="#22C55E" /> {/* Design system success */}
-            <Text style={styles.infoText}>Securely encrypted</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Ionicons name="time" size={16} color="#A855F7" /> {/* Design system purple 400 */}
-            <Text style={styles.infoText}>Usually takes 10-15 seconds</Text>
-          </View>
-        </View>
       </Animated.View>
     </View>
   );
@@ -578,9 +567,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageInfoContainer: {
-    height: 82, // Increased from 80 to 82 to accommodate larger title height
+    minHeight: 100, // Increased to accommodate all text properly
     width: '100%',
     position: 'relative',
+    paddingVertical: 10, // Add vertical padding for better spacing
   },
   stageInfo: {
     position: 'absolute',
@@ -590,35 +580,26 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 20, // Ensure consistent horizontal padding
   },
   stageTitle: {
     ...TYPOGRAPHY.displaySmall,
     color: '#FFFFFF', // Design system text primary
     textAlign: 'center',
     marginBottom: 8, // Design system spacing
-    height: 36, // Increased from 34 to 36 to prevent text clipping
+    minHeight: 40, // Use minHeight instead of fixed height
+    lineHeight: 32, // Explicit line height for better text rendering
+    width: '100%', // Full width for consistent positioning
   },
   stageSubtitle: {
     ...TYPOGRAPHY.bodyMedium,
     color: 'rgba(255, 255, 255, 0.85)', // Design system text secondary
     textAlign: 'center',
-    height: 44, // Fixed height for exactly 2 lines
-    width: 280, // Fixed width instead of maxWidth
-    paddingHorizontal: 20, // Design system spacing
-  },
-  additionalInfo: {
-    flexDirection: 'row',
-    gap: 24, // Design system spacing
-    alignItems: 'center',
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8, // Design system spacing
-  },
-  infoText: {
-    ...TYPOGRAPHY.bodySmall,
-    color: 'rgba(255, 255, 255, 0.70)', // Design system text tertiary
+    minHeight: 50, // Use minHeight to allow text expansion
+    width: '100%', // Full width for consistent positioning
+    maxWidth: 320, // Max width to prevent overly long lines
+    lineHeight: 22, // Explicit line height for better readability
+    alignSelf: 'center', // Center the text block itself
   },
 });
 

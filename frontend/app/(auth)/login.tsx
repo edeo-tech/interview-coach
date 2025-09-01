@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,17 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Animated,
+  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { GlassStyles } from '../../constants/GlassStyles';
+import { TYPOGRAPHY } from '../../constants/Typography';
 import Colors from '../../constants/Colors';
 import { useAuth } from '@/context/authentication/AuthContext';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import { useToast } from '@/components/Toast';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import useSecureStore from '../../hooks/secure-store/useSecureStore';
 import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
@@ -31,14 +33,52 @@ const Login = () => {
   const { login, loginLoading, loginErrorMessage, loginSuccess, clearLoginError, googleLoginErrorMessage, appleLoginErrorMessage, clearGoogleLoginError, clearAppleLoginError, resetLogin } = useAuth();
   const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
   const { showToast } = useToast();
-  const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { getItem } = useSecureStore();
   
-  useFocusEffect(() => {
-    posthogScreen('auth_login');
-    loadUserMetadata();
-  });
+  // Animation values
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const contentTranslateY = useRef(new Animated.Value(30)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('auth_login');
+      loadUserMetadata();
+      startAnimationSequence();
+    }, [posthogScreen])
+  );
+  
+  const startAnimationSequence = () => {
+    // Reset animation values
+    logoOpacity.setValue(0);
+    contentTranslateY.setValue(30);
+    contentOpacity.setValue(0);
+    
+    // Animate logo first
+    Animated.timing(logoOpacity, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+    
+    // Then animate content
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(contentTranslateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 400);
+  };
 
   const loadUserMetadata = async () => {
     try {
@@ -114,119 +154,140 @@ const Login = () => {
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContainer,
-            { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 },
-          ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <KeyboardAvoidingView
+          style={styles.keyboardContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Ionicons name="chatbubble-ellipses" size={48} color={Colors.white} />
-            </View>
-            <Text style={styles.title}>
-              {userName ? `Welcome back, ${userName}!` : 'Welcome Back'}
-            </Text>
-            <Text style={styles.subtitle}>Sign in to continue your interview prep</Text>
-          </View>
-
-          {/* Form Card */}
-          <View style={styles.formCard}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="mail-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your email"
-                  placeholderTextColor={Colors.gray[500]}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Password</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your password"
-                  placeholderTextColor={Colors.gray[500]}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, loginLoading && styles.buttonDisabled]}
-              onPress={handleLogin}
-              disabled={loginLoading}
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Animated Logo */}
+            <Animated.View
+              style={[
+                styles.logoContainer,
+                {
+                  opacity: logoOpacity
+                }
+              ]}
             >
-              {loginLoading ? (
-                <ActivityIndicator color={Colors.white} size="small" />
-              ) : (
-                <>
-                  <Text style={styles.buttonText}>Sign In</Text>
-                  <Ionicons name="arrow-forward" size={20} color={Colors.white} style={styles.buttonIcon} />
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {/* Social Sign-in Section */}
-          <View style={styles.socialSignInContainer}>
-            <View style={styles.dividerContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.divider} />
-            </View>
+              <Image
+                source={require('../../assets/images/FinalAppIconTransparent.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </Animated.View>
             
-            <View style={styles.socialButtonsContainer}>
-              <View style={lastSignInType === 'google' ? styles.lastUsedContainer : {}}>
-                {lastSignInType === 'google' && (
-                  <Text style={styles.lastUsedLabel}>Last used</Text>
-                )}
-                <GoogleSignIn />
-              </View>
-              
-              <View style={lastSignInType === 'apple' ? styles.lastUsedContainer : {}}>
-                {lastSignInType === 'apple' && (
-                  <Text style={styles.lastUsedLabel}>Last used</Text>
-                )}
-                <AppleSignIn />
-              </View>
-            </View>
-            
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account yet?</Text>
-            <TouchableOpacity 
-              style={styles.linkButton}
-              onPress={() => router.replace('/(auth)/welcome')}
+            {/* Animated Content */}
+            <Animated.View
+              style={[
+                styles.content,
+                {
+                  opacity: contentOpacity,
+                  transform: [{ translateY: contentTranslateY }]
+                }
+              ]}
             >
-              <Text style={styles.linkText}>Create Account</Text>
-              <Ionicons name="chevron-forward" size={16} color={Colors.accent.gold} />
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              {/* Welcome Header */}
+              <View style={styles.header}>
+                <Text style={styles.welcomeText}>
+                  {userName ? `Welcome back,` : 'Welcome Back'}
+                </Text>
+                {userName && (
+                  <Text style={styles.nameText}>{userName}!</Text>
+                )}
+                <Text style={styles.subtitle}>Sign in to continue your interview prep</Text>
+              </View>
+
+              {/* Email/Password Form */}
+              <View style={styles.formContainer}>
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="mail-outline" size={20} color={Colors.text.tertiary} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your email"
+                      placeholderTextColor={Colors.text.tertiary}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="lock-closed-outline" size={20} color={Colors.text.tertiary} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your password"
+                      placeholderTextColor={Colors.text.tertiary}
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                      autoCapitalize="none"
+                    />
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.loginButton, loginLoading && styles.buttonDisabled]}
+                  onPress={handleLogin}
+                  disabled={loginLoading}
+                >
+                  {loginLoading ? (
+                    <ActivityIndicator color={Colors.text.primary} size="small" />
+                  ) : (
+                    <>
+                      <Text style={styles.loginButtonText}>Sign In</Text>
+                      <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Social Sign-in Section */}
+              <View style={styles.socialSection}>
+                <View style={styles.dividerContainer}>
+                  <View style={styles.divider} />
+                  <Text style={styles.dividerText}>or</Text>
+                  <View style={styles.divider} />
+                </View>
+                
+                <View style={styles.socialButtons}>
+                  <View style={lastSignInType === 'google' ? styles.lastUsedContainer : {}}>
+                    {lastSignInType === 'google' && (
+                      <Text style={styles.lastUsedLabel}>Last used</Text>
+                    )}
+                    <GoogleSignIn />
+                  </View>
+                  
+                  <View style={lastSignInType === 'apple' ? styles.lastUsedContainer : {}}>
+                    {lastSignInType === 'apple' && (
+                      <Text style={styles.lastUsedLabel}>Last used</Text>
+                    )}
+                    <AppleSignIn />
+                  </View>
+                </View>
+              </View>
+            </Animated.View>
+            
+            {/* Footer */}
+            <View style={styles.footer}>
+              <TouchableOpacity 
+                style={styles.createAccountButton}
+                onPress={() => router.replace('/(auth)/welcome')}
+              >
+                <Text style={styles.createAccountText}>Don't have an account?</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </ChatGPTBackground>
   );
 };
@@ -237,127 +298,134 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.transparent,
+    backgroundColor: 'transparent',
+  },
+  keyboardContainer: {
+    flex: 1,
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 20,
+  },
+  
+  // Logo section
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+    marginTop: 20,
+  },
+  logoImage: {
+    width: 80,
+    height: 80,
+  },
+  
+  // Content section
+  content: {
+    flex: 1,
   },
   header: {
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: Colors.glass.backgroundSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  welcomeText: {
+    ...TYPOGRAPHY.displaySmall,
+    fontFamily: 'Nunito_600SemiBold',
+    fontWeight: '600',
+    letterSpacing: 0.5,
     color: Colors.white,
+    textAlign: 'center',
+  },
+  nameText: {
+    ...TYPOGRAPHY.heroMedium,
+    fontFamily: 'Nunito_700Bold',
+    color: Colors.brand.primary,
+    lineHeight: 56,
+    marginTop: -12,
     marginBottom: 8,
     textAlign: 'center',
-    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: Colors.gray[400],
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.tertiary,
     textAlign: 'center',
+    maxWidth: 280,
     lineHeight: 22,
   },
-  formCard: {
-    ...GlassStyles.container,
-    borderRadius: 20,
-    padding: 24,
+  // Form section
+  formContainer: {
     marginBottom: 32,
   },
   inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    color: Colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    ...GlassStyles.input,
-    paddingHorizontal: 16,
+    backgroundColor: Colors.glass.background,
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    height: 56,
   },
   inputIcon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    paddingVertical: 16,
     fontSize: 16,
-    color: Colors.white,
+    fontFamily: 'Inter_400Regular',
+    color: Colors.text.primary,
+    textAlign: 'left',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
+    paddingVertical: 0,
+    lineHeight: undefined, // Remove line height to let the container handle vertical centering
   },
-  button: {
-    backgroundColor: Colors.accent.gold,
-    paddingVertical: 18,
-    borderRadius: 12,
+  
+  // Login button
+  loginButton: {
+    backgroundColor: Colors.glass.purpleMedium,
+    borderWidth: 2,
+    borderColor: Colors.brand.primary,
+    height: 56,
+    borderRadius: 28,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.black,
-        shadowOpacity: 0.15,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      }
-    }),
+    gap: 8,
+    shadowColor: Colors.brand.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
-  buttonText: {
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: '700',
+  loginButtonText: {
+    ...TYPOGRAPHY.buttonLarge,
+    fontFamily: 'Inter_600SemiBold',
+    color: Colors.text.primary,
   },
-  buttonIcon: {
-    marginLeft: 8,
-  },
+  // Footer section
   footer: {
     alignItems: 'center',
+    paddingTop: 20,
   },
-  footerText: {
-    color: Colors.gray[400],
-    fontSize: 15,
-    marginBottom: 16,
+  createAccountButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  createAccountText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.quaternary,
     textAlign: 'center',
   },
-  linkButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.glass.backgroundSubtle,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
-  },
-  linkText: {
-    color: Colors.accent.gold,
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 4,
-  },
-  socialSignInContainer: {
-    marginBottom: 32,
+  // Social sign-in section
+  socialSection: {
+    marginBottom: 20,
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -375,7 +443,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginHorizontal: 16,
   },
-  socialButtonsContainer: {
+  socialButtons: {
     gap: 12,
   },
   lastUsedContainer: {
