@@ -186,7 +186,12 @@ const CommunicationRating = () => {
           ]}
         >
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>{framing.question}</Text>
+            <View style={styles.questionSection}>
+              <View style={styles.titleRow}>
+                <Text style={styles.stepNumber}>#5</Text>
+                <Text style={styles.screenTitle}>{framing.question}</Text>
+              </View>
+            </View>
 
             <View style={styles.ratingContainer}>
               {ratingLabels.map((rating) => (
@@ -236,7 +241,7 @@ const CommunicationRating = () => {
             disabled={selectedRating === 0}
             activeOpacity={0.8}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
+            <Text style={styles.continueButtonText}>Submit & analyze</Text>
             <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </Animated.View>
@@ -260,30 +265,42 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 100, // Space for button
   },
+  questionSection: {
+    marginBottom: 40,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 16,
+    gap: 12,
+  },
+  stepNumber: {
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.tertiary,
+  },
   screenTitle: {
-    ...TYPOGRAPHY.heading1,
-    color: Colors.white,
-    textAlign: 'center',
-    lineHeight: 30,
-    marginBottom: 48,
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
+    flex: 1,
   },
   ratingContainer: {
-    gap: 16,
+    gap: 12,
     width: '100%',
-    maxWidth: 320,
   },
   ratingButton: {
     backgroundColor: Colors.glass.backgroundSecondary,
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',

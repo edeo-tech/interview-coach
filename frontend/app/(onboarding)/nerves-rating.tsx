@@ -269,8 +269,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: Colors.glass.backgroundSubtle,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
