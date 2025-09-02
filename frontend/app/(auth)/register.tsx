@@ -36,14 +36,6 @@ const Register = () => {
   const contentTranslateY = useRef(new Animated.Value(30)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
   
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'web') return;
-      posthogScreen('auth_register');
-      startAnimationSequence();
-    }, [posthogScreen, startAnimationSequence])
-  );
-  
   const startAnimationSequence = useCallback(() => {
     // Reset animation values
     logoOpacity.setValue(0);
@@ -73,6 +65,14 @@ const Register = () => {
       ]).start();
     }, 400);
   }, [logoOpacity, contentTranslateY, contentOpacity]);
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('auth_register');
+      startAnimationSequence();
+    }, [posthogScreen, startAnimationSequence])
+  );
   
   const { mutate: login, isPending: loginLoading } = useLogin({posthogIdentify, posthogCapture, isFromRegistration: true});
   const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess, reset: resetRegister } = useRegister();

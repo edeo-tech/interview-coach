@@ -41,15 +41,6 @@ const Login = () => {
   const contentTranslateY = useRef(new Animated.Value(30)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
   
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'web') return;
-      posthogScreen('auth_login');
-      loadUserMetadata();
-      startAnimationSequence();
-    }, [posthogScreen, loadUserMetadata, startAnimationSequence])
-  );
-  
   const startAnimationSequence = useCallback(() => {
     // Reset animation values
     logoOpacity.setValue(0);
@@ -95,6 +86,15 @@ const Login = () => {
       console.error('Error loading user metadata:', error);
     }
   }, [getItem]);
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('auth_login');
+      loadUserMetadata();
+      startAnimationSequence();
+    }, [posthogScreen, loadUserMetadata, startAnimationSequence])
+  );
 
   // Memoize email domain to prevent recalculation on every render
   const emailDomain = useMemo(() => {
