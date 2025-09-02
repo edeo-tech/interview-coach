@@ -14,7 +14,7 @@ import Colors from '../../constants/Colors';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const CommunicationRating = () => {
-  const { data, updateData } = useOnboarding();
+  const { data, updateData, submitAnswers, isSubmitting, submissionError } = useOnboarding();
   const [selectedRating, setSelectedRating] = useState(data.communicationRating || 0);
 
   // Animation values - exactly like profile-setup
@@ -70,41 +70,50 @@ const CommunicationRating = () => {
     }, [])
   );
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedRating > 0) {
       updateData('communicationRating', selectedRating);
       
-      // Set direction for next screen
-      setNavigationDirection('forward');
-      
-      // Slide out to left (forward direction) - exactly like profile-setup
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: -SCREEN_WIDTH,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonOpacity, {
-          toValue: 0,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonTranslateY, {
-          toValue: 30,
-          duration: 500,
-          useNativeDriver: true,
-        })
-      ]).start(() => {
-        // Navigate after animation completes
-        setTimeout(() => {
-          router.push('/(onboarding)/problems');
-        }, 100);
-      });
+      try {
+        // Submit onboarding answers to backend
+        await submitAnswers();
+        
+        // Set direction for next screen
+        setNavigationDirection('forward');
+        
+        // Slide out to left (forward direction) - exactly like profile-setup
+        Animated.parallel([
+          Animated.timing(contentTranslateX, {
+            toValue: -SCREEN_WIDTH,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(buttonOpacity, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(buttonTranslateY, {
+            toValue: 30,
+            duration: 500,
+            useNativeDriver: true,
+          })
+        ]).start(() => {
+          // Navigate after animation completes
+          setTimeout(() => {
+            router.push('/(onboarding)/problems');
+          }, 100);
+        });
+      } catch (error) {
+        // Handle submission error
+        console.error('Failed to submit onboarding answers:', error);
+        // You might want to show an error toast here
+      }
     }
   };
 
@@ -240,13 +249,15 @@ const CommunicationRating = () => {
           ]}
         >
           <TouchableOpacity 
-            style={[styles.continueButton, selectedRating === 0 && styles.continueButtonDisabled]} 
+            style={[styles.continueButton, (selectedRating === 0 || isSubmitting) && styles.continueButtonDisabled]} 
             onPress={handleContinue}
-            disabled={selectedRating === 0}
+            disabled={selectedRating === 0 || isSubmitting}
             activeOpacity={0.8}
           >
-            <Text style={styles.continueButtonText}>Submit & analyse</Text>
-            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
+            <Text style={styles.continueButtonText}>
+              {isSubmitting ? 'Submitting...' : 'Submit & analyse'}
+            </Text>
+            {!isSubmitting && <Ionicons name="arrow-forward" size={20} color={Colors.white} />}
           </TouchableOpacity>
         </Animated.View>
       </View>
