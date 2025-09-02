@@ -87,13 +87,21 @@ const Login = () => {
     }
   }, [getItem]);
   
+  // Run intro animation once on mount
+  useEffect(() => {
+    startAnimationSequence();
+  }, []);
+
+  // Load user metadata once on mount
+  useEffect(() => {
+    loadUserMetadata();
+  }, [loadUserMetadata]);
+
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'web') return;
       posthogScreen('auth_login');
-      loadUserMetadata();
-      startAnimationSequence();
-    }, [posthogScreen, loadUserMetadata, startAnimationSequence])
+    }, [posthogScreen])
   );
 
   // Memoize email domain to prevent recalculation on every render

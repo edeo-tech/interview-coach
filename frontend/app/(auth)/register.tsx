@@ -66,12 +66,16 @@ const Register = () => {
     }, 400);
   }, [logoOpacity, contentTranslateY, contentOpacity]);
   
+  // Run intro animation once on mount
+  useEffect(() => {
+    startAnimationSequence();
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'web') return;
       posthogScreen('auth_register');
-      startAnimationSequence();
-    }, [posthogScreen, startAnimationSequence])
+    }, [posthogScreen])
   );
   
   const { mutate: login, isPending: loginLoading } = useLogin({posthogIdentify, posthogCapture, isFromRegistration: true});
