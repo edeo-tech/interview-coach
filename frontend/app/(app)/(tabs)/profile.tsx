@@ -11,10 +11,9 @@ import { useCV } from '../../../_queries/interviews/cv';
 import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
-import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import { TYPOGRAPHY } from '../../../constants/Typography';
-import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
+import { GlassTextColors } from '../../../constants/GlassStyles';
 import Colors from '../../../constants/Colors';
 
 const StatCard = ({ icon, label, value, color = Colors.brand.primary }: any) => (
