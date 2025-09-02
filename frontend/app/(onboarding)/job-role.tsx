@@ -79,27 +79,30 @@ const OnboardingJobRole = () => {
     setSelectedIndustry(industryId);
     updateData('industry', industryId);
     
-    // Set direction for next screen
-    setNavigationDirection('forward');
-    
-    // Slide out to left (forward direction) - exactly like profile-setup
-    Animated.parallel([
-      Animated.timing(contentTranslateX, {
-        toValue: -SCREEN_WIDTH,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(contentOpacity, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      })
-    ]).start(() => {
-      // Navigate after animation completes
-      setTimeout(() => {
-        router.push('/(onboarding)/industry-struggle');
-      }, 100);
-    });
+    // Auto-continue after brief delay to show selection feedback - exactly like industry-struggle
+    setTimeout(() => {
+      // Set direction for next screen
+      setNavigationDirection('forward');
+      
+      // Slide out to left (forward direction) - exactly like profile-setup
+      Animated.parallel([
+        Animated.timing(contentTranslateX, {
+          toValue: -SCREEN_WIDTH,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        })
+      ]).start(() => {
+        // Navigate after animation completes
+        setTimeout(() => {
+          router.push('/(onboarding)/industry-struggle');
+        }, 100);
+      });
+    }, 600);
   };
 
   const handleBack = () => {
