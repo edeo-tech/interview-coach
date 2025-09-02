@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
 import JobLinkProgress from '../../../components/JobLinkProgress';
 import * as DocumentPicker from 'expo-document-picker';
-import { useCreateJobFromURL } from '../../../_queries/jobs/jobs';
+import { useCreateJobFromURL, useCreateJobFromFile } from '../../../_queries/jobs/jobs';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
@@ -19,6 +19,7 @@ export default function CreateJob() {
   const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
   const [jobUrl, setJobUrl] = useState('');
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [selectedJobFile, setSelectedJobFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const jobUrlInputRef = useRef<TextInput>(null);
@@ -27,10 +28,11 @@ export default function CreateJob() {
   const { data: currentCV, isLoading: cvLoading } = useCV();
   const uploadCV = useUploadCV();
   const createFromURL = useCreateJobFromURL();
+  const createFromFile = useCreateJobFromFile();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { showToast } = useToast();
   
-  const isLoading = createFromURL.isPending || uploadCV.isPending;
+  const isLoading = createFromURL.isPending || uploadCV.isPending || createFromFile.isPending;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -119,48 +121,108 @@ export default function CreateJob() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!jobUrl.trim()) {
-      Alert.alert('Error', 'Please enter a job posting URL');
-      return;
-    }
-
-    // Validate the URL using our improved validation
-    const { url: cleanedUrl, isValid } = cleanJobUrl(jobUrl);
-    if (!isValid) {
-      Alert.alert('Error', 'Please enter a valid URL');
-      return;
-    }
-
-    // Show progress modal immediately
-    setShowProgressModal(true);
-
+  const handleJobFileSelect = async () => {
     try {
-      const result = await createFromURL.mutateAsync({
-        job_url: cleanedUrl,
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
+        copyToCacheDirectory: true,
       });
-      
-      posthogCapture('job_created', {
-        method: 'url',
-        has_cv: !!currentCV,
-        job_url_domain: new URL(cleanedUrl).hostname
-      });
-      
-      console.log('Job created from URL:', result);
-      
-      // Store the result for navigation after progress completes
-      (window as any).pendingJobResult = result;
-      
-    } catch (error: any) {
-      // Hide progress modal on error
-      setShowProgressModal(false);
-      
-      posthogCapture('job_creation_failed', {
-        method: 'url',
-        error_message: error.response?.data?.detail || error.message,
-        has_cv: !!currentCV
-      });
-      showToast('Unable to process job link. Please try again.', 'error');
+
+      if (!result.canceled && result.assets[0]) {
+        // Validate file size (max 5MB)
+        if (result.assets[0].size && result.assets[0].size > 5 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Please select a file smaller than 5MB.');
+          return;
+        }
+        setSelectedJobFile(result.assets[0]);
+      }
+    } catch (error) {
+      showToast('Unable to select job file. Please try again.', 'error');
+    }
+  };
+
+  const handleSubmit = async () => {
+    // Determine which input method the user chose
+    if (selectedJobFile) {
+      // Handle file upload
+      // Show progress modal immediately
+      setShowProgressModal(true);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', {
+          uri: selectedJobFile.uri,
+          type: selectedJobFile.mimeType || 'application/pdf',
+          name: selectedJobFile.name || 'job_description.pdf',
+        } as any);
+        
+        const result = await createFromFile.mutateAsync(formData);
+        
+        posthogCapture('job_created', {
+          method: 'file',
+          has_cv: !!currentCV,
+          file_type: selectedJobFile.mimeType || 'unknown',
+          file_size_kb: selectedJobFile.size ? Math.round(selectedJobFile.size / 1024) : null
+        });
+        
+        console.log('Job created from file:', result);
+        
+        // Store the result for navigation after progress completes
+        (window as any).pendingJobResult = result;
+        
+      } catch (error: any) {
+        // Hide progress modal on error
+        setShowProgressModal(false);
+        
+        posthogCapture('job_creation_failed', {
+          method: 'file',
+          error_message: error.response?.data?.detail || error.message,
+          has_cv: !!currentCV,
+          file_type: selectedJobFile.mimeType || 'unknown'
+        });
+        showToast('Unable to process job file. Please try again.', 'error');
+      }
+    } else if (jobUrl.trim()) {
+      // Handle URL input
+      // Validate the URL using our improved validation
+      const { url: cleanedUrl, isValid } = cleanJobUrl(jobUrl);
+      if (!isValid) {
+        Alert.alert('Error', 'Please enter a valid URL');
+        return;
+      }
+
+      // Show progress modal immediately
+      setShowProgressModal(true);
+
+      try {
+        const result = await createFromURL.mutateAsync({
+          job_url: cleanedUrl,
+        });
+        
+        posthogCapture('job_created', {
+          method: 'url',
+          has_cv: !!currentCV,
+          job_url_domain: new URL(cleanedUrl).hostname
+        });
+        
+        console.log('Job created from URL:', result);
+        
+        // Store the result for navigation after progress completes
+        (window as any).pendingJobResult = result;
+        
+      } catch (error: any) {
+        // Hide progress modal on error
+        setShowProgressModal(false);
+        
+        posthogCapture('job_creation_failed', {
+          method: 'url',
+          error_message: error.response?.data?.detail || error.message,
+          has_cv: !!currentCV
+        });
+        showToast('Unable to process job link. Please try again.', 'error');
+      }
+    } else {
+      Alert.alert('Error', 'Please enter a job URL or select a job description file');
     }
   };
 
@@ -272,7 +334,7 @@ export default function CreateJob() {
             {/* Instructions */}
             <View style={styles.section}>
               <Text style={styles.instructionText}>
-                Please provide the URL link to the job you're interviewing for. This will help us create a tailored interview experience.
+                Please provide the job details by either pasting a URL or uploading a job description document.
               </Text>
             </View>
 
@@ -301,12 +363,81 @@ export default function CreateJob() {
                   // Extract URL from pasted text (handles LinkedIn shares, etc.)
                   const extractedUrl = extractUrlFromText(text);
                   setJobUrl(extractedUrl);
+                  // Clear file selection when user types URL
+                  if (selectedJobFile) {
+                    setSelectedJobFile(null);
+                  }
                 }}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardAppearance="dark"
                 editable={showKeyboard}
               />
+            </Animated.View>
+
+            {/* Or Separator */}
+            <Animated.View 
+              style={[
+                styles.orContainer,
+                {
+                  opacity: keyboardAnimValue,
+                  transform: [{
+                    translateY: keyboardAnimValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [50, 0],
+                    }),
+                  }],
+                }
+              ]}
+            >
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>OR</Text>
+              <View style={styles.orLine} />
+            </Animated.View>
+
+            {/* File Upload Option */}
+            <Animated.View 
+              style={[
+                styles.section,
+                {
+                  opacity: keyboardAnimValue,
+                  transform: [{
+                    translateY: keyboardAnimValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [50, 0],
+                    }),
+                  }],
+                }
+              ]}
+            >
+              <TouchableOpacity
+                onPress={handleJobFileSelect}
+                style={styles.fileButton}
+              >
+                {selectedJobFile ? (
+                  <View style={styles.selectedFileContainer}>
+                    <Ionicons name="document-attach" size={24} color={Colors.semantic.successAlt} />
+                    <View style={styles.fileInfo}>
+                      <Text style={styles.fileName}>{selectedJobFile.name}</Text>
+                      <Text style={styles.fileSize}>
+                        {selectedJobFile.size ? `${(selectedJobFile.size / 1024).toFixed(1)} KB` : 'Size unknown'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => {
+                      setSelectedJobFile(null);
+                      // Clear URL when file is deselected to avoid confusion
+                      setJobUrl('');
+                    }}>
+                      <Ionicons name="close-circle" size={24} color={Colors.semantic.error} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.uploadPrompt}>
+                    <Ionicons name="cloud-upload" size={32} color={Colors.gray[400]} />
+                    <Text style={styles.uploadText}>Upload job description (PDF, DOC, DOCX, TXT)</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             </Animated.View>
 
             {/* Submit Button - with animation */}
@@ -325,10 +456,10 @@ export default function CreateJob() {
             >
               <TouchableOpacity
                 onPress={handleSubmit}
-                disabled={isLoading || !jobUrl.trim() || !showKeyboard}
+                disabled={isLoading || (!jobUrl.trim() && !selectedJobFile) || !showKeyboard}
                 style={[
                   styles.submitButton,
-                  (isLoading || !jobUrl.trim() || !showKeyboard) && styles.submitButtonDisabled
+                  (isLoading || (!jobUrl.trim() && !selectedJobFile) || !showKeyboard) && styles.submitButtonDisabled
                 ]}
               >
                 {isLoading ? (
@@ -605,5 +736,22 @@ const styles = StyleSheet.create({
     lineHeight: 24, // typography.body.medium.lineHeight
     textAlign: 'left',
     fontFamily: 'Inter', // typography.body.medium.fontFamily
+  },
+  orContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24, // spacing.6
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.glass.border, // glass.border
+  },
+  orText: {
+    color: Colors.text.tertiary, // text.tertiary
+    fontSize: 14, // typography.body.small.fontSize
+    marginHorizontal: 16, // spacing.4
+    fontFamily: 'Inter', // typography.body.small.fontFamily
+    fontWeight: '600',
   },
 });
