@@ -93,7 +93,7 @@ const NervesRating = () => {
       ]).start(() => {
         // Navigate after animation completes
         setTimeout(() => {
-          router.push('/(onboarding)/problems');
+          router.push('/(onboarding)/communication-rating');
         }, 100);
       });
     }
@@ -152,8 +152,8 @@ const NervesRating = () => {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={12} 
-          totalSteps={17}
+          currentStep={11} 
+          totalSteps={12}
           onBack={handleBack}
         />
         

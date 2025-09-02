@@ -136,7 +136,7 @@ const ReassuranceDataProof = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={16} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
         />
         
@@ -182,10 +182,10 @@ const ReassuranceDataProof = () => {
               {/* Testimonial Card */}
               <View style={styles.testimonialCard}>
                 <View style={styles.quoteIcon}>
-                  <Ionicons name="quote" size={20} color={Colors.brand.primary} />
+                  <Ionicons name="chatbubble-ellipses-outline" size={20} color={Colors.brand.primary} />
                 </View>
                 <Text style={styles.testimonialText}>
-                  I froze in 3 real interviews. After 6 mocks with NextRound, I landed my dream offer.
+                  I froze in 3 real interviews. After 6 mocks with nextround, I landed my dream offer.
                 </Text>
                 <View style={styles.testimonialAuthor}>
                   <View style={styles.authorAvatar}>

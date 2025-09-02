@@ -127,7 +127,7 @@ const PastOutcomes = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={9} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
         />
         

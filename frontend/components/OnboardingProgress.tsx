@@ -13,6 +13,7 @@ interface OnboardingProgressProps {
   onBack?: () => void;
   icon_name?: string;
   shouldShowProgress?: boolean;
+  showBackButton?: boolean;
 }
 
 const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ 
@@ -20,19 +21,18 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   totalSteps,
   onBack,
   icon_name,
-  shouldShowProgress = true
+  shouldShowProgress = true,
+  showBackButton = true
 }) => {
+  console.log('showBackButton', showBackButton);
   const { impactAsync } = useHapticsSafely();
-  
-  // Animation for back button fade-in
-  const backButtonOpacity = useRef(new Animated.Value(currentStep > 3 ? 1 : 0)).current;
   
   // Progress calculation for screens 3-11 only (profile-setup to nerves-rating, before analyzing)
   // Screen 3 (profile-setup) = 0%, Screen 11 (nerves-rating) = 100%
   const calculateProgress = () => {
     // Only show progress for steps 3-11 (profile-setup to nerves-rating, before analyzing screen)
     if (currentStep < 3) return 0; // Before profile-setup
-    if (currentStep > 11) return 1; // At or after analyzing screen
+    if (currentStep > 12) return 1; // At or after analyzing screen
     
     // Map steps 3-11 to progress 0-100%
     // Step 3 = 0%, Step 11 = 100%
@@ -49,6 +49,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
       0.55,  // Step 8 (industry-struggle) = 55%
       0.65,  // Step 9 (past-outcomes) = 65%
       0.80,  // Step 10 (preparation-rating) = 80%
+      0.92,  // Step 11 (communication-rating) = 90%
       1.0    // Step 11 (nerves-rating) = 100%
     ];
     
@@ -91,20 +92,6 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     return () => clearTimeout(timer);
   }, [progress]);
 
-  // Animate back button opacity when currentStep changes
-  useEffect(() => {
-    const shouldShow = currentStep > 3;
-    const timer = setTimeout(() => {
-      Animated.timing(backButtonOpacity, {
-        toValue: shouldShow ? 1 : 0,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
-    }, shouldShow ? 200 : 0); // Small delay when appearing, immediate when disappearing
-
-    return () => clearTimeout(timer);
-  }, [currentStep, backButtonOpacity]);
-
   const handleBack = () => {
     impactAsync(ImpactFeedbackStyle.Light);
     if (onBack) {
@@ -115,24 +102,20 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   };
 
   // Don't show progress bar for screens at or after analyzing (step 12)
-  const showProgressBar = shouldShowProgress && currentStep < 12;
-  
-  // Don't show back button on the first onboarding screen (step 3 - profile setup)
-  const showBackButton = currentStep > 3;
+  const showProgressBar = shouldShowProgress && currentStep <= 12;
 
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
-        <Animated.View style={{ opacity: backButtonOpacity }}>
+        {showBackButton && (
           <TouchableOpacity 
             style={styles.backButton} 
             onPress={handleBack}
-            disabled={!showBackButton}
-            activeOpacity={showBackButton ? 0.7 : 1}
+            activeOpacity={0.7}
           >
             <Ionicons name={icon_name as any || "chevron-back"} size={24} color={Colors.white} />
           </TouchableOpacity>
-        </Animated.View>
+        )}
       </View>
       
       {showProgressBar && (

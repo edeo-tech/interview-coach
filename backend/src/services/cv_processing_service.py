@@ -264,7 +264,7 @@ class CVProcessingService:
     def _get_cv_parsing_prompt(self) -> str:
         """Get the comprehensive CV parsing prompt"""
         return """
-You are an expert CV/Resume parser. Analyze the provided CV/Resume document (image and/or text) and extract structured information in JSON format.
+You are an expert CV/Resume parser. Analyse the provided CV/Resume document (image and/or text) and extract structured information in JSON format.
 
 Return ONLY valid JSON with the following structure:
 

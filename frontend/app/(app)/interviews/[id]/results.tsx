@@ -132,7 +132,7 @@ const InterviewResults = () => {
             <Ionicons name="alert-circle" size={64} color={Colors.semantic.error} />
             <Text style={styles.errorTitle}>Analysis Failed</Text>
             <Text style={styles.errorSubtitle}>
-              We couldn't analyze your interview. Please try again.
+              We couldn't analyse your interview. Please try again.
             </Text>
             <TouchableOpacity
               onPress={() => router.back()}

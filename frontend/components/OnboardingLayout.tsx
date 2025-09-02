@@ -19,7 +19,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   currentStep,
   totalSteps,
   children,
-  showBackButton = false,
+  showBackButton = true,
   onBackPress
 }) => {
   const navigation = useNavigation();
@@ -73,7 +73,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       <View style={styles.container}>
         {/* Persistent elements - these stay in place */}
         <View style={styles.persistentHeader}>
-          <OnboardingProgress currentStep={currentStep} totalSteps={totalSteps} />
+          <OnboardingProgress currentStep={currentStep} totalSteps={totalSteps} showBackButton={showBackButton} />
         </View>
         
         {/* Animated content container */}

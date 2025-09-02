@@ -219,8 +219,9 @@ const ProblemValidation = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={14} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
+          showBackButton={false}
         />
         
         {/* Animated content container - exactly like profile-setup */}

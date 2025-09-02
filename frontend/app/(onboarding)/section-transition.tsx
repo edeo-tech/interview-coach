@@ -76,7 +76,7 @@ const SectionTransition = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={6} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
         />
         

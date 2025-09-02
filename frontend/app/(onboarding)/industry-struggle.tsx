@@ -142,7 +142,7 @@ const IndustryStruggle = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={8} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
         />
         

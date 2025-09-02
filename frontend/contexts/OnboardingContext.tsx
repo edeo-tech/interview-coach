@@ -4,7 +4,7 @@ interface OnboardingData {
   name: string;
   age: string;
   industry: string;
-  hasFailed: boolean;
+  hasFailed: boolean | null;
   preparationRating: number;
   communicationRating: number;
   nervesRating: number;
@@ -20,7 +20,7 @@ const initialData: OnboardingData = {
   name: '',
   age: '',
   industry: '',
-  hasFailed: false,
+  hasFailed: null,
   preparationRating: 0,
   communicationRating: 0,
   nervesRating: 0,

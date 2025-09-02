@@ -102,7 +102,7 @@ const CommunicationRating = () => {
       ]).start(() => {
         // Navigate after animation completes
         setTimeout(() => {
-          router.push('/(onboarding)/nerves-rating');
+          router.push('/(onboarding)/problems');
         }, 100);
       });
     }
@@ -171,8 +171,8 @@ const CommunicationRating = () => {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={11} 
-          totalSteps={17}
+          currentStep={12} 
+          totalSteps={12}
           onBack={handleBack}
         />
         
@@ -245,7 +245,7 @@ const CommunicationRating = () => {
             disabled={selectedRating === 0}
             activeOpacity={0.8}
           >
-            <Text style={styles.continueButtonText}>Submit & analyze</Text>
+            <Text style={styles.continueButtonText}>Submit & analyse</Text>
             <Ionicons name="arrow-forward" size={20} color={Colors.white} />
           </TouchableOpacity>
         </Animated.View>

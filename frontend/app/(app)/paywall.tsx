@@ -322,7 +322,7 @@ const Paywall = () => {
             </TouchableOpacity>
           </View>
           <Text style={styles.modalMessage}>
-            73.2% of users secure the role in under 2 weeks
+            83.2% of users secure the role in under 2 weeks
           </Text>
         </Pressable>
       </Pressable>
@@ -702,6 +702,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     ...GlassStyles.card,
+    backgroundColor: Colors.background.primary,
     padding: 12,
     width: '100%',
     maxWidth: 280,

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -20,6 +20,7 @@ import { TYPOGRAPHY } from '../../constants/Typography';
 import Colors from '../../constants/Colors';
 import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
+import { useAuth } from '../../context/authentication/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -27,10 +28,20 @@ type Step = 'profile' | 'name' | 'age';
 
 const ProfileSetup = () => {
   const { data, updateData } = useOnboarding();
+  const { auth } = useAuth();
   const [currentStep, setCurrentStep] = useState<Step>('profile');
-  const [name, setName] = useState(data.name || '');
+  const [name, setName] = useState(data.name || auth?.name || '');
   const [age, setAge] = useState(data.age || '');
   const { impactAsync } = useHapticsSafely();
+
+  useEffect(() => {
+    console.log('auth?.name', auth?.name);
+    console.log('data.name', data.name);
+    console.log('name', name);
+    console.log('age', age);
+    setName(auth?.name || data.name || '');
+    setAge(data.age || '');
+  }, [auth?.name, data.age]);
 
   // Animation values
   const contentTranslateX = useRef(new Animated.Value(0)).current;
@@ -257,7 +268,7 @@ const ProfileSetup = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={getStepNumber(currentStep)} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
         />
         

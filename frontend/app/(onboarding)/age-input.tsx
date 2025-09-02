@@ -37,7 +37,7 @@ const AgeInput = () => {
   const isValidAge = age.trim() && !isNaN(Number(age)) && Number(age) >= 16 && Number(age) <= 100;
 
   return (
-    <OnboardingLayout currentStep={5} totalSteps={17}>
+    <OnboardingLayout currentStep={5} totalSteps={12}>
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.content}>
           <View style={styles.iconContainer}>

@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
@@ -92,7 +91,7 @@ const PreparationRating = () => {
       ]).start(() => {
         // Navigate after animation completes
         setTimeout(() => {
-          router.push('/(onboarding)/communication-rating');
+          router.push('/(onboarding)/nerves-rating');
         }, 100);
       });
     }
@@ -152,7 +151,7 @@ const PreparationRating = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={10} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
         />
         
