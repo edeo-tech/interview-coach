@@ -21,67 +21,67 @@ const { width: screenWidth } = Dimensions.get('window');
 const AGENT_INTERVIEW_LINK = {
     "phone_screen": {
         "name": "Niamh Morissey",
-        "agent_id": "agent_3201k2d96cp0fv7rvw0j3nbe3fd6",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756311206/niamh_pp_fcl0dj.png"
     },
     "initial_hr_interview": {
         "name": "Sam Tyldesley",
-        "agent_id": "agent_9101k2qdcg74f6bteqwe4y2se5ct",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "mock_sales_call": {
         "name": "Jane Smith",
-        "agent_id": "agent_5701k3kk62prf8b9f2cnrdbtwghz",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "presentation_pitch": {
         "name": "Paddy Beaumont",
-        "agent_id": "agent_9901k3kkamqwekbvd26e4hf2g4td",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "technical_screening_call": {
         "name": "Louise O'Brien",
-        "agent_id": "agent_3801k3kkcnpvfenvzpzbkfxcxr1x",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "system_design_interview": {
         "name": "Daniel Jones",
-        "agent_id": "agent_4801k3kkeazve138emwhjrnqmg0p",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "portfolio_review": {
         "name": "Ruby Galloway",
-        "agent_id": "agent_9101k3kkfyv6e21ry5rmsf6w4p7q",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "case_study": {
         "name": "Conor Duffy",
-        "agent_id": "agent_6501k3kkhnqmf098ndn7bgvath91",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "behavioral_interview": {
         "name": "Brenda Newman",
-        "agent_id": "agent_0501k3kkksrkewj9mhys46xvtq50",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "values_interview": {
         "name": "Victor Phelps",
-        "agent_id": "agent_2701k3kkp3w4ec99d0pvsxdx41gn",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "team_fit_interview": {
         "name": "Fran Haines",
-        "agent_id": "agent_9501k3kkq19hedptvztph0k5p1e3",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "interview_with_business_partner_client_stakeholder": {
         "name": "John McGrath",
-        "agent_id": "agent_2601k3km0bxbe62aness666ye02n",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format"
     },
     "executive_leadership_round": {
         "name": "Ethan Ford",
-        "agent_id": "agent_5201k3km2snnffbv0qtmfbxhd6p1",
+        "agent_id": "agent_7101k4581q77e5hrjcp6pfn0ryt2",
         "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
     }
 };
