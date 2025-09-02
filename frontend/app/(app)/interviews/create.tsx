@@ -301,8 +301,8 @@ export default function CreateJob() {
                   </View>
                 ) : (
                   <View style={styles.uploadPrompt}>
-                    <Ionicons name="cloud-upload" size={32} color={Colors.gray[400]} />
-                    <Text style={styles.uploadText}>Select your CV (PDF, DOC, DOCX, TXT)</Text>
+                    <Ionicons name="cloud-upload" size={24} color={Colors.brand.primary} />
+                    <Text style={styles.uploadText} numberOfLines={1} ellipsizeMode="tail">Select your CV (PDF, DOC, DOCX, TXT)</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -433,8 +433,8 @@ export default function CreateJob() {
                   </View>
                 ) : (
                   <View style={styles.uploadPrompt}>
-                    <Ionicons name="cloud-upload" size={32} color={Colors.gray[400]} />
-                    <Text style={styles.uploadText}>Upload job description (PDF, DOC, DOCX, TXT)</Text>
+                    <Ionicons name="cloud-upload" size={24} color={Colors.brand.primary} />
+                    <Text style={styles.uploadText} numberOfLines={1} ellipsizeMode="tail">Upload job description (PDF, DOC, DOCX, TXT)</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -563,19 +563,25 @@ const styles = StyleSheet.create({
   },
   fileButton: {
     backgroundColor: Colors.glass.backgroundInput, // glassInput.background
-    borderRadius: 12, // glassInput.borderRadius
-    padding: 24, // spacing.6
-    borderWidth: 2,
+    borderRadius: 50, // Pill-shaped like the input
+    paddingHorizontal: 20, // Horizontal padding for pill shape
+    paddingVertical: 12, // Reduced vertical padding to prevent cutoff
+    borderWidth: 1,
     borderColor: Colors.glass.border, // glassInput.border
-    borderStyle: 'dashed',
+    height: 48, // Reduced height to prevent cutoff
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   selectedFileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   fileInfo: {
     flex: 1,
-    marginLeft: 12, // spacing.3
+    marginLeft: 12, // spacing.3 - keep space between icon and file info
   },
   fileName: {
     color: Colors.text.primary, // text.primary
@@ -590,13 +596,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter', // typography.body.small.fontFamily
   },
   uploadPrompt: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: '100%',
+    gap: 12, // Consistent spacing between icon and text
   },
   uploadText: {
     color: Colors.text.tertiary, // text.tertiary
-    fontSize: 16, // typography.body.medium.fontSize
-    marginTop: 8, // spacing.2
-    fontFamily: 'Inter', // typography.body.medium.fontFamily
+    fontSize: 12, // Reduced from 16 to 14 (two sizes smaller)
+    fontFamily: 'Inter', // typography.body.small.fontFamily
+    flex: 1, // Take remaining space
   },
   submitButton: {
     // Primary button with gradient border effect
