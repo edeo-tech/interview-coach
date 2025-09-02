@@ -5,6 +5,8 @@ from datetime import datetime
 class AuthenticatedUser(BaseModel):
     id: str = Field(..., description="The unique identifier of the user")
     name: str = Field(..., description="The full name of the user")
+    age: Optional[int] = Field(None, description="The age of the user")
+    industry: Optional[str] = Field(None, description="The industry the user works in")
     email: EmailStr = Field(..., description="The email address of the user")
     profile_picture: Optional[str] = Field('', description="The profile picture URL of the user")
     profile_qrcode: Optional[str] = Field('', description="The profile QR code URL of the user")

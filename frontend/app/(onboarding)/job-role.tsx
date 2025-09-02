@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useUpdateProfile } from '../../_queries/users/auth/users';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import Colors from '../../constants/Colors';
 import { TYPOGRAPHY } from '../../constants/Typography';
@@ -16,6 +17,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const OnboardingJobRole = () => {
   const { data, updateData } = useOnboarding();
+  const updateProfileMutation = useUpdateProfile();
   const [selectedIndustry, setSelectedIndustry] = useState(data.industry);
   const { impactAsync } = useHapticsSafely();
 
@@ -78,6 +80,9 @@ const OnboardingJobRole = () => {
     impactAsync(ImpactFeedbackStyle.Light);
     setSelectedIndustry(industryId);
     updateData('industry', industryId);
+    
+    // Save industry to user document
+    updateProfileMutation.mutate({ industry: industryId });
     
     // Auto-continue after brief delay to show selection feedback - exactly like industry-struggle
     setTimeout(() => {

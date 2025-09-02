@@ -95,42 +95,7 @@ export default function Profile() {
         });
     };
 
-    const getIndustryRole = () => {
-        if (!jobs || jobs.length === 0) {
-            return 'Industry / Role: Not specified';
-        }
-        
-        // Get the most recent job to determine target role
-        const latestJob = jobs[0];
-        const roleTitle = latestJob.role_title || 'Software Engineer';
-        
-        // Extract industry from company or role title
-        let industry = 'Tech';
-        
-        // Try to infer industry from role title keywords
-        if (roleTitle.toLowerCase().includes('sales') || roleTitle.toLowerCase().includes('sdr') || roleTitle.toLowerCase().includes('account')) {
-            industry = 'Sales';
-        } else if (roleTitle.toLowerCase().includes('marketing') || roleTitle.toLowerCase().includes('growth')) {
-            industry = 'Marketing';
-        } else if (roleTitle.toLowerCase().includes('product') || roleTitle.toLowerCase().includes('pm')) {
-            industry = 'Product';
-        } else if (roleTitle.toLowerCase().includes('engineer') || roleTitle.toLowerCase().includes('developer') || roleTitle.toLowerCase().includes('software')) {
-            industry = 'Engineering';
-        } else if (roleTitle.toLowerCase().includes('design') || roleTitle.toLowerCase().includes('ui') || roleTitle.toLowerCase().includes('ux')) {
-            industry = 'Design';
-        } else if (roleTitle.toLowerCase().includes('data') || roleTitle.toLowerCase().includes('analyst')) {
-            industry = 'Data';
-        }
-        
-        // Simplify role title for display
-        let displayRole = roleTitle;
-        if (roleTitle.length > 20) {
-            // Truncate long titles but keep meaningful parts
-            displayRole = roleTitle.split(' ').slice(0, 2).join(' ');
-        }
-        
-        return `${industry} / ${displayRole}`;
-    };
+
 
     const getExperienceText = () => {
         if (currentCV?.experience_years) {
@@ -220,9 +185,11 @@ export default function Profile() {
                         <Text style={styles.name}>{user.name}</Text>
                         <Text style={styles.email}>{user.email}</Text>
                     </View>
-                    <View style={styles.headerRight}>
-                        <Text style={styles.industry}>{getIndustryRole().split(' / ')[0] || 'Tech'}</Text>
-                    </View>
+                    {auth?.industry && auth.industry !== 'Other' && (
+                        <View style={styles.headerRight}>
+                            <Text style={styles.industry}>{auth.industry}</Text>
+                        </View>
+                    )}
                 </View>
                 
             </View>

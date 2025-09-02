@@ -21,6 +21,7 @@ import Colors from '../../constants/Colors';
 import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useAuth } from '../../context/authentication/AuthContext';
+import { useUpdateProfile } from '../../_queries/users/auth/users';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ type Step = 'profile' | 'name' | 'age';
 const ProfileSetup = () => {
   const { data, updateData } = useOnboarding();
   const { auth } = useAuth();
+  const updateProfileMutation = useUpdateProfile();
   const [currentStep, setCurrentStep] = useState<Step>('profile');
   const [name, setName] = useState(data.name || auth?.name || '');
   const [age, setAge] = useState(data.age || '');
@@ -136,7 +138,12 @@ const ProfileSetup = () => {
       updateData('name', name.trim());
       animateToStep('forward', 'age');
     } else if (currentStep === 'age' && isValidAge) {
+      const ageValue = parseInt(age.trim());
       updateData('age', age.trim());
+      
+      // Save age to user document
+      updateProfileMutation.mutate({ age: ageValue });
+      
       // Navigate to section transition screen
       router.push('/(onboarding)/section-transition');
     }
