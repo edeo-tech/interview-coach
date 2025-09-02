@@ -12,17 +12,11 @@ import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
-import { TYPOGRAPHY } from '../../../constants/Typography';
+import { FONTS, TYPOGRAPHY } from '../../../constants/Typography';
 import { GlassTextColors } from '../../../constants/GlassStyles';
 import Colors from '../../../constants/Colors';
 
-const StatCard = ({ icon, label, value, color = Colors.brand.primary }: any) => (
-    <View style={styles.statCard}>
-        <Ionicons name={icon} size={24} color={color} />
-        <Text style={styles.statValue}>{value}</Text>
-        <Text style={styles.statLabel}>{label}</Text>
-    </View>
-);
+
 
 const getScoreIconAndColor = (score: number | null | string) => {
     // Handle string values (like "85%") by extracting the number
@@ -116,9 +110,9 @@ export default function Profile() {
 
     const getAverageScoreDisplay = () => {
         if (userStats?.average_score !== null && userStats?.average_score !== undefined) {
-            return `${Math.round(userStats.average_score)}%`;
+            return `${Math.round(userStats.average_score)}`;
         }
-        return 'N/A';
+        return '0';
     };
 
     const user = {
@@ -224,25 +218,36 @@ export default function Profile() {
                 <Ionicons name="chevron-forward" size={20} color={GlassTextColors.muted} />
             </TouchableOpacity>
 
-            <View style={styles.statsContainer}>
-                <StatCard
-                    icon="bar-chart"
-                    label="Total Interviews"
-                    value={user.totalInterviews}
-                    color={Colors.brand.primary}
-                />
-                <StatCard
-                    icon={getScoreIconAndColor(user.averageScore).icon}
-                    label="Average Score"
-                    value={user.averageScore}
-                    color={getScoreIconAndColor(user.averageScore).color}
-                />
-                <StatCard
-                    icon="flame"
-                    label="Day Streak"
-                    value={user.streak}
-                    color={Colors.semantic.error}
-                />
+            {/* Stats Section */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Stats</Text>
+                <View style={styles.menuContainer}>
+                    <View style={styles.statRow}>
+                        <View style={styles.statIcon}>
+                            <Ionicons name="mic" size={20} color={Colors.brand.primary} />
+                        </View>
+                        <Text style={styles.statLabel}>Total Interviews</Text>
+                        <Text style={styles.statValue}>{user.totalInterviews}</Text>
+                    </View>
+                    <View style={styles.statRow}>
+                        <View style={styles.statIcon}>
+                            <Ionicons 
+                                name={getScoreIconAndColor(user.averageScore).icon as any} 
+                                size={20} 
+                                color={getScoreIconAndColor(user.averageScore).color} 
+                            />
+                        </View>
+                        <Text style={styles.statLabel}>Average Likelihood</Text>
+                        <Text style={styles.statValue}>{user.averageScore}</Text>
+                    </View>
+                    <View style={styles.statRow}>
+                        <View style={styles.statIcon}>
+                            <Ionicons name="flame" size={20} color={Colors.semantic.error} />
+                        </View>
+                        <Text style={styles.statLabel}>Day Streak</Text>
+                        <Text style={styles.statValue}>{user.streak}</Text>
+                    </View>
+                </View>
             </View>
 
             {/* Job History Section */}
@@ -363,48 +368,16 @@ const styles = StyleSheet.create({
         color: Colors.brand.primary,
         fontWeight: '600' as const,
     },
-    statsContainer: {
-        flexDirection: 'row',
-        gap: 12,
-        marginBottom: 32,
-    },
-    statCard: {
-        alignItems: 'center',
-        backgroundColor: Colors.background.transparent,
-        borderWidth: 1,
-        borderColor: Colors.glass.border,
-        borderRadius: 16,
-        padding: 20,
-        flex: 1,
-        ...Platform.select({
-            ios: {
-                shadowColor: Colors.black,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-            }
-        }),
-    },
-    statIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 12,
-        backgroundColor: Colors.glass.backgroundSubtle,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: Colors.glass.borderSecondary,
-    },
+
     statValue: {
-        ...TYPOGRAPHY.pageTitle,
+        fontFamily: FONTS.utilitySemiBold,
+        fontSize: 18,
         color: Colors.text.primary,
-        marginTop: 8,
-        marginBottom: 4,
     },
     statLabel: {
-        ...TYPOGRAPHY.bodySmall,
-        color: Colors.text.tertiary,
+        ...TYPOGRAPHY.bodyMedium,
+        color: Colors.text.secondary,
+        flex: 1,
     },
     section: {
         marginBottom: 28,
@@ -412,10 +385,10 @@ const styles = StyleSheet.create({
     sectionTitle: {
         ...TYPOGRAPHY.sectionHeader,
         color: Colors.text.primary,
-        marginBottom: 16,
+        marginBottom: 8,
     },
     menuContainer: {
-        gap: 12,
+        gap: 0,
     },
     menuButton: {
         flexDirection: 'row',
@@ -553,4 +526,24 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.bodySmall,
         color: Colors.text.tertiary,
     },
+    statRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: Colors.glass.background,
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        marginBottom: 12,
+    },
+    statIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: Colors.glass.backgroundInput,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+
 });
