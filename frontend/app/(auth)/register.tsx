@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,28 +9,74 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Animated,
+  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { TYPOGRAPHY } from '../../constants/Typography';
 import { useToast } from '@/components/Toast';
 import Colors from '../../constants/Colors';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
-import { GlassStyles } from '../../constants/GlassStyles';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegister, useLogin } from '@/_queries/users/auth/users';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { showToast } = useToast();
-  const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture, posthogIdentify } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
   
-  useFocusEffect(() => {
-    posthogScreen('auth_register');
-  });
+  // Animation values
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const contentTranslateY = useRef(new Animated.Value(30)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  
+  const startAnimationSequence = useCallback(() => {
+    // Reset animation values
+    logoOpacity.setValue(0);
+    contentTranslateY.setValue(30);
+    contentOpacity.setValue(0);
+    
+    // Animate logo first
+    Animated.timing(logoOpacity, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+    
+    // Then animate content
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(contentTranslateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 400);
+  }, [logoOpacity, contentTranslateY, contentOpacity]);
+  
+  // Run intro animation once on mount
+  useEffect(() => {
+    startAnimationSequence();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('auth_register');
+    }, [posthogScreen])
+  );
   
   const { mutate: login, isPending: loginLoading } = useLogin({posthogIdentify, posthogCapture, isFromRegistration: true});
   const { mutate: register, isPending: registerLoading, error: registerError, isSuccess: registerSuccess, reset: resetRegister } = useRegister();
@@ -60,7 +106,9 @@ const Register = () => {
   }, [registerSuccess, posthogCapture, email, login, password, showToast, resetRegister]);
 
 
-  const handleRegister = () => {
+  const handleRegister = useCallback(() => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    
     // Validation
     if (!email || !password) {
       showToast('Please fill in all fields', 'warning');
@@ -83,118 +131,148 @@ const Register = () => {
       password_length: password.length
     });
     register({ email, password });
-  };
+  }, [email, password, showToast, posthogCapture, impactAsync, register]);
+  
+  // Memoize text input handlers to prevent unnecessary re-renders
+  const handleEmailChange = useCallback((text: string) => {
+    setEmail(text);
+  }, []);
+
+  const handlePasswordChange = useCallback((text: string) => {
+    setPassword(text);
+  }, []);
 
   const isLoading = registerLoading || loginLoading;
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContainer,
-            { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 },
-          ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <KeyboardAvoidingView
+          style={styles.keyboardContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Ionicons name="person-add" size={48} color={Colors.white} />
-            </View>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join us to start your interview preparation</Text>
-          </View>
-
-          {/* Form Card */}
-          <View style={styles.formCard}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="mail-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your email"
-                  placeholderTextColor={Colors.gray[500]}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Animated Logo */}
+            <Animated.View
+              style={[
+                styles.logoContainer,
+                {
+                  opacity: logoOpacity
+                }
+              ]}
+            >
+              <Image
+                source={require('../../assets/images/FinalAppIconTransparent.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </Animated.View>
+            
+            {/* Animated Content */}
+            <Animated.View
+              style={[
+                styles.content,
+                {
+                  opacity: contentOpacity,
+                  transform: [{ translateY: contentTranslateY }]
+                }
+              ]}
+            >
+              {/* Header */}
+              <View style={styles.header}>
+                <Text style={styles.welcomeText}>Create Account</Text>
+                <Text style={styles.subtitle}>Join us to start your interview prep</Text>
               </View>
-            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Password</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color={Colors.gray[400]} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Minimum 8 characters"
-                  placeholderTextColor={Colors.gray[500]}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
-              </View>
-              {password.length > 0 && (
-                <View style={styles.passwordStrength}>
-                  <View style={[styles.strengthBar, password.length >= 8 ? styles.strengthBarStrong : styles.strengthBarWeak]} />
-                  <Text style={[styles.strengthText, password.length >= 8 ? styles.strengthTextStrong : styles.strengthTextWeak]}>
-                    {password.length >= 8 ? 'Strong password' : `${8 - password.length} more characters needed`}
+              {/* Email/Password Form */}
+              <View style={styles.formContainer}>
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="mail-outline" size={20} color={Colors.text.tertiary} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your email"
+                      placeholderTextColor={Colors.text.tertiary}
+                      value={email}
+                      onChangeText={handleEmailChange}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="lock-closed-outline" size={20} color={Colors.text.tertiary} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Minimum 8 characters"
+                      placeholderTextColor={Colors.text.tertiary}
+                      value={password}
+                      onChangeText={handlePasswordChange}
+                      secureTextEntry
+                      autoCapitalize="none"
+                    />
+                  </View>
+                  {password.length > 0 && (
+                    <View style={styles.passwordStrength}>
+                      <View style={[styles.strengthBar, password.length >= 8 ? styles.strengthBarStrong : styles.strengthBarWeak]} />
+                      <Text style={[styles.strengthText, password.length >= 8 ? styles.strengthTextStrong : styles.strengthTextWeak]}>
+                        {password.length >= 8 ? 'Strong password' : `${8 - password.length} more characters needed`}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.termsContainer}>
+                  <Text style={styles.termsText}>
+                    By registering you accept our{' '}
+                    <Text
+                      style={styles.termsLinkText}
+                      onPress={() => {
+                        impactAsync(ImpactFeedbackStyle.Light);
+                        router.push('/(auth)/terms');
+                      }}
+                    >
+                      terms of service
+                    </Text>
                   </Text>
                 </View>
-              )}
-            </View>
 
-            <View style={styles.termsContainer}>
-              <Text style={styles.termsText}>
-                By registering you accept our{' '}
                 <TouchableOpacity
-                  onPress={() => router.push('/(auth)/terms')}
-                  style={styles.termsLink}
+                  style={[styles.registerButton, isLoading && styles.buttonDisabled]}
+                  onPress={handleRegister}
+                  disabled={isLoading}
                 >
-                  <Text style={styles.termsLinkText}>terms of service</Text>
+                  {isLoading ? (
+                    <ActivityIndicator color={Colors.text.primary} size="small" />
+                  ) : (
+                    <>
+                      <Text style={styles.registerButtonText}>Create Account</Text>
+                      <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
+                    </>
+                  )}
                 </TouchableOpacity>
-              </Text>
+              </View>
+            </Animated.View>
+            
+            {/* Footer */}
+            <View style={styles.footer}>
+              <TouchableOpacity 
+                style={styles.loginButton}
+                onPress={() => router.replace('/(auth)/login')}
+              >
+                <Text style={styles.loginText}>Already have an account? Sign in</Text>
+              </TouchableOpacity>
             </View>
-
-            <TouchableOpacity
-              style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleRegister}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={Colors.white} size="small" />
-              ) : (
-                <>
-                  <Text style={styles.buttonText}>Create Account</Text>
-                  <Ionicons name="arrow-forward" size={20} color={Colors.white} style={styles.buttonIcon} />
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-
-
-          {/* Footer */}
-          {/* <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account?</Text>
-            <TouchableOpacity 
-              style={styles.linkButton}
-              onPress={() => router.replace('/(auth)/welcome')}
-            >
-              <Text style={styles.linkText}>Sign In</Text>
-              <Ionicons name="chevron-forward" size={16} color={Colors.accent.gold} />
-            </TouchableOpacity>
-          </View> */}
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </ChatGPTBackground>
   );
 };
@@ -205,81 +283,85 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.transparent,
+    backgroundColor: 'transparent',
+  },
+  keyboardContainer: {
+    flex: 1,
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 20,
+  },
+  
+  // Logo section
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+    marginTop: 20,
+  },
+  logoImage: {
+    width: 80,
+    height: 80,
+  },
+  
+  // Content section
+  content: {
+    flex: 1,
   },
   header: {
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: Colors.glass.backgroundSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  welcomeText: {
+    ...TYPOGRAPHY.displaySmall,
     color: Colors.white,
-    marginBottom: 8,
     textAlign: 'center',
-    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: Colors.gray[400],
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.tertiary,
     textAlign: 'center',
+    maxWidth: 280,
     lineHeight: 22,
   },
-  formCard: {
-    ...GlassStyles.container,
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
+  
+  // Form section
+  formContainer: {
     marginBottom: 32,
   },
   inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    color: Colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.glass.backgroundSecondary,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
-    paddingHorizontal: 16,
+    backgroundColor: Colors.glass.background,
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    height: 56,
   },
   inputIcon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: Colors.white,
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.primary,
+    textAlign: 'left',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
+    paddingVertical: 0,
+    lineHeight: undefined,
   },
+  
+  // Password strength indicator
   passwordStrength: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
+    paddingHorizontal: 8,
   },
   strengthBar: {
     width: 40,
@@ -303,67 +385,16 @@ const styles = StyleSheet.create({
   strengthTextStrong: {
     color: Colors.semantic.successAlt,
   },
-  button: {
-    backgroundColor: Colors.accent.gold,
-    paddingVertical: 18,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.black,
-        shadowOpacity: 0.15,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      }
-    }),
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  buttonIcon: {
-    marginLeft: 8,
-  },
-  footer: {
-    alignItems: 'center',
-  },
-  footerText: {
-    color: Colors.gray[400],
-    fontSize: 15,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  linkButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.glass.backgroundSubtle,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
-  },
-  linkText: {
-    color: Colors.accent.gold,
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 4,
-  },
+  
+  // Terms section
   termsContainer: {
     alignItems: 'center',
     marginTop: 16,
     marginBottom: 8,
   },
   termsText: {
-    fontSize: 14,
-    color: Colors.gray[400],
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -371,10 +402,50 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   termsLinkText: {
-    color: Colors.accent.gold,
-    fontSize: 14,
-    fontWeight: '500',
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
     textDecorationLine: 'underline',
+  },
+  
+  // Register button
+  registerButton: {
+    backgroundColor: Colors.glass.purpleMedium,
+    borderWidth: 2,
+    borderColor: Colors.brand.primary,
+    height: 56,
+    borderRadius: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    gap: 8,
+    shadowColor: Colors.brand.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  registerButtonText: {
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.text.primary,
+  },
+  
+  // Footer section
+  footer: {
+    alignItems: 'center',
+    paddingTop: 20,
+  },
+  loginButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  loginText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.quaternary,
+    textAlign: 'center',
   },
 });
 

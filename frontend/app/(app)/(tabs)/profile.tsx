@@ -11,19 +11,12 @@ import { useCV } from '../../../_queries/interviews/cv';
 import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
-import { ImpactFeedbackStyle } from 'expo-haptics';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
-import { TYPOGRAPHY } from '../../../constants/Typography';
-import { GlassStyles, GlassTextColors } from '../../../constants/GlassStyles';
+import { FONTS, TYPOGRAPHY } from '../../../constants/Typography';
+import { GlassTextColors } from '../../../constants/GlassStyles';
 import Colors from '../../../constants/Colors';
 
-const StatCard = ({ icon, label, value, color = Colors.brand.primary }: any) => (
-    <View style={styles.statCard}>
-        <Ionicons name={icon} size={24} color={color} />
-        <Text style={styles.statValue}>{value}</Text>
-        <Text style={styles.statLabel}>{label}</Text>
-    </View>
-);
+
 
 const getScoreIconAndColor = (score: number | null | string) => {
     // Handle string values (like "85%") by extracting the number
@@ -96,42 +89,7 @@ export default function Profile() {
         });
     };
 
-    const getIndustryRole = () => {
-        if (!jobs || jobs.length === 0) {
-            return 'Industry / Role: Not specified';
-        }
-        
-        // Get the most recent job to determine target role
-        const latestJob = jobs[0];
-        const roleTitle = latestJob.role_title || 'Software Engineer';
-        
-        // Extract industry from company or role title
-        let industry = 'Tech';
-        
-        // Try to infer industry from role title keywords
-        if (roleTitle.toLowerCase().includes('sales') || roleTitle.toLowerCase().includes('sdr') || roleTitle.toLowerCase().includes('account')) {
-            industry = 'Sales';
-        } else if (roleTitle.toLowerCase().includes('marketing') || roleTitle.toLowerCase().includes('growth')) {
-            industry = 'Marketing';
-        } else if (roleTitle.toLowerCase().includes('product') || roleTitle.toLowerCase().includes('pm')) {
-            industry = 'Product';
-        } else if (roleTitle.toLowerCase().includes('engineer') || roleTitle.toLowerCase().includes('developer') || roleTitle.toLowerCase().includes('software')) {
-            industry = 'Engineering';
-        } else if (roleTitle.toLowerCase().includes('design') || roleTitle.toLowerCase().includes('ui') || roleTitle.toLowerCase().includes('ux')) {
-            industry = 'Design';
-        } else if (roleTitle.toLowerCase().includes('data') || roleTitle.toLowerCase().includes('analyst')) {
-            industry = 'Data';
-        }
-        
-        // Simplify role title for display
-        let displayRole = roleTitle;
-        if (roleTitle.length > 20) {
-            // Truncate long titles but keep meaningful parts
-            displayRole = roleTitle.split(' ').slice(0, 2).join(' ');
-        }
-        
-        return `${industry} / ${displayRole}`;
-    };
+
 
     const getExperienceText = () => {
         if (currentCV?.experience_years) {
@@ -152,9 +110,9 @@ export default function Profile() {
 
     const getAverageScoreDisplay = () => {
         if (userStats?.average_score !== null && userStats?.average_score !== undefined) {
-            return `${Math.round(userStats.average_score)}%`;
+            return `${Math.round(userStats.average_score)}`;
         }
-        return 'N/A';
+        return '0';
     };
 
     const user = {
@@ -221,9 +179,11 @@ export default function Profile() {
                         <Text style={styles.name}>{user.name}</Text>
                         <Text style={styles.email}>{user.email}</Text>
                     </View>
-                    <View style={styles.headerRight}>
-                        <Text style={styles.industry}>{getIndustryRole().split(' / ')[0] || 'Tech'}</Text>
-                    </View>
+                    {auth?.industry && auth.industry !== 'Other' && (
+                        <View style={styles.headerRight}>
+                            <Text style={styles.industry}>{auth.industry}</Text>
+                        </View>
+                    )}
                 </View>
                 
             </View>
@@ -241,42 +201,47 @@ export default function Profile() {
                 }}
                 activeOpacity={0.9}
             >
-                <View style={styles.cvIcon}>
-                    <Ionicons name="document-text" size={20} color={currentCV ? Colors.semantic.successAlt : Colors.brand.primary} />
-                </View>
                 <View style={styles.cvInfo}>
+                    <View style={styles.cvIcon}>
+                        <Ionicons name="document-text" size={20} color={currentCV ? Colors.semantic.successAlt : Colors.brand.primary} />
+                    </View>
                     <Text style={styles.cvTitle}>
                         {currentCV ? "Your CV" : "Upload Your CV"}
-                    </Text>
-                    <Text style={styles.cvSubtitle}>
-                        {currentCV 
-                            ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
-                            : "Get personalized interview questions"
-                        }
                     </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={GlassTextColors.muted} />
             </TouchableOpacity>
 
-            <View style={styles.statsContainer}>
-                <StatCard
-                    icon="bar-chart"
-                    label="Total Interviews"
-                    value={user.totalInterviews}
-                    color={Colors.brand.primary}
-                />
-                <StatCard
-                    icon={getScoreIconAndColor(user.averageScore).icon}
-                    label="Average Score"
-                    value={user.averageScore}
-                    color={getScoreIconAndColor(user.averageScore).color}
-                />
-                <StatCard
-                    icon="flame"
-                    label="Day Streak"
-                    value={user.streak}
-                    color={Colors.semantic.error}
-                />
+            {/* Stats Section */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Stats</Text>
+                <View style={styles.menuContainer}>
+                    <View style={styles.statRow}>
+                        <View style={styles.statIcon}>
+                            <Ionicons name="mic" size={20} color={Colors.brand.primary} />
+                        </View>
+                        <Text style={styles.statLabel}>Total Interviews</Text>
+                        <Text style={styles.statValue}>{user.totalInterviews}</Text>
+                    </View>
+                    <View style={styles.statRow}>
+                        <View style={styles.statIcon}>
+                            <Ionicons 
+                                name={getScoreIconAndColor(user.averageScore).icon as any} 
+                                size={20} 
+                                color={getScoreIconAndColor(user.averageScore).color} 
+                            />
+                        </View>
+                        <Text style={styles.statLabel}>Average Likelihood</Text>
+                        <Text style={styles.statValue}>{user.averageScore}</Text>
+                    </View>
+                    <View style={styles.statRow}>
+                        <View style={styles.statIcon}>
+                            <Ionicons name="flame" size={20} color={Colors.semantic.error} />
+                        </View>
+                        <Text style={styles.statLabel}>Day Streak</Text>
+                        <Text style={styles.statValue}>{user.streak}</Text>
+                    </View>
+                </View>
             </View>
 
             {/* Job History Section */}
@@ -397,48 +362,16 @@ const styles = StyleSheet.create({
         color: Colors.brand.primary,
         fontWeight: '600' as const,
     },
-    statsContainer: {
-        flexDirection: 'row',
-        gap: 12,
-        marginBottom: 32,
-    },
-    statCard: {
-        alignItems: 'center',
-        backgroundColor: Colors.background.transparent,
-        borderWidth: 1,
-        borderColor: Colors.glass.border,
-        borderRadius: 16,
-        padding: 20,
-        flex: 1,
-        ...Platform.select({
-            ios: {
-                shadowColor: Colors.black,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-            }
-        }),
-    },
-    statIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 12,
-        backgroundColor: Colors.glass.backgroundSubtle,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: Colors.glass.borderSecondary,
-    },
+
     statValue: {
-        ...TYPOGRAPHY.pageTitle,
+        fontFamily: FONTS.utilitySemiBold,
+        fontSize: 18,
         color: Colors.text.primary,
-        marginTop: 8,
-        marginBottom: 4,
     },
     statLabel: {
-        ...TYPOGRAPHY.bodySmall,
-        color: Colors.text.tertiary,
+        ...TYPOGRAPHY.bodyMedium,
+        color: Colors.text.secondary,
+        flex: 1,
     },
     section: {
         marginBottom: 28,
@@ -446,10 +379,10 @@ const styles = StyleSheet.create({
     sectionTitle: {
         ...TYPOGRAPHY.sectionHeader,
         color: Colors.text.primary,
-        marginBottom: 16,
+        marginBottom: 8,
     },
     menuContainer: {
-        gap: 12,
+        gap: 0,
     },
     menuButton: {
         flexDirection: 'row',
@@ -559,12 +492,18 @@ const styles = StyleSheet.create({
     },
     cvButton: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: Colors.glass.background,
         borderRadius: 50,
         paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 24,
+    },
+    cvInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4
     },
     cvIcon: {
         width: 32,
@@ -575,16 +514,32 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: 12,
     },
-    cvInfo: {
-        flex: 1,
-    },
     cvTitle: {
         ...TYPOGRAPHY.itemTitle,
-        color: Colors.text.primary,
-        marginBottom: 2,
+        color: Colors.text.primary
     },
     cvSubtitle: {
         ...TYPOGRAPHY.bodySmall,
         color: Colors.text.tertiary,
     },
+    statRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: Colors.glass.background,
+        borderRadius: 50,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        marginBottom: 12,
+    },
+    statIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: Colors.glass.backgroundInput,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+
 });

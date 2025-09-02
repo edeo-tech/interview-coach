@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimension
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -69,9 +70,10 @@ const NervesRating = () => {
     }, [])
   );
 
-  const handleContinue = () => {
-    if (selectedRating > 0) {
-      updateData('nervesRating', selectedRating);
+  const handleContinue = (value?: number) => {
+    const valueToUse = value !== undefined ? value : selectedRating;
+    if (valueToUse > 0) {
+      // Data already updated in onPress
       
       // Set direction for next screen
       setNavigationDirection('forward');
@@ -87,21 +89,11 @@ const NervesRating = () => {
           toValue: 0,
           duration: 500,
           useNativeDriver: true,
-        }),
-        Animated.timing(buttonOpacity, {
-          toValue: 0,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonTranslateY, {
-          toValue: 30,
-          duration: 500,
-          useNativeDriver: true,
         })
       ]).start(() => {
         // Navigate after animation completes
         setTimeout(() => {
-          router.push('/(onboarding)/problems');
+          router.push('/(onboarding)/communication-rating');
         }, 100);
       });
     }
@@ -120,16 +112,6 @@ const NervesRating = () => {
       }),
       Animated.timing(contentOpacity, {
         toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonOpacity, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonTranslateY, {
-        toValue: 30,
         duration: 500,
         useNativeDriver: true,
       })
@@ -170,8 +152,8 @@ const NervesRating = () => {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={12} 
-          totalSteps={17}
+          currentStep={11} 
+          totalSteps={12}
           onBack={handleBack}
         />
         
@@ -186,7 +168,12 @@ const NervesRating = () => {
           ]}
         >
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>{framing.question}</Text>
+            <View style={styles.questionSection}>
+              <View style={styles.titleRow}>
+                <Text style={styles.stepNumber}>#4</Text>
+                <Text style={styles.screenTitle}>{framing.question}</Text>
+              </View>
+            </View>
 
             <View style={styles.ratingContainer}>
               {ratingLabels.map((rating) => (
@@ -196,7 +183,15 @@ const NervesRating = () => {
                     styles.ratingButton,
                     selectedRating === rating.value && styles.ratingButtonSelected
                   ]}
-                  onPress={() => setSelectedRating(rating.value)}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    setSelectedRating(rating.value);
+                    updateData('nervesRating', rating.value);
+                    // Auto-continue after brief delay
+                    setTimeout(() => {
+                      handleContinue(rating.value);
+                    }, 600);
+                  }}
                 >
                   <View style={[
                     styles.numberContainer,
@@ -220,26 +215,6 @@ const NervesRating = () => {
             </View>
           </View>
         </Animated.View>
-
-        <Animated.View 
-          style={[
-            styles.bottomContainer,
-            {
-              opacity: buttonOpacity,
-              transform: [{ translateY: buttonTranslateY }],
-            }
-          ]}
-        >
-          <TouchableOpacity 
-            style={[styles.continueButton, selectedRating === 0 && styles.continueButtonDisabled]} 
-            onPress={handleContinue}
-            disabled={selectedRating === 0}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={Colors.text.primary} />
-          </TouchableOpacity>
-        </Animated.View>
       </View>
     </ChatGPTBackground>
   );
@@ -260,30 +235,42 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 100, // Space for button
   },
+  questionSection: {
+    marginBottom: 40,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 16,
+    gap: 12,
+  },
+  stepNumber: {
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.tertiary,
+  },
   screenTitle: {
-    ...TYPOGRAPHY.sectionHeader,
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
     color: Colors.text.primary,
-    textAlign: 'center',
-    lineHeight: 30,
-    marginBottom: 48,
+    flex: 1,
   },
   ratingContainer: {
-    gap: 16,
+    gap: 12,
     width: '100%',
-    maxWidth: 320,
   },
   ratingButton: {
-    backgroundColor: Colors.glass.backgroundSecondary,
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: Colors.glass.backgroundSubtle,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',

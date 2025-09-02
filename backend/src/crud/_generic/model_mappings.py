@@ -5,6 +5,7 @@ from models.interviews.interviews import Interview
 from models.interviews.attempts import InterviewAttempt, InterviewFeedback
 from models.jobs import Job
 from models.companies import CompanyInfo
+from models.onboarding import OnboardingAnswers
 
 CollectionModelMatch = {
     'refresh_tokens': RefreshToken,
@@ -15,6 +16,7 @@ CollectionModelMatch = {
     'interview_attempts': InterviewAttempt,
     'interview_feedback': InterviewFeedback,
     'company_info': CompanyInfo,
+    'user_onboarding_answers': OnboardingAnswers,
 }
 
 # Reverse mapping from model to collection name

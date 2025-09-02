@@ -131,6 +131,18 @@ export default function Home() {
                 <Text style={styles.emptyStateSubtitle}>
                   Your recent job applications will appear here
                 </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    selectionAsync();
+                    posthogCapture('create_job_from_empty_state');
+                    router.push('/(app)/interviews/create');
+                  }}
+                  style={styles.createJobButton}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="add" size={20} color={Colors.white} />
+                  <Text style={styles.createJobButtonText}>Create Job</Text>
+                </TouchableOpacity>
               </View>
             ) : (
               jobs.map((job) => (
@@ -253,6 +265,29 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodySmall,
     color: Colors.text.tertiary,
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  createJobButton: {
+    backgroundColor: Colors.glass.purple,
+    borderRadius: 28,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.glass.purpleTint,
+    shadowColor: Colors.brand.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  createJobButtonText: {
+    ...TYPOGRAPHY.labelMedium,
+    color: Colors.white,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   jobItem: {
     flexDirection: 'row',

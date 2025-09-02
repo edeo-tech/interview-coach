@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
-import BrandfetchLogo from '../../../../../../components/BrandfetchLogo';
 import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
@@ -595,6 +593,25 @@ export default function InterviewDetails() {
                   ))}
                 </View>
               </View>
+
+              {/* Start Interview CTA for first-time users */}
+              <TouchableOpacity
+                onPress={() => {
+                  selectionAsync();
+                  handleStartInterview();
+                }}
+                disabled={startAttempt.isPending}
+                style={styles.primaryActionButton}
+              >
+                {startAttempt.isPending ? (
+                  <ActivityIndicator color={Colors.text.primary} size="small" />
+                ) : (
+                  <Ionicons name="play" size={20} color={Colors.text.primary} />
+                )}
+                <Text style={styles.primaryActionButtonText}>
+                  Start Interview
+                </Text>
+              </TouchableOpacity>
             </>
           ) : (
             // Returning user experience
@@ -741,7 +758,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.pageTitle,
     color: Colors.text.primary,
     flex: 1,
-    lineHeight: 28,
+    lineHeight: 32,
   },
   subtitle: {
     ...TYPOGRAPHY.bodyMedium,

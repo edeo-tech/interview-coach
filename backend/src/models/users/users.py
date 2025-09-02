@@ -16,9 +16,13 @@ class User(MongoBaseModel):
         default='',
         description='The full name of the user'
     )
-    age:Optional[int] = Field(
-        default=None,
+    age:int = Field(
+        default=0,
         description='The age of the user'
+    )
+    industry:Optional[str] = Field(
+        default=None,
+        description='The industry the user works in'
     )
     email:EmailStr = Field(
         ...,
@@ -100,6 +104,10 @@ class UpdateUserProfile(BaseModel):
     age:Optional[int] = Field(
         default=None,
         description='The updated age of the user'
+    )
+    industry:Optional[str] = Field(
+        default=None,
+        description='The updated industry of the user'
     )
     email:Optional[EmailStr] = Field(
         default=None,

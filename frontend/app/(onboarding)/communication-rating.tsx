@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimension
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -13,7 +14,7 @@ import Colors from '../../constants/Colors';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const CommunicationRating = () => {
-  const { data, updateData } = useOnboarding();
+  const { data, updateData, submitAnswers, isSubmitting, submissionError } = useOnboarding();
   const [selectedRating, setSelectedRating] = useState(data.communicationRating || 0);
 
   // Animation values - exactly like profile-setup
@@ -69,41 +70,50 @@ const CommunicationRating = () => {
     }, [])
   );
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedRating > 0) {
       updateData('communicationRating', selectedRating);
       
-      // Set direction for next screen
-      setNavigationDirection('forward');
-      
-      // Slide out to left (forward direction) - exactly like profile-setup
-      Animated.parallel([
-        Animated.timing(contentTranslateX, {
-          toValue: -SCREEN_WIDTH,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentOpacity, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonOpacity, {
-          toValue: 0,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonTranslateY, {
-          toValue: 30,
-          duration: 500,
-          useNativeDriver: true,
-        })
-      ]).start(() => {
-        // Navigate after animation completes
-        setTimeout(() => {
-          router.push('/(onboarding)/nerves-rating');
-        }, 100);
-      });
+      try {
+        // Submit onboarding answers to backend
+        await submitAnswers();
+        
+        // Set direction for next screen
+        setNavigationDirection('forward');
+        
+        // Slide out to left (forward direction) - exactly like profile-setup
+        Animated.parallel([
+          Animated.timing(contentTranslateX, {
+            toValue: -SCREEN_WIDTH,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(buttonOpacity, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(buttonTranslateY, {
+            toValue: 30,
+            duration: 500,
+            useNativeDriver: true,
+          })
+        ]).start(() => {
+          // Navigate after animation completes
+          setTimeout(() => {
+            router.push('/(onboarding)/problems');
+          }, 100);
+        });
+      } catch (error) {
+        // Handle submission error
+        console.error('Failed to submit onboarding answers:', error);
+        // You might want to show an error toast here
+      }
     }
   };
 
@@ -170,8 +180,8 @@ const CommunicationRating = () => {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={11} 
-          totalSteps={17}
+          currentStep={12} 
+          totalSteps={12}
           onBack={handleBack}
         />
         
@@ -186,7 +196,12 @@ const CommunicationRating = () => {
           ]}
         >
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>{framing.question}</Text>
+            <View style={styles.questionSection}>
+              <View style={styles.titleRow}>
+                <Text style={styles.stepNumber}>#5</Text>
+                <Text style={styles.screenTitle}>{framing.question}</Text>
+              </View>
+            </View>
 
             <View style={styles.ratingContainer}>
               {ratingLabels.map((rating) => (
@@ -196,7 +211,10 @@ const CommunicationRating = () => {
                     styles.ratingButton,
                     selectedRating === rating.value && styles.ratingButtonSelected
                   ]}
-                  onPress={() => setSelectedRating(rating.value)}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    setSelectedRating(rating.value);
+                  }}
                 >
                   <View style={[
                     styles.numberContainer,
@@ -231,13 +249,15 @@ const CommunicationRating = () => {
           ]}
         >
           <TouchableOpacity 
-            style={[styles.continueButton, selectedRating === 0 && styles.continueButtonDisabled]} 
+            style={[styles.continueButton, (selectedRating === 0 || isSubmitting) && styles.continueButtonDisabled]} 
             onPress={handleContinue}
-            disabled={selectedRating === 0}
+            disabled={selectedRating === 0 || isSubmitting}
             activeOpacity={0.8}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
+            <Text style={styles.continueButtonText}>
+              {isSubmitting ? 'Submitting...' : 'Submit & analyse'}
+            </Text>
+            {!isSubmitting && <Ionicons name="arrow-forward" size={20} color={Colors.white} />}
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -260,30 +280,42 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 100, // Space for button
   },
+  questionSection: {
+    marginBottom: 40,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 16,
+    gap: 12,
+  },
+  stepNumber: {
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.tertiary,
+  },
   screenTitle: {
-    ...TYPOGRAPHY.heading1,
-    color: Colors.white,
-    textAlign: 'center',
-    lineHeight: 30,
-    marginBottom: 48,
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.primary,
+    flex: 1,
   },
   ratingContainer: {
-    gap: 16,
+    gap: 12,
     width: '100%',
-    maxWidth: 320,
   },
   ratingButton: {
-    backgroundColor: Colors.glass.backgroundSecondary,
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',

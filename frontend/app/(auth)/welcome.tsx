@@ -21,6 +21,8 @@ import GoogleSignIn from '../../components/(auth)/GoogleSignIn';
 import AppleSignIn from '../../components/(auth)/AppleSignIn';
 import { useToast } from '../../components/Toast';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { fonts } from '../../constants/Fonts';
 
 const Welcome = () => {
@@ -28,6 +30,7 @@ const Welcome = () => {
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
   const { showToast } = useToast();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
 
   // Animation values - Let's use useRef to ensure they persist
   const logoTranslateY = React.useRef(new Animated.Value(0)).current;
@@ -97,11 +100,13 @@ const Welcome = () => {
 
 
   const handleGetStarted = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     posthogCapture('onboarding_get_started_clicked');
     setIsModalVisible(true);
   };
 
   const handleEmailSignIn = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     posthogCapture('onboarding_email_signin_clicked');
     setIsModalVisible(false);
     router.push('/(auth)/register');
@@ -179,7 +184,10 @@ const Welcome = () => {
         >
           <TouchableOpacity 
             style={styles.loginLink} 
-            onPress={() => router.push('/(auth)/login')}
+            onPress={() => {
+              impactAsync(ImpactFeedbackStyle.Light);
+              router.push('/(auth)/login');
+            }}
             activeOpacity={0.7}
           >
             <Text style={styles.loginLinkText}>Already have an account?</Text>
@@ -238,7 +246,7 @@ const Welcome = () => {
                     activeOpacity={0.8}
                   >
                     <View style={styles.iconContainer}>
-                      <Ionicons name="mail" size={22} color="#F59E0B" />
+                      <Ionicons name="mail" size={22} color="#ffffff" />
                     </View>
                     <Text style={styles.emailButtonText}>Continue with Email</Text>
                   </TouchableOpacity>
@@ -287,21 +295,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   messageText: {
-    ...TYPOGRAPHY.displaySmall,
-    fontFamily: 'Nunito_600SemiBold',
-    fontWeight: '600' as const,
-    letterSpacing: 0.5,
+    ...TYPOGRAPHY.welcomeIntro,
     color: Colors.white,
     textAlign: 'center',
-    maxWidth: 320,
-    lineHeight: 32,
+    maxWidth: 360, // Increased for larger text
   },
   brandText: {
-    ...TYPOGRAPHY.heroMedium,
-    fontFamily: fonts.primary.bold,
+    ...TYPOGRAPHY.welcomeHero,
     color: Colors.brand.primary,
-    lineHeight: 56,
-    marginTop: -12,
+    marginTop: -8, // Adjusted for larger text
   },
   
   // Button section
@@ -314,8 +316,8 @@ const styles = StyleSheet.create({
   // Primary CTA button
   getStartedButton: {
     width: '100%',
-    height: 56,
-    borderRadius: 28,
+    height: 60, // Increased from 56 to accommodate larger text
+    borderRadius: 30, // Adjusted proportionally
     backgroundColor: Colors.glass.purple, // Slightly opaque purple
     flexDirection: 'row',
     alignItems: 'center',
@@ -331,10 +333,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.brand.primaryRGB,
   },
   getStartedText: {
-    ...TYPOGRAPHY.buttonLarge,
-    fontFamily: 'Inter_600SemiBold',
+    ...TYPOGRAPHY.primaryCTA,
     color: Colors.white,
     marginRight: 8,
+    textAlignVertical: 'center', // Ensure vertical centering
   },
   
   // Login section
@@ -423,11 +425,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   emailButton: {
-    height: 56, // Design system buttonHeight.large
-    borderRadius: 12, // Design system borderRadius.md
-    borderWidth: 1,
-    borderColor: Colors.glass.goldBorder,
-    backgroundColor: Colors.glass.goldLight,
+    height: 56,
+    borderRadius: 28, // Match Google/Apple buttons
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // Match glass effect
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -436,15 +436,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   emailButtonText: {
-    ...TYPOGRAPHY.buttonSmall,
-    color: Colors.accent.gold,
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: -36, // Offset for icon to center text
+    color: '#ffffff', // Match Google/Apple button text
+    fontSize: 16,
+    fontWeight: '600',
   },
   iconContainer: {
-    width: 24,
-    height: 24,
+    width: 22, // Match Google/Apple icon size
+    height: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },

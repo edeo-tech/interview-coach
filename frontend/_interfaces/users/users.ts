@@ -41,6 +41,7 @@ export interface AuthenticatedUser
     id: string;
     name: string;
     age?: number;
+    industry?: string;
     email: string;
     profile_picture?: string;
     profile_qrcode?: string;
@@ -56,6 +57,7 @@ export interface UpdateUserProfile
 {
     name?: string;
     age?: number;
+    industry?: string;
     email?: string;
 }
 

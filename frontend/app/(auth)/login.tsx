@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -41,16 +41,7 @@ const Login = () => {
   const contentTranslateY = useRef(new Animated.Value(30)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
   
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'web') return;
-      posthogScreen('auth_login');
-      loadUserMetadata();
-      startAnimationSequence();
-    }, [posthogScreen])
-  );
-  
-  const startAnimationSequence = () => {
+  const startAnimationSequence = useCallback(() => {
     // Reset animation values
     logoOpacity.setValue(0);
     contentTranslateY.setValue(30);
@@ -78,9 +69,9 @@ const Login = () => {
         }),
       ]).start();
     }, 400);
-  };
+  }, [logoOpacity, contentTranslateY, contentOpacity]);
 
-  const loadUserMetadata = async () => {
+  const loadUserMetadata = useCallback(async () => {
     try {
       const storedUserName = await getItem('user_name');
       const storedLastSignInType = await getItem('last_sign_in_type');
@@ -94,18 +85,40 @@ const Login = () => {
     } catch (error) {
       console.error('Error loading user metadata:', error);
     }
-  };
+  }, [getItem]);
+  
+  // Run intro animation once on mount
+  useEffect(() => {
+    startAnimationSequence();
+  }, []);
+
+  // Load user metadata once on mount
+  useEffect(() => {
+    loadUserMetadata();
+  }, [loadUserMetadata]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+      posthogScreen('auth_login');
+    }, [posthogScreen])
+  );
+
+  // Memoize email domain to prevent recalculation on every render
+  const emailDomain = useMemo(() => {
+    return email.split('@')[1] || 'unknown';
+  }, [email]);
 
   useEffect(() => {
     if (loginErrorMessage) {
       posthogCapture('login_failed', {
         error_message: loginErrorMessage,
-        email_domain: email.split('@')[1] || 'unknown'
+        email_domain: emailDomain
       });
       showToast(loginErrorMessage, 'error');
       clearLoginError();
     }
-  }, [loginErrorMessage, posthogCapture, email, showToast, clearLoginError]);
+  }, [loginErrorMessage, posthogCapture, emailDomain, showToast, clearLoginError]);
 
   useEffect(() => {
     if (loginSuccess && hasAttemptedLogin) {
@@ -133,7 +146,7 @@ const Login = () => {
     }
   }, [appleLoginErrorMessage, showToast, clearAppleLoginError]);
 
-  const handleLogin = () => {
+  const handleLogin = useCallback(() => {
     if (!email || !password) {
       showToast('Please enter both email and password', 'warning');
       return;
@@ -146,11 +159,20 @@ const Login = () => {
     }
 
     posthogCapture('login_attempted', {
-      email_domain: email.split('@')[1] || 'unknown'
+      email_domain: emailDomain
     });
     setHasAttemptedLogin(true);
     login({ email, password });
-  };
+  }, [email, password, emailDomain, showToast, posthogCapture, login]);
+
+  // Memoize text input handlers to prevent unnecessary re-renders
+  const handleEmailChange = useCallback((text: string) => {
+    setEmail(text);
+  }, []);
+
+  const handlePasswordChange = useCallback((text: string) => {
+    setPassword(text);
+  }, []);
 
   return (
     <ChatGPTBackground style={styles.gradient}>
@@ -211,7 +233,7 @@ const Login = () => {
                       placeholder="Enter your email"
                       placeholderTextColor={Colors.text.tertiary}
                       value={email}
-                      onChangeText={setEmail}
+                      onChangeText={handleEmailChange}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoCorrect={false}
@@ -227,7 +249,7 @@ const Login = () => {
                       placeholder="Enter your password"
                       placeholderTextColor={Colors.text.tertiary}
                       value={password}
-                      onChangeText={setPassword}
+                      onChangeText={handlePasswordChange}
                       secureTextEntry
                       autoCapitalize="none"
                     />
@@ -331,17 +353,12 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     ...TYPOGRAPHY.displaySmall,
-    fontFamily: 'Nunito_600SemiBold',
-    fontWeight: '600',
-    letterSpacing: 0.5,
     color: Colors.white,
     textAlign: 'center',
   },
   nameText: {
     ...TYPOGRAPHY.heroMedium,
-    fontFamily: 'Nunito_700Bold',
     color: Colors.brand.primary,
-    lineHeight: 56,
     marginTop: -12,
     marginBottom: 8,
     textAlign: 'center',
@@ -373,8 +390,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.primary,
     textAlign: 'left',
     textAlignVertical: 'center',
@@ -406,7 +422,6 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     ...TYPOGRAPHY.buttonLarge,
-    fontFamily: 'Inter_600SemiBold',
     color: Colors.text.primary,
   },
   // Footer section

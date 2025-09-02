@@ -29,7 +29,7 @@ const PreparationLevel = () => {
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={10} totalSteps={17} />
+        <OnboardingProgress currentStep={10} totalSteps={12} />
         
         <View style={styles.content}>
           <Text style={styles.screenTitle}>How prepared do you feel?</Text>

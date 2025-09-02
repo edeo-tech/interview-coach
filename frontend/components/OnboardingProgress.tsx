@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../constants/Colors';
+import useHapticsSafely from '../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 interface OnboardingProgressProps {
   currentStep: number;
@@ -11,6 +13,7 @@ interface OnboardingProgressProps {
   onBack?: () => void;
   icon_name?: string;
   shouldShowProgress?: boolean;
+  showBackButton?: boolean;
 }
 
 const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ 
@@ -18,14 +21,18 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   totalSteps,
   onBack,
   icon_name,
-  shouldShowProgress = true
+  shouldShowProgress = true,
+  showBackButton = true
 }) => {
+  console.log('showBackButton', showBackButton);
+  const { impactAsync } = useHapticsSafely();
+  
   // Progress calculation for screens 3-11 only (profile-setup to nerves-rating, before analyzing)
   // Screen 3 (profile-setup) = 0%, Screen 11 (nerves-rating) = 100%
   const calculateProgress = () => {
     // Only show progress for steps 3-11 (profile-setup to nerves-rating, before analyzing screen)
     if (currentStep < 3) return 0; // Before profile-setup
-    if (currentStep > 11) return 1; // At or after analyzing screen
+    if (currentStep > 12) return 1; // At or after analyzing screen
     
     // Map steps 3-11 to progress 0-100%
     // Step 3 = 0%, Step 11 = 100%
@@ -42,6 +49,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
       0.55,  // Step 8 (industry-struggle) = 55%
       0.65,  // Step 9 (past-outcomes) = 65%
       0.80,  // Step 10 (preparation-rating) = 80%
+      0.92,  // Step 11 (communication-rating) = 90%
       1.0    // Step 11 (nerves-rating) = 100%
     ];
     
@@ -85,6 +93,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   }, [progress]);
 
   const handleBack = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     if (onBack) {
       onBack();
     } else {
@@ -93,13 +102,21 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   };
 
   // Don't show progress bar for screens at or after analyzing (step 12)
-  const showProgressBar = shouldShowProgress && currentStep < 12;
+  const showProgressBar = shouldShowProgress && currentStep <= 12;
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Ionicons name={icon_name as any || "arrow-back"} size={24} color={Colors.white} />
-      </TouchableOpacity>
+      <View style={styles.leftSection}>
+        {showBackButton && (
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={handleBack}
+            activeOpacity={0.7}
+          >
+            <Ionicons name={icon_name as any || "chevron-back"} size={24} color={Colors.white} />
+          </TouchableOpacity>
+        )}
+      </View>
       
       {showProgressBar && (
         <View style={styles.progressContainer}>
@@ -131,6 +148,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     gap: 20,
+  },
+  leftSection: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButton: {
     width: 40,

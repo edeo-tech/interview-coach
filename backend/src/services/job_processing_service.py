@@ -976,7 +976,7 @@ Domain:"""
         try:
             # Prepare the prompt for interview process detection
             prompt = f"""
-Analyze this job posting to detect specific interview stages or hiring process mentioned.
+Analyse this job posting to detect specific interview stages or hiring process mentioned.
 
 Job Posting Content:
 {job_content[:12000]}

@@ -171,7 +171,7 @@ const SolutionFraming = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={15} 
-          totalSteps={17}
+          totalSteps={12}
           onBack={handleBack}
         />
         

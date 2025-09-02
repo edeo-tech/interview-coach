@@ -14,7 +14,7 @@ const ProfileCardIntro = () => {
   };
 
   return (
-    <OnboardingLayout currentStep={3} totalSteps={17}>
+    <OnboardingLayout currentStep={3} totalSteps={12}>
       <View style={styles.content}>
         {/* Simple icon - following welcome screen approach */}
         <View style={styles.iconContainer}>

@@ -9,6 +9,7 @@ import { useUpdateProfile } from '../../_queries/users/auth/users';
 import { useToast } from '../../components/Toast';
 import { TYPOGRAPHY } from '../../constants/Typography';
 import Colors from '../../constants/Colors';
+import { useFocusEffect } from '@react-navigation/native';
 
 const NameInput = () => {
   const { data, updateData } = useOnboarding();
@@ -18,16 +19,21 @@ const NameInput = () => {
   
   const [name, setName] = useState(auth?.name || '');
 
-  console.log('name', name);
+  // Log when the screen focuses to ensure we see logs upon arrival
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('NameInput focused. name state =', name, 'auth?.name =', auth?.name);
+    }, [name, auth?.name])
+  );
   
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
 
+  // Keep local state and onboarding context in sync with auth once it loads/changes
   useEffect(() => {
-    // Use auth name as initial value if available, otherwise empty string
     const authName = auth?.name || '';
-    console.log('authName', authName);
+    setName(authName);
     updateData('name', authName);
-  }, []);
+  }, [auth?.name]);
 
   const handleContinue = () => {
     const trimmedName = name.trim();
@@ -35,7 +41,7 @@ const NameInput = () => {
       updateData('name', trimmedName);
       
       // Only make API call if name has changed from the auth name
-      if (trimmedName !== name) {
+      if (trimmedName !== (auth?.name || '')) {
         updateProfile({ name: trimmedName }, {
           onSuccess: () => {
             navigateWithTransition('/(onboarding)/age-input');
@@ -52,7 +58,7 @@ const NameInput = () => {
   };
 
   return (
-    <OnboardingLayout currentStep={4} totalSteps={17}>
+    <OnboardingLayout currentStep={4} totalSteps={12}>
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.content}>
           <View style={styles.iconContainer}>

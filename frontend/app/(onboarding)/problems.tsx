@@ -54,7 +54,7 @@ const AnalyzingScreen = () => {
   }, []);
 
   return (
-    <OnboardingLayout currentStep={13} totalSteps={17}>
+    <OnboardingLayout currentStep={13} totalSteps={12} showBackButton={false}>
       <View style={styles.content}>
         <View style={styles.messageContainer}>
           <Animated.View 

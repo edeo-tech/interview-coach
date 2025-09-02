@@ -60,7 +60,7 @@ const SuccessVision = () => {
   return (
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
-        <OnboardingProgress currentStep={11} totalSteps={17} />
+        <OnboardingProgress currentStep={11} totalSteps={12} />
         
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>

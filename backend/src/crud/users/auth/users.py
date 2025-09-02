@@ -194,6 +194,12 @@ async def update_user_profile(req:Request, user_id:str, profile_data:UpdateUserP
             raise HTTPException(status_code=400, detail='Email already exists')
         update_fields['email'] = profile_data.email
     
+    if profile_data.industry is not None:
+        update_fields['industry'] = profile_data.industry
+
+    if profile_data.age is not None:
+        update_fields['age'] = profile_data.age
+    
     if not update_fields:
         raise HTTPException(status_code=400, detail='No fields to update')
     

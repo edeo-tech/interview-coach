@@ -474,7 +474,7 @@ Return your response as valid JSON with these exact fields:
 The candidate is analyzing a business case and proposing solutions.
 
 CRITICAL SCORING GUIDELINES:
-- Candidates who provide only 1-2 short answers or fail to analyze: Score below 10%
+- Candidates who provide only 1-2 short answers or fail to analyse: Score below 10%
 - Minimal participation, no structured thinking, or early termination: Score 0-10%
 - Brief answers without problem analysis or solution development: Score 10-25%
 - Case studies require comprehensive analysis and structured problem-solving
