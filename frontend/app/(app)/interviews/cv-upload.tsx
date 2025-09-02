@@ -12,6 +12,7 @@ import useHapticsSafely from '../../../hooks/haptics/useHapticsSafely';
 import { useToast } from '../../../components/Toast';
 import { TYPOGRAPHY } from '../../../constants/Typography';
 import Colors from '../../../constants/Colors';
+import { GlassStyles } from '../../../constants/GlassStyles';
 
 const CVUpload = () => {
   const { data: currentCV, isLoading: cvLoading } = useCV();
@@ -130,6 +131,288 @@ const CVUpload = () => {
     return skills.slice(0, 5).join(', ') + ` +${skills.length - 5} more`;
   };
 
+  const renderPersonalInfo = () => {
+    if (!currentCV?.personal_info || Object.keys(currentCV.personal_info).length === 0) return null;
+    
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Personal Information</Text>
+        <View style={styles.sectionContent}>
+          {currentCV.personal_info.name && (
+            <View style={styles.infoRow}>
+              <Ionicons name="person" size={16} color={Colors.text.secondary} />
+              <Text style={styles.infoText}>{currentCV.personal_info.name}</Text>
+            </View>
+          )}
+          {currentCV.personal_info.email && (
+            <View style={styles.infoRow}>
+              <Ionicons name="mail" size={16} color={Colors.text.secondary} />
+              <Text style={styles.infoText}>{currentCV.personal_info.email}</Text>
+            </View>
+          )}
+          {currentCV.personal_info.phone && (
+            <View style={styles.infoRow}>
+              <Ionicons name="call" size={16} color={Colors.text.secondary} />
+              <Text style={styles.infoText}>{currentCV.personal_info.phone}</Text>
+            </View>
+          )}
+          {currentCV.personal_info.location && (
+            <View style={styles.infoRow}>
+              <Ionicons name="location" size={16} color={Colors.text.secondary} />
+              <Text style={styles.infoText}>{currentCV.personal_info.location}</Text>
+            </View>
+          )}
+          {currentCV.personal_info.linkedin && (
+            <View style={styles.infoRow}>
+              <Ionicons name="logo-linkedin" size={16} color={Colors.text.secondary} />
+              <Text style={styles.infoText}>{currentCV.personal_info.linkedin}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderProfessionalSummary = () => {
+    if (!currentCV?.professional_summary) return null;
+    
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Professional Summary</Text>
+        <View style={styles.sectionContent}>
+          <Text style={styles.summaryText}>{currentCV.professional_summary}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderSkillsSection = () => {
+    const hasSkills = currentCV?.technical_skills?.length || 
+                     currentCV?.programming_languages?.length ||
+                     currentCV?.frameworks?.length ||
+                     currentCV?.tools?.length ||
+                     currentCV?.soft_skills?.length ||
+                     currentCV?.spoken_languages?.length;
+    
+    if (!hasSkills) return null;
+
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Skills & Technologies</Text>
+        <View style={styles.sectionContent}>
+          {currentCV.programming_languages?.length > 0 && (
+            <View style={styles.skillCategory}>
+              <Text style={styles.skillCategoryTitle}>Programming Languages</Text>
+              <View style={styles.skillTags}>
+                {currentCV.programming_languages.map((skill, index) => (
+                  <View key={index} style={styles.skillTag}>
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          
+          {currentCV.frameworks?.length > 0 && (
+            <View style={styles.skillCategory}>
+              <Text style={styles.skillCategoryTitle}>Frameworks & Libraries</Text>
+              <View style={styles.skillTags}>
+                {currentCV.frameworks.map((skill, index) => (
+                  <View key={index} style={styles.skillTag}>
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          
+          {currentCV.tools?.length > 0 && (
+            <View style={styles.skillCategory}>
+              <Text style={styles.skillCategoryTitle}>Tools & Platforms</Text>
+              <View style={styles.skillTags}>
+                {currentCV.tools.map((skill, index) => (
+                  <View key={index} style={styles.skillTag}>
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          
+          {currentCV.technical_skills?.length > 0 && (
+            <View style={styles.skillCategory}>
+              <Text style={styles.skillCategoryTitle}>Technical Skills</Text>
+              <View style={styles.skillTags}>
+                {currentCV.technical_skills.map((skill, index) => (
+                  <View key={index} style={styles.skillTag}>
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          
+          {currentCV.soft_skills?.length > 0 && (
+            <View style={styles.skillCategory}>
+              <Text style={styles.skillCategoryTitle}>Soft Skills</Text>
+              <View style={styles.skillTags}>
+                {currentCV.soft_skills.map((skill, index) => (
+                  <View key={index} style={styles.skillTag}>
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          
+          {currentCV.spoken_languages?.length > 0 && (
+            <View style={styles.skillCategory}>
+              <Text style={styles.skillCategoryTitle}>Languages</Text>
+              <View style={styles.skillTags}>
+                {currentCV.spoken_languages.map((skill, index) => (
+                  <View key={index} style={styles.skillTag}>
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderExperience = () => {
+    if (!currentCV?.experience?.length) return null;
+    
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Work Experience</Text>
+        <View style={styles.sectionContent}>
+          {currentCV.experience.map((exp, index) => (
+            <View key={index} style={styles.experienceItem}>
+              <View style={styles.experienceHeader}>
+                <Text style={styles.experienceTitle}>{exp.title || exp.position}</Text>
+                <Text style={styles.experienceCompany}>{exp.company}</Text>
+              </View>
+              <View style={styles.experienceDetails}>
+                {exp.duration && (
+                  <View style={styles.infoRow}>
+                    <Ionicons name="calendar" size={14} color={Colors.text.secondary} />
+                    <Text style={styles.experienceDetailText}>{exp.duration}</Text>
+                  </View>
+                )}
+                {exp.location && (
+                  <View style={styles.infoRow}>
+                    <Ionicons name="location" size={14} color={Colors.text.secondary} />
+                    <Text style={styles.experienceDetailText}>{exp.location}</Text>
+                  </View>
+                )}
+              </View>
+              {exp.description && (
+                <Text style={styles.experienceDescription}>{exp.description}</Text>
+              )}
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const renderEducation = () => {
+    if (!currentCV?.education?.length) return null;
+    
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Education</Text>
+        <View style={styles.sectionContent}>
+          {currentCV.education.map((edu, index) => (
+            <View key={index} style={styles.experienceItem}>
+              <View style={styles.experienceHeader}>
+                <Text style={styles.experienceTitle}>{edu.degree || edu.qualification}</Text>
+                <Text style={styles.experienceCompany}>{edu.institution || edu.school}</Text>
+              </View>
+              <View style={styles.experienceDetails}>
+                {edu.year && (
+                  <View style={styles.infoRow}>
+                    <Ionicons name="calendar" size={14} color={Colors.text.secondary} />
+                    <Text style={styles.experienceDetailText}>{edu.year}</Text>
+                  </View>
+                )}
+                {edu.gpa && (
+                  <View style={styles.infoRow}>
+                    <Ionicons name="star" size={14} color={Colors.text.secondary} />
+                    <Text style={styles.experienceDetailText}>GPA: {edu.gpa}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const renderCertifications = () => {
+    if (!currentCV?.certifications?.length) return null;
+    
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Certifications</Text>
+        <View style={styles.sectionContent}>
+          {currentCV.certifications.map((cert, index) => (
+            <View key={index} style={styles.experienceItem}>
+              <Text style={styles.experienceTitle}>{cert.name || cert.title}</Text>
+              <View style={styles.experienceDetails}>
+                {cert.issuer && (
+                  <View style={styles.infoRow}>
+                    <Ionicons name="business" size={14} color={Colors.text.secondary} />
+                    <Text style={styles.experienceDetailText}>{cert.issuer}</Text>
+                  </View>
+                )}
+                {cert.date && (
+                  <View style={styles.infoRow}>
+                    <Ionicons name="calendar" size={14} color={Colors.text.secondary} />
+                    <Text style={styles.experienceDetailText}>{cert.date}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const renderProjects = () => {
+    if (!currentCV?.projects?.length) return null;
+    
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Projects</Text>
+        <View style={styles.sectionContent}>
+          {currentCV.projects.map((project, index) => (
+            <View key={index} style={styles.experienceItem}>
+              <Text style={styles.experienceTitle}>{project.name || project.title}</Text>
+              {project.technologies && (
+                <View style={styles.projectTechnologies}>
+                  {project.technologies.map((tech, techIndex) => (
+                    <View key={techIndex} style={styles.skillTag}>
+                      <Text style={styles.skillTagText}>{tech}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {project.description && (
+                <Text style={styles.experienceDescription}>{project.description}</Text>
+              )}
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   const getFileTypeIcon = (mimeType: string) => {
     if (mimeType.includes('pdf')) return 'document-text';
     if (mimeType.includes('word')) return 'document';
@@ -161,54 +444,65 @@ const CVUpload = () => {
               <Text style={styles.loadingText}>Loading CV information...</Text>
             </View>
           ) : currentCV ? (
-            <View style={styles.cvSection}>
-              <View style={styles.cvCardHeader}>
-                <Text style={styles.cvCardTitle}>Current CV</Text>
-                <View style={styles.activeStatus}>
-                  <Ionicons name="checkmark-circle" size={20} color={Colors.semantic.successAlt} />
-                  <Text style={styles.activeText}>Active</Text>
-                </View>
-              </View>
-              
-              <View style={styles.cvInfo}>
-                <View style={styles.cvInfoItem}>
-                  <Ionicons name="briefcase" size={16} color={Colors.gray[400]} />
-                  <Text style={styles.cvInfoText}>
-                    {currentCV.experience_years} years experience
-                  </Text>
+            <View style={styles.cvOverview}>
+              {/* Header with status and delete */}
+              <View style={styles.cvHeaderSection}>
+                <View style={styles.cvCardHeader}>
+                  <Text style={styles.cvCardTitle}>Your CV Overview</Text>
+                  <View style={styles.activeStatus}>
+                    <Ionicons name="checkmark-circle" size={20} color={Colors.semantic.successAlt} />
+                    <Text style={styles.activeText}>Active</Text>
+                  </View>
                 </View>
                 
-                <View style={styles.cvInfoItem}>
-                  <Ionicons name="code" size={16} color={Colors.gray[400]} />
-                  <Text style={[styles.cvInfoText, styles.cvInfoTextWrap]}>
-                    {currentCV.skills.length > 0 
-                      ? formatSkills(currentCV.skills)
-                      : 'Skills not specified'
-                    }
-                  </Text>
+                <View style={styles.cvMetadata}>
+                  <View style={styles.cvInfoItem}>
+                    <Ionicons name="briefcase" size={16} color={Colors.text.secondary} />
+                    <Text style={styles.cvInfoText}>
+                      {currentCV.total_experience_years || currentCV.experience_years || 0} years experience
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.cvInfoItem}>
+                    <Ionicons name="calendar" size={16} color={Colors.text.secondary} />
+                    <Text style={styles.cvInfoText}>
+                      Uploaded {new Date(currentCV.created_at).toLocaleDateString()}
+                    </Text>
+                  </View>
+
+                  {currentCV.current_level && (
+                    <View style={styles.cvInfoItem}>
+                      <Ionicons name="trending-up" size={16} color={Colors.text.secondary} />
+                      <Text style={styles.cvInfoText}>
+                        {currentCV.current_level.charAt(0).toUpperCase() + currentCV.current_level.slice(1)} level
+                      </Text>
+                    </View>
+                  )}
                 </View>
-                
-                <View style={styles.cvInfoItem}>
-                  <Ionicons name="calendar" size={16} color={Colors.gray[400]} />
-                  <Text style={styles.cvInfoText}>
-                    Uploaded {new Date(currentCV.created_at).toLocaleDateString()}
+
+                <TouchableOpacity
+                  onPress={() => {
+                    selectionAsync();
+                    handleDelete();
+                  }}
+                  disabled={deleteMutation.isPending}
+                  style={styles.deleteButton}
+                >
+                  <Ionicons name="trash" size={16} color={Colors.semantic.error} />
+                  <Text style={styles.deleteButtonText}>
+                    {deleteMutation.isPending ? 'Deleting...' : 'Delete CV'}
                   </Text>
-                </View>
+                </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                onPress={() => {
-                  selectionAsync();
-                  handleDelete();
-                }}
-                disabled={deleteMutation.isPending}
-                style={styles.deleteButton}
-              >
-                <Ionicons name="trash" size={16} color={Colors.semantic.error} />
-                <Text style={styles.deleteButtonText}>
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete CV'}
-                </Text>
-              </TouchableOpacity>
+              {/* Comprehensive CV sections */}
+              {renderPersonalInfo()}
+              {renderProfessionalSummary()}
+              {renderSkillsSection()}
+              {renderExperience()}
+              {renderEducation()}
+              {renderCertifications()}
+              {renderProjects()}
             </View>
           ) : null}
 
@@ -306,17 +600,25 @@ const styles = StyleSheet.create({
   loadingText: {
     color: Colors.text.tertiary,
     marginTop: 8,
-    fontSize: 16, // typography.body.medium.fontSize
     ...TYPOGRAPHY.bodyMedium,
   },
-  cvSection: {
-    marginBottom: 28,
+  cvOverview: {
+    marginBottom: 32,
+  },
+  cvHeaderSection: {
+    ...GlassStyles.card,
+    padding: 20,
+    marginBottom: 20,
+  },
+  cvMetadata: {
+    gap: 12,
+    marginTop: 16,
+    marginBottom: 16,
   },
   cvCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
   },
   cvCardTitle: {
     ...TYPOGRAPHY.sectionHeader,
@@ -328,13 +630,8 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: Colors.semantic.success,
-    fontWeight: '600',
     marginLeft: 8, // spacing.2
-    fontSize: 14, // typography.label.medium.fontSize
     ...TYPOGRAPHY.labelMedium,
-  },
-  cvInfo: {
-    gap: 16, // spacing.4
   },
   cvInfoItem: {
     flexDirection: 'row',
@@ -361,8 +658,6 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: Colors.semantic.error,
     marginLeft: 8,
-    fontWeight: '600', // typography.button.medium.fontWeight
-    fontSize: 16, // typography.button.medium.fontSize
     ...TYPOGRAPHY.buttonMedium,
   },
   uploadContainer: {
@@ -447,6 +742,109 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodySmall,
     color: Colors.text.muted,
     textAlign: 'center',
+  },
+  
+  // New comprehensive CV section styles
+  sectionContainer: {
+    ...GlassStyles.card,
+    padding: 20,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    ...TYPOGRAPHY.sectionHeader,
+    color: Colors.text.primary,
+    marginBottom: 16,
+  },
+  sectionContent: {
+    gap: 16,
+  },
+  
+  // Personal info and general info styles
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoText: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.primary,
+    marginLeft: 12,
+    flex: 1,
+  },
+  summaryText: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.primary,
+    lineHeight: 22,
+  },
+  
+  // Skills section styles
+  skillCategory: {
+    marginBottom: 16,
+  },
+  skillCategoryTitle: {
+    ...TYPOGRAPHY.labelLarge,
+    color: Colors.text.secondary,
+    marginBottom: 8,
+  },
+  skillTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  skillTag: {
+    ...GlassStyles.interactive,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  skillTagText: {
+    ...TYPOGRAPHY.labelSmall,
+    color: Colors.text.primary,
+    fontSize: 13,
+  },
+  
+  // Experience, education, certifications, projects styles
+  experienceItem: {
+    marginBottom: 20,
+  },
+  experienceHeader: {
+    marginBottom: 8,
+  },
+  experienceTitle: {
+    ...TYPOGRAPHY.labelLarge,
+    color: Colors.text.primary,
+    marginBottom: 4,
+  },
+  experienceCompany: {
+    ...TYPOGRAPHY.bodyMedium,
+    color: Colors.text.secondary,
+    marginBottom: 8,
+  },
+  experienceDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    marginBottom: 8,
+  },
+  experienceDetailText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.secondary,
+    marginLeft: 8,
+  },
+  experienceDescription: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.primary,
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  
+  // Project-specific styles
+  projectTechnologies: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+    marginBottom: 8,
   },
 });
 

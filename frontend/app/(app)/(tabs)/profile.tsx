@@ -201,18 +201,12 @@ export default function Profile() {
                 }}
                 activeOpacity={0.9}
             >
-                <View style={styles.cvIcon}>
-                    <Ionicons name="document-text" size={20} color={currentCV ? Colors.semantic.successAlt : Colors.brand.primary} />
-                </View>
                 <View style={styles.cvInfo}>
+                    <View style={styles.cvIcon}>
+                        <Ionicons name="document-text" size={20} color={currentCV ? Colors.semantic.successAlt : Colors.brand.primary} />
+                    </View>
                     <Text style={styles.cvTitle}>
                         {currentCV ? "Your CV" : "Upload Your CV"}
-                    </Text>
-                    <Text style={styles.cvSubtitle}>
-                        {currentCV 
-                            ? `${currentCV.skills.length} skills • ${currentCV.experience_years} years experience`
-                            : "Get personalized interview questions"
-                        }
                     </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={GlassTextColors.muted} />
@@ -498,12 +492,18 @@ const styles = StyleSheet.create({
     },
     cvButton: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: Colors.glass.background,
         borderRadius: 50,
         paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 24,
+    },
+    cvInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4
     },
     cvIcon: {
         width: 32,
@@ -514,13 +514,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: 12,
     },
-    cvInfo: {
-        flex: 1,
-    },
     cvTitle: {
         ...TYPOGRAPHY.itemTitle,
-        color: Colors.text.primary,
-        marginBottom: 2,
+        color: Colors.text.primary
     },
     cvSubtitle: {
         ...TYPOGRAPHY.bodySmall,
