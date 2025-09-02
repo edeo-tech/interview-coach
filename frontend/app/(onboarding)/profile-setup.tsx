@@ -18,6 +18,8 @@ import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TYPOGRAPHY } from '../../constants/Typography';
 import Colors from '../../constants/Colors';
+import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -28,6 +30,7 @@ const ProfileSetup = () => {
   const [currentStep, setCurrentStep] = useState<Step>('profile');
   const [name, setName] = useState(data.name || '');
   const [age, setAge] = useState(data.age || '');
+  const { impactAsync } = useHapticsSafely();
 
   // Animation values
   const contentTranslateX = useRef(new Animated.Value(0)).current;
@@ -114,6 +117,8 @@ const ProfileSetup = () => {
   };
 
   const handleNext = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    
     if (currentStep === 'profile') {
       animateToStep('forward', 'name');
     } else if (currentStep === 'name' && name.trim()) {
@@ -127,6 +132,8 @@ const ProfileSetup = () => {
   };
 
   const handleBack = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    
     if (currentStep === 'age') {
       animateToStep('back', 'name');
     } else if (currentStep === 'name') {
@@ -153,18 +160,16 @@ const ProfileSetup = () => {
       case 'profile':
         return (
           <View style={styles.content}>
-            {/* Simple icon - following welcome screen approach */}
+            {/* Building-related icon */}
             <View style={styles.iconContainer}>
-              <Image 
-                source={require('../../assets/images/FinalAppIconTransparent.png')}
-                style={styles.iconImage}
-                resizeMode="contain"
-              />
+              <Ionicons name="construct-outline" size={64} color={Colors.brand.primary} />
             </View>
             
             {/* Typography following design system hierarchy */}
-            <Text style={styles.titleMain}>Let's build your</Text>
-            <Text style={styles.titleBrand}>profile</Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleMain}>Let's build your</Text>
+              <Text style={styles.titleBrand}>profile</Text>
+            </View>
             
             <Text style={styles.subtitle}>
               We'll create a personalized interview prep plan tailored just for you.
@@ -179,10 +184,12 @@ const ProfileSetup = () => {
               <Ionicons name="person-outline" size={48} color={Colors.brand.primary} />
             </View>
             
-            <Text style={styles.screenTitle}>What's your name?</Text>
-            <Text style={styles.subtitle}>
-              We'll use this to personalize your experience
-            </Text>
+            <View style={styles.titleSection}>
+              <Text style={styles.screenTitle}>What's your name?</Text>
+              <Text style={styles.subtitle}>
+                We'll use this to personalize your experience
+              </Text>
+            </View>
             
             <View style={styles.inputContainer}>
               <TextInput
@@ -206,10 +213,12 @@ const ProfileSetup = () => {
               <Ionicons name="calendar-outline" size={48} color={Colors.brand.primary} />
             </View>
             
-            <Text style={styles.screenTitle}>What's your age?</Text>
-            <Text style={styles.subtitle}>
-              Thanks, {name}. We'll tailor this to you.
-            </Text>
+            <View style={styles.titleSection}>
+              <Text style={styles.screenTitle}>What's your age?</Text>
+              <Text style={styles.subtitle}>
+                Thanks, {name}. We'll tailor this to you.
+              </Text>
+            </View>
             
             <View style={styles.inputContainer}>
               <TextInput
@@ -324,7 +333,7 @@ const styles = StyleSheet.create({
   // Icon section - simplified like welcome screen
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 32,
   },
   iconImage: {
     width: 80,
@@ -332,16 +341,24 @@ const styles = StyleSheet.create({
   },
   
   // Typography - using enhanced typography system
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
   titleMain: {
     ...TYPOGRAPHY.displaySmall,
     color: Colors.text.primary,
     textAlign: 'center',
+    marginBottom: 4,
   },
   titleBrand: {
-    ...TYPOGRAPHY.hero,
+    ...TYPOGRAPHY.heroMedium,
     color: Colors.brand.primary,
     textAlign: 'center',
-    marginBottom: 60,
+  },
+  titleSection: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   screenTitle: {
     ...TYPOGRAPHY.pageTitle,
@@ -353,26 +370,25 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.tertiary,
     textAlign: 'center',
-    maxWidth: 320,
-    paddingHorizontal: 32,
-    marginBottom: 32,
+    maxWidth: 280,
+    lineHeight: 24,
   },
   
   // Input styling
   inputContainer: {
     width: '100%',
     maxWidth: 320,
+    alignItems: 'center',
   },
   textInput: {
     backgroundColor: Colors.glass.backgroundInput,
-    height: 48,
-    borderRadius: 24,
-    paddingHorizontal: 20,
+    height: 56,
+    borderRadius: 28,
+    paddingHorizontal: 24,
     fontSize: 18,
     color: Colors.text.primary,
     textAlign: 'center',
-    borderWidth: 1,
-    borderColor: Colors.glass.borderInteractive,
+    width: '100%',
   },
   
   // Button section

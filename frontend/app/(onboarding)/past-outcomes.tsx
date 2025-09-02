@@ -3,11 +3,13 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimension
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { getNavigationDirection, setNavigationDirection } from '../../utils/navigationDirection';
 import Colors from '../../constants/Colors';
+import { TYPOGRAPHY } from '../../constants/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -68,9 +70,10 @@ const PastOutcomes = () => {
     }, [])
   );
 
-  const handleContinue = () => {
-    if (hasFailed !== null) {
-      updateData('hasFailed', hasFailed);
+  const handleContinue = (value?: boolean) => {
+    const valueToUse = value !== undefined ? value : hasFailed;
+    if (valueToUse !== null) {
+      // Data already updated in onPress
       
       // Set direction for next screen
       setNavigationDirection('forward');
@@ -84,16 +87,6 @@ const PastOutcomes = () => {
         }),
         Animated.timing(contentOpacity, {
           toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonOpacity, {
-          toValue: 0,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonTranslateY, {
-          toValue: 30,
           duration: 500,
           useNativeDriver: true,
         })
@@ -119,16 +112,6 @@ const PastOutcomes = () => {
       }),
       Animated.timing(contentOpacity, {
         toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonOpacity, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonTranslateY, {
-        toValue: 30,
         duration: 500,
         useNativeDriver: true,
       })
@@ -159,10 +142,15 @@ const PastOutcomes = () => {
           ]}
         >
           <View style={styles.content}>
-            <Text style={styles.screenTitle}>How have your past interviews gone?</Text>
-            <Text style={styles.subtitle}>
-              Your experience helps us build a more effective preparation plan
-            </Text>
+            <View style={styles.questionSection}>
+              <View style={styles.titleRow}>
+                <Text style={styles.stepNumber}>#2</Text>
+                <Text style={styles.screenTitle}>How have your past interviews gone?</Text>
+              </View>
+              <Text style={styles.subtitle}>
+                Your experience helps us build a more effective preparation plan
+              </Text>
+            </View>
 
             <View style={styles.optionContainer}>
               <TouchableOpacity
@@ -170,7 +158,15 @@ const PastOutcomes = () => {
                   styles.optionButton,
                   hasFailed === false && styles.optionButtonSelected
                 ]}
-                onPress={() => setHasFailed(false)}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  setHasFailed(false);
+                  updateData('hasFailed', false);
+                  // Auto-continue after brief delay
+                  setTimeout(() => {
+                    handleContinue(false);
+                  }, 600);
+                }}
               >
                 <View style={[
                   styles.numberContainer,
@@ -196,7 +192,15 @@ const PastOutcomes = () => {
                   styles.optionButton,
                   hasFailed === true && styles.optionButtonSelected
                 ]}
-                onPress={() => setHasFailed(true)}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  setHasFailed(true);
+                  updateData('hasFailed', true);
+                  // Auto-continue after brief delay
+                  setTimeout(() => {
+                    handleContinue(true);
+                  }, 600);
+                }}
               >
                 <View style={[
                   styles.numberContainer,
@@ -219,26 +223,6 @@ const PastOutcomes = () => {
             </View>
           </View>
         </Animated.View>
-
-        <Animated.View 
-          style={[
-            styles.bottomContainer,
-            {
-              opacity: buttonOpacity,
-              transform: [{ translateY: buttonTranslateY }],
-            }
-          ]}
-        >
-          <TouchableOpacity 
-            style={[styles.continueButton, hasFailed === null && styles.continueButtonDisabled]} 
-            onPress={handleContinue}
-            disabled={hasFailed === null}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={Colors.white} />
-          </TouchableOpacity>
-        </Animated.View>
       </View>
     </ChatGPTBackground>
   );
@@ -259,42 +243,50 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 100, // Space for button
   },
+  questionSection: {
+    marginBottom: 40,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 16,
+    gap: 12,
+  },
+  stepNumber: {
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: Colors.text.tertiary,
+  },
   screenTitle: {
     fontSize: 24,
+    lineHeight: 29,
     fontWeight: '600',
-    fontFamily: 'SpaceGrotesk',
+    fontFamily: 'Nunito-SemiBold',
     color: Colors.text.primary,
-    textAlign: 'center',
-    lineHeight: 30,
-    marginBottom: 24,
+    flex: 1,
   },
   subtitle: {
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Inter',
-    color: Colors.text.tertiary,
-    textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 48,
-    paddingHorizontal: 16,
+    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.tertiary,
+    textAlign: 'left',
   },
   optionContainer: {
-    gap: 16,
+    gap: 12,
     width: '100%',
-    maxWidth: 320,
   },
   optionButton: {
-    backgroundColor: Colors.glass.backgroundSecondary,
+    backgroundColor: Colors.glass.backgroundInput,
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: Colors.glass.borderSecondary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',

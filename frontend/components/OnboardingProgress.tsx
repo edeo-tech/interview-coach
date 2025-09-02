@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../constants/Colors';
+import useHapticsSafely from '../hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 interface OnboardingProgressProps {
   currentStep: number;
@@ -20,6 +22,11 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   icon_name,
   shouldShowProgress = true
 }) => {
+  const { impactAsync } = useHapticsSafely();
+  
+  // Animation for back button fade-in
+  const backButtonOpacity = useRef(new Animated.Value(currentStep > 3 ? 1 : 0)).current;
+  
   // Progress calculation for screens 3-11 only (profile-setup to nerves-rating, before analyzing)
   // Screen 3 (profile-setup) = 0%, Screen 11 (nerves-rating) = 100%
   const calculateProgress = () => {
@@ -84,7 +91,22 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     return () => clearTimeout(timer);
   }, [progress]);
 
+  // Animate back button opacity when currentStep changes
+  useEffect(() => {
+    const shouldShow = currentStep > 3;
+    const timer = setTimeout(() => {
+      Animated.timing(backButtonOpacity, {
+        toValue: shouldShow ? 1 : 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }, shouldShow ? 200 : 0); // Small delay when appearing, immediate when disappearing
+
+    return () => clearTimeout(timer);
+  }, [currentStep, backButtonOpacity]);
+
   const handleBack = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
     if (onBack) {
       onBack();
     } else {
@@ -94,12 +116,24 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
 
   // Don't show progress bar for screens at or after analyzing (step 12)
   const showProgressBar = shouldShowProgress && currentStep < 12;
+  
+  // Don't show back button on the first onboarding screen (step 3 - profile setup)
+  const showBackButton = currentStep > 3;
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Ionicons name={icon_name as any || "arrow-back"} size={24} color={Colors.white} />
-      </TouchableOpacity>
+      <View style={styles.leftSection}>
+        <Animated.View style={{ opacity: backButtonOpacity }}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={handleBack}
+            disabled={!showBackButton}
+            activeOpacity={showBackButton ? 0.7 : 1}
+          >
+            <Ionicons name={icon_name as any || "chevron-back"} size={24} color={Colors.white} />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
       
       {showProgressBar && (
         <View style={styles.progressContainer}>
@@ -131,6 +165,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     gap: 20,
+  },
+  leftSection: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButton: {
     width: 40,

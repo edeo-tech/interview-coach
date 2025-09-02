@@ -9,11 +9,14 @@ import Colors from '@/constants/Colors';
 // context
 import { useAuth } from '@/context/authentication/AuthContext';
 import usePosthogSafely from '@/hooks/posthog/usePosthogSafely';
+import useHapticsSafely from '@/hooks/haptics/useHapticsSafely';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 
 const AppleSignIn = () =>
 {
     const { appleLogin, appleLoginErrorMessage, appleLoginLoading } = useAuth();
     const { posthogCapture } = usePosthogSafely();
+    const { impactAsync } = useHapticsSafely();
 
 
     const handleAppleSignIn = async () =>
@@ -54,6 +57,7 @@ const AppleSignIn = () =>
         <TouchableOpacity 
             style={styles.signupOptionButton} 
             onPress={() => {
+                impactAsync(ImpactFeedbackStyle.Light);
                 posthogCapture('apple_signin_button_clicked');
                 handleAppleSignIn();
             }}

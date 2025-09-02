@@ -113,7 +113,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onHide }) => {
       style={[
         styles.container,
         {
-          backgroundColor: toastStyles.backgroundColor,
+          backgroundColor: Colors.black,
           borderColor: toastStyles.borderColor,
           opacity: fadeAnim,
           transform: [{ translateY }],
@@ -121,14 +121,16 @@ const Toast: React.FC<ToastProps> = ({ toast, onHide }) => {
         },
       ]}
     >
-      <View style={styles.content}>
-        <Ionicons 
-          name={toastStyles.iconName} 
-          size={20} 
-          color={toastStyles.iconColor} 
-          style={styles.icon}
-        />
-        <Text style={styles.message}>{toast.message}</Text>
+      <View style={[styles.colorOverlay, { backgroundColor: toastStyles.backgroundColor }]}>
+        <View style={styles.content}>
+          <Ionicons 
+            name={toastStyles.iconName} 
+            size={20} 
+            color={toastStyles.iconColor} 
+            style={styles.icon}
+          />
+          <Text style={styles.message}>{toast.message}</Text>
+        </View>
       </View>
     </Animated.View>
   );
@@ -195,8 +197,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20, // Design system spacing
     right: 20, // Design system spacing
-    paddingHorizontal: 16, // Design system spacing
-    paddingVertical: 12, // Design system spacing
     borderRadius: 12, // Design system border radius
     borderWidth: 1,
     // Design system shadow
@@ -208,6 +208,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4, // Android shadow
+    overflow: 'hidden', // Ensure border radius clips children
+  },
+  colorOverlay: {
+    paddingHorizontal: 16, // Design system spacing
+    paddingVertical: 12, // Design system spacing
   },
   content: {
     flexDirection: 'row',
