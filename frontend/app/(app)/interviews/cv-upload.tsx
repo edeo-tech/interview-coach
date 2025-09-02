@@ -396,7 +396,7 @@ const CVUpload = () => {
               <Text style={styles.experienceTitle}>{project.name || project.title}</Text>
               {project.technologies && (
                 <View style={styles.projectTechnologies}>
-                  {project.technologies.map((tech, techIndex) => (
+                  {project.technologies.map((tech: string, techIndex: number) => (
                     <View key={techIndex} style={styles.skillTag}>
                       <Text style={styles.skillTagText}>{tech}</Text>
                     </View>
