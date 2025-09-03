@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
 import BrandfetchLogo from '../../../../../../components/BrandfetchLogo';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../../../_queries/interviews/interviews';
+import { InterviewAttempt } from '../../../../../../_api/interviews/interviews';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
 import { useInterviewRetryCheck } from '../../../../../../hooks/premium/usePremiumCheck';
@@ -15,11 +16,24 @@ import { TYPOGRAPHY } from '../../../../../../constants/Typography';
 import Colors from '../../../../../../constants/Colors';
 import * as Haptics from 'expo-haptics';
 
-const getScoreColor = (score: number | null | undefined): string => {
-  if (!score) return Colors.gray[500];
-  if (score < 40) return Colors.semantic.error;
-  if (score < 70) return Colors.semantic.warning;
+const getLikelihoodColor = (likelihood: number | null | undefined): string => {
+  if (!likelihood) return Colors.gray[500];
+  if (likelihood < 40) return Colors.semantic.error;
+  if (likelihood < 70) return Colors.semantic.warning;
   return Colors.semantic.successAlt;
+};
+
+const calculateAverageScore = (attempts: InterviewAttempt[]): number | null => {
+  if (!attempts || attempts.length === 0) return null;
+
+  const scores = attempts
+    .map(attempt => attempt.score)
+    .filter(score => score !== null && score !== undefined);
+  
+  if (scores.length === 0) return null;
+  
+  const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  return Math.round(average);
 };
 
 const formatDate = (dateString: string) => {
@@ -217,20 +231,20 @@ export default function InterviewDetails() {
               <Text style={styles.statsTitle}>Performance</Text>
               <View style={styles.statsGrid}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{interview.total_attempts}</Text>
+                  <Text style={styles.statValue}>{attempts.length}</Text>
                   <Text style={styles.statLabel}>Attempts</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: getScoreColor(interview.best_score) }]}>
+                  <Text style={[styles.statValue, { color: getLikelihoodColor(interview.best_score) }]}>
                     {interview.best_score}%
                   </Text>
-                  <Text style={styles.statLabel}>Best Score</Text>
+                  <Text style={styles.statLabel}>Best Likelihood</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: getScoreColor(interview.average_score) }]}>
-                    {interview.average_score ? `${Math.round(interview.average_score)}%` : 'N/A'}
+                  <Text style={[styles.statValue, { color: getLikelihoodColor(calculateAverageScore(attempts)) }]}>
+                    {calculateAverageScore(attempts) ? `${calculateAverageScore(attempts)}%` : 'N/A'}
                   </Text>
-                  <Text style={styles.statLabel}>Average Score</Text>
+                  <Text style={styles.statLabel}>Average Likelihood</Text>
                 </View>
               </View>
             </View>
@@ -248,9 +262,9 @@ export default function InterviewDetails() {
                     style={styles.attemptCard}
                   >
                     <View style={styles.attemptHeader}>
-                      <Text style={styles.attemptTitle}>Attempt #{attempts.length - index}</Text>
+                      <Text style={styles.attemptTitle}>Attempt {attempts.length - index}</Text>
                       {attempt.score && (
-                        <Text style={[styles.attemptScore, { color: getScoreColor(attempt.score) }]}>
+                        <Text style={[styles.attemptLikelihood, { color: getLikelihoodColor(attempt.score) }]}>
                           {attempt.score}%
                         </Text>
                       )}
@@ -383,7 +397,7 @@ const styles = StyleSheet.create({
   },
   startButton: {
     backgroundColor: Colors.glass.purple,
-    borderRadius: 28,
+    borderRadius: 50,
     paddingHorizontal: 24,
     paddingVertical: 18,
     flexDirection: 'row',
@@ -448,7 +462,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.glass.background,
-    borderRadius: 16,
+    borderRadius: 50,
     padding: 16,
     gap: 16,
   },
@@ -456,15 +470,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   attemptTitle: {
-    ...TYPOGRAPHY.itemTitle,
+    ...TYPOGRAPHY.bodySmall,
     color: Colors.text.primary,
     marginBottom: 2,
+    fontWeight: '500',
   },
   attemptDate: {
     ...TYPOGRAPHY.bodySmall,
     color: Colors.text.tertiary,
   },
-  attemptScore: {
+  attemptLikelihood: {
     ...TYPOGRAPHY.labelMedium,
     fontWeight: '600',
     marginLeft: 'auto',

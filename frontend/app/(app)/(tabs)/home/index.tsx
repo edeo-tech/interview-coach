@@ -65,10 +65,10 @@ export default function Home() {
     });
   };
 
-  const getScoreColor = (score: number | null | undefined) => {
-    if (!score) return Colors.gray[500];
-    if (score < 40) return Colors.semantic.error;
-    if (score < 70) return Colors.accent.gold;
+  const getLikelihoodColor = (likelihood: number | null | undefined) => {
+    if (!likelihood) return Colors.gray[500];
+    if (likelihood < 40) return Colors.semantic.error;
+    if (likelihood < 70) return Colors.accent.gold;
     return Colors.semantic.successAlt;
   };
 
@@ -157,7 +157,7 @@ export default function Home() {
                       <Text style={styles.interviewTitle} numberOfLines={1}>
                         {interview.role_title}
                       </Text>
-                      <Text style={[styles.interviewScore, { color: getScoreColor(interview.average_score) }]}>
+                      <Text style={[styles.interviewLikelihood, { color: getLikelihoodColor(interview.average_score) }]}>
                         {interview.average_score ? `${Math.round(interview.average_score)}%` : 'Not started'}
                       </Text>
                     </View>
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.bodySmall,
     color: Colors.text.tertiary,
   },
-  interviewScore: {
+  interviewLikelihood: {
     ...TYPOGRAPHY.labelMedium,
     color: Colors.semantic.successAlt,
     fontWeight: '600',

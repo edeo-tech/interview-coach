@@ -18,17 +18,17 @@ import Colors from '../../../constants/Colors';
 
 
 
-const getScoreIconAndColor = (score: number | null | undefined) => {
-    if (!score) {
+const getLikelihoodIconAndColor = (likelihood: number | null | undefined) => {
+    if (!likelihood) {
         return { icon: 'help-circle-outline', color: Colors.gray[500] };
     }
     
-    if (score < 40) {
-        return { icon: 'trending-down', color: Colors.semantic.error }; // Red for low scores
-    } else if (score >= 40 && score < 70) {
-        return { icon: 'arrow-forward', color: Colors.semantic.warning }; // Yellow/orange for medium scores
+    if (likelihood < 40) {
+        return { icon: 'trending-down', color: Colors.semantic.error }; // Red for low likelihood
+    } else if (likelihood >= 40 && likelihood < 70) {
+        return { icon: 'arrow-forward', color: Colors.semantic.warning }; // Yellow/orange for medium likelihood
     } else {
-        return { icon: 'trending-up', color: Colors.semantic.successAlt }; // Green for high scores
+        return { icon: 'trending-up', color: Colors.semantic.successAlt }; // Green for high likelihood
     }
 };
 
@@ -98,7 +98,7 @@ export default function Profile() {
         });
     };
 
-    const getAverageScoreDisplay = () => {
+    const getAverageLikelihoodDisplay = () => {
         if (userStats?.average_score !== null && userStats?.average_score !== undefined) {
             return `${Math.round(userStats.average_score)}`;
         }
@@ -110,7 +110,7 @@ export default function Profile() {
         email: auth?.email || 'user@example.com',
         joinedDate: getMemberSinceDate(),
         totalInterviews: userStats?.total_attempts || 0,
-        averageScore: getAverageScoreDisplay(),
+        averageScore: getAverageLikelihoodDisplay(),
         streak: auth?.streak || 0,
         rank: 'Advanced',
     };
@@ -216,9 +216,9 @@ export default function Profile() {
                     <View style={styles.statRow}>
                         <View style={styles.statIcon}>
                             <Ionicons 
-                                name={getScoreIconAndColor(user.averageScore).icon as any} 
+                                name={getLikelihoodIconAndColor(user.averageScore).icon as any} 
                                 size={20} 
-                                color={getScoreIconAndColor(user.averageScore).color} 
+                                color={getLikelihoodIconAndColor(user.averageScore).color} 
                             />
                         </View>
                         <Text style={styles.statLabel}>Average Likelihood</Text>
@@ -259,16 +259,16 @@ export default function Profile() {
                             >
                                 <View style={styles.interviewIcon}>
                                     <Ionicons 
-                                        name={getScoreIconAndColor(interview.average_score).icon as any} 
+                                        name={getLikelihoodIconAndColor(interview.average_score).icon as any} 
                                         size={16} 
-                                        color={getScoreIconAndColor(interview.average_score).color} 
+                                        color={getLikelihoodIconAndColor(interview.average_score).color} 
                                     />
                                 </View>
                                 <View style={styles.interviewInfo}>
                                     <Text style={styles.interviewTitle}>{interview.role_title}</Text>
                                     <Text style={styles.interviewCompany}>{interview.company}</Text>
                                 </View>
-                                <Text style={[styles.interviewScore, { color: getScoreIconAndColor(interview.average_score).color }]}>
+                                <Text style={[styles.interviewLikelihood, { color: getLikelihoodIconAndColor(interview.average_score).color }]}>
                                     {interview.average_score ? `${Math.round(interview.average_score)}%` : 'New'}
                                 </Text>
                             </TouchableOpacity>
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.bodySmall,
         color: Colors.text.secondary,
     },
-    interviewScore: {
+    interviewLikelihood: {
         ...TYPOGRAPHY.labelMedium,
         fontWeight: '600',
         marginRight: 8,

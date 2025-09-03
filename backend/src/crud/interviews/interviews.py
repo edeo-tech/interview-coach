@@ -546,13 +546,19 @@ async def update_interview_scores(req: Request, interview_id: str) -> Optional[I
     if not attempts:
         return await get_interview(req, interview_id)
     
-    # Calculate scores from attempts that have scores
-    scored_attempts = [attempt for attempt in attempts if hasattr(attempt, 'score') and attempt.score is not None]
+    # Get feedback scores for all attempts
+    scores = []
+    for attempt in attempts:
+        try:
+            from crud.interviews.attempts import get_attempt_feedback
+            feedback = await get_attempt_feedback(req, str(attempt.id))
+            if feedback:
+                scores.append(feedback.overall_score)
+        except Exception:
+            continue
     
-    if not scored_attempts:
+    if not scores:
         return await get_interview(req, interview_id)
-    
-    scores = [attempt.score for attempt in scored_attempts]
     best_score = max(scores)
     average_score = sum(scores) / len(scores)
     

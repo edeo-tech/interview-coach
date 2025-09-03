@@ -270,11 +270,23 @@ async def get_interview_attempts_paginated_route(
     skip = (page_number - 1) * page_size
     attempts_result = await get_interview_attempts_paginated(req, interview_id, page_size, skip)
     
-    # Convert attempts to dicts and ensure _id is included
+    # Convert attempts to dicts and ensure _id is included, also include feedback scores
     attempts_data = []
     for attempt in attempts_result["attempts"]:
         attempt_dict = attempt.model_dump()
         attempt_dict['_id'] = str(attempt.id)
+        
+        # Get feedback score for this attempt
+        try:
+            from crud.interviews.attempts import get_attempt_feedback
+            feedback = await get_attempt_feedback(req, str(attempt.id))
+            if feedback:
+                attempt_dict['score'] = feedback.overall_score
+            else:
+                attempt_dict['score'] = None
+        except Exception:
+            attempt_dict['score'] = None
+        
         attempts_data.append(attempt_dict)
     
     return JSONResponse(
