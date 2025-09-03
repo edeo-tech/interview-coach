@@ -86,7 +86,20 @@ export default function InterviewDetails() {
       });
 
       const response = await startAttempt.mutateAsync(id);
-      router.push(`/interviews/${id}/session?attemptId=${response.data.attempt_id}` as any);
+      
+      // Navigate to mock-interview with proper parameters for ElevenLabs conversation
+      router.push({
+        pathname: '/mock-interview',
+        params: {
+          interviewId: id,
+          role: interviewData.interview.role_title,
+          companyName: interviewData.interview.company,
+          difficulty: interviewData.interview.difficulty || 'mid',
+          topics: JSON.stringify([]), // No specific topics for general interviews
+          interviewType: interviewData.interview.interview_type,
+          callState: 'incoming'
+        }
+      } as any);
     } catch (error: any) {
       showToast(error.response?.data?.detail || 'Failed to start interview', 'error');
     }

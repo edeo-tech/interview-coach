@@ -6,7 +6,7 @@ from crud._generic._db_actions import createDocument, getDocument, getMultipleDo
 from models.interviews.attempts import InterviewAttempt, InterviewFeedback
 from models.interviews.interview_types import InterviewType
 
-async def create_attempt(req: Request, interview_id: str, job_id: str, user_id: str) -> InterviewAttempt:
+async def create_attempt(req: Request, interview_id: str, job_id: Optional[str], user_id: str) -> InterviewAttempt:
     """Create a new interview attempt"""
     print(f"\n🚀 [ATTEMPT] Creating new interview attempt:")
     print(f"   - Interview ID: {interview_id}")

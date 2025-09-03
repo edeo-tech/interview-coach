@@ -42,7 +42,7 @@ const InterviewSetup = () => {
       const response = await createInterviewMutation.mutateAsync({
         job_url: formData.job_description // Treating job description as job content
       });
-      router.push(`/interviews/${response.data.id}/session` as any);
+      router.push(`/(app)/(tabs)/home/interviews/${response.data.id}/details` as any);
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to create interview');
     }
