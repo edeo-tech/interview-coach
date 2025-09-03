@@ -17,7 +17,7 @@ import Colors from '../../../../../../constants/Colors';
 // Comprehensive interview stage information for all interview types
 const INTERVIEW_STAGE_CONFIG = {
   [InterviewType.PhoneScreen]: {
-    duration: '10 minutes',
+    duration: '15-30 minutes',
     focus: [
       'Initial screening and background discussion',
       'Role fit assessment and experience overview',
@@ -38,7 +38,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.InitialHRInterview]: {
-    duration: '10 minutes',
+    duration: '30-45 minutes',
     focus: [
       'Detailed experience and background review',
       'Salary expectations and compensation discussion',
@@ -59,7 +59,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.MockSalesCall]: {
-    duration: '10 minutes',
+    duration: '30-45 minutes',
     focus: [
       'Lead qualification and discovery questions',
       'Pain point identification and needs assessment',
@@ -80,7 +80,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.PresentationPitch]: {
-    duration: '10 minutes',
+    duration: '45-60 minutes',
     focus: [
       'Structured presentation delivery',
       'Content organization and flow',
@@ -101,7 +101,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.TechnicalScreeningCall]: {
-    duration: '10 minutes',
+    duration: '45-60 minutes',
     focus: [
       'Technical knowledge assessment',
       'Problem-solving and coding discussion',
@@ -122,7 +122,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.SystemDesignInterview]: {
-    duration: '10 minutes',
+    duration: '60-90 minutes',
     focus: [
       'System architecture and design principles',
       'Scalability and performance considerations',
@@ -143,7 +143,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.PortfolioReview]: {
-    duration: '10 minutes',
+    duration: '45-60 minutes',
     focus: [
       'Portfolio presentation and walkthrough',
       'Project selection and rationale',
@@ -164,7 +164,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.CaseStudy]: {
-    duration: '10 minutes',
+    duration: '45-60 minutes',
     focus: [
       'Case analysis and problem breakdown',
       'Structured thinking and methodology',
@@ -185,7 +185,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.BehavioralInterview]: {
-    duration: '10 minutes',
+    duration: '45-60 minutes',
     focus: [
       'Past experiences and situational responses',
       'Leadership and teamwork examples',
@@ -206,7 +206,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.ValuesInterview]: {
-    duration: '10 minutes',
+    duration: '30-45 minutes',
     focus: [
       'Personal values and beliefs alignment',
       'Company culture and mission fit',
@@ -248,7 +248,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: {
-    duration: '10 minutes',
+    duration: '45-60 minutes',
     focus: [
       'Business impact and value delivery',
       'Stakeholder management and communication',
@@ -269,7 +269,7 @@ const INTERVIEW_STAGE_CONFIG = {
     ]
   },
   [InterviewType.ExecutiveLeadershipRound]: {
-    duration: '10 minutes',
+    duration: '60-90 minutes',
     focus: [
       'Strategic thinking and vision',
       'Leadership philosophy and approach',
