@@ -121,9 +121,10 @@ export default function AttemptGradingScreen() {
   const { canViewDetailedFeedback, isPaywallEnabled } = useFeedbackCheck();
 
   const [pollCount, setPollCount] = useState(0);
-  const [showAnimation, setShowAnimation] = useState(true); // Separate state for animation visibility
-  const [showReveal, setShowReveal] = useState(false); // State for likelihood reveal screen
-  const [feedbackFadeAnim] = useState(new Animated.Value(0)); // Fade-in animation for feedback screen
+  // Only show animations if coming from interview (not from details)
+  const [showAnimation, setShowAnimation] = useState(is_from_interview === 'true');
+  const [showReveal, setShowReveal] = useState(false);
+  const [feedbackFadeAnim] = useState(new Animated.Value(is_from_interview === 'true' ? 0 : 1));
 
   useFocusEffect(
     React.useCallback(() => {
@@ -157,6 +158,11 @@ export default function AttemptGradingScreen() {
   const feedbackAccess = canViewDetailedFeedback();
 
   const renderLoadingState = () => {
+    // Don't show loading state if coming from details
+    if (is_from_interview !== 'true') {
+      return null;
+    }
+
     return (
       <InterviewGradingProgress 
         isFeedbackReady={!!data} // Pass whether feedback data is available
@@ -374,7 +380,8 @@ export default function AttemptGradingScreen() {
           <Text style={styles.headerTitle}>Interview Feedback</Text>
         </View>
         
-        {!showAnimation && !showReveal && (
+        {/* Show feedback immediately if coming from details, otherwise show animations */}
+        {(!showAnimation && !showReveal) || is_from_interview !== 'true' ? (
           <Animated.View style={{ opacity: feedbackFadeAnim, flex: 1 }}>
             {data ? renderFeedback() : (
               <View style={styles.center}>
@@ -388,7 +395,7 @@ export default function AttemptGradingScreen() {
               </View>
             )}
           </Animated.View>
-        )}
+        ) : null}
         
         {/* Only show footer button if coming from interview */}
         {is_from_interview === 'true' && !showAnimation && !showReveal && (
@@ -402,14 +409,8 @@ export default function AttemptGradingScreen() {
                 if (data) {
                   impactAsync(ImpactFeedbackStyle.Medium);
                   
-                  const score = data.overall_score || 0;
-                  if (score >= 90 && interviewData?.interview?.job_id) {
-                    // High score - route to job details
-                    navigateFromDeepScreen('job-details', { jobId: interviewData.interview.job_id });
-                  } else {
-                    // Low score - route to interview details for improvement
-                    navigateFromDeepScreen('interview-details', { interviewId: id });
-                  }
+                  // Route to interview details for improvement
+                  navigateFromDeepScreen('interview-details', { interviewId: id });
                 }
               }}
               disabled={!data}
@@ -422,11 +423,11 @@ export default function AttemptGradingScreen() {
         )}
       </View>
       
-      {/* Full-screen loading animation overlay */}
-      {showAnimation && renderLoadingState()}
+      {/* Only show full-screen loading animation overlay if coming from interview */}
+      {showAnimation && is_from_interview === 'true' && renderLoadingState()}
       
-      {/* Likelihood reveal screen overlay */}
-      {showReveal && data && (
+      {/* Only show likelihood reveal screen overlay if coming from interview */}
+      {showReveal && data && is_from_interview === 'true' && (
         <InterviewLikelihoodReveal 
           score={data.overall_score || 0}
           onContinue={handleRevealContinue}
