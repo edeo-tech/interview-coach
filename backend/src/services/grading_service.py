@@ -41,7 +41,12 @@ class InterviewGradingService:
                 raise ValueError("Required interview data not found")
             
             # Format transcript for analysis
-            transcript_text = self._format_transcript(attempt.get('transcript', []))
+            raw_transcript = attempt.get('transcript', [])
+            print(f"[GRADING] Raw transcript from attempt: {raw_transcript}")
+            print(f"[GRADING] Raw transcript type: {type(raw_transcript)}")
+            print(f"[GRADING] Raw transcript length: {len(raw_transcript) if raw_transcript else 0}")
+            
+            transcript_text = self._format_transcript(raw_transcript)
             print(f"[GRADING] Transcript text: {transcript_text}")
             
             if not transcript_text.strip():
@@ -146,19 +151,36 @@ class InterviewGradingService:
     def _format_transcript(self, transcript: List[Dict]) -> str:
         """Format transcript for AI analysis"""
         formatted = []
+        print(f"[GRADING] Transcript: {transcript}")
+        print(f"[GRADING] Transcript length: {len(transcript) if transcript else 0}")
+        
+        if not transcript:
+            print("[GRADING] No transcript data provided")
+            return ""
         
         for i, turn in enumerate(transcript):
+            print(f"[GRADING] Processing turn {i}: {turn}")
+            print(f"[GRADING] Turn {i} type: {type(turn)}")
+            print(f"[GRADING] Turn {i} keys: {list(turn.keys()) if isinstance(turn, dict) else 'Not a dict'}")
+            
             # Handle ElevenLabs format: role/message/time_in_call_secs
             speaker = turn.get('role', turn.get('speaker', 'unknown'))
             text = turn.get('message', turn.get('text', ''))
             timestamp = turn.get('time_in_call_secs', turn.get('timestamp', ''))
             
-            if text.strip():
+            print(f"[GRADING] Turn {i} - Speaker: {speaker}, Text: {text[:100] if text else 'None'}..., Timestamp: {timestamp}")
+            
+            if text and text.strip():
                 formatted.append(f"{speaker.upper()}: {text}")
+                print(f"[GRADING] Added turn {i} to formatted transcript")
             else:
-                pass
+                print(f"[GRADING] Skipping turn {i} - no text content")
         
-        return "\n".join(formatted)
+        result = "\n".join(formatted)
+        print(f"[GRADING] Final formatted transcript length: {len(result)} characters")
+        print(f"[GRADING] Final formatted transcript preview: {result[:200]}...")
+        
+        return result
     
     async def _build_grading_prompt(self, req: Request, interview: Dict, transcript: str, interview_type: InterviewType) -> str:
         """Build the grading prompt using interview type configuration"""
