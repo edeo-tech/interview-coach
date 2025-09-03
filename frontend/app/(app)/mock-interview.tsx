@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { ImpactFeedbackStyle } from 'expo-haptics';
 import { useCV } from '../../_queries/interviews/cv';
 import { useStartAttempt, useAddTranscript, useFinishAttempt, useInterview } from '../../_queries/interviews/interviews';
+import { useGetConversationToken } from '../../_queries/interviews/conversation-token';
 import { useAuth } from '../../context/authentication/AuthContext';
 import MockInterviewConversation from '../../components/MockInterviewConversation';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
@@ -16,75 +17,6 @@ import { InterviewType } from '../../_interfaces/interviews/interview-types';
 import Colors from '../../constants/Colors';
 
 const { width: screenWidth } = Dimensions.get('window');
-
-// Agent interview link data
-const AGENT_INTERVIEW_LINK = {
-    "phone_screen": {
-        "name": "Niamh Morissey",
-        "agent_id": "agent_3201k2d96cp0fv7rvw0j3nbe3fd6",
-        "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756311206/niamh_pp_fcl0dj.png"
-    },
-    "initial_hr_interview": {
-        "name": "Sam Tyldesley",
-        "agent_id": "agent_9101k2qdcg74f6bteqwe4y2se5ct",
-        "profile_picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "mock_sales_call": {
-        "name": "Jane Smith",
-        "agent_id": "agent_5701k3kk62prf8b9f2cnrdbtwghz",
-        "profile_picture": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "presentation_pitch": {
-        "name": "Paddy Beaumont",
-        "agent_id": "agent_9901k3kkamqwekbvd26e4hf2g4td",
-        "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "technical_screening_call": {
-        "name": "Louise O'Brien",
-        "agent_id": "agent_3801k3kkcnpvfenvzpzbkfxcxr1x",
-        "profile_picture": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "system_design_interview": {
-        "name": "Daniel Jones",
-        "agent_id": "agent_4801k3kkeazve138emwhjrnqmg0p",
-        "profile_picture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "portfolio_review": {
-        "name": "Ruby Galloway",
-        "agent_id": "agent_9101k3kkfyv6e21ry5rmsf6w4p7q",
-        "profile_picture": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "case_study": {
-        "name": "Conor Duffy",
-        "agent_id": "agent_6501k3kkhnqmf098ndn7bgvath91",
-        "profile_picture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "behavioral_interview": {
-        "name": "Brenda Newman",
-        "agent_id": "agent_0501k3kkksrkewj9mhys46xvtq50",
-        "profile_picture": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "values_interview": {
-        "name": "Victor Phelps",
-        "agent_id": "agent_2701k3kkp3w4ec99d0pvsxdx41gn",
-        "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "team_fit_interview": {
-        "name": "Fran Haines",
-        "agent_id": "agent_9501k3kkq19hedptvztph0k5p1e3",
-        "profile_picture": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "interview_with_business_partner_client_stakeholder": {
-        "name": "John McGrath",
-        "agent_id": "agent_2601k3km0bxbe62aness666ye02n",
-        "profile_picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format"
-    },
-    "executive_leadership_round": {
-        "name": "Ethan Ford",
-        "agent_id": "agent_5201k3km2snnffbv0qtmfbxhd6p1",
-        "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
-    }
-};
 
 // Function to map InterviewType enum to JSON keys
 function getInterviewTypeKey(interviewType: string): string {
@@ -203,6 +135,7 @@ export default function MockInterview() {
     const startAttempt = useStartAttempt();
     const addTranscript = useAddTranscript();
     const finishAttempt = useFinishAttempt();
+    const getConversationToken = useGetConversationToken();
 
     useFocusEffect(
         React.useCallback(() => {
@@ -213,22 +146,19 @@ export default function MockInterview() {
 
     const [attemptId, setAttemptId] = useState<string | null>(null);
     const [conversationId, setConversationId] = useState<string | null>(null);
+    const [agentMetadata, setAgentMetadata] = useState<{ name: string; profile_picture: string } | null>(null);
     
     const topics = params.topics ? JSON.parse(params.topics as string) : [];
     
     // Interviewer profile - changes based on interview type (check both API data and URL params)
     const currentInterviewType = interviewData?.interview_type || params.interviewType as string;
     
-    // Get agent info based on interview type
+    // Get agent info from metadata or defaults
     const getAgentInfo = () => {
-        const interviewTypeKey = getInterviewTypeKey(currentInterviewType);
-        const agentData = AGENT_INTERVIEW_LINK[interviewTypeKey as keyof typeof AGENT_INTERVIEW_LINK];
-        
         return {
-            name: agentData?.name || 'Niamh Morissey',
-            avatar: agentData?.profile_picture || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format',
-            role: getInterviewerRole(currentInterviewType),
-            agentId: agentData?.agent_id || 'agent_3201k2d96cp0fv7rvw0j3nbe3fd6'
+            name: agentMetadata?.name || 'Interview Agent',
+            avatar: agentMetadata?.profile_picture || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format',
+            role: getInterviewerRole(currentInterviewType)
         };
     };
     
@@ -333,83 +263,6 @@ export default function MockInterview() {
         },
     }), [interviewNotes.length]);
 
-    const buildInterviewPrompt = useCallback(() => {
-        const userName = auth?.name || 'Candidate';
-        const userSkills = cvProfile?.skills?.join(', ') || 'Not specified';
-        const experienceYears = cvProfile?.experience_years || 0;
-        const cvSummary = cvProfile?.raw_text?.substring(0, 800) || 'No CV available';
-        
-        const currentInterviewType = interviewData?.interview_type || params.interviewType as string;
-        
-        if (currentInterviewType === InterviewType.MockSalesCall) {
-            return `You are ${interviewer.name}, a ${interviewer.role} at TechFlow Solutions, participating in a sales call simulation.
-
-PROSPECT PROFILE (YOU):
-- Role: ${interviewer.role} at TechFlow Solutions
-- Company: Mid-market (100-1000 employees) Technology company  
-- Pain Points: Manual processes, inefficient workflows, scaling challenges, budget constraints
-- Personality: Busy, professionally skeptical but fair
-- Buying Authority: Can influence decisions, but needs to consult with leadership for final approval
-- Current Situation: Evaluating solutions but not in a rush to buy
-
-SALESPERSON INFORMATION:
-- Name: ${userName}
-- Experience Level: ${experienceYears} years
-- Key Skills: ${userSkills}
-- They're calling about: ${params.role} role at ${params.companyName}
-
-YOUR BEHAVIOR AS A PROSPECT:
-1. **Don't volunteer information** - Make ${userName} ask good discovery questions
-2. **Be realistically skeptical** - Don't be immediately interested or hostile  
-3. **Have objections ready**: Use 2-3 realistic objections during the conversation
-4. **Show buying signals gradually** if they demonstrate good sales skills
-5. **Respond naturally** - like a real busy executive would
-
-CONVERSATION GUIDELINES:
-- Start with: "Hi, I have about 10 minutes. What's this about?"
-- Don't lead the conversation - let ${userName} drive it
-- Ask clarifying questions if their pitch is vague: "Can you be more specific?"
-- Bring up objections naturally during the conversation
-- If they handle objections well, show some interest
-- End the call after 8-12 minutes with next steps (or lack thereof)
-
-OBJECTIONS TO USE (pick 2-3 based on conversation flow):
-- "We're already using [competitor solution] and it works fine"
-- "This isn't the right time, maybe next quarter"  
-- "I'd need to see a detailed ROI analysis first"
-- "Our budget for this type of solution is very limited"
-- "I'll need buy-in from several other departments"
-
-Remember: You're a realistic prospect, not an interviewer. Be challenging but fair, and reward good sales technique with engagement. This is practice for ${userName} to improve their sales skills.`;
-        } else {
-            return `You are ${interviewer.name}, a ${interviewer.role} conducting a mock interview for a ${params.role} position at ${params.companyName}.
-
-CANDIDATE INFORMATION:
-- Name: ${userName}
-- Experience Level: ${experienceYears} years
-- Key Skills: ${userSkills}
-- CV Summary: ${cvSummary}
-
-JOB DETAILS:
-- Company: ${params.companyName}
-- Role: ${params.role}
-- Difficulty Level: ${params.difficulty}
-- Focus Areas: ${topics.join(', ')}
-
-INTERVIEW GUIDELINES:
-1. You are a professional, experienced interviewer conducting a supportive interview
-2. Start with a warm greeting: "Hello ${userName}, I'm ${interviewer.name}, and I'm excited to interview you today for the ${params.role} position at ${params.companyName}."
-3. Ask relevant questions based on the candidate's background and the role requirements
-4. Ask ONE question at a time and wait for responses
-5. Adapt questions based on their experience level (${experienceYears} years) and skills
-6. Focus on topics: ${topics.join(', ')}
-7. Be encouraging but thorough - if they struggle, provide gentle guidance
-8. After 8-10 questions, provide brief feedback and wrap up gracefully
-9. Maintain a conversational, professional tone throughout
-
-Remember: This is a practice interview to help ${userName} improve their interview skills. Be supportive while maintaining interview realism.`;
-        }
-    }, [auth, cvProfile, interviewer, params, topics, interviewData]);
 
     const acceptCall = useCallback(async (conversation: any) => {
         posthogCapture('interview_call_answered', {
@@ -420,11 +273,8 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             topics_count: topics.length
         });
         setCallState('connecting');
-        
-        // Use the correct agent_id from the interviewer mapping
-        const agentId = interviewer.agentId;
 
-        // Start attempt on backend regardless of ElevenLabs agent handling (client handles audio)
+        // Start attempt on backend
         let newAttemptId: string | null = null;
         try {
             const res = await startAttempt.mutateAsync(params.interviewId as string);
@@ -443,22 +293,25 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             return;
         }
 
+        // Get conversation token from backend
         try {
-            const prompt = buildInterviewPrompt();
+            console.log('🔐 Fetching conversation token for interview type:', currentInterviewType);
+            const tokenResponse = await getConversationToken.mutateAsync({
+                interviewId: params.interviewId as string,
+                interviewType: currentInterviewType
+            });
             
-            // Try without prompt override first to see if agent speaks
+            console.log('✅ Received conversation token and agent metadata');
+            setAgentMetadata(tokenResponse.agent_metadata);
+            
+            // Start ElevenLabs session with private agent token
             console.log('📝 Starting ElevenLabs session with attemptId:', newAttemptId);
-            console.log('📝 Interview type from API:', interviewData?.interview_type);
-            console.log('📝 Interview type from params:', params.interviewType);
-            console.log('📝 Final interview type:', currentInterviewType);
-            console.log('📝 AgentId:', agentId);
-            console.log('📝 Interviewer name:', interviewer.name);
+            console.log('📝 Using private agent:', tokenResponse.agent_metadata.name);
             
             const sessionConfig = {
-                agentId: agentId,
-                userId: newAttemptId, // Keep this for compatibility
+                conversationToken: tokenResponse.conversation_token,
                 dynamicVariables: {
-                    user_id: newAttemptId,  // ✅ Add attemptId to dynamicVariables as recommended
+                    user_id: newAttemptId,
                     candidate_name: auth?.name || 'Candidate',
                     job_title: String(params.role || ''),
                     company: String(params.companyName || ''),
@@ -481,15 +334,10 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             }
             
         } catch (error) {
-            console.error('❌ Failed to start ElevenLabs session:', error);
-            // console.error('   Error details:', {
-            //     message: error?.message,
-            //     stack: error?.stack,
-            //     name: error?.name
-            // });
+            console.error('❌ Failed to get conversation token or start session:', error);
             setCallState('incoming'); // Reset to incoming state on error
         }
-    }, [buildInterviewPrompt, auth, params]);
+    }, [auth, params, currentInterviewType, cvProfile, getConversationToken, topics, startAttempt]);
 
     const declineCall = useCallback(() => {
         posthogCapture('interview_call_declined', {
@@ -587,6 +435,24 @@ Remember: This is a practice interview to help ${userName} improve their intervi
             }
         };
     }, [callState]);
+    
+    // Prefetch agent metadata on mount (optional - for better UX)
+    useEffect(() => {
+        if (params.interviewId && currentInterviewType && callState === 'incoming') {
+            // Prefetch conversation token to get agent metadata
+            getConversationToken.mutate({
+                interviewId: params.interviewId as string,
+                interviewType: currentInterviewType
+            }, {
+                onSuccess: (data) => {
+                    setAgentMetadata(data.agent_metadata);
+                },
+                onError: (error) => {
+                    console.error('Failed to prefetch agent metadata:', error);
+                }
+            });
+        }
+    }, [params.interviewId, currentInterviewType, callState]);
 
 
     const formatDuration = (seconds: number) => {
