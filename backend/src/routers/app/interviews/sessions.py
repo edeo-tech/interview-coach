@@ -20,12 +20,43 @@ from crud.interviews.attempts import (
 router = APIRouter()
 auth = Authorization()
 
+
+@router.get("/")
+@error_decorator
+async def list_user_interviews(
+    req: Request,
+    user_id: str = Depends(auth.auth_wrapper),
+    page_size: int = 10,
+    page_number: int = 1
+):
+    """Get all interviews for the current user with pagination"""
+    # Calculate skip from page number (page 1 = skip 0, page 2 = skip 10, etc.)
+    skip = (page_number - 1) * page_size
+    interviews_result = await get_user_interviews(req, user_id, page_size, skip)
+    
+    # Convert interviews to dicts and ensure _id is included
+    interviews_data = []
+    for interview in interviews_result["interviews"]:
+        interview_dict = interview.model_dump()
+        interview_dict['_id'] = str(interview.id)
+        # Ensure average_score is included
+        if 'average_score' not in interview_dict or interview_dict['average_score'] is None:
+            interview_dict['average_score'] = 0.0
+        interviews_data.append(interview_dict)
+    
+    return JSONResponse(
+        status_code=200,
+        content=jsonable_encoder({
+            "interviews": interviews_data,
+            "has_more": interviews_result["has_more"],
+            "total_count": interviews_result["total_count"],
+            "page_number": page_number,
+            "page_size": page_size
+        })
+    )
+
 class CreateInterviewFromURLRequest(BaseModel):
     job_url: str
-    interview_type: str = "technical"  # technical, behavioral, leadership, sales
-
-class CreateInterviewFromFileRequest(BaseModel):
-    interview_type: str = "technical"  # technical, behavioral, leadership, sales
 
 class StartAttemptResponse(BaseModel):
     attempt_id: str
@@ -48,24 +79,20 @@ async def create_interview_from_url(
     user_id: str = Depends(auth.auth_wrapper)
 ):
     """Create a new interview from job posting URL"""
-    # Validate interview type
-    valid_types = ["technical", "behavioral", "leadership", "sales"]
-    if request.interview_type not in valid_types:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid interview type. Must be one of: {', '.join(valid_types)}"
-        )
     
     interview = await create_interview_from_url_crud(
         req=req,
         user_id=user_id,
-        job_url=request.job_url,
-        interview_type=request.interview_type
+        job_url=request.job_url
     )
     
     # Ensure the _id is included in the response
     interview_dict = interview.model_dump()
     interview_dict['_id'] = str(interview.id)
+    
+    # Ensure average_score is included
+    if 'average_score' not in interview_dict or interview_dict['average_score'] is None:
+        interview_dict['average_score'] = 0.0
     
     return JSONResponse(
         status_code=201,
@@ -77,17 +104,9 @@ async def create_interview_from_url(
 async def create_interview_from_file(
     req: Request,
     file: UploadFile = File(...),
-    interview_type: str = "technical",  # technical, behavioral, leadership, sales
     user_id: str = Depends(auth.auth_wrapper)
 ):
     """Create a new interview from uploaded job description file"""
-    # Validate interview type
-    valid_types = ["technical", "behavioral", "leadership", "sales"]
-    if interview_type not in valid_types:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid interview type. Must be one of: {', '.join(valid_types)}"
-        )
     
     # Validate file type
     allowed_types = ['application/pdf', 'text/plain', 'application/msword', 
@@ -108,13 +127,16 @@ async def create_interview_from_file(
         user_id=user_id,
         file_content=content,
         content_type=file.content_type,
-        filename=filename,
-        interview_type=interview_type
+        filename=filename
     )
     
     # Ensure the _id is included in the response
     interview_dict = interview.model_dump()
     interview_dict['_id'] = str(interview.id)
+    
+    # Ensure average_score is included
+    if 'average_score' not in interview_dict or interview_dict['average_score'] is None:
+        interview_dict['average_score'] = 0.0
     
     return JSONResponse(
         status_code=201,

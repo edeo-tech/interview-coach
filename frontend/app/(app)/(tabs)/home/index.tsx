@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Activit
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useUserJobs } from '../../../../_queries/jobs/jobs';
+import { useUserInterviews } from '../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../hooks/haptics/useHapticsSafely';
 import ChatGPTBackground from '../../../../components/ChatGPTBackground';
@@ -14,19 +14,19 @@ import Colors from '../../../../constants/Colors';
 
 export default function Home() {
   const { 
-    data: jobsData, 
-    isLoading: jobsLoading,
+    data: interviewsData, 
+    isLoading: interviewsLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage
-  } = useUserJobs(10);
+  } = useUserInterviews(10);
   
   const insets = useSafeAreaInsets();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { selectionAsync } = useHapticsSafely();
   
-  // Flatten the paginated data - extract jobs from each page
-  const jobs = jobsData?.pages.flatMap(page => page.jobs) || [];
+  // Flatten the paginated data - extract interviews from each page
+  const interviews = interviewsData?.pages.flatMap(page => page.interviews) || [];
   
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -47,13 +47,13 @@ export default function Home() {
     }, [posthogScreen])
   );
 
-  const handleJobPress = (jobId: string) => {
+  const handleInterviewPress = (interviewId: string) => {
     selectionAsync();
-    posthogCapture('view_job_details', {
+    posthogCapture('view_interview_details', {
       source: 'home',
-      job_id: jobId
+      interview_id: interviewId
     });
-    router.push(`/home/jobs/${jobId}` as any);
+    router.push(`/home/interviews/${interviewId}/details` as any);
   };
 
   const formatDate = (dateString: string) => {
@@ -65,20 +65,10 @@ export default function Home() {
     });
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'junior': return Colors.semantic.successAlt;
-      case 'mid': return Colors.accent.gold;
-      case 'senior': return Colors.semantic.error;
-      default: return Colors.gray[500];
-    }
-  };
-
-  const getJobProgressColor = (stagesCompleted: number, totalStages: number) => {
-    const progress = stagesCompleted / totalStages;
-    if (progress === 0) return Colors.gray[500];
-    if (progress < 0.5) return Colors.accent.gold;
-    if (progress < 1) return Colors.semantic.infoAlt;
+  const getScoreColor = (score: number | null | undefined) => {
+    if (!score) return Colors.gray[500];
+    if (score < 40) return Colors.semantic.error;
+    if (score < 70) return Colors.accent.gold;
     return Colors.semantic.successAlt;
   };
 
@@ -104,75 +94,75 @@ export default function Home() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerText}>
-              <Text style={styles.headerTitle}>Recent jobs</Text>
+              <Text style={styles.headerTitle}>Recent interviews</Text>
               <Text style={styles.headerSubtitle}>
-                Your recent job applications
+                Your interview practice sessions
               </Text>
             </View>
           </View>
 
-          {/* Jobs List */}
+          {/* Interviews List */}
           <View style={styles.section}>
-            {jobsLoading ? (
+            {interviewsLoading ? (
               <View style={styles.emptyState}>
                 <ActivityIndicator size="large" color={Colors.brand.primary} />
                 <Text style={styles.emptyStateTitle}>
-                  Loading your jobs...
+                  Loading your interviews...
                 </Text>
               </View>
-            ) : !jobs || jobs.length === 0 ? (
+            ) : !interviews || interviews.length === 0 ? (
               <View style={styles.emptyState}>
                 <View style={styles.emptyStateIcon}>
                   <Ionicons name="briefcase-outline" size={32} color={Colors.text.tertiary} />
                 </View>
                 <Text style={styles.emptyStateTitle}>
-                  No jobs yet
+                  No interviews yet
                 </Text>
                 <Text style={styles.emptyStateSubtitle}>
-                  Your recent job applications will appear here
+                  Your interview sessions will appear here
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
                     selectionAsync();
-                    posthogCapture('create_job_from_empty_state');
+                    posthogCapture('create_interview_from_empty_state');
                     router.push('/(app)/interviews/create');
                   }}
-                  style={styles.createJobButton}
+                  style={styles.createInterviewButton}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="add" size={20} color={Colors.white} />
-                  <Text style={styles.createJobButtonText}>Create Job</Text>
+                  <Text style={styles.createInterviewButtonText}>Create Interview</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              jobs.map((job) => (
+              interviews.map((interview) => (
                 <TouchableOpacity
-                  key={job._id}
-                  onPress={() => handleJobPress(job._id)}
-                  style={styles.jobItem}
+                  key={interview._id}
+                  onPress={() => handleInterviewPress(interview._id)}
+                  style={styles.interviewItem}
                   activeOpacity={0.8}
                 >
                   <BrandfetchLogo
-                    identifierType={job.brandfetch_identifier_type}
-                    identifierValue={job.brandfetch_identifier_value}
-                    fallbackUrl={job.company_logo_url}
+                    identifierType={interview.brandfetch_identifier_type}
+                    identifierValue={interview.brandfetch_identifier_value}
+                    fallbackUrl={interview.company_logo_url}
                     size={24}
                     imageStyle={styles.companyLogo}
                     fallbackIconColor={Colors.text.secondary}
                     fallbackIconName="briefcase-outline"
                   />
                   
-                  <View style={styles.jobItemContent}>
-                    <View style={styles.jobItemTop}>
-                      <Text style={styles.jobTitle} numberOfLines={1}>
-                        {job.role_title}
+                  <View style={styles.interviewItemContent}>
+                    <View style={styles.interviewItemTop}>
+                      <Text style={styles.interviewTitle} numberOfLines={1}>
+                        {interview.role_title}
                       </Text>
-                      <Text style={styles.jobProgress}>
-                        {job.stages_completed}/{job.interview_stages.length}
+                      <Text style={[styles.interviewScore, { color: getScoreColor(interview.average_score) }]}>
+                        {interview.average_score ? `${Math.round(interview.average_score)}%` : 'Not started'}
                       </Text>
                     </View>
-                    <Text style={styles.jobCompany} numberOfLines={1}>
-                      {job.company}
+                    <Text style={styles.interviewCompany} numberOfLines={1}>
+                      {interview.company}
                     </Text>
                   </View>
                   
@@ -185,7 +175,7 @@ export default function Home() {
             {isFetchingNextPage && (
               <View style={styles.loadingMore}>
                 <ActivityIndicator size="small" color={Colors.brand.primary} />
-                <Text style={styles.loadingMoreText}>Loading more jobs...</Text>
+                <Text style={styles.loadingMoreText}>Loading more interviews...</Text>
               </View>
             )}
           </View>
@@ -267,7 +257,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
-  createJobButton: {
+  createInterviewButton: {
     backgroundColor: Colors.glass.purple,
     borderRadius: 28,
     paddingHorizontal: 24,
@@ -283,13 +273,13 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  createJobButtonText: {
+  createInterviewButtonText: {
     ...TYPOGRAPHY.labelMedium,
     color: Colors.white,
     fontWeight: '600',
     marginLeft: 8,
   },
-  jobItem: {
+  interviewItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.glass.background,
@@ -305,27 +295,27 @@ const styles = StyleSheet.create({
     borderRadius: 8, // Increased border radius proportionally
     backgroundColor: Colors.white,
   },
-  jobItemContent: {
+  interviewItemContent: {
     flex: 1,
     minWidth: 0,
   },
-  jobItemTop: {
+  interviewItemTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 2,
   },
-  jobTitle: {
+  interviewTitle: {
     ...TYPOGRAPHY.itemTitle,
     color: Colors.text.primary,
     flex: 1,
     marginRight: 8, // Space between title and progress
   },
-  jobCompany: {
+  interviewCompany: {
     ...TYPOGRAPHY.bodySmall,
     color: Colors.text.tertiary,
   },
-  jobProgress: {
+  interviewScore: {
     ...TYPOGRAPHY.labelMedium,
     color: Colors.semantic.successAlt,
     fontWeight: '600',

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../../../../components/ChatGPTBackground';
-import { useAttemptFeedback } from '../../../../../../_queries/interviews/feedback';
+import BrandfetchLogo from '../../../../../../components/BrandfetchLogo';
 import { useInterview, useStartAttempt, useInterviewAttemptsCount, useInterviewAttempts } from '../../../../../../_queries/interviews/interviews';
 import usePosthogSafely from '../../../../../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../../../../../hooks/haptics/useHapticsSafely';
@@ -13,469 +13,93 @@ import { InterviewType } from '../../../../../../_interfaces/interviews/intervie
 import { useToast } from '../../../../../../components/Toast';
 import { TYPOGRAPHY } from '../../../../../../constants/Typography';
 import Colors from '../../../../../../constants/Colors';
+import * as Haptics from 'expo-haptics';
 
-// Comprehensive interview stage information for all interview types
-const INTERVIEW_STAGE_CONFIG = {
-  [InterviewType.PhoneScreen]: {
-    duration: '15-30 minutes',
-    focus: [
-      'Initial screening and background discussion',
-      'Role fit assessment and experience overview',
-      'Company culture and values alignment',
-      'Availability and logistics discussion'
-    ],
-    evaluation: [
-      'Communication clarity and professionalism',
-      'Interest and enthusiasm for the role',
-      'Relevant experience and background',
-      'Cultural fit and company alignment'
-    ],
-    tips: [
-      'Speak clearly and professionally',
-      'Show enthusiasm for the opportunity',
-      'Prepare questions about the role and company',
-      'Be ready to discuss your background briefly'
-    ]
-  },
-  [InterviewType.InitialHRInterview]: {
-    duration: '30-45 minutes',
-    focus: [
-      'Detailed experience and background review',
-      'Salary expectations and compensation discussion',
-      'Availability and scheduling preferences',
-      'Career goals and long-term objectives'
-    ],
-    evaluation: [
-      'Communication skills and professionalism',
-      'Experience relevance to the position',
-      'Compensation expectations alignment',
-      'Scheduling flexibility and availability'
-    ],
-    tips: [
-      'Research typical salary ranges for the role',
-      'Be prepared to discuss your career timeline',
-      'Show flexibility with scheduling',
-      'Ask thoughtful questions about the company'
-    ]
-  },
-  [InterviewType.MockSalesCall]: {
-    duration: '30-45 minutes',
-    focus: [
-      'Lead qualification and discovery questions',
-      'Pain point identification and needs assessment',
-      'Solution presentation and value proposition',
-      'Objection handling and closing techniques'
-    ],
-    evaluation: [
-      'Discovery and qualification skills',
-      'Solution presentation effectiveness',
-      'Objection handling and problem-solving',
-      'Closing ability and next steps'
-    ],
-    tips: [
-      'Ask open-ended discovery questions',
-      'Listen actively to identify pain points',
-      'Present solutions that address specific needs',
-      'Handle objections professionally and confidently'
-    ]
-  },
-  [InterviewType.PresentationPitch]: {
-    duration: '45-60 minutes',
-    focus: [
-      'Structured presentation delivery',
-      'Content organization and flow',
-      'Audience engagement and interaction',
-      'Q&A handling and follow-up'
-    ],
-    evaluation: [
-      'Presentation structure and clarity',
-      'Content relevance and depth',
-      'Delivery confidence and engagement',
-      'Q&A handling and knowledge depth'
-    ],
-    tips: [
-      'Structure your presentation with clear sections',
-      'Practice your delivery and timing',
-      'Prepare for potential questions',
-      'Engage the audience throughout'
-    ]
-  },
-  [InterviewType.TechnicalScreeningCall]: {
-    duration: '45-60 minutes',
-    focus: [
-      'Technical knowledge assessment',
-      'Problem-solving and coding discussion',
-      'System design and architecture questions',
-      'Technical communication and explanation'
-    ],
-    evaluation: [
-      'Technical competency and knowledge depth',
-      'Problem-solving approach and methodology',
-      'Code quality and best practices',
-      'Communication of technical concepts'
-    ],
-    tips: [
-      'Think aloud while solving problems',
-      'Ask clarifying questions before starting',
-      'Explain your reasoning and approach',
-      'Be honest about what you don\'t know'
-    ]
-  },
-  [InterviewType.SystemDesignInterview]: {
-    duration: '60-90 minutes',
-    focus: [
-      'System architecture and design principles',
-      'Scalability and performance considerations',
-      'Trade-offs and decision-making rationale',
-      'Technical communication and collaboration'
-    ],
-    evaluation: [
-      'System design knowledge and principles',
-      'Scalability and performance understanding',
-      'Trade-off analysis and decision-making',
-      'Technical communication skills'
-    ],
-    tips: [
-      'Start with high-level requirements',
-      'Consider scalability and performance early',
-      'Discuss trade-offs openly',
-      'Collaborate with the interviewer'
-    ]
-  },
-  [InterviewType.PortfolioReview]: {
-    duration: '45-60 minutes',
-    focus: [
-      'Portfolio presentation and walkthrough',
-      'Project selection and rationale',
-      'Design process and methodology',
-      'Technical implementation and challenges'
-    ],
-    evaluation: [
-      'Portfolio quality and presentation',
-      'Project selection and relevance',
-      'Design process and methodology',
-      'Technical implementation understanding'
-    ],
-    tips: [
-      'Select your best and most relevant work',
-      'Prepare to discuss your design process',
-      'Be ready to explain technical decisions',
-      'Show growth and learning from projects'
-    ]
-  },
-  [InterviewType.CaseStudy]: {
-    duration: '45-60 minutes',
-    focus: [
-      'Case analysis and problem breakdown',
-      'Structured thinking and methodology',
-      'Quantitative and qualitative analysis',
-      'Recommendations and implementation'
-    ],
-    evaluation: [
-      'Analytical thinking and problem-solving',
-      'Structured approach and methodology',
-      'Quantitative and qualitative skills',
-      'Recommendation quality and feasibility'
-    ],
-    tips: [
-      'Take time to understand the problem fully',
-      'Structure your analysis clearly',
-      'Use data and evidence to support conclusions',
-      'Consider implementation challenges'
-    ]
-  },
-  [InterviewType.BehavioralInterview]: {
-    duration: '45-60 minutes',
-    focus: [
-      'Past experiences and situational responses',
-      'Leadership and teamwork examples',
-      'Conflict resolution and problem-solving',
-      'Growth mindset and learning ability'
-    ],
-    evaluation: [
-      'Leadership potential and experience',
-      'Team collaboration and communication',
-      'Conflict resolution and problem-solving',
-      'Growth mindset and adaptability'
-    ],
-    tips: [
-      'Use the STAR method for responses',
-      'Prepare specific examples from your experience',
-      'Show both successes and learning moments',
-      'Demonstrate growth and self-awareness'
-    ]
-  },
-  [InterviewType.ValuesInterview]: {
-    duration: '30-45 minutes',
-    focus: [
-      'Personal values and beliefs alignment',
-      'Company culture and mission fit',
-      'Ethical decision-making scenarios',
-      'Long-term career and life goals'
-    ],
-    evaluation: [
-      'Values alignment with company culture',
-      'Ethical decision-making and integrity',
-      'Long-term vision and goal alignment',
-      'Authenticity and self-awareness'
-    ],
-    tips: [
-      'Be authentic and honest about your values',
-      'Research the company\'s mission and values',
-      'Prepare examples of ethical decisions',
-      'Show alignment with company culture'
-    ]
-  },
-  [InterviewType.TeamFitInterview]: {
-    duration: '10 minutes',
-    focus: [
-      'Team collaboration and communication style',
-      'Working preferences and environment fit',
-      'Conflict resolution and team dynamics',
-      'Cultural contribution and team impact'
-    ],
-    evaluation: [
-      'Team collaboration and communication',
-      'Working style and environment fit',
-      'Conflict resolution and team dynamics',
-      'Cultural contribution potential'
-    ],
-    tips: [
-      'Show your collaborative working style',
-      'Be honest about your preferences',
-      'Provide examples of team success',
-      'Demonstrate cultural awareness'
-    ]
-  },
-  [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: {
-    duration: '45-60 minutes',
-    focus: [
-      'Business impact and value delivery',
-      'Stakeholder management and communication',
-      'Cross-functional collaboration',
-      'Business understanding and acumen'
-    ],
-    evaluation: [
-      'Business impact and value understanding',
-      'Stakeholder management skills',
-      'Cross-functional collaboration ability',
-      'Business acumen and strategic thinking'
-    ],
-    tips: [
-      'Focus on business value and impact',
-      'Show stakeholder management experience',
-      'Demonstrate cross-functional understanding',
-      'Ask about business priorities and challenges'
-    ]
-  },
-  [InterviewType.ExecutiveLeadershipRound]: {
-    duration: '60-90 minutes',
-    focus: [
-      'Strategic thinking and vision',
-      'Leadership philosophy and approach',
-      'Business impact and value creation',
-      'Long-term planning and execution'
-    ],
-    evaluation: [
-      'Strategic thinking and vision',
-      'Leadership philosophy and effectiveness',
-      'Business impact and value creation',
-      'Long-term planning and execution ability'
-    ],
-    tips: [
-      'Think strategically and long-term',
-      'Show leadership philosophy and approach',
-      'Demonstrate business impact understanding',
-      'Ask strategic questions about the company'
-    ]
-  }
+const getScoreColor = (score: number | null | undefined): string => {
+  if (!score) return Colors.gray[500];
+  if (score < 40) return Colors.semantic.error;
+  if (score < 70) return Colors.semantic.warning;
+  return Colors.semantic.successAlt;
 };
 
-const getInterviewTypeDisplayName = (type: string): string => {
-  const displayNames: Record<string, string> = {
-    [InterviewType.PhoneScreen]: 'Phone Screen',
-    [InterviewType.InitialHRInterview]: 'HR Interview',
-    [InterviewType.MockSalesCall]: 'Sales Call',
-    [InterviewType.PresentationPitch]: 'Presentation',
-    [InterviewType.TechnicalScreeningCall]: 'Technical Screen',
-    [InterviewType.SystemDesignInterview]: 'System Design',
-    [InterviewType.PortfolioReview]: 'Portfolio Review',
-    [InterviewType.CaseStudy]: 'Case Study',
-    [InterviewType.BehavioralInterview]: 'Behavioral',
-    [InterviewType.ValuesInterview]: 'Values Interview',
-    [InterviewType.TeamFitInterview]: 'Team Fit',
-    [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: 'Stakeholder Interview',
-    [InterviewType.ExecutiveLeadershipRound]: 'Executive Round',
-  };
-  return displayNames[type] || type;
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 
-const getInterviewTypeIcon = (type: string): string => {
-  const iconMap: Record<string, string> = {
-    [InterviewType.PhoneScreen]: 'call',
-    [InterviewType.InitialHRInterview]: 'people',
-    [InterviewType.MockSalesCall]: 'megaphone',
-    [InterviewType.PresentationPitch]: 'easel',
-    [InterviewType.TechnicalScreeningCall]: 'code',
-    [InterviewType.SystemDesignInterview]: 'git-network',
-    [InterviewType.PortfolioReview]: 'images',
-    [InterviewType.CaseStudy]: 'document-text',
-    [InterviewType.BehavioralInterview]: 'chatbubbles',
-    [InterviewType.ValuesInterview]: 'heart',
-    [InterviewType.TeamFitInterview]: 'people-circle',
-    [InterviewType.InterviewWithBusinessPartnerClientStakeholder]: 'business',
-    [InterviewType.ExecutiveLeadershipRound]: 'trending-up',
-  };
-  return iconMap[type] || 'chatbubble';
-};
-
-// Helper functions for grade styling
-const getScoreColor = (score: number) => {
-  if (score >= 90) return Colors.semantic.successAlt;
-  if (score >= 80) return Colors.accent.blueAlt;
-  if (score >= 70) return Colors.accent.gold;
-  if (score >= 60) return Colors.semantic.warning;
-  return Colors.semantic.error;
-};
-
-const getScoreLabel = (score: number) => {
-  if (score >= 90) return 'Excellent';
-  if (score >= 80) return 'Good';
-  if (score >= 70) return 'Fair';
-  if (score >= 60) return 'Needs Work';
-  return 'Poor';
-};
-
-// Component to fetch and display attempt score
-const AttemptScore = ({ attemptId }: { attemptId: string }) => {
-  const { data: feedback } = useAttemptFeedback(attemptId);
-  const score = feedback?.overall_score || 0;
-  
-  return (
-    <Text style={[styles.scoreValue, { color: getScoreColor(score) }]}>
-      {score}
-    </Text>
-  );
-};
-
-
-const getInterviewStageInfo = (type: string) => {
-  return INTERVIEW_STAGE_CONFIG[type as keyof typeof INTERVIEW_STAGE_CONFIG] || {
-    duration: '30-45 minutes',
-    focus: ['General discussion', 'Role-specific topics', 'Company questions'],
-    evaluation: ['Communication skills', 'Role fit', 'Company interest', 'Professional experience'],
-    tips: ['Be prepared and professional', 'Show enthusiasm', 'Ask thoughtful questions']
-  };
-};
+const GENERAL_INTERVIEW_TIPS = [
+  'Research the company culture, values, and recent news',
+  'Practice the STAR method for behavioral questions',
+  'Prepare specific examples from your experience',
+  'Have thoughtful questions ready about the role and team',
+  'Review the job description and align your skills',
+  'Practice explaining technical concepts clearly',
+  'Be ready to discuss your career goals and motivations'
+];
 
 export default function InterviewDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: interviewData, isLoading, error } = useInterview(id);
-  const { data: attemptsCountData } = useInterviewAttemptsCount(id);
-  const { 
-    data: attemptsData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInterviewAttempts(id, 10);
+  const { data: attemptsCount } = useInterviewAttemptsCount(id);
+  const { data: attemptsData } = useInterviewAttempts(id, 5);
   const startAttempt = useStartAttempt();
-  const { posthogScreen } = usePosthogSafely();
-  const { selectionAsync } = useHapticsSafely();
-  const [bestScore, setBestScore] = useState<number>(0);
-  const { canRetryInterview, isPaywallEnabled } = useInterviewRetryCheck();
+  const { posthogScreen, posthogCapture } = usePosthogSafely();
+  const { impactAsync } = useHapticsSafely();
+  const { canRetryInterview } = useInterviewRetryCheck();
   const { showToast } = useToast();
-  
-  // Flatten the paginated attempts data
-  const attempts = attemptsData?.pages.flatMap(page => page.attempts) || [];
-  
-  
-  // Calculate best score from all attempts
-  useEffect(() => {
-    if (!interviewData?.interview) return;
-    
-    // Use best_score from interview if available
-    if (interviewData.interview.best_score !== undefined) {
-      setBestScore(interviewData.interview.best_score);
-    } else if (attempts.length > 0) {
-      // Fallback: calculate from attempts if best_score not available
-      const calculateBestScore = async () => {
-        let maxScore = 0;
-        for (const attempt of attempts) {
-          if (attempt.status === 'graded') {
-            try {
-              // This function is no longer imported, so this block will cause an error.
-              // Assuming it was intended to be removed or replaced with a different approach.
-              // For now, commenting out the call to avoid linter errors.
-              // const { data: feedback } = await attemptFeedback(attempt.id);
-              // if (feedback && feedback.overall_score > maxScore) {
-              //   maxScore = feedback.overall_score;
-              // }
-            } catch (error) {
-              console.error('Error fetching feedback:', error);
-            }
-          }
-        }
-        setBestScore(maxScore);
-      };
-      calculateBestScore();
-    }
-  }, [interviewData, attempts]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'web') return;
-      posthogScreen('interview_details');
-    }, [posthogScreen])
-  );
-
-  const formatDuration = (seconds: number) => {
-    if (!seconds) return 'N/A';
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
+  React.useEffect(() => {
+    if (Platform.OS === 'web') return;
+    posthogScreen('interview_details');
+  }, [posthogScreen]);
 
   const handleStartInterview = async () => {
-    try {
-      // Check if user can retry this interview
-      const hasExistingAttempts = attemptsCountData?.has_attempts || false;
-      const retryCheck = canRetryInterview(hasExistingAttempts);
-      
-      if (!retryCheck.canRetry && retryCheck.requiresUpgrade && isPaywallEnabled) {
-        // Show paywall for premium upgrade
-        router.push('/paywall?source=retry');
-        return;
-      }
+    if (!interviewData?.interview) return;
 
-      // Navigate directly to mock interview with interview data
-      // No backend call needed for frontend-only implementation
-      router.push({
-        pathname: '/mock-interview',
-        params: {
-          companyName: interviewData?.interview?.company,
-          role: interviewData?.interview?.role_title,
-          difficulty: interviewData?.interview?.difficulty || 'Medium',
-          topics: JSON.stringify(interviewData?.interview?.focus_areas || ['General Interview Skills']),
-          interviewId: id,
-          interviewType: interviewData?.interview?.interview_type || 'technical', // Pass interview type
-          location: interviewData?.interview?.location || 'Remote',
-          callState: 'incoming' // Start in incoming call state
-        }
-      });
-    } catch (error: any) {
-      showToast('Unable to start interview. Please try again.', 'error');
+    const hasAttempts = attemptsCount?.has_attempts;
+    
+    if (hasAttempts && !canRetryInterview(hasAttempts)) {
+      Alert.alert(
+        'Premium Feature',
+        'Multiple interview attempts require a premium subscription.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Upgrade', onPress: () => router.push('/(app)/paywall') }
+        ]
+      );
+      return;
     }
+
+    try {
+      impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      posthogCapture('start_interview_attempt', {
+        interview_id: id,
+        interview_type: interviewData.interview.interview_type,
+        company: interviewData.interview.company,
+        role: interviewData.interview.role_title,
+        has_previous_attempts: hasAttempts
+      });
+
+      const response = await startAttempt.mutateAsync(id);
+      router.push(`/interviews/${id}/session?attemptId=${response.data.attempt_id}` as any);
+    } catch (error: any) {
+      showToast(error.response?.data?.detail || 'Failed to start interview', 'error');
+    }
+  };
+
+  const handleAttemptPress = (attemptId: string) => {
+    impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    posthogCapture('view_attempt_details', {
+      interview_id: id,
+      attempt_id: attemptId,
+      source: 'interview_details'
+    });
+    router.push(`/interviews/${id}/attempts/${attemptId}/grading` as any);
   };
 
   if (isLoading) {
@@ -498,8 +122,9 @@ export default function InterviewDetails() {
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle" size={64} color={Colors.semantic.error} />
             <Text style={styles.errorTitle}>Failed to load interview</Text>
-            <TouchableOpacity onPress={() => router.back()} style={styles.errorButton}>
-              <Text style={styles.errorButtonText}>Go Back</Text>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={20} color={Colors.text.primary} />
+              <Text style={styles.backButtonText}>Go Back</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -508,7 +133,7 @@ export default function InterviewDetails() {
   }
 
   const { interview } = interviewData;
-  const stageInfo = getInterviewStageInfo(interview.interview_type || '');
+  const attempts = attemptsData?.pages.flatMap(page => page.attempts) || [];
   const hasAttempts = attempts.length > 0;
 
   return (
@@ -521,178 +146,124 @@ export default function InterviewDetails() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => {
-              selectionAsync();
-              router.back();
-            }}>
+            <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>
-              {getInterviewTypeDisplayName(interview.interview_type || '')}
-            </Text>
+            <Text style={styles.headerTitle}>Interview Details</Text>
           </View>
 
-          {/* Subtitle */}
-          <Text style={styles.subtitle}>
-            {interview.role_title} at {interview.company}
-          </Text>
+          {/* Interview Info */}
+          <View style={styles.interviewHeader}>
+            <BrandfetchLogo
+              identifierType={interview.brandfetch_identifier_type}
+              identifierValue={interview.brandfetch_identifier_value}
+              fallbackUrl={interview.company_logo_url}
+              size={56}
+              style={styles.companyLogoContainer}
+              fallbackIconColor={Colors.text.primary}
+              fallbackIconName="briefcase-outline"
+            />
+            <View style={styles.interviewHeaderText}>
+              <Text style={styles.roleTitle}>{interview.role_title}</Text>
+              <Text style={styles.company}>Company: {interview.company}</Text>
+            </View>
+          </View>
+          
+          <View style={styles.interviewMeta}>
+            <View style={styles.metaItem}>
+              <Ionicons name="location-outline" size={16} color={Colors.text.tertiary} />
+              <Text style={styles.metaText}>{interview.location || 'Remote'}</Text>
+            </View>
+            <View style={styles.metaItem}>
+              <Ionicons name="briefcase-outline" size={16} color={Colors.text.tertiary} />
+              <Text style={styles.metaText}>{interview.experience_level}</Text>
+            </View>
+          </View>
 
-          {!hasAttempts ? (
-            // First-time user experience
-            <>
-              {/* What to Expect Section */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>What to Expect</Text>
-                <View style={styles.infoCard}>
-                  <View style={styles.infoItem}>
-                    <Ionicons name="time-outline" size={20} color={Colors.brand.primary} />
-                    <Text style={styles.infoText}>Duration: {stageInfo.duration}</Text>
-                  </View>
-                  <View style={styles.infoItem}>
-                    <Ionicons name="chatbubble-outline" size={20} color={Colors.brand.primary} />
-                    <Text style={styles.infoText}>Live conversation with interviewer</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Focus Areas */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Focus Areas</Text>
-                <View style={styles.bulletList}>
-                  {stageInfo.focus.map((item: string, index: number) => (
-                    <View key={index} style={styles.bulletItem}>
-                      <View style={styles.bullet} />
-                      <Text style={styles.bulletText}>{item}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-
-              {/* Evaluation Criteria */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>You'll be evaluated on</Text>
-                <View style={styles.bulletList}>
-                  {stageInfo.evaluation.map((item: string, index: number) => (
-                    <View key={index} style={styles.bulletItem}>
-                      <View style={styles.bullet} />
-                      <Text style={styles.bulletText}>{item}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-
-              {/* Tips Section */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Pro Tips</Text>
-                <View style={styles.tipsContainer}>
-                  {stageInfo.tips.map((tip: string, index: number) => (
-                    <View key={index} style={styles.tipItem}>
-                      <Ionicons name="bulb-outline" size={16} color={Colors.accent.gold} />
-                      <Text style={styles.tipText}>{tip}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-
-              {/* Start Interview CTA for first-time users */}
-              <TouchableOpacity
-                onPress={() => {
-                  selectionAsync();
-                  handleStartInterview();
-                }}
-                disabled={startAttempt.isPending}
-                style={styles.primaryActionButton}
-              >
-                {startAttempt.isPending ? (
-                  <ActivityIndicator color={Colors.text.primary} size="small" />
-                ) : (
-                  <Ionicons name="play" size={20} color={Colors.text.primary} />
-                )}
-                <Text style={styles.primaryActionButtonText}>
-                  Start Interview
+          {/* Start Interview Button */}
+          <TouchableOpacity
+            onPress={handleStartInterview}
+            style={styles.startButton}
+            disabled={startAttempt.isPending}
+          >
+            {startAttempt.isPending ? (
+              <ActivityIndicator color={Colors.white} />
+            ) : (
+              <>
+                <Ionicons name="play" size={24} color={Colors.white} />
+                <Text style={styles.startButtonText}>
+                  {hasAttempts ? 'Retry Interview' : 'Start Interview'}
                 </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            // Returning user experience
-            <>
-              {/* Performance Summary */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Your Performance</Text>
-                <View style={styles.statsRow}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{attempts.length}</Text>
-                    <Text style={styles.statLabel}>Attempts</Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Text style={[styles.statValue, { color: Colors.semantic.successAlt }]}>
-                      {bestScore}
-                    </Text>
-                    <Text style={styles.statLabel}>Best Score</Text>
-                  </View>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* Interview Stats */}
+          {hasAttempts && (
+            <View style={styles.statsContainer}>
+              <Text style={styles.statsTitle}>Performance</Text>
+              <View style={styles.statsGrid}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{interview.total_attempts}</Text>
+                  <Text style={styles.statLabel}>Attempts</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={[styles.statValue, { color: getScoreColor(interview.best_score) }]}>
+                    {interview.best_score}%
+                  </Text>
+                  <Text style={styles.statLabel}>Best Score</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={[styles.statValue, { color: getScoreColor(interview.average_score) }]}>
+                    {interview.average_score ? `${Math.round(interview.average_score)}%` : 'N/A'}
+                  </Text>
+                  <Text style={styles.statLabel}>Average Score</Text>
                 </View>
               </View>
-
-              {/* New Attempt Button - Primary placement for easy access */}
-              <TouchableOpacity
-                onPress={() => {
-                  selectionAsync();
-                  handleStartInterview();
-                }}
-                disabled={startAttempt.isPending}
-                style={styles.primaryActionButton}
-              >
-                {startAttempt.isPending ? (
-                  <ActivityIndicator color={Colors.text.primary} size="small" />
-                ) : (
-                  <Ionicons name="play" size={20} color={Colors.text.primary} />
-                )}
-                <Text style={styles.primaryActionButtonText}>
-                  New Attempt
-                </Text>
-              </TouchableOpacity>
-
-              {/* Previous Attempts */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Previous Attempts</Text>
-                <View style={styles.attemptsList}>
-                  {attempts.slice(0, 5).map((attempt, index) => (
-
-                      <TouchableOpacity
-                        key={attempt.id}
-                        style={styles.attemptItem}
-                        onPress={() => {
-                          if (attempt.status === 'graded') {
-                            selectionAsync();
-                            router.push({ 
-                              pathname: '/interviews/[id]/attempts/[attemptId]/grading', 
-                              params: { id, attemptId: attempt.id, is_from_interview: 'false' } 
-                            });
-                          }
-                        }}
-                        disabled={attempt.status !== 'graded'}
-                      >
-                        <View style={styles.attemptContent}>
-                          <Text style={styles.attemptTitle}>Attempt #{index + 1}</Text>
-                          <Text style={styles.attemptDate}>{formatDate(attempt.created_at)}</Text>
-                        </View>
-                        <View style={styles.attemptScore}>
-                          {attempt.status === 'graded' ? (
-                            <AttemptScore attemptId={attempt.id} />
-                          ) : (
-                            <Text style={styles.scorePending}>Pending</Text>
-                          )}
-                        </View>
-                        {attempt.status === 'graded' && (
-                          <Ionicons name="chevron-forward" size={16} color={Colors.text.disabled} />
-                        )}
-                      </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </>
+            </View>
           )}
 
+          {/* Previous Attempts */}
+          {hasAttempts ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Previous Attempts</Text>
+              <View style={styles.attemptsContainer}>
+                {attempts.map((attempt, index) => (
+                  <TouchableOpacity
+                    key={attempt._id}
+                    onPress={() => handleAttemptPress(attempt._id)}
+                    style={styles.attemptCard}
+                  >
+                    <View style={styles.attemptHeader}>
+                      <Text style={styles.attemptTitle}>Attempt #{attempts.length - index}</Text>
+                      {attempt.score && (
+                        <Text style={[styles.attemptScore, { color: getScoreColor(attempt.score) }]}>
+                          {attempt.score}%
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={styles.attemptDate}>
+                      {formatDate(attempt.created_at)}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color={Colors.text.disabled} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          ) : (
+            // Interview Tips for first attempt
+            <View style={styles.tipsContainer}>
+              <Text style={styles.tipsTitle}>💡 Interview Preparation Tips</Text>
+              <View style={styles.tipsList}>
+                {GENERAL_INTERVIEW_TIPS.map((tip, index) => (
+                  <View key={index} style={styles.tipItem}>
+                    <View style={styles.tipBullet} />
+                    <Text style={styles.tipText}>{tip}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </ChatGPTBackground>
@@ -712,7 +283,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   scrollContent: {
-    paddingBottom: 100, // Extra padding to account for tab bar
+    paddingBottom: 120,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+  },
+  headerTitle: {
+    ...TYPOGRAPHY.pageTitle,
+    color: Colors.text.primary,
+    marginLeft: 16,
   },
   loadingContainer: {
     flex: 1,
@@ -721,7 +303,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     ...TYPOGRAPHY.bodyMedium,
-    color: Colors.text.tertiary,
+    color: Colors.text.secondary,
     marginTop: 16,
   },
   errorContainer: {
@@ -731,112 +313,133 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   errorTitle: {
-    ...TYPOGRAPHY.sectionHeader,
+    ...TYPOGRAPHY.heading2,
     color: Colors.text.primary,
     marginTop: 16,
+    marginBottom: 24,
   },
-  errorButton: {
-    backgroundColor: Colors.brand.primary,
-    borderRadius: 50,
-    paddingVertical: 12,
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.glass.purple,
+    borderRadius: 28,
     paddingHorizontal: 24,
-    marginTop: 24,
+    paddingVertical: 16,
+    gap: 8,
   },
-  errorButtonText: {
+  backButtonText: {
     ...TYPOGRAPHY.labelMedium,
-    color: Colors.text.primary,
+    color: Colors.white,
     fontWeight: '600',
   },
-  header: {
+  interviewHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingTop: 60,
-    paddingBottom: 20,
-    gap: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 16,
   },
-  headerTitle: {
-    ...TYPOGRAPHY.pageTitle,
-    color: Colors.text.primary,
+  companyLogoContainer: {
+    marginRight: 16,
+  },
+  interviewHeaderText: {
     flex: 1,
-    lineHeight: 32,
   },
-  subtitle: {
+  roleTitle: {
+    ...TYPOGRAPHY.heading3,
+    color: Colors.text.primary,
+    marginBottom: 4,
+  },
+  company: {
     ...TYPOGRAPHY.bodyMedium,
-    color: Colors.text.tertiary,
+    color: Colors.text.secondary,
+  },
+  interviewMeta: {
+    flexDirection: 'row',
+    gap: 24,
     marginBottom: 32,
   },
-  section: {
-    marginBottom: 28,
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  sectionTitle: {
+  metaText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
+    textTransform: 'capitalize',
+  },
+  startButton: {
+    backgroundColor: Colors.glass.purple,
+    borderRadius: 28,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    borderWidth: 2,
+    borderColor: Colors.glass.purpleTint,
+    shadowColor: Colors.brand.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 32,
+  },
+  startButtonText: {
+    ...TYPOGRAPHY.labelLarge,
+    color: Colors.white,
+    fontWeight: '600',
+  },
+  statsContainer: {
+    marginBottom: 32,
+  },
+  statsTitle: {
     ...TYPOGRAPHY.sectionHeader,
     color: Colors.text.primary,
     marginBottom: 16,
   },
-  infoCard: {
+  statsGrid: {
+    flexDirection: 'row',
     backgroundColor: Colors.glass.background,
     borderRadius: 16,
     padding: 20,
-    gap: 16,
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  infoText: {
-    ...TYPOGRAPHY.bodyMedium,
-    color: Colors.text.secondary,
-  },
-  bulletList: {
-    gap: 12,
-  },
-  bulletItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  bullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.brand.primary,
-    marginTop: 6,
-  },
-  bulletText: {
-    ...TYPOGRAPHY.bodyMedium,
-    color: Colors.text.secondary,
-    flex: 1,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 32,
+    gap: 24,
   },
   statItem: {
+    flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    ...TYPOGRAPHY.pageTitle,
+    ...TYPOGRAPHY.heading2,
     color: Colors.text.primary,
     marginBottom: 4,
   },
   statLabel: {
     ...TYPOGRAPHY.bodySmall,
     color: Colors.text.tertiary,
+    textAlign: 'center',
   },
-  attemptsList: {
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    ...TYPOGRAPHY.sectionHeader,
+    color: Colors.text.primary,
+    marginBottom: 16,
+  },
+  attemptsContainer: {
     gap: 12,
   },
-  attemptItem: {
+  attemptCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.glass.background,
-    borderRadius: 50,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    borderRadius: 16,
+    padding: 16,
     gap: 16,
   },
-  attemptContent: {
+  attemptHeader: {
     flex: 1,
   },
   attemptTitle: {
@@ -849,53 +452,42 @@ const styles = StyleSheet.create({
     color: Colors.text.tertiary,
   },
   attemptScore: {
-    alignItems: 'center',
-    minWidth: 40,
-  },
-  scoreValue: {
     ...TYPOGRAPHY.labelMedium,
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  scorePending: {
-    ...TYPOGRAPHY.bodySmall,
-    color: Colors.text.disabled,
-  },
-  primaryActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.glass.purpleMedium,
-    borderWidth: 2,
-    borderColor: Colors.brand.primary,
-    borderRadius: 50,
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    gap: 12,
-    marginBottom: 8,
-  },
-  primaryActionButtonText: {
-    ...TYPOGRAPHY.labelLarge,
-    color: Colors.text.primary,
     fontWeight: '600',
+    marginLeft: 'auto',
   },
   tipsContainer: {
-    gap: 12,
+    backgroundColor: Colors.glass.background,
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: Colors.glass.border,
+  },
+  tipsTitle: {
+    ...TYPOGRAPHY.sectionHeader,
+    color: Colors.text.primary,
+    marginBottom: 20,
+  },
+  tipsList: {
+    gap: 16,
   },
   tipItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: Colors.glass.goldLight,
-    borderRadius: 12,
-    padding: 16,
     gap: 12,
-    borderWidth: 1,
-    borderColor: Colors.glass.goldBorder,
+  },
+  tipBullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.brand.primary,
+    marginTop: 8,
+    flexShrink: 0,
   },
   tipText: {
     ...TYPOGRAPHY.bodyMedium,
     color: Colors.text.secondary,
     flex: 1,
-    lineHeight: 20,
+    lineHeight: 22,
   },
 });

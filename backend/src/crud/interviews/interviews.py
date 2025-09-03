@@ -5,66 +5,169 @@ import json
 from datetime import datetime, timezone
 from bson import ObjectId
 
-from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, SortDirection
+from crud._generic._db_actions import createDocument, getDocument, getMultipleDocuments, updateDocument, countDocuments, SortDirection
 from models.interviews.interviews import Interview
 from models.interviews.interview_types import InterviewType
 from services.job_processing_service import JobProcessingService
+from crud.companies import get_or_create_company_info
 from crud._generic.model_mappings import get_db_for_model
 from utils.mongo_helpers import serialize_mongo_document
 
 async def create_interview_from_url(
     req: Request,
     user_id: str,
-    job_url: str,
-    interview_type: str = "technical"
+    job_url: str
 ) -> Interview:
     """Create interview from job URL"""
-    job_service = JobProcessingService()
+    
+    print(f"Starting interview creation from URL for user {user_id}: {job_url}")
+    
+    job_processor = JobProcessingService()
     
     try:
-        # Process job URL
-        job_data = await job_service.process_job_url(job_url)
-        
-        # Convert to Interview model
-        interview = await _create_interview_from_job_data(
-            req, user_id, job_data, 
-            source_type="url", 
-            source_url=job_url,
-            interview_type=interview_type
-        )
-        
-        return interview
-        
+        print(f"Processing job URL content...")
+        job_data = await job_processor.process_job_url(job_url)
+        print(f"Successfully processed job URL. Company: {job_data.get('company', 'N/A')}, Role: {job_data.get('role_title', 'N/A')}")
+    except Exception as e:
+        print(f"Failed to process job URL {job_url}: {str(e)}")
+        raise
     finally:
-        await job_service.close()
+        await job_processor.close()
+        print("JobProcessingService client closed")
+    
+    # Get or create company info with Brandfetch identifiers
+    print(f"Getting or creating company info for: {job_data['company']}")
+    try:
+        brandfetch_info = await get_or_create_company_info(
+            req,
+            job_data["company"],
+            None  # Don't pass job URL as company website - use company name only
+        )
+        if brandfetch_info:
+            print(f"Retrieved Brandfetch info: {brandfetch_info[0]}={brandfetch_info[1]}")
+        else:
+            print(f"No Brandfetch info found for company: {job_data['company']}")
+    except Exception as e:
+        print(f"Error getting company info for {job_data['company']}: {str(e)}")
+        brandfetch_info = None
+    
+    # Create the interview record
+    print("Creating interview record with extracted data")
+    interview = Interview(
+        user_id=user_id,
+        interview_type=InterviewType.GENERAL_INTERVIEW,  # Always use general interview
+        company=job_data["company"],
+        role_title=job_data["role_title"],
+        company_logo_url=job_data.get("company_logo_url"),
+        location=job_data.get("location", ""),
+        employment_type=job_data.get("employment_type", "full-time"),
+        experience_level=job_data.get("experience_level", "mid"),
+        salary_range=job_data.get("salary_range", ""),
+        jd_raw=job_data.get("jd_raw", ""),
+        job_description=job_data.get("job_description", {}),
+        source_type="url",
+        source_url=job_url,
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    # Add Brandfetch identifiers if found
+    if brandfetch_info:
+        interview.brandfetch_identifier_type = brandfetch_info[0]
+        interview.brandfetch_identifier_value = brandfetch_info[1]
+        print(f"Added Brandfetch identifiers to interview record")
+    else:
+        print("No Brandfetch identifiers to add - will use fallback logo handling")
+    
+    # Save the interview
+    print("Saving interview to database")
+    try:
+        created_interview = await createDocument(req, "interviews", Interview, interview)
+        print(f"Successfully created interview with ID: {created_interview.id}")
+    except Exception as e:
+        print(f"Failed to save interview to database: {str(e)}")
+        raise
+    
+    print(f"Interview creation completed successfully. Interview ID: {created_interview.id}, Company: {job_data['company']}, Role: {job_data['role_title']}")
+    return created_interview
 
 async def create_interview_from_file(
     req: Request,
     user_id: str,
     file_content: bytes,
     content_type: str,
-    filename: str,
-    interview_type: str = "technical"
+    filename: str
 ) -> Interview:
     """Create interview from uploaded job description file"""
-    job_service = JobProcessingService()
+    
+    print(f"Starting interview creation from file for user {user_id}: {filename}")
+    
+    job_processor = JobProcessingService()
     
     try:
-        # Process job file
-        job_data = await job_service.process_job_file(file_content, content_type, filename)
-        
-        # Convert to Interview model
-        interview = await _create_interview_from_job_data(
-            req, user_id, job_data,
-            source_type="file",
-            source_url=None,
-            interview_type=interview_type
-        )
-        
-        return interview
-        
+        print(f"Processing job file content...")
+        job_data = await job_processor.process_job_file(file_content, content_type, filename)
+        print(f"Successfully processed job file. Company: {job_data.get('company', 'N/A')}, Role: {job_data.get('role_title', 'N/A')}")
+    except Exception as e:
+        print(f"Failed to process job file {filename}: {str(e)}")
+        raise
     finally:
-        await job_service.close()
+        await job_processor.close()
+        print("JobProcessingService client closed")
+    
+    # Get or create company info with Brandfetch identifiers
+    print(f"Getting or creating company info for: {job_data['company']}")
+    try:
+        brandfetch_info = await get_or_create_company_info(
+            req,
+            job_data["company"],
+            None  # Use company name only
+        )
+        if brandfetch_info:
+            print(f"Retrieved Brandfetch info: {brandfetch_info[0]}={brandfetch_info[1]}")
+        else:
+            print(f"No Brandfetch info found for company: {job_data['company']}")
+    except Exception as e:
+        print(f"Error getting company info for {job_data['company']}: {str(e)}")
+        brandfetch_info = None
+    
+    # Create the interview record
+    print("Creating interview record with extracted data")
+    interview = Interview(
+        user_id=user_id,
+        interview_type=InterviewType.GENERAL_INTERVIEW,  # Always use general interview
+        company=job_data["company"],
+        role_title=job_data["role_title"],
+        company_logo_url=job_data.get("company_logo_url"),
+        location=job_data.get("location", ""),
+        employment_type=job_data.get("employment_type", "full-time"),
+        experience_level=job_data.get("experience_level", "mid"),
+        salary_range=job_data.get("salary_range", ""),
+        jd_raw=job_data.get("jd_raw", ""),
+        job_description=job_data.get("job_description", {}),
+        source_type="file",
+        source_url=None,
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    # Add Brandfetch identifiers if found
+    if brandfetch_info:
+        interview.brandfetch_identifier_type = brandfetch_info[0]
+        interview.brandfetch_identifier_value = brandfetch_info[1]
+        print(f"Added Brandfetch identifiers to interview record")
+    else:
+        print("No Brandfetch identifiers to add - will use fallback logo handling")
+    
+    # Save the interview
+    print("Saving interview to database")
+    try:
+        created_interview = await createDocument(req, "interviews", Interview, interview)
+        print(f"Successfully created interview with ID: {created_interview.id}")
+    except Exception as e:
+        print(f"Failed to save interview to database: {str(e)}")
+        raise
+    
+    print(f"Interview creation completed successfully. Interview ID: {created_interview.id}, Company: {job_data['company']}, Role: {job_data['role_title']}")
+    return created_interview
 
 async def _create_interview_from_job_data(
     req: Request,
@@ -122,14 +225,38 @@ async def get_interview(req: Request, interview_id: str) -> Optional[Interview]:
     """Get a specific interview by ID"""
     return await getDocument(req, "interviews", Interview, _id=interview_id)
 
-async def get_user_interviews(req: Request, user_id: str, limit: int = 10) -> List[Interview]:
-    """Get all interviews for a user"""
-    return await getMultipleDocuments(
+async def get_user_interviews(
+    req: Request, 
+    user_id: str, 
+    page_size: int = 10,
+    skip: int = 0
+) -> Dict[str, Any]:
+    """Get all interviews for a user with pagination"""
+    
+    # Get interviews
+    interviews = await getMultipleDocuments(
         req, "interviews", Interview,
         user_id=user_id,
         order_by="created_at",
-        limit=limit
+        order_direction=SortDirection.DESCENDING,
+        limit=page_size,
+        skip=skip
     )
+    
+    # Get total count for pagination
+    total_count = await countDocuments(
+        req, "interviews", Interview,
+        user_id=user_id
+    )
+    
+    # Check if there are more items
+    has_more = (skip + page_size) < total_count
+    
+    return {
+        "interviews": interviews,
+        "has_more": has_more,
+        "total_count": total_count
+    }
 
 async def get_interviews_by_company(req: Request, user_id: str, company: str) -> List[Interview]:
     """Get interviews for a specific company"""
@@ -408,3 +535,32 @@ async def update_interview_status(req: Request, interview_id: str, status: str) 
 async def update_interview(req: Request, interview_id: str, **kwargs) -> Optional[Interview]:
     """Update interview with any fields"""
     return await updateDocument(req, "interviews", Interview, interview_id, **kwargs)
+
+async def update_interview_scores(req: Request, interview_id: str) -> Optional[Interview]:
+    """Recalculate and update best_score and average_score for an interview"""
+    from crud.interviews.attempts import get_interview_attempts
+    
+    # Get all attempts with scores for this interview
+    attempts = await get_interview_attempts(req, interview_id)
+    
+    if not attempts:
+        return await get_interview(req, interview_id)
+    
+    # Calculate scores from attempts that have scores
+    scored_attempts = [attempt for attempt in attempts if hasattr(attempt, 'score') and attempt.score is not None]
+    
+    if not scored_attempts:
+        return await get_interview(req, interview_id)
+    
+    scores = [attempt.score for attempt in scored_attempts]
+    best_score = max(scores)
+    average_score = sum(scores) / len(scores)
+    
+    # Update the interview record
+    return await updateDocument(
+        req, "interviews", Interview, interview_id,
+        best_score=best_score,
+        average_score=round(average_score, 1),
+        total_attempts=len(attempts),
+        last_attempt_date=attempts[0].created_at if attempts else None
+    )

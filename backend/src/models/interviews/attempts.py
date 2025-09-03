@@ -5,7 +5,7 @@ from models.interviews.interview_types import InterviewType
 
 class InterviewAttempt(MongoBaseModel):
     interview_id: str
-    job_id: str
+    job_id: Optional[str] = None  # Legacy field, no longer required
     user_id: str
     status: str  # active, completed, graded
     agent_id: Optional[str] = None
@@ -19,7 +19,7 @@ class InterviewAttempt(MongoBaseModel):
 class InterviewFeedback(MongoBaseModel):
     attempt_id: str
     interview_id: str
-    job_id: str
+    job_id: Optional[str] = None  # Legacy field, no longer required
     user_id: str
     interview_type: InterviewType  # Type of interview for proper rubric interpretation
     overall_score: int  # 0-100

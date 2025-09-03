@@ -2,20 +2,20 @@ import { protectedApi } from '../axiosConfig';
 
 export interface CreateInterviewFromURLRequest {
   job_url: string;
-  interview_type?: 'technical' | 'behavioral' | 'leadership' | 'sales';
 }
 
 export interface CreateInterviewFromFileRequest {
   file: FormData;
-  interview_type?: 'technical' | 'behavioral' | 'leadership' | 'sales';
 }
 
 export interface Interview {
-  id: string;
+  _id: string;
   user_id: string;
   company: string;
   role_title: string;
-  company_logo_url: string;
+  company_logo_url?: string;
+  brandfetch_identifier_type?: string;
+  brandfetch_identifier_value?: string;
   location: string;
   employment_type: string;
   experience_level: string;
@@ -23,17 +23,21 @@ export interface Interview {
   jd_raw: string;
   job_description: Record<string, any>;
   difficulty: string;
-  interview_type: 'technical' | 'behavioral' | 'leadership' | 'sales';
+  interview_type: string;
   focus_areas: string[];
   source_type: 'url' | 'file';
   source_url?: string;
   created_at: string;
   updated_at: string;
   best_score: number;
+  average_score?: number;
+  total_attempts: number;
+  last_attempt_date?: string;
+  status: string;
 }
 
 export interface InterviewAttempt {
-  id: string;
+  _id: string;
   interview_id: string;
   status: 'active' | 'completed' | 'graded';
   agent_id?: string;
@@ -46,6 +50,7 @@ export interface InterviewAttempt {
   started_at?: string;
   ended_at?: string;
   created_at: string;
+  score?: number;
 }
 
 export interface StartAttemptResponse {
@@ -55,7 +60,6 @@ export interface StartAttemptResponse {
 export interface InterviewWithAttempts {
   interview: Interview;
   attempts: InterviewAttempt[];
-  interview_type: 'technical' | 'behavioral' | 'leadership' | 'sales';
 }
 
 export interface AttemptsCountResponse {
@@ -78,18 +82,21 @@ export const interviewsApi = {
   createFromURL: (data: CreateInterviewFromURLRequest) => 
     protectedApi.post<Interview>('/app/interviews/create/url', data),
   
-  createFromFile: (formData: FormData, interviewType?: string) => {
-    if (interviewType) {
-      formData.append('interview_type', interviewType);
-    }
+  createFromFile: (formData: FormData) => {
     return protectedApi.post<Interview>('/app/interviews/create/file', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
   
-  list: (limit?: number) => 
-    protectedApi.get<Interview[]>('/app/interviews/', {
-      params: limit ? { limit } : {}
+  list: (pageSize: number = 10, pageNumber: number = 1) => 
+    protectedApi.get<{
+      interviews: Interview[];
+      has_more: boolean;
+      total_count: number;
+      page_number: number;
+      page_size: number;
+    }>('/app/interviews/', {
+      params: { page_size: pageSize, page_number: pageNumber }
     }),
   
   get: (interviewId: string) =>

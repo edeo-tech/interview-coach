@@ -19,6 +19,7 @@ ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1"
 
 # Agent IDs stored securely in environment variables
 AGENT_IDS = {
+    InterviewType.GENERAL_INTERVIEW: config('AGENT_ID_NIAMH_MORISSEY', default=''),
     InterviewType.PHONE_SCREEN: config('AGENT_ID_PHONE_SCREEN', default=''),
     InterviewType.INITIAL_HR_INTERVIEW: config('AGENT_ID_HR_INTERVIEW', default=''),
     InterviewType.MOCK_SALES_CALL: config('AGENT_ID_SALES_CALL', default=''),
@@ -36,6 +37,10 @@ AGENT_IDS = {
 
 # Agent metadata (names and avatars) - safe to store in code
 AGENT_METADATA = {
+    InterviewType.GENERAL_INTERVIEW: {
+        "name": "Niamh Morissey",
+        "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756311206/niamh_pp_fcl0dj.png"
+    },
     InterviewType.PHONE_SCREEN: {
         "name": "Niamh Morissey",
         "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756311206/niamh_pp_fcl0dj.png"
