@@ -13,14 +13,23 @@ export const interviewKeys = {
 };
 
 // Hooks
-export const useInterviews = (limit?: number, enabled: boolean = true) => {
-  return useQuery({
-    queryKey: [...interviewKeys.lists(), limit],
-    queryFn: async () => {
-      const response = await interviewsApi.list(limit);
+export const useUserInterviews = (pageSize: number = 10) => {
+  return useInfiniteQuery({
+    queryKey: [...interviewKeys.lists(), pageSize],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await interviewsApi.list(pageSize, pageParam);
       return response.data;
     },
-    enabled,
+    getNextPageParam: (lastPage) => {
+      // Use the has_more boolean from the backend to determine if there's a next page
+      if (!lastPage.has_more) {
+        return undefined;
+      }
+      // Simply return the next page number
+      return lastPage.page_number + 1;
+    },
+    initialPageParam: 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 

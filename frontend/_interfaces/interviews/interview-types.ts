@@ -1,4 +1,5 @@
 export enum InterviewType {
+  GeneralInterview = "General Interview",
   PhoneScreen = "Phone Screen",
   InitialHRInterview = "Initial HR Interview",
   MockSalesCall = "Mock Sales Call",

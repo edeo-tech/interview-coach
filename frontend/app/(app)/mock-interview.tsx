@@ -21,6 +21,7 @@ const { width: screenWidth } = Dimensions.get('window');
 // Function to map InterviewType enum to JSON keys
 function getInterviewTypeKey(interviewType: string): string {
     const typeMapping: { [key: string]: string } = {
+        [InterviewType.GeneralInterview]: "general_interview",
         [InterviewType.PhoneScreen]: "phone_screen",
         [InterviewType.InitialHRInterview]: "initial_hr_interview",
         [InterviewType.MockSalesCall]: "mock_sales_call",
@@ -36,7 +37,7 @@ function getInterviewTypeKey(interviewType: string): string {
         [InterviewType.ExecutiveLeadershipRound]: "executive_leadership_round"
     };
     
-    return typeMapping[interviewType] || "phone_screen"; // Default fallback
+    return typeMapping[interviewType] || "general_interview"; // Default to general interview
 }
 
 const SlideToAnswer = ({ onAnswer, onDecline }: { onAnswer: () => void; onDecline: () => void }) => {
@@ -165,6 +166,8 @@ export default function MockInterview() {
     // Helper function to determine interviewer role based on interview type
     const getInterviewerRole = (type: string): string => {
         switch (type) {
+            case InterviewType.GeneralInterview:
+                return 'Senior Interviewer';
             case InterviewType.MockSalesCall:
                 return 'Director of Operations';
             case InterviewType.TechnicalScreeningCall:

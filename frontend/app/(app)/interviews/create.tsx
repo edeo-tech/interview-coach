@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ChatGPTBackground from '../../../components/ChatGPTBackground';
-import JobLinkProgress from '../../../components/JobLinkProgress';
+import InterviewCreationProgress from '../../../components/InterviewCreationProgress';
 import * as DocumentPicker from 'expo-document-picker';
-import { useCreateJobFromURL, useCreateJobFromFile } from '../../../_queries/jobs/jobs';
+import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../../_queries/interviews/interviews';
 import { useCV, useUploadCV } from '../../../_queries/interviews/cv';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
 import { extractUrlFromText, cleanJobUrl } from '../../../utils/url/extractUrl';
@@ -15,7 +15,7 @@ import { TYPOGRAPHY } from '../../../constants/Typography';
 import Colors from '../../../constants/Colors';
 
 
-export default function CreateJob() {
+export default function CreateInterview() {
   const [currentStep, setCurrentStep] = useState<'cv' | 'job'>('cv');
   const [jobUrl, setJobUrl] = useState('');
   const [selectedCVFile, setSelectedCVFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
@@ -27,8 +27,8 @@ export default function CreateJob() {
   
   const { data: currentCV, isLoading: cvLoading } = useCV();
   const uploadCV = useUploadCV();
-  const createFromURL = useCreateJobFromURL();
-  const createFromFile = useCreateJobFromFile();
+  const createFromURL = useCreateInterviewFromURL();
+  const createFromFile = useCreateInterviewFromFile();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { showToast } = useToast();
   
@@ -37,7 +37,7 @@ export default function CreateJob() {
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'web') return;
-      posthogScreen('job_create');
+      posthogScreen('interview_create');
     }, [posthogScreen])
   );
 
@@ -158,23 +158,23 @@ export default function CreateJob() {
         
         const result = await createFromFile.mutateAsync(formData);
         
-        posthogCapture('job_created', {
+        posthogCapture('interview_created', {
           method: 'file',
           has_cv: !!currentCV,
           file_type: selectedJobFile.mimeType || 'unknown',
           file_size_kb: selectedJobFile.size ? Math.round(selectedJobFile.size / 1024) : null
         });
         
-        console.log('Job created from file:', result);
+        console.log('Interview created from file:', result);
         
         // Store the result for navigation after progress completes
-        (window as any).pendingJobResult = result;
+        (window as any).pendingInterviewResult = result;
         
       } catch (error: any) {
         // Hide progress modal on error
         setShowProgressModal(false);
         
-        posthogCapture('job_creation_failed', {
+        posthogCapture('interview_creation_failed', {
           method: 'file',
           error_message: error.response?.data?.detail || error.message,
           has_cv: !!currentCV,
@@ -199,22 +199,22 @@ export default function CreateJob() {
           job_url: cleanedUrl,
         });
         
-        posthogCapture('job_created', {
+        posthogCapture('interview_created', {
           method: 'url',
           has_cv: !!currentCV,
           job_url_domain: new URL(cleanedUrl).hostname
         });
         
-        console.log('Job created from URL:', result);
+        console.log('Interview created from URL:', result);
         
         // Store the result for navigation after progress completes
-        (window as any).pendingJobResult = result;
+        (window as any).pendingInterviewResult = result;
         
       } catch (error: any) {
         // Hide progress modal on error
         setShowProgressModal(false);
         
-        posthogCapture('job_creation_failed', {
+        posthogCapture('interview_creation_failed', {
           method: 'url',
           error_message: error.response?.data?.detail || error.message,
           has_cv: !!currentCV
@@ -227,13 +227,13 @@ export default function CreateJob() {
   };
 
   const handleProgressComplete = () => {
-    // Navigate to the job details page
-    const result = (window as any).pendingJobResult;
-    if (result && result.job) {
+    // Navigate to the interview details page
+    const result = (window as any).pendingInterviewResult;
+    if (result && result.data) {
       // Use replace to prevent going back to create screen
-      router.replace(`/home/jobs/${result.job._id}` as any);
+      router.replace(`/home/interviews/${result.data._id}/details` as any);
       // Clean up the stored result
-      delete (window as any).pendingJobResult;
+      delete (window as any).pendingInterviewResult;
     } else {
       // Fallback: navigate back to home
       router.replace('/(app)/(tabs)/home');
@@ -467,7 +467,7 @@ export default function CreateJob() {
                 ) : (
                   <>
                     <Ionicons name="add-circle" size={24} color={Colors.white} />
-                    <Text style={styles.submitText}>Create Job</Text>
+                    <Text style={styles.submitText}>Create Interview</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -484,7 +484,7 @@ export default function CreateJob() {
         animationType="fade"
         statusBarTranslucent={true}
       >
-        <JobLinkProgress onComplete={handleProgressComplete} />
+        <InterviewCreationProgress onComplete={handleProgressComplete} />
       </Modal>
     </SafeAreaView>
     </ChatGPTBackground>

@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class InterviewType(str, Enum):
+    GENERAL_INTERVIEW = "General Interview"  # New generic interview type
     PHONE_SCREEN = "Phone Screen"
     INITIAL_HR_INTERVIEW = "Initial HR Interview"
     MOCK_SALES_CALL = "Mock Sales Call"

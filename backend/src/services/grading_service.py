@@ -5,7 +5,7 @@ from decouple import config
 import httpx
 
 from crud.interviews.attempts import get_attempt, create_feedback, update_attempt
-from crud.interviews.interviews import get_interview
+from crud.interviews.interviews import get_interview, update_interview_scores
 from config.interview_configs import get_interview_config
 from models.interviews.interview_types import InterviewType
 
@@ -134,7 +134,7 @@ class InterviewGradingService:
                 req,
                 attempt_id,
                 interview['id'] if 'id' in interview else interview.get('_id'),
-                interview.get('job_id', ''),
+                interview.get('job_id'),
                 interview['user_id'],
                 interview_type=interview_type,
                 overall_score=feedback_data["overall_score"],
@@ -144,6 +144,10 @@ class InterviewGradingService:
                 rubric_scores=feedback_data["rubric_scores"],
             )
             await update_attempt(req, attempt_id, status="graded")
+            
+            # Update the interview's average and best scores
+            interview_id = interview['id'] if 'id' in interview else interview.get('_id')
+            await update_interview_scores(req, str(interview_id))
             
         except Exception as save_error:
             raise
@@ -191,32 +195,10 @@ class InterviewGradingService:
         print(f"[GRADING] Transcript: {transcript}")
         print(f"[GRADING] Interview type: {interview_type}")
         
-        # Try to get real company and role from job document
-        role = 'Software Engineer'
-        company = 'the company'
-        jd_structured = {}
-        
-        if interview.get('job_id'):
-            try:
-                from crud.jobs.jobs import get_job
-                job = await get_job(req, interview['job_id'])
-                if job:
-                    role = job.role_title
-                    company = job.company
-                    jd_structured = job.job_description or {}
-                    print(f"[GRADING] Fetched job details - Role: {role}, Company: {company}")
-                else:
-                    print(f"[GRADING] Job not found for job_id: {interview['job_id']}")
-            except Exception as e:
-                print(f"[GRADING] Error fetching job details: {str(e)}")
-        
-        # Fallback to interview fields if job fetch failed
-        if role == 'Software Engineer':
-            role = interview.get('role_title', 'Software Engineer')
-        if company == 'the company':
-            company = interview.get('company', 'the company')
-        if not jd_structured:
-            jd_structured = interview.get('jd_structured', {})
+        # Get company and role data directly from interview (no longer stored in separate job)
+        role = interview.get('role_title', 'Software Engineer')
+        company = interview.get('company', 'the company')
+        jd_structured = interview.get('job_description', {}) or interview.get('jd_structured', {})
         
         print(f"[GRADING] Final Role: {role}")
         print(f"[GRADING] Final Company: {company}")

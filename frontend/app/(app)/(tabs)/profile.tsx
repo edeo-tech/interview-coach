@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/context/authentication/AuthContext';
 import { useToast } from '@/components/Toast';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useUserJobs } from '../../../_queries/jobs/jobs';
+import { useUserInterviews } from '../../../_queries/interviews/interviews';
 import { useCV } from '../../../_queries/interviews/cv';
 import { useUserStats } from '../../../_queries/users/stats';
 import usePosthogSafely from '../../../hooks/posthog/usePosthogSafely';
@@ -18,24 +18,14 @@ import Colors from '../../../constants/Colors';
 
 
 
-const getScoreIconAndColor = (score: number | null | string) => {
-    // Handle string values (like "85%") by extracting the number
-    let numericScore: number | null = null;
-    
-    if (typeof score === 'string') {
-        const match = score.match(/(\d+)/);
-        numericScore = match ? parseInt(match[1], 10) : null;
-    } else {
-        numericScore = score;
+const getScoreIconAndColor = (score: number | null | undefined) => {
+    if (!score) {
+        return { icon: 'help-circle-outline', color: Colors.gray[500] };
     }
     
-    if (numericScore === null || numericScore === undefined) {
-        return { icon: 'trending-up', color: Colors.semantic.successAlt };
-    }
-    
-    if (numericScore < 40) {
+    if (score < 40) {
         return { icon: 'trending-down', color: Colors.semantic.error }; // Red for low scores
-    } else if (numericScore >= 40 && numericScore < 70) {
+    } else if (score >= 40 && score < 70) {
         return { icon: 'arrow-forward', color: Colors.semantic.warning }; // Yellow/orange for medium scores
     } else {
         return { icon: 'trending-up', color: Colors.semantic.successAlt }; // Green for high scores
@@ -59,8 +49,8 @@ export default function Profile() {
     const { auth, logout, logoutLoading, logoutSuccess, logoutErrorMessage, clearLogoutError, resetLogout } = useAuth();
     const { showToast } = useToast();
     const router = useRouter();
-    const { data: jobsData } = useUserJobs(5); // Only fetch 5 for profile display
-    const jobs = jobsData?.pages[0]?.jobs || [];
+    const { data: interviewsData } = useUserInterviews(5); // Only fetch 5 for profile display
+    const interviews = interviewsData?.pages[0]?.interviews || [];
     const { data: currentCV } = useCV();
     const { data: userStats } = useUserStats();
     const { posthogScreen, posthogCapture } = usePosthogSafely();
@@ -125,12 +115,12 @@ export default function Profile() {
         rank: 'Advanced',
     };
 
-    const handleJobPress = (jobId: string) => {
-        posthogCapture('view_job_details', {
+    const handleInterviewPress = (interviewId: string) => {
+        posthogCapture('view_interview_details', {
             source: 'profile',
-            job_id: jobId
+            interview_id: interviewId
         });
-        router.push(`/home/jobs/${jobId}` as any);
+        router.push(`/home/interviews/${interviewId}/details` as any);
     };
 
     const handleLogout = () => {
@@ -244,37 +234,43 @@ export default function Profile() {
                 </View>
             </View>
 
-            {/* Job History Section */}
+            {/* Interview History Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Job History</Text>
+                <Text style={styles.sectionTitle}>Recent Interviews</Text>
                 <View style={styles.menuContainer}>
-                    {(!jobs || jobs.length === 0) ? (
+                    {(!interviews || interviews.length === 0) ? (
                         <View style={styles.emptyState}>
                             <View style={styles.emptyStateIcon}>
                                 <Ionicons name="briefcase-outline" size={32} color={Colors.text.tertiary} />
                             </View>
-                            <Text style={styles.emptyStateText}>No job applications yet</Text>
-                            <Text style={styles.emptyStateSubtext}>Add your first job to start practicing interviews</Text>
+                            <Text style={styles.emptyStateText}>No interviews yet</Text>
+                            <Text style={styles.emptyStateSubtext}>Create your first interview to start practicing</Text>
                         </View>
                     ) : (
-                        jobs.map((job) => (
+                        interviews.map((interview) => (
                             <TouchableOpacity
-                                key={job._id}
+                                key={interview._id}
                                 onPress={() => {
                                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                                    handleJobPress(job._id);
+                                    handleInterviewPress(interview._id);
                                 }}
-                                style={styles.jobButton}
+                                style={styles.interviewButton}
                                 activeOpacity={0.8}
                             >
-                                <View style={styles.jobIcon}>
-                                    <Ionicons name="briefcase" size={16} color={Colors.brand.primary} />
+                                <View style={styles.interviewIcon}>
+                                    <Ionicons 
+                                        name={getScoreIconAndColor(interview.average_score).icon as any} 
+                                        size={16} 
+                                        color={getScoreIconAndColor(interview.average_score).color} 
+                                    />
                                 </View>
-                                <View style={styles.jobInfo}>
-                                    <Text style={styles.jobTitle}>{job.role_title}</Text>
-                                    <Text style={styles.jobCompany}>{job.company}</Text>
+                                <View style={styles.interviewInfo}>
+                                    <Text style={styles.interviewTitle}>{interview.role_title}</Text>
+                                    <Text style={styles.interviewCompany}>{interview.company}</Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={16} color={Colors.text.tertiary} />
+                                <Text style={[styles.interviewScore, { color: getScoreIconAndColor(interview.average_score).color }]}>
+                                    {interview.average_score ? `${Math.round(interview.average_score)}%` : 'New'}
+                                </Text>
                             </TouchableOpacity>
                         ))
                     )}
@@ -461,7 +457,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 20,
     },
-    jobButton: {
+    interviewButton: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: Colors.glass.background,
@@ -469,7 +465,7 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         paddingHorizontal: 16,
     },
-    jobIcon: {
+    interviewIcon: {
         width: 32,
         height: 32,
         borderRadius: 16,
@@ -478,17 +474,22 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: 12,
     },
-    jobInfo: {
+    interviewInfo: {
         flex: 1,
     },
-    jobTitle: {
+    interviewTitle: {
         ...TYPOGRAPHY.itemTitle,
         color: Colors.text.primary,
         marginBottom: 2,
     },
-    jobCompany: {
+    interviewCompany: {
         ...TYPOGRAPHY.bodySmall,
         color: Colors.text.secondary,
+    },
+    interviewScore: {
+        ...TYPOGRAPHY.labelMedium,
+        fontWeight: '600',
+        marginRight: 8,
     },
     cvButton: {
         flexDirection: 'row',
