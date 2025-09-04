@@ -39,7 +39,7 @@ AGENT_IDS = {
 AGENT_METADATA = {
     InterviewType.GENERAL_INTERVIEW: {
         "name": "Niamh Morissey",
-        "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756311206/niamh_pp_fcl0dj.png"
+        "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756980335/new_niamh_rvj9fn.png"
     },
     InterviewType.PHONE_SCREEN: {
         "name": "Niamh Morissey",
