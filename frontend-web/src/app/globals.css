@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand Colors */
+  --brand-primary: #A855F7;
+  --brand-secondary: #8B5CF6;
+  --brand-tertiary: #7C3AED;
+  
+  /* Glass Effects */
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-bg-secondary: rgba(255, 255, 255, 0.08);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-purple: rgba(168, 85, 247, 0.15);
+  --glass-gold: rgba(245, 158, 11, 0.15);
+  
+  /* Typography */
+  --font-nunito: 'Nunito', system-ui, sans-serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  background: #000000;
+  color: #ffffff;
+  font-family: var(--font-inter);
+  overflow-x: hidden;
+}
+
+/* Glass morphism utility classes */
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+  
+  .glass-subtle {
+    background: var(--glass-bg-subtle);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+  }
+  
+  .glass-purple {
+    background: var(--glass-purple);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--brand-primary);
+  }
+  
+  .glass-gold {
+    background: var(--glass-gold);
+    backdrop-filter: blur(12px);
+    border: 1px solid #F59E0B;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
