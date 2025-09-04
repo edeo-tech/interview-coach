@@ -84,3 +84,44 @@ export const useUserInterviews = (limit: number = 10) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
+
+export const useInterview = (interviewId: string) => {
+  return useQuery({
+    queryKey: ['interview', interviewId],
+    queryFn: async () => {
+      const response = await interviewApi.getInterview(interviewId);
+      return response.data;
+    },
+    enabled: !!interviewId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useInterviewAttemptsCount = (interviewId: string) => {
+  return useQuery({
+    queryKey: ['interview-attempts-count', interviewId],
+    queryFn: async () => {
+      const response = await interviewApi.getInterviewAttemptsCount(interviewId);
+      return response.data;
+    },
+    enabled: !!interviewId,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+};
+
+export const useInterviewAttempts = (interviewId: string, limit: number = 10) => {
+  return useInfiniteQuery({
+    queryKey: ['interview-attempts', interviewId, limit],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await interviewApi.getInterviewAttempts(interviewId, limit, pageParam);
+      return response.data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage?.has_more) return undefined;
+      return allPages.length + 1;
+    },
+    initialPageParam: 1,
+    enabled: !!interviewId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};

@@ -66,6 +66,20 @@ export class InterviewApi {
     
     return response;
   }
+
+  async getInterview(interviewId: string) {
+    return protectedApi.get(`/app/interviews/${interviewId}`);
+  }
+
+  async getInterviewAttemptsCount(interviewId: string) {
+    return protectedApi.get(`/app/interviews/${interviewId}/attempts-count`);
+  }
+
+  async getInterviewAttempts(interviewId: string, pageSize: number = 10, pageNumber: number = 1) {
+    return protectedApi.get(`/app/interviews/${interviewId}/attempts`, {
+      params: { page_size: pageSize, page_number: pageNumber }
+    });
+  }
 }
 
 export const interviewApi = new InterviewApi();

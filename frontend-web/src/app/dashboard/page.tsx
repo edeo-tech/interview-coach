@@ -89,7 +89,7 @@ export default function DashboardPage() {
               interviews.map((interview) => (
                 <Link
                   key={interview._id}
-                  href={`/interviews/${interview._id}/results`}
+                  href={`/interviews/${interview._id}/details`}
                   className="glass rounded-2xl p-6 hover:glass-purple transition-all duration-300 flex items-center gap-4"
                 >
                   <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0">

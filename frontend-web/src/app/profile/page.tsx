@@ -194,7 +194,7 @@ export default function ProfilePage() {
                 interviews.slice(0, 5).map((interview) => (
                   <Link
                     key={interview._id}
-                    href={`/interviews/${interview._id}/results`}
+                    href={`/interviews/${interview._id}/details`}
                     className="flex items-center justify-between glass-subtle rounded-full px-4 py-3 hover:bg-white/10 transition-colors"
                   >
                     <div className="flex items-center gap-3">
