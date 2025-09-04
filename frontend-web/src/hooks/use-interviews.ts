@@ -10,6 +10,30 @@ export const useCreateInterview = () => {
   });
 };
 
+export const useCreateInterviewFromURL = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: { job_url: string }) => 
+      interviewApi.createInterviewFromURL(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['interviews'] });
+    },
+  });
+};
+
+export const useCreateInterviewFromFile = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (formData: FormData) => 
+      interviewApi.createInterviewFromFile(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['interviews'] });
+    },
+  });
+};
+
 export const useStartAttempt = () => {
   return useMutation({
     mutationFn: (interviewId: string) => interviewApi.startAttempt(interviewId),

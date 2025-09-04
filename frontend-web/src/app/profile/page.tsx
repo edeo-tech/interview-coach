@@ -6,6 +6,7 @@ import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 import { useCheckAuth, useUpdateProfile, useLogout } from '@/hooks/use-auth';
 import { useUserInterviews } from '@/hooks/use-interviews';
 import { useCV } from '@/hooks/use-cv';
+import { useUserStats } from '@/hooks/use-stats';
 
 export default function ProfilePage() {
   const { data: user } = useCheckAuth();
@@ -13,6 +14,7 @@ export default function ProfilePage() {
   const logoutMutation = useLogout();
   const { data: interviewsData } = useUserInterviews(5);
   const { data: currentCV } = useCV();
+  const { data: userStats } = useUserStats();
   
   const [name, setName] = useState(user?.name || '');
   const [isEditing, setIsEditing] = useState(false);
@@ -45,13 +47,10 @@ export default function ProfilePage() {
     return 'text-green-400';
   };
 
-  // Mock stats - replace with actual user stats API call
-  const userStats = {
-    totalInterviews: interviews.length,
-    averageScore: interviews.length > 0 
-      ? Math.round(interviews.reduce((sum, i) => sum + (i.average_score || 0), 0) / interviews.length)
-      : 0,
-    streak: 0,
+  const statsData = {
+    totalInterviews: userStats?.total_attempts || 0,
+    averageScore: userStats?.average_score || 0,
+    streak: user?.streak || 0,
   };
 
   const hasCV = !!currentCV;
@@ -147,7 +146,7 @@ export default function ProfilePage() {
                   </div>
                   <span className="text-white">Total Interviews</span>
                 </div>
-                <span className="font-semibold text-white">{userStats.totalInterviews}</span>
+                <span className="font-semibold text-white">{statsData.totalInterviews}</span>
               </div>
               
               <div className="flex items-center justify-between glass-subtle rounded-full px-4 py-3">
@@ -157,8 +156,8 @@ export default function ProfilePage() {
                   </div>
                   <span className="text-white">Average Score</span>
                 </div>
-                <span className={`font-semibold ${getLikelihoodColor(userStats.averageScore)}`}>
-                  {userStats.averageScore}%
+                <span className={`font-semibold ${getLikelihoodColor(statsData.averageScore)}`}>
+                  {statsData.averageScore ? Math.round(statsData.averageScore) : 0}%
                 </span>
               </div>
               
@@ -169,7 +168,7 @@ export default function ProfilePage() {
                   </div>
                   <span className="text-white">Day Streak</span>
                 </div>
-                <span className="font-semibold text-white">{userStats.streak}</span>
+                <span className="font-semibold text-white">{statsData.streak}</span>
               </div>
             </div>
           </div>
@@ -178,9 +177,9 @@ export default function ProfilePage() {
           <div className="glass rounded-2xl p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-nunito font-semibold text-xl text-white">Recent Interviews</h2>
-              <Link href="/dashboard" className="text-brand-primary hover:underline text-sm">
+              {/* <Link href="/dashboard" className="text-brand-primary hover:underline text-sm">
                 View all
-              </Link>
+              </Link> */}
             </div>
             <div className="space-y-3">
               {!interviews || interviews.length === 0 ? (

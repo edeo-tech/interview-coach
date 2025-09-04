@@ -27,6 +27,16 @@ export class InterviewApi {
     return protectedApi.post<CreateInterviewResponse>('/app/interviews', body);
   }
 
+  async createInterviewFromURL(data: { job_url: string }) {
+    return protectedApi.post('/app/interviews/create/url', data);
+  }
+
+  async createInterviewFromFile(formData: FormData) {
+    return protectedApi.post('/app/interviews/create/file', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+
   async startAttempt(interviewId: string) {
     return protectedApi.post<StartAttemptResponse>(`/app/interviews/${interviewId}/attempts/start`);
   }
