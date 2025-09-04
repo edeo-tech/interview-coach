@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { interviewApi } from '@/lib/interview-api';
 import type { CreateInterviewRequest } from '@/lib/interview-api';
 
@@ -44,10 +44,19 @@ export const useInterviewFeedback = (interviewId: string, attemptId: string) => 
   });
 };
 
-export const useUserInterviews = () => {
-  return useQuery({
-    queryKey: ['interviews'],
-    queryFn: () => interviewApi.getUserInterviews(),
+export const useUserInterviews = (limit: number = 10) => {
+  return useInfiniteQuery({
+    queryKey: ['interviews', limit],
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await interviewApi.getUserInterviews({ skip: pageParam, limit });
+      return response.data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage?.has_more) return undefined;
+      const totalFetched = allPages.reduce((sum, page) => sum + (page.interviews?.length || 0), 0);
+      return totalFetched;
+    },
+    initialPageParam: 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

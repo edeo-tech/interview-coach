@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCheckAuth } from '@/hooks/use-auth';
 import { useRevenueCatLogin } from '@/hooks/use-purchases';
-import Navigation from './Navigation';
+import Header from './Header';
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
   return (
     <div className="min-h-screen">
-      <Navigation />
+      <Header />
       <main>{children}</main>
     </div>
   );

@@ -1,165 +1,255 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
-import { useCheckAuth, useUpdateProfile } from '@/hooks/use-auth';
-import { useCustomerInfo } from '@/hooks/use-purchases';
-import { useRouter } from 'next/navigation';
+import { useCheckAuth, useUpdateProfile, useLogout } from '@/hooks/use-auth';
+import { useUserInterviews } from '@/hooks/use-interviews';
+import { useCV } from '@/hooks/use-cv';
 
 export default function ProfilePage() {
-  const router = useRouter();
   const { data: user } = useCheckAuth();
   const updateProfileMutation = useUpdateProfile();
-  const { data: customerInfo } = useCustomerInfo();
+  const logoutMutation = useLogout();
+  const { data: interviewsData } = useUserInterviews(5);
+  const { data: currentCV } = useCV();
   
   const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [age, setAge] = useState(user?.age?.toString() || '');
-  const [industry, setIndustry] = useState(user?.industry || '');
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const interviews = interviewsData?.pages[0]?.interviews || [];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateProfileMutation.mutate({
-      name,
-      email,
-      age: age ? parseInt(age) : undefined,
-      industry: industry || undefined
-    });
+  useEffect(() => {
+    if (user?.name) {
+      setName(user.name);
+    }
+  }, [user?.name]);
+
+  const handleUpdateName = () => {
+    if (name.trim() !== user?.name) {
+      updateProfileMutation.mutate({ name: name.trim() });
+    }
+    setIsEditing(false);
   };
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out?')) {
+      logoutMutation.mutate();
+    }
+  };
+
+  const getLikelihoodColor = (likelihood: number | null | undefined) => {
+    if (!likelihood) return 'text-gray-500';
+    if (likelihood < 40) return 'text-red-400';
+    if (likelihood < 70) return 'text-yellow-400';
+    return 'text-green-400';
+  };
+
+  // Mock stats - replace with actual user stats API call
+  const userStats = {
+    totalInterviews: interviews.length,
+    averageScore: interviews.length > 0 
+      ? Math.round(interviews.reduce((sum, i) => sum + (i.average_score || 0), 0) / interviews.length)
+      : 0,
+    streak: 0,
+  };
+
+  const hasCV = !!currentCV;
 
   return (
     <AuthenticatedLayout>
       <div className="p-6">
-        <div className="max-w-2xl mx-auto">
-          <header className="mb-8">
-            <h1 className="font-nunito font-bold text-3xl mb-2">Profile Settings</h1>
-            <p className="text-white/70">Manage your account information</p>
-          </header>
-
+        <div className="max-w-2xl mx-auto space-y-6">
+          
+          {/* User Info Section */}
           <div className="glass rounded-2xl p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium mb-2">Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 glass-subtle rounded-xl border-0 focus:ring-2 focus:ring-brand-primary focus:outline-none"
-                  placeholder="Your full name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 glass-subtle rounded-xl border-0 focus:ring-2 focus:ring-brand-primary focus:outline-none"
-                  placeholder="your@email.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Age</label>
-                <input
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  className="w-full px-4 py-3 glass-subtle rounded-xl border-0 focus:ring-2 focus:ring-brand-primary focus:outline-none"
-                  placeholder="25"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Industry</label>
-                <input
-                  type="text"
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                  className="w-full px-4 py-3 glass-subtle rounded-xl border-0 focus:ring-2 focus:ring-brand-primary focus:outline-none"
-                  placeholder="Technology, Finance, Healthcare, etc."
-                />
-              </div>
-
-              {updateProfileMutation.error && (
-                <p className="text-error text-sm">
-                  Failed to update profile. Please try again.
-                </p>
-              )}
-
-              {updateProfileMutation.isSuccess && (
-                <p className="text-success text-sm">
-                  Profile updated successfully!
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={updateProfileMutation.isPending}
-                className="w-full glass-purple font-nunito font-semibold py-3 rounded-xl hover:bg-brand-primary/20 transition-colors disabled:opacity-50"
-              >
-                {updateProfileMutation.isPending ? 'Updating...' : 'Update Profile'}
-              </button>
-            </form>
-          </div>
-
-          {/* Subscription Status */}
-          <div className="glass rounded-2xl p-6 mt-6">
-            <h3 className="font-nunito font-semibold text-lg mb-4">Subscription</h3>
-            {customerInfo ? (
-              <div className="space-y-4">
-                {Object.keys(customerInfo.entitlements.active).length > 0 ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/70">Status</span>
-                      <span className="font-medium text-success">Premium Active</span>
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-2 glass-subtle rounded-lg border-0 focus:ring-2 focus:ring-brand-primary focus:outline-none font-nunito font-semibold text-2xl"
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleUpdateName}
+                        disabled={updateProfileMutation.isPending}
+                        className="glass-purple font-nunito font-medium px-4 py-2 rounded-lg hover:bg-brand-primary/20 transition-colors disabled:opacity-50"
+                      >
+                        {updateProfileMutation.isPending ? 'Saving...' : 'Save'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setName(user?.name || '');
+                        }}
+                        className="glass-subtle font-nunito font-medium px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                      >
+                        Cancel
+                      </button>
                     </div>
-                    {Object.entries(customerInfo.entitlements.active).map(([key, entitlement]) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-white/70">Plan</span>
-                        <span className="font-medium">{entitlement.identifier}</span>
-                      </div>
-                    ))}
-                  </>
+                  </div>
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-white/70 mb-4">You're on the free plan</p>
-                    <button
-                      onClick={() => router.push('/paywall')}
-                      className="glass-purple font-nunito font-medium px-6 py-2 rounded-lg hover:bg-brand-primary/20 transition-colors"
-                    >
-                      Upgrade to Premium
-                    </button>
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h1 className="font-nunito font-bold text-3xl text-white">{user?.name || 'User'}</h1>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="text-brand-primary hover:text-brand-primary/80 transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-white/70 text-lg">{user?.email}</p>
+                    {user?.industry && (
+                      <p className="text-brand-primary text-sm mt-1">{user.industry}</p>
+                    )}
                   </div>
                 )}
-                
-                {customerInfo.managementURL && (
-                  <a
-                    href={customerInfo.managementURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-center text-brand-primary hover:underline mt-4"
-                  >
-                    Manage Subscription
-                  </a>
-                )}
               </div>
-            ) : (
-              <p className="text-white/70">Loading subscription info...</p>
-            )}
-          </div>
-
-          {/* Account Actions */}
-          <div className="glass rounded-2xl p-6 mt-6">
-            <h3 className="font-nunito font-semibold text-lg mb-4">Account Actions</h3>
-            <div className="space-y-3">
-              <button className="w-full text-left p-3 text-error hover:bg-error/10 rounded-lg transition-colors">
-                <span className="font-medium">Delete Account</span>
-                <p className="text-white/70 text-sm">Permanently delete your account</p>
-              </button>
             </div>
           </div>
+
+          {/* CV Status Section */}
+          <div className="glass rounded-2xl p-6">
+            <Link
+              href="/cv-upload"
+              className="flex items-center justify-between glass-subtle rounded-full px-4 py-3 hover:bg-white/10 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 glass-subtle rounded-full flex items-center justify-center">
+                  <svg className={`w-4 h-4 ${hasCV ? 'text-green-400' : 'text-brand-primary'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <span className="text-white">{hasCV ? 'View Your CV' : 'Upload Your CV'}</span>
+              </div>
+              <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+
+          {/* User Stats */}
+          <div className="glass rounded-2xl p-6">
+            <h2 className="font-nunito font-semibold text-xl mb-4 text-white">Stats</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between glass-subtle rounded-full px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 glass-subtle rounded-full flex items-center justify-center">
+                    <span className="text-lg">🎤</span>
+                  </div>
+                  <span className="text-white">Total Interviews</span>
+                </div>
+                <span className="font-semibold text-white">{userStats.totalInterviews}</span>
+              </div>
+              
+              <div className="flex items-center justify-between glass-subtle rounded-full px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 glass-subtle rounded-full flex items-center justify-center">
+                    <span className="text-lg">📊</span>
+                  </div>
+                  <span className="text-white">Average Score</span>
+                </div>
+                <span className={`font-semibold ${getLikelihoodColor(userStats.averageScore)}`}>
+                  {userStats.averageScore}%
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between glass-subtle rounded-full px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 glass-subtle rounded-full flex items-center justify-center">
+                    <span className="text-lg">🔥</span>
+                  </div>
+                  <span className="text-white">Day Streak</span>
+                </div>
+                <span className="font-semibold text-white">{userStats.streak}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Interviews */}
+          <div className="glass rounded-2xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-nunito font-semibold text-xl text-white">Recent Interviews</h2>
+              <Link href="/dashboard" className="text-brand-primary hover:underline text-sm">
+                View all
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {!interviews || interviews.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 glass-subtle rounded-2xl mx-auto mb-3 flex items-center justify-center">
+                    <span className="text-xl">💼</span>
+                  </div>
+                  <p className="text-white/70 text-sm">No interviews yet</p>
+                  <p className="text-white/50 text-xs">Create your first interview to start practicing</p>
+                </div>
+              ) : (
+                interviews.slice(0, 5).map((interview) => (
+                  <Link
+                    key={interview._id}
+                    href={`/interviews/${interview._id}/results`}
+                    className="flex items-center justify-between glass-subtle rounded-full px-4 py-3 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 glass-subtle rounded-full flex items-center justify-center">
+                        <span className="text-sm">💼</span>
+                      </div>
+                      <div>
+                        <p className="text-white font-medium text-sm">{interview.role_title}</p>
+                        <p className="text-white/70 text-xs">{interview.company}</p>
+                      </div>
+                    </div>
+                    <span className={`font-medium text-xs ${getLikelihoodColor(interview.average_score)}`}>
+                      {interview.average_score ? `${Math.round(interview.average_score)}%` : 'New'}
+                    </span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Settings Link */}
+          <div className="glass rounded-2xl p-6">
+            <Link
+              href="/settings"
+              className="flex items-center justify-between glass-subtle rounded-full px-4 py-3 hover:bg-white/10 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 glass-subtle rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <span className="text-white">Settings</span>
+              </div>
+              <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+            className="w-full glass border border-red-500/30 rounded-2xl p-4 hover:bg-red-500/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-3"
+          >
+            <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="font-nunito font-semibold text-red-400">
+              {logoutMutation.isPending ? 'Logging Out...' : 'Log Out'}
+            </span>
+          </button>
         </div>
       </div>
     </AuthenticatedLayout>

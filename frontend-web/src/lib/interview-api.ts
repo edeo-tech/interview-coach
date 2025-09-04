@@ -46,8 +46,15 @@ export class InterviewApi {
     return protectedApi.get(`/app/interviews/${interviewId}/attempts/${attemptId}/feedback`);
   }
 
-  async getUserInterviews() {
-    return protectedApi.get('/app/interviews');
+  async getUserInterviews(params?: { skip?: number; limit?: number }) {
+    const pageSize = params?.limit || 10;
+    const pageNumber = params?.skip ? Math.floor(params.skip / pageSize) + 1 : 1;
+    
+    const response = await protectedApi.get('/app/interviews/', {
+      params: { page_size: pageSize, page_number: pageNumber }
+    });
+    
+    return response;
   }
 }
 
