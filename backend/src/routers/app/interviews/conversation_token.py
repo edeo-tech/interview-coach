@@ -171,6 +171,7 @@ async def get_conversation_token(
                 status_code=200,
                 content={
                     "conversation_token": conversation_token,
+                    "agent_id": agent_id,
                     "agent_metadata": agent_metadata
                 }
             )

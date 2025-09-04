@@ -55,18 +55,9 @@ export default function InterviewDetailsPage() {
   const { data: attemptsData } = useInterviewAttempts(id, 5);
   const startAttempt = useStartAttempt();
 
-  const handleStartInterview = async () => {
-    if (!interviewData?.interview) return;
-
-    try {
-      const response = await startAttempt.mutateAsync(id);
-      
-      // Navigate to session page (you'll need to create this)
-      router.push(`/interviews/${id}/session`);
-    } catch (error: any) {
-      console.error('Failed to start interview:', error);
-      alert('Failed to start interview. Please try again.');
-    }
+  const handleStartInterview = () => {
+    // Navigate directly to session page - the session page handles starting the attempt
+    router.push(`/interviews/${id}/session`);
   };
 
   const handleAttemptPress = (attemptId: string) => {

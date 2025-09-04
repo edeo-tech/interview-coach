@@ -16,6 +16,7 @@ export interface StartAttemptResponse {
 
 export interface ConversationTokenResponse {
   conversation_token: string;
+  agent_id: string;
   agent_metadata: {
     name: string;
     profile_picture: string;
@@ -38,7 +39,7 @@ export class InterviewApi {
   }
 
   async startAttempt(interviewId: string) {
-    return protectedApi.post<StartAttemptResponse>(`/app/interviews/${interviewId}/attempts/start`);
+    return protectedApi.post<StartAttemptResponse>(`/app/interviews/${interviewId}/start`);
   }
 
   async getConversationToken(interviewId: string, interviewType: string) {
@@ -48,8 +49,12 @@ export class InterviewApi {
     );
   }
 
-  async finishAttempt(interviewId: string, attemptId: string) {
-    return protectedApi.post(`/app/interviews/${interviewId}/attempts/${attemptId}/finish`);
+  async finishAttempt(interviewId: string, attemptId: string, durationSeconds?: number, conversationId?: string) {
+    return protectedApi.post(`/app/interviews/${interviewId}/finish`, {
+      attempt_id: attemptId,
+      duration_seconds: durationSeconds,
+      conversation_id: conversationId
+    });
   }
 
   async getInterviewFeedback(interviewId: string, attemptId: string) {
@@ -79,6 +84,14 @@ export class InterviewApi {
     return protectedApi.get(`/app/interviews/${interviewId}/attempts`, {
       params: { page_size: pageSize, page_number: pageNumber }
     });
+  }
+
+  async addTranscript(interviewId: string, turn: {
+    role: 'user' | 'agent';
+    message: string;
+    time_in_call_secs?: number;
+  }) {
+    return protectedApi.post(`/app/interviews/${interviewId}/transcript`, turn);
   }
 }
 

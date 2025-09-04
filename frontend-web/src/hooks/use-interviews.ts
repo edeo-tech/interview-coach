@@ -40,12 +40,30 @@ export const useStartAttempt = () => {
   });
 };
 
+export const useAddTranscript = () => {
+  return useMutation({
+    mutationFn: ({ interviewId, turn }: { 
+      interviewId: string; 
+      turn: {
+        role: 'user' | 'agent';
+        message: string;
+        time_in_call_secs?: number;
+      }
+    }) => interviewApi.addTranscript(interviewId, turn),
+  });
+};
+
 export const useFinishAttempt = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ interviewId, attemptId }: { interviewId: string; attemptId: string }) => 
-      interviewApi.finishAttempt(interviewId, attemptId),
+    mutationFn: ({ interviewId, attemptId, durationSeconds, conversationId }: { 
+      interviewId: string; 
+      attemptId: string;
+      durationSeconds?: number;
+      conversationId?: string;
+    }) => 
+      interviewApi.finishAttempt(interviewId, attemptId, durationSeconds, conversationId),
     onSuccess: () => {
       // Invalidate interviews cache to refresh list
       queryClient.invalidateQueries({ queryKey: ['interviews'] });

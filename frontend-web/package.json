@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@elevenlabs/react": "^0.1.0",
+    "@elevenlabs/react": "^0.1.7",
     "@revenuecat/purchases-js": "^1.13.1",
     "@tanstack/react-query": "^5.80.10",
     "axios": "^1.10.0",
