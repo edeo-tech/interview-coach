@@ -4,6 +4,8 @@ import { OnboardingAnswers, OnboardingAnswersSubmission } from '../../_interface
 export const submitOnboardingAnswers = async (
   submission: OnboardingAnswersSubmission
 ): Promise<{ message: string; data: OnboardingAnswers }> => {
+  console.log("SUBMITTING ONBOARDING ANSWERS");
+  console.log(submission);
   const response = await protectedApi.post('/app/onboarding/onboarding/submit', submission);
   return response.data;
 };

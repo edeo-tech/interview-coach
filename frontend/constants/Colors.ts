@@ -137,7 +137,7 @@ export const OVERLAY = {
   extreme: 'rgba(0, 0, 0, 0.9)', // Extreme overlay
 } as const;
 
-// Gradient Colors (for MorphingBackground)
+// Gradient Colors
 export const GRADIENT = {
   purple: 'rgba(124, 58, 237, 0.4)',
   cyan: 'rgba(6, 182, 212, 0.25)',
