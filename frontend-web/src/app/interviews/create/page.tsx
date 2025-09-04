@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 import { useCreateInterview } from '@/hooks/use-interviews';
+import { usePremiumCheck } from '@/hooks/use-purchases';
 
 // Import from shared interfaces
 const interviewTypes = [
@@ -23,15 +24,35 @@ export default function CreateInterviewPage() {
   const [jobDescription, setJobDescription] = useState('');
   
   const createInterviewMutation = useCreateInterview();
+  const { isPremium, loading: premiumLoading } = usePremiumCheck();
+  
+  // Track interview count for non-premium users
+  const [freeInterviewCount] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return parseInt(localStorage.getItem('freeInterviewCount') || '0');
+    }
+    return 0;
+  });
 
   const handleStartInterview = async () => {
     if (!selectedType) return;
+    
+    // Check premium status for free users
+    if (!isPremium && freeInterviewCount >= 3) {
+      router.push('/paywall');
+      return;
+    }
     
     try {
       const response = await createInterviewMutation.mutateAsync({
         interview_type: selectedType,
         job_description: jobDescription || undefined
       });
+      
+      // Increment free interview count
+      if (!isPremium) {
+        localStorage.setItem('freeInterviewCount', String(freeInterviewCount + 1));
+      }
       
       router.push(`/interviews/${response.data.interview_id}/session?type=${selectedType}`);
     } catch (error) {

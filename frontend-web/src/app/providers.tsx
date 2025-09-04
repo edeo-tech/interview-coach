@@ -7,6 +7,7 @@ import { initializePostHog } from '@/lib/analytics';
 export default function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initializePostHog();
+    // RevenueCat will be initialized when user logs in
   }, []);
 
   return (

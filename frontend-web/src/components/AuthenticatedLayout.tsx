@@ -3,11 +3,15 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCheckAuth } from '@/hooks/use-auth';
+import { useRevenueCatLogin } from '@/hooks/use-purchases';
 import Navigation from './Navigation';
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { data: user, isLoading, error } = useCheckAuth();
+  
+  // Initialize RevenueCat for logged in user
+  useRevenueCatLogin();
 
   useEffect(() => {
     if (!isLoading && (!user || error)) {

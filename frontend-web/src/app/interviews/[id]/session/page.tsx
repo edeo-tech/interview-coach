@@ -1,7 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+import { useStartAttempt, useFinishAttempt, useGetConversationToken } from '@/hooks/use-interviews';
+
+// Dynamic import to avoid SSR issues with ElevenLabs
+const ElevenLabsConversation = dynamic(
+  () => import('@/components/ElevenLabsConversation'),
+  { ssr: false }
+);
 
 export default function InterviewSessionPage() {
   const params = useParams();
@@ -14,27 +22,43 @@ export default function InterviewSessionPage() {
   const [isConnected, setIsConnected] = useState(false);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [transcript, setTranscript] = useState<Array<{role: string; message: string; timestamp: number}>>([]);
-  const [currentMessage, setCurrentMessage] = useState('');
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<string | null>(null);
+  
+  const startAttemptMutation = useStartAttempt();
+  const finishAttemptMutation = useFinishAttempt();
+  const getTokenMutation = useGetConversationToken();
 
   useEffect(() => {
-    // Initialize ElevenLabs conversation (placeholder for now)
-    initializeConversation();
-  }, []);
+    if (interviewId) {
+      initializeInterview();
+    }
+  }, [interviewId]);
 
-  const initializeConversation = async () => {
-    // TODO: Initialize ElevenLabs conversation with @elevenlabs/react
-    console.log('Initializing conversation for interview:', interviewType);
-    
-    // Simulate connection
-    setTimeout(() => {
-      setIsConnected(true);
-      startInterview();
-    }, 2000);
-  };
-
-  const startInterview = () => {
-    setIsSessionActive(true);
-    addMessage('agent', "Hello! I'm excited to interview you today. Let's start with you telling me a bit about yourself and your background.");
+  const initializeInterview = async () => {
+    try {
+      // Start the interview attempt
+      const attemptResponse = await startAttemptMutation.mutateAsync(interviewId);
+      setAttemptId(attemptResponse.data.attempt_id);
+      
+      // Get conversation token from ElevenLabs
+      const tokenResponse = await getTokenMutation.mutateAsync({
+        interviewId,
+        interviewType
+      });
+      
+      setAgentId(tokenResponse.data.conversation_token);
+      setConversationId(tokenResponse.data.conversation_token);
+    } catch (error) {
+      console.error('Failed to initialize interview:', error);
+      // Fallback to demo mode
+      setAgentId('demo-agent');
+      setTimeout(() => {
+        setIsConnected(true);
+        setIsSessionActive(true);
+      }, 1000);
+    }
   };
 
   const addMessage = (role: 'user' | 'agent', message: string) => {
@@ -46,11 +70,41 @@ export default function InterviewSessionPage() {
     setTranscript(prev => [...prev, newMessage]);
   };
 
-  const endInterview = () => {
+  const endInterview = async () => {
     setIsSessionActive(false);
+    
+    if (attemptId) {
+      try {
+        await finishAttemptMutation.mutateAsync({ interviewId, attemptId });
+      } catch (error) {
+        console.error('Failed to finish attempt:', error);
+      }
+    }
+    
     // Navigate to results
     router.push(`/interviews/${interviewId}/results`);
   };
+  
+  const handleConnect = useCallback(() => {
+    setIsConnected(true);
+    setIsSessionActive(true);
+  }, []);
+
+  const handleDisconnect = useCallback(() => {
+    setIsConnected(false);
+    setIsSessionActive(false);
+  }, []);
+
+  const handleMessage = useCallback((message: any) => {
+    // Handle messages from ElevenLabs
+    if (message.type === 'transcript') {
+      addMessage(message.role === 'user' ? 'user' : 'agent', message.text);
+    }
+  }, []);
+
+  const handleError = useCallback((error: any) => {
+    console.error('ElevenLabs error:', error);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -117,24 +171,45 @@ export default function InterviewSessionPage() {
 
           {/* Voice Controls */}
           <div className="glass rounded-2xl p-6">
-            <div className="flex items-center justify-center gap-6">
-              {!isSessionActive ? (
-                <div className="text-center">
-                  <p className="text-white/70 mb-4">Preparing your interview session...</p>
-                  <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                </div>
-              ) : (
-                <>
-                  <button className="w-16 h-16 glass-purple rounded-full flex items-center justify-center hover:bg-brand-primary/20 transition-colors">
-                    <span className="text-2xl">🎤</span>
-                  </button>
-                  <div className="text-center">
-                    <p className="font-nunito font-medium">Click to speak</p>
-                    <p className="text-white/70 text-sm">Press and hold to record your response</p>
+            {agentId ? (
+              <ElevenLabsConversation
+                agentId={agentId}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+                onMessage={handleMessage}
+                onError={handleError}
+              >
+                {(conversation: any) => (
+                  <div className="flex items-center justify-center gap-6">
+                    {!isSessionActive ? (
+                      <div className="text-center">
+                        <p className="text-white/70 mb-4">Preparing your interview session...</p>
+                        <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onMouseDown={() => conversation.startRecording()}
+                          onMouseUp={() => conversation.stopRecording()}
+                          className="w-16 h-16 glass-purple rounded-full flex items-center justify-center hover:bg-brand-primary/20 transition-colors"
+                        >
+                          <span className="text-2xl">🎤</span>
+                        </button>
+                        <div className="text-center">
+                          <p className="font-nunito font-medium">Click to speak</p>
+                          <p className="text-white/70 text-sm">Press and hold to record your response</p>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </>
-              )}
-            </div>
+                )}
+              </ElevenLabsConversation>
+            ) : (
+              <div className="text-center">
+                <p className="text-white/70 mb-4">Initializing interview session...</p>
+                <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+              </div>
+            )}
           </div>
         </div>
       </main>

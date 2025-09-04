@@ -5,23 +5,23 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/login', '/register', '/terms'];
+  const publicRoutes = ['/', '/welcome', '/login', '/register', '/terms'];
   
   // Check if the current path is a public route
   const isPublicRoute = publicRoutes.includes(pathname);
   
-  // Get token from request (checking cookies or headers)
+  // For middleware, we can't access localStorage, so we'll be more permissive
+  // and let client-side routing handle auth redirects for public routes
   const accessToken = request.cookies.get('accessToken')?.value || 
                     request.headers.get('authorization')?.replace('Bearer ', '');
 
-  // If user is not authenticated and trying to access protected route
-  if (!accessToken && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // If user is authenticated and trying to access auth pages, redirect to dashboard
-  if (accessToken && (pathname === '/login' || pathname === '/register')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  // Only block access to clearly protected routes if no token is found
+  // Let /, /welcome, /login, /register through regardless of auth status
+  const protectedPaths = ['/dashboard', '/interviews', '/jobs', '/profile', '/paywall'];
+  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
+  
+  if (!accessToken && isProtectedPath) {
+    return NextResponse.redirect(new URL('/welcome', request.url));
   }
 
   return NextResponse.next();

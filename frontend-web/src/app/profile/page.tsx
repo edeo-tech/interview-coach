@@ -3,10 +3,14 @@
 import { useState } from 'react';
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 import { useCheckAuth, useUpdateProfile } from '@/hooks/use-auth';
+import { useCustomerInfo } from '@/hooks/use-purchases';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { data: user } = useCheckAuth();
   const updateProfileMutation = useUpdateProfile();
+  const { data: customerInfo } = useCustomerInfo();
   
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -100,15 +104,56 @@ export default function ProfilePage() {
             </form>
           </div>
 
+          {/* Subscription Status */}
+          <div className="glass rounded-2xl p-6 mt-6">
+            <h3 className="font-nunito font-semibold text-lg mb-4">Subscription</h3>
+            {customerInfo ? (
+              <div className="space-y-4">
+                {Object.keys(customerInfo.entitlements.active).length > 0 ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Status</span>
+                      <span className="font-medium text-success">Premium Active</span>
+                    </div>
+                    {Object.entries(customerInfo.entitlements.active).map(([key, entitlement]) => (
+                      <div key={key} className="flex items-center justify-between">
+                        <span className="text-white/70">Plan</span>
+                        <span className="font-medium">{entitlement.identifier}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-white/70 mb-4">You're on the free plan</p>
+                    <button
+                      onClick={() => router.push('/paywall')}
+                      className="glass-purple font-nunito font-medium px-6 py-2 rounded-lg hover:bg-brand-primary/20 transition-colors"
+                    >
+                      Upgrade to Premium
+                    </button>
+                  </div>
+                )}
+                
+                {customerInfo.managementURL && (
+                  <a
+                    href={customerInfo.managementURL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-center text-brand-primary hover:underline mt-4"
+                  >
+                    Manage Subscription
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p className="text-white/70">Loading subscription info...</p>
+            )}
+          </div>
+
           {/* Account Actions */}
           <div className="glass rounded-2xl p-6 mt-6">
             <h3 className="font-nunito font-semibold text-lg mb-4">Account Actions</h3>
             <div className="space-y-3">
-              <button className="w-full text-left p-3 glass-subtle rounded-lg hover:bg-white/5 transition-colors">
-                <span className="font-medium">Subscription Settings</span>
-                <p className="text-white/70 text-sm">Manage your subscription and billing</p>
-              </button>
-              
               <button className="w-full text-left p-3 text-error hover:bg-error/10 rounded-lg transition-colors">
                 <span className="font-medium">Delete Account</span>
                 <p className="text-white/70 text-sm">Permanently delete your account</p>

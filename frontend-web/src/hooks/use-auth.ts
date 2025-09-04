@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/auth-api';
 import { setAccessToken, setRefreshToken, clearTokens } from '@/lib/api';
+import { initializeRevenueCat } from '@/lib/revenuecat';
 import type { 
   LoginUser, 
   RegisterUser, 
@@ -34,12 +35,17 @@ const postLoginLogic = async (
   // Update auth cache
   queryClient.setQueryData(['auth'], response.user);
 
+  // Initialize RevenueCat with user ID
+  await initializeRevenueCat(response.user.id);
+
   // Navigate based on user status
-  if (isNewUser || (response as ThirdPartyLoginResponse).sign_up) {
-    router.push('/onboarding');
-  } else {
-    router.push('/dashboard');
-  }
+  // TODO: Add onboarding flow later
+  // if (isNewUser || (response as ThirdPartyLoginResponse).sign_up) {
+  //   router.push('/onboarding');
+  // } else {
+  //   router.push('/dashboard');
+  // }
+  router.push('/dashboard');
 };
 
 export const useRegister = () => {
@@ -95,7 +101,7 @@ export const useCheckAuth = () => {
     queryKey: ['auth'],
     queryFn: async () => (await authApi.checkAuth()).data,
     staleTime: Infinity,
-    retry: false,
+    retry: false
   });
 };
 

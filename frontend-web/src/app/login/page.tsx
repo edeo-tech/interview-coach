@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLogin } from '@/hooks/use-auth';
+import GoogleSignIn from '@/components/auth/GoogleSignIn';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,9 +19,23 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="glass rounded-2xl p-8 w-full max-w-md">
-        <h1 className="font-nunito font-bold text-3xl mb-8 text-center">
+        <h1 className="font-nunito font-bold text-3xl mb-2 text-center">
           Welcome Back
         </h1>
+        <p className="text-white/70 text-center mb-8">
+          Continue your interview practice
+        </p>
+        
+        {/* Social Sign-In Options */}
+        <div className="space-y-3 mb-6">
+          <GoogleSignIn />
+          
+          <div className="flex items-center my-6">
+            <div className="flex-1 h-px bg-white/20"></div>
+            <span className="px-4 text-sm text-white/60">or</span>
+            <div className="flex-1 h-px bg-white/20"></div>
+          </div>
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
