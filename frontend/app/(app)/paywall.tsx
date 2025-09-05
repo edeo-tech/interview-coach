@@ -362,22 +362,7 @@ const Paywall = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Close button */}
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => {
-              // Light impact for navigation back - minor action
-              impactAsync(ImpactFeedbackStyle.Light);
-              if (source === 'onboarding') {
-                router.replace('/(app)/(tabs)/home');
-              } else {
-                router.back();
-              }
-            }}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="close" size={20} color={Colors.text.quaternary} />
-          </TouchableOpacity>
+          {/* Removed close button to make paywall hard */}
 
           {/* Main title */}
           <View style={styles.titleContainer}>

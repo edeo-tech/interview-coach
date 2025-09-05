@@ -8,7 +8,7 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import InterviewCreationProgress from '../../components/InterviewCreationProgress';
 import OnboardingSkipWarning from '../../components/OnboardingSkipWarning';
-import { useCreateInterviewFromURL, useCreateInterviewFromFile } from '../../_queries/interviews/interviews';
+import { useCreateInterviewFromURL, useCreateInterviewFromFile, useUserInterviews } from '../../_queries/interviews/interviews';
 import { useToast } from '../../components/Toast';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
@@ -29,7 +29,11 @@ const OnboardingJobCreation = () => {
   
   const createFromURL = useCreateInterviewFromURL();
   const createFromFile = useCreateInterviewFromFile();
+  const { data: interviewsData, isLoading: interviewsLoading } = useUserInterviews(5); // Get first 5 interviews
   const { showToast } = useToast();
+  
+  // Get existing interviews
+  const existingInterviews = interviewsData?.pages.flatMap(page => page.interviews) || [];
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { impactAsync } = useHapticsSafely();
 
@@ -325,6 +329,31 @@ const OnboardingJobCreation = () => {
                 Share the job you're interviewing for so we can create targeted practice questions
               </Text>
 
+              {/* Existing Interviews Section */}
+              {existingInterviews.length > 0 ? (
+                <View style={styles.existingInterviewsSection}>
+                  <Text style={styles.existingInterviewsTitle}>Your existing interviews</Text>
+                  {existingInterviews.slice(0, 2).map((interview) => (
+                    <View key={interview._id} style={styles.existingInterviewContainer}>
+                      <Ionicons name="briefcase" size={20} color={Colors.brand.primary} />
+                      <View style={styles.existingInterviewInfo}>
+                        <Text style={styles.existingInterviewTitle}>{interview.role_title}</Text>
+                        <Text style={styles.existingInterviewCompany}>{interview.company}</Text>
+                      </View>
+                      <Ionicons name="checkmark-circle" size={20} color={Colors.semantic.successAlt} />
+                    </View>
+                  ))}
+                  {existingInterviews.length > 2 && (
+                    <Text style={styles.moreInterviewsText}>
+                      +{existingInterviews.length - 2} more interview{existingInterviews.length - 2 > 1 ? 's' : ''}
+                    </Text>
+                  )}
+                  <Text style={styles.existingInterviewsNote}>
+                    You can continue with existing interviews or create a new one
+                  </Text>
+                </View>
+              ) : null}
+
               {/* URL Input - with animation */}
               <Animated.View 
                 style={[
@@ -456,7 +485,7 @@ const OnboardingJobCreation = () => {
             }
           ]}
         >
-          {canSubmit && (
+          {canSubmit ? (
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={isLoading || !canSubmit}
@@ -469,7 +498,16 @@ const OnboardingJobCreation = () => {
               <Ionicons name="add-circle" size={24} color={Colors.white} />
               <Text style={styles.createButtonText}>Create Practice Interview</Text>
             </TouchableOpacity>
-          )}
+          ) : existingInterviews.length > 0 ? (
+            <TouchableOpacity 
+              style={styles.continueButton} 
+              onPress={navigateToReviews}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.continueButtonText}>Continue with existing interviews</Text>
+              <Ionicons name="arrow-forward" size={20} color={Colors.white} />
+            </TouchableOpacity>
+          ) : null}
           
           <TouchableOpacity 
             style={styles.skipButton} 
@@ -675,6 +713,76 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.buttonLarge,
     color: Colors.white,
     marginLeft: 8,
+  },
+  continueButton: {
+    width: '100%',
+    maxWidth: 320,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.glass.purple,
+    borderWidth: 1,
+    borderColor: Colors.brand.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    shadowColor: Colors.brand.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  continueButtonText: {
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.white,
+    marginRight: 8,
+  },
+  existingInterviewsSection: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  existingInterviewsTitle: {
+    ...TYPOGRAPHY.labelLarge,
+    color: Colors.text.primary,
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  existingInterviewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.glass.backgroundSecondary,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.glass.border,
+  },
+  existingInterviewInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  existingInterviewTitle: {
+    ...TYPOGRAPHY.labelMedium,
+    color: Colors.text.primary,
+    fontWeight: '500',
+  },
+  existingInterviewCompany: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
+    marginTop: 2,
+  },
+  moreInterviewsText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  existingInterviewsNote: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
+    textAlign: 'center',
+    marginTop: 8,
   },
   skipButton: {
     paddingVertical: 12,

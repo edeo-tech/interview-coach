@@ -173,10 +173,7 @@ const OnboardingReviews = () => {
     ]).start(() => {
       // Navigate after animation completes
       setTimeout(() => {
-        router.push({ 
-          pathname: '/(app)/paywall',
-          params: { source: 'onboarding' }
-        });
+        router.push('/(onboarding)/demo-interview');
       }, 100);
     });
   };

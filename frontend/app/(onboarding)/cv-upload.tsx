@@ -8,7 +8,7 @@ import ChatGPTBackground from '../../components/ChatGPTBackground';
 import OnboardingProgress from '../../components/OnboardingProgress';
 import CVUploadProgress from '../../components/CVUploadProgress';
 import OnboardingSkipWarning from '../../components/OnboardingSkipWarning';
-import { useUploadCV } from '../../_queries/interviews/cv';
+import { useUploadCV, useCV } from '../../_queries/interviews/cv';
 import { useToast } from '../../components/Toast';
 import usePosthogSafely from '../../hooks/posthog/usePosthogSafely';
 import useHapticsSafely from '../../hooks/haptics/useHapticsSafely';
@@ -25,6 +25,7 @@ const OnboardingCVUpload = () => {
   const [showSkipWarning, setShowSkipWarning] = useState(false);
   
   const uploadCV = useUploadCV();
+  const { data: existingCV, isLoading: cvLoading } = useCV();
   const { showToast } = useToast();
   const { posthogScreen, posthogCapture } = usePosthogSafely();
   const { impactAsync } = useHapticsSafely();
@@ -252,6 +253,25 @@ const OnboardingCVUpload = () => {
               Help us personalize your interview experience by uploading your resume
             </Text>
 
+            {/* Existing CV Section */}
+            {existingCV ? (
+              <View style={styles.existingCVSection}>
+                <View style={styles.existingCVContainer}>
+                  <Ionicons name="document-text" size={24} color={Colors.semantic.successAlt} />
+                  <View style={styles.existingCVInfo}>
+                    <Text style={styles.existingCVTitle}>Current CV</Text>
+                    <Text style={styles.existingCVSubtitle}>
+                      {existingCV.name || 'Previously uploaded'}
+                    </Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={24} color={Colors.semantic.successAlt} />
+                </View>
+                <Text style={styles.existingCVNote}>
+                  You can continue with your existing CV or upload a new one
+                </Text>
+              </View>
+            ) : null}
+
             {/* File Upload Section */}
             <View style={styles.uploadSection}>
               <TouchableOpacity
@@ -275,7 +295,9 @@ const OnboardingCVUpload = () => {
                 ) : (
                   <View style={styles.uploadPrompt}>
                     <Ionicons name="cloud-upload" size={32} color={Colors.brand.primary} />
-                    <Text style={styles.uploadText}>Select your CV</Text>
+                    <Text style={styles.uploadText}>
+                      {existingCV ? 'Upload new CV' : 'Select your CV'}
+                    </Text>
                     <Text style={styles.uploadSubtext}>PDF, DOC, DOCX, TXT</Text>
                   </View>
                 )}
@@ -310,17 +332,28 @@ const OnboardingCVUpload = () => {
             }
           ]}
         >
-          {selectedFile && (
+          {selectedFile ? (
             <TouchableOpacity 
               style={styles.uploadButton} 
               onPress={handleUpload}
               disabled={uploadCV.isPending}
               activeOpacity={0.8}
             >
-              <Text style={styles.uploadButtonText}>Upload CV</Text>
+              <Text style={styles.uploadButtonText}>
+                {existingCV ? 'Replace CV' : 'Upload CV'}
+              </Text>
               <Ionicons name="arrow-forward" size={20} color={Colors.white} />
             </TouchableOpacity>
-          )}
+          ) : existingCV ? (
+            <TouchableOpacity 
+              style={styles.continueButton} 
+              onPress={navigateToJobCreation}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.continueButtonText}>Continue with existing CV</Text>
+              <Ionicons name="arrow-forward" size={20} color={Colors.white} />
+            </TouchableOpacity>
+          ) : null}
           
           <TouchableOpacity 
             style={styles.skipButton} 
@@ -483,6 +516,62 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.buttonLarge,
     color: Colors.white,
     marginRight: 8,
+  },
+  continueButton: {
+    width: '100%',
+    maxWidth: 320,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.glass.purple,
+    borderWidth: 1,
+    borderColor: Colors.brand.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    shadowColor: Colors.brand.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  continueButtonText: {
+    ...TYPOGRAPHY.buttonLarge,
+    color: Colors.white,
+    marginRight: 8,
+  },
+  existingCVSection: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  existingCVContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.glass.successSecondary,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.glass.successBorderAlt,
+  },
+  existingCVInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  existingCVTitle: {
+    ...TYPOGRAPHY.labelMedium,
+    color: Colors.text.primary,
+    fontWeight: '600',
+  },
+  existingCVSubtitle: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.secondary,
+    marginTop: 2,
+  },
+  existingCVNote: {
+    ...TYPOGRAPHY.bodySmall,
+    color: Colors.text.tertiary,
+    textAlign: 'center',
+    marginTop: 12,
   },
   skipButton: {
     paddingVertical: 12,

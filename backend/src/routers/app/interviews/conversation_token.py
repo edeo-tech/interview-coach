@@ -115,29 +115,49 @@ async def get_conversation_token(
 ) -> ConversationTokenResponse:
     """Get a conversation token for ElevenLabs private agent"""
     
-    # Verify interview exists and belongs to user
-    interview = await get_interview(req, interview_id)
-    if not interview:
-        raise HTTPException(status_code=404, detail="Interview not found")
-    
-    if interview.user_id != user_id:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    # Map interview type to agent ID
-    interview_type_enum = InterviewType(request.interview_type)
-    agent_id = AGENT_IDS.get(interview_type_enum)
-    
-    if not agent_id:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"No agent configured for interview type: {request.interview_type}"
-        )
-    
-    # Get agent metadata
-    agent_metadata = AGENT_METADATA.get(interview_type_enum, {
-        "name": "Interview Agent",
-        "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
-    })
+    # Check if this is a demo onboarding interview
+    if interview_id == "demo_onboarding_interview":
+        # For demo, use general interview agent directly
+        interview_type_enum = InterviewType.GENERAL_INTERVIEW
+        agent_id = AGENT_IDS.get(interview_type_enum)
+        
+        if not agent_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="Demo agent not configured"
+            )
+        
+        # Get agent metadata for general interview
+        agent_metadata = AGENT_METADATA.get(interview_type_enum, {
+            "name": "Niamh Morissey",
+            "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756980335/new_niamh_rvj9fn.png"
+        })
+        
+        # Skip interview validation for demo
+    else:
+        # Regular interview flow - verify interview exists and belongs to user
+        interview = await get_interview(req, interview_id)
+        if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+        
+        if interview.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Map interview type to agent ID for regular interviews
+        interview_type_enum = InterviewType(request.interview_type)
+        agent_id = AGENT_IDS.get(interview_type_enum)
+        
+        if not agent_id:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"No agent configured for interview type: {request.interview_type}"
+            )
+        
+        # Get agent metadata for regular interviews
+        agent_metadata = AGENT_METADATA.get(interview_type_enum, {
+            "name": "Interview Agent",
+            "profile_picture": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
+        })
     
     # Fetch conversation token from ElevenLabs
     try:

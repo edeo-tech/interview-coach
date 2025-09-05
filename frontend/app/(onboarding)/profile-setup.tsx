@@ -53,10 +53,10 @@ const ProfileSetup = () => {
 
   const getStepNumber = (step: Step): number => {
     switch (step) {
-      case 'profile': return 3;
-      case 'name': return 4;
-      case 'age': return 5;
-      default: return 3;
+      case 'profile': return 1;
+      case 'name': return 2;
+      case 'age': return 3;
+      default: return 1;
     }
   };
 
@@ -151,8 +151,8 @@ const ProfileSetup = () => {
       console.log('Saving age to user document', ageValue);
       updateProfileMutation.mutate({ age: ageValue });
       
-      // Navigate to section transition screen
-      router.push('/(onboarding)/section-transition');
+      // Navigate to job role selection screen
+      router.push('/(onboarding)/job-role');
     }
   };
 
@@ -282,7 +282,7 @@ const ProfileSetup = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={getStepNumber(currentStep)} 
-          totalSteps={5}
+          totalSteps={6}
           onBack={handleBack}
         />
         
