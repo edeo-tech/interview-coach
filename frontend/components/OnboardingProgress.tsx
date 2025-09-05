@@ -27,17 +27,31 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   console.log('showBackButton', showBackButton);
   const { impactAsync } = useHapticsSafely();
   
-  // Progress calculation for screens 3-11 only (profile-setup to nerves-rating, before analyzing)
-  // Screen 3 (profile-setup) = 0%, Screen 11 (nerves-rating) = 100%
+  // Progress calculation 
   const calculateProgress = () => {
-    // Only show progress for steps 3-11 (profile-setup to nerves-rating, before analyzing screen)
+    // Handle new 5-step flow (profile setup flow)
+    if (totalSteps === 5) {
+      if (currentStep < 1) return 0;
+      if (currentStep > 5) return 1;
+      
+      // 5-step flow: name, age, job industry, cv, job
+      const weights = [
+        0.0,   // Step 1 = 0%
+        0.45,   // Step 2 = 20%
+        0.66,   // Step 3 = 40% 
+        0.75,   // Step 4 = 70%
+        1.0    // Step 5 = 100%
+      ];
+      
+      return weights[currentStep - 1] || 0;
+    }
+    
+    // Legacy flow for screens 3-11 only (profile-setup to nerves-rating, before analyzing)
     if (currentStep < 3) return 0; // Before profile-setup
     if (currentStep > 12) return 1; // At or after analyzing screen
     
     // Map steps 3-11 to progress 0-100%
-    // Step 3 = 0%, Step 11 = 100%
     const progressStep = currentStep - 3; // Convert to 0-8 range
-    const totalProgressSteps = 8; // Steps 3-11 = 9 steps (0-8)
     
     // Weighted progress for better UX - early steps get more weight
     const weights = [
@@ -50,7 +64,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
       0.65,  // Step 9 (past-outcomes) = 65%
       0.80,  // Step 10 (preparation-rating) = 80%
       0.92,  // Step 11 (communication-rating) = 90%
-      1.0    // Step 11 (nerves-rating) = 100%
+      1.0    // Step 12 (nerves-rating) = 100%
     ];
     
     return weights[progressStep] || 0;
@@ -60,6 +74,18 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   
   // Calculate previous step's progress for smooth transitions
   const calculatePreviousProgress = () => {
+    // Handle new 5-step flow
+    if (totalSteps === 5) {
+      if (currentStep <= 1) return 0;
+      if (currentStep > 5) return 1;
+      
+      const previousStep = currentStep - 1;
+      const weights = [0.0, 0.2, 0.4, 0.7, 1.0];
+      
+      return weights[previousStep - 1] || 0;
+    }
+    
+    // Legacy flow
     if (currentStep <= 3) return 0;
     if (currentStep > 11) return 1;
     
@@ -101,8 +127,8 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     }
   };
 
-  // Don't show progress bar for screens at or after analyzing (step 12)
-  const showProgressBar = shouldShowProgress && currentStep <= 12;
+  // Don't show progress bar for screens at or after analyzing (step 12) or after 5-step flow
+  const showProgressBar = shouldShowProgress && ((totalSteps === 5 && currentStep <= 5) || (totalSteps !== 5 && currentStep <= 12));
 
   return (
     <View style={styles.container}>

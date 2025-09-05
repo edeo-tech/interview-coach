@@ -296,10 +296,10 @@ const OnboardingJobCreation = () => {
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={14} 
-          totalSteps={12}
+          currentStep={5} 
+          totalSteps={5}
           onBack={handleBack}
         />
         
@@ -497,7 +497,7 @@ const OnboardingJobCreation = () => {
           onClose={() => setShowSkipWarning(false)}
           onSkip={handleSkipConfirm}
         />
-      </SafeAreaView>
+      </View>
     </ChatGPTBackground>
   );
 };

@@ -60,13 +60,7 @@ const OnboardingSkipWarning: React.FC<OnboardingSkipWarningProps> = ({
     >
       <Pressable style={styles.overlay} onPress={handleClose}>
         <Pressable style={styles.modalContainer} onPress={(e) => e.stopPropagation()}>
-          <LinearGradient
-            colors={[
-              Colors.glass.backgroundSecondary,
-              Colors.glass.backgroundInput,
-            ]}
-            style={styles.modalContent}
-          >
+          <View style={styles.modalContent}>
             {/* Header with Icon */}
             <View style={styles.header}>
               <View style={styles.iconContainer}>
@@ -109,7 +103,7 @@ const OnboardingSkipWarning: React.FC<OnboardingSkipWarningProps> = ({
                 <Text style={styles.skipButtonText}>Skip for Now</Text>
               </TouchableOpacity>
             </View>
-          </LinearGradient>
+          </View>
         </Pressable>
       </Pressable>
     </Modal>
@@ -119,7 +113,7 @@ const OnboardingSkipWarning: React.FC<OnboardingSkipWarningProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: Colors.overlay.dark,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -129,6 +123,7 @@ const styles = StyleSheet.create({
     maxWidth: 340,
   },
   modalContent: {
+    backgroundColor: Colors.background.primary,
     borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 24,

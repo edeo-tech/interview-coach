@@ -229,10 +229,10 @@ const OnboardingCVUpload = () => {
 
   return (
     <ChatGPTBackground style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={13} 
-          totalSteps={12}
+          currentStep={4} 
+          totalSteps={5}
           onBack={handleBack}
         />
         
@@ -348,7 +348,7 @@ const OnboardingCVUpload = () => {
           onClose={() => setShowSkipWarning(false)}
           onSkip={handleSkipConfirm}
         />
-      </SafeAreaView>
+      </View>
     </ChatGPTBackground>
   );
 };
