@@ -131,17 +131,24 @@ const ProfileSetup = () => {
 
   const handleNext = () => {
     impactAsync(ImpactFeedbackStyle.Light);
+    console.log('Handle Next');
     
     if (currentStep === 'profile') {
       animateToStep('forward', 'name');
     } else if (currentStep === 'name' && name.trim()) {
       updateData('name', name.trim());
+      
+      // Save name to user document
+      console.log('Saving name to user document', name.trim());
+      updateProfileMutation.mutate({ name: name.trim() });
+      
       animateToStep('forward', 'age');
     } else if (currentStep === 'age' && isValidAge) {
       const ageValue = parseInt(age.trim());
       updateData('age', age.trim());
       
       // Save age to user document
+      console.log('Saving age to user document', ageValue);
       updateProfileMutation.mutate({ age: ageValue });
       
       // Navigate to section transition screen
