@@ -29,18 +29,19 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   
   // Progress calculation 
   const calculateProgress = () => {
-    // Handle new 5-step flow (profile setup flow)
-    if (totalSteps === 5) {
+    // Handle new 6-step flow (profile setup flow)
+    if (totalSteps === 6) {
       if (currentStep < 1) return 0;
-      if (currentStep > 5) return 1;
+      if (currentStep > 6) return 1;
       
-      // 5-step flow: name, age, job industry, cv, job
+      // 6-step flow: profile intro, name, age, job industry, cv, job
       const weights = [
-        0.0,   // Step 1 = 0%
-        0.45,   // Step 2 = 20%
-        0.66,   // Step 3 = 40% 
-        0.75,   // Step 4 = 70%
-        1.0    // Step 5 = 100%
+        0.0,   // Step 1 (profile intro) = 0%
+        0.25,  // Step 2 (name) = 25%
+        0.5,  // Step 3 (age) = 50%
+        0.67,   // Step 4 (job industry) = 67%
+        0.90,  // Step 5 (cv) = 90%
+        1.0    // Step 6 (job) = 100%
       ];
       
       return weights[currentStep - 1] || 0;
@@ -74,13 +75,13 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   
   // Calculate previous step's progress for smooth transitions
   const calculatePreviousProgress = () => {
-    // Handle new 5-step flow
-    if (totalSteps === 5) {
+    // Handle new 6-step flow
+    if (totalSteps === 6) {
       if (currentStep <= 1) return 0;
-      if (currentStep > 5) return 1;
+      if (currentStep > 6) return 1;
       
       const previousStep = currentStep - 1;
-      const weights = [0.0, 0.2, 0.4, 0.7, 1.0];
+      const weights = [0.0, 0.17, 0.33, 0.5, 0.75, 1.0];
       
       return weights[previousStep - 1] || 0;
     }
@@ -127,8 +128,8 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     }
   };
 
-  // Don't show progress bar for screens at or after analyzing (step 12) or after 5-step flow
-  const showProgressBar = shouldShowProgress && ((totalSteps === 5 && currentStep <= 5) || (totalSteps !== 5 && currentStep <= 12));
+  // Don't show progress bar for screens at or after analyzing (step 12) or after 6-step flow
+  const showProgressBar = shouldShowProgress && ((totalSteps === 6 && currentStep <= 6) || (totalSteps !== 6 && currentStep <= 12));
 
   return (
     <View style={styles.container}>

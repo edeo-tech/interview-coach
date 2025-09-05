@@ -275,7 +275,7 @@ const ProfileSetup = () => {
       <View style={styles.container}>
         <OnboardingProgress 
           currentStep={getStepNumber(currentStep)} 
-          totalSteps={12}
+          totalSteps={5}
           onBack={handleBack}
         />
         

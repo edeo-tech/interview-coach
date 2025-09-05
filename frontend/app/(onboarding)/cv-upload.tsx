@@ -231,8 +231,8 @@ const OnboardingCVUpload = () => {
     <ChatGPTBackground style={styles.gradient}>
       <View style={styles.container}>
         <OnboardingProgress 
-          currentStep={4} 
-          totalSteps={5}
+          currentStep={5} 
+          totalSteps={6}
           onBack={handleBack}
         />
         
