@@ -7,7 +7,7 @@ import {
   checkEntitlement, 
   getOfferings, 
   purchasePackage,
-  loginRevenueCat,
+  initializeRevenueCat,
   type CustomerInfo 
 } from '@/lib/revenuecat';
 import { useCheckAuth } from './use-auth';
@@ -64,12 +64,20 @@ export const useOfferings = () => {
 
 export const usePurchase = () => {
   const queryClient = useQueryClient();
+  const { data: user } = useCheckAuth();
   
   return useMutation({
-    mutationFn: purchasePackage,
-    onSuccess: (customerInfo) => {
-      // Update the customer info cache
-      queryClient.setQueryData(['customer-info'], customerInfo);
+    mutationFn: async (rcPackage: any) => {
+      // Pass the rcPackage and optionally the user email
+      console.log('Purchasing package:', rcPackage);
+      return purchasePackage(rcPackage, user?.email);
+    },
+    onSuccess: (result) => {
+      console.log('Purchase successful:', result);
+      // Update the customer info cache with the result
+      if (result?.customerInfo) {
+        queryClient.setQueryData(['customer-info'], result.customerInfo);
+      }
       queryClient.invalidateQueries({ queryKey: ['customer-info'] });
     },
   });
@@ -81,14 +89,13 @@ export const useRevenueCatLogin = () => {
 
   useEffect(() => {
     if (user?.id) {
-      // RevenueCat is already initialized at root, just login the user
-      loginRevenueCat(user.id).then(customerInfo => {
-        if (customerInfo) {
-          queryClient.setQueryData(['customer-info'], customerInfo);
-          queryClient.invalidateQueries({ queryKey: ['customer-info'] });
-        }
+      // Re-initialize RevenueCat with the user ID
+      initializeRevenueCat(user.id).then(() => {
+        // After re-initialization, invalidate queries to fetch fresh data
+        queryClient.invalidateQueries({ queryKey: ['customer-info'] });
+        queryClient.invalidateQueries({ queryKey: ['offerings'] });
       }).catch(err => {
-        console.error('Failed to login to RevenueCat:', err);
+        console.error('Failed to initialize RevenueCat with user ID:', err);
       });
     }
   }, [user, queryClient]);

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/auth-api';
 import { setAccessToken, setRefreshToken, clearTokens } from '@/lib/api';
+import { initializeRevenueCat } from '@/lib/revenuecat';
 import type { 
   LoginUser, 
   RegisterUser, 
@@ -34,7 +35,8 @@ const postLoginLogic = async (
   // Update auth cache
   queryClient.setQueryData(['auth'], response.user);
 
-  // RevenueCat is initialized at root level, login will happen via useRevenueCatLogin hook
+  // Re-initialize RevenueCat with user ID for proper user tracking
+  await initializeRevenueCat(response.user.id);
 
   // Navigate based on user status
   // TODO: Add onboarding flow later

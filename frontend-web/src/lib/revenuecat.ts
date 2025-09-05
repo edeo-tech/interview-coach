@@ -14,15 +14,22 @@ export const initializeRevenueCat = async (userId?: string) => {
     return;
   }
   
-  // If already initialized, don't re-initialize
-  if (revenueCatInstance) {
+  // If already initialized and we're trying to set a user ID, re-initialize
+  if (revenueCatInstance && userId) {
+    console.log('Re-initializing RevenueCat with user ID:', userId);
+    revenueCatInstance = null; // Clear existing instance
+  } else if (revenueCatInstance && !userId) {
     console.log('RevenueCat already initialized');
     return revenueCatInstance;
   }
   
   try {
+    console.log('Initializing RevenueCat with user ID:', userId);
     // Initialize RevenueCat - userId is optional for web SDK
-    revenueCatInstance = Purchases.configure(apiKey, userId);
+    revenueCatInstance = Purchases.configure({
+      apiKey,
+      appUserId: userId ?? '',
+    });
     console.log('RevenueCat initialized successfully', userId ? `for user: ${userId}` : 'anonymously');
     return revenueCatInstance;
   } catch (error) {
@@ -33,35 +40,35 @@ export const initializeRevenueCat = async (userId?: string) => {
 
 export const getRevenueCat = () => revenueCatInstance;
 
-export const loginRevenueCat = async (userId: string) => {
-  if (!revenueCatInstance) {
-    console.error('RevenueCat not initialized');
-    throw new Error('RevenueCat not initialized');
-  }
+// export const loginRevenueCat = async (userId: string) => {
+//   if (!revenueCatInstance) {
+//     console.error('RevenueCat not initialized');
+//     throw new Error('RevenueCat not initialized');
+//   }
   
-  try {
-    const { customerInfo } = await revenueCatInstance.logIn(userId);
-    return customerInfo;
-  } catch (error) {
-    console.error('Failed to log in to RevenueCat:', error);
-    throw error;
-  }
-};
+//   try {
+//     const { customerInfo } = await revenueCatInstance.logIn(userId);
+//     return customerInfo;
+//   } catch (error) {
+//     console.error('Failed to log in to RevenueCat:', error);
+//     throw error;
+//   }
+// };
 
-export const logoutRevenueCat = async () => {
-  if (!revenueCatInstance) {
-    console.error('RevenueCat not initialized');
-    return;
-  }
+// export const logoutRevenueCat = async () => {
+//   if (!revenueCatInstance) {
+//     console.error('RevenueCat not initialized');
+//     return;
+//   }
   
-  try {
-    const { customerInfo } = await revenueCatInstance.logOut();
-    return customerInfo;
-  } catch (error) {
-    console.error('Failed to log out from RevenueCat:', error);
-    throw error;
-  }
-};
+//   try {
+//     const { customerInfo } = await revenueCatInstance.logOut();
+//     return customerInfo;
+//   } catch (error) {
+//     console.error('Failed to log out from RevenueCat:', error);
+//     throw error;
+//   }
+// };
 
 export const getCustomerInfo = async (): Promise<CustomerInfo | null> => {
   if (!revenueCatInstance) {
@@ -100,15 +107,18 @@ export const getOfferings = async () => {
   }
 };
 
-export const purchasePackage = async (packageId: string) => {
+export const purchasePackage = async (pkg: any, userEmail?: string) => {
   if (!revenueCatInstance) {
     console.error('RevenueCat not initialized');
     return null;
   }
   
   try {
-    const { customerInfo } = await revenueCatInstance.purchasePackage({ identifier: packageId });
-    return customerInfo;
+    const result = await revenueCatInstance.purchase({
+      rcPackage: pkg,
+      customerEmail: userEmail,
+    });
+    return result;
   } catch (error) {
     console.error('Failed to purchase package:', error);
     throw error;

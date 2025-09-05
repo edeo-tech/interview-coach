@@ -17,14 +17,27 @@ export default function PaywallPage() {
   const { refetch: refetchCustomerInfo } = useCustomerInfo();
   
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [isRestoring, setIsRestoring] = useState(false);
 
   // Set default selection when offerings load
   useEffect(() => {
     if (offerings?.current && offerings.current.availablePackages.length > 0 && !selectedPackage) {
+      // Log the structure for debugging
+      console.log('Offerings structure:', offerings);
+      console.log('Available packages:', offerings.current.availablePackages);
+      
+      // Log detailed package structure
+      offerings.current.availablePackages.forEach((pkg, index) => {
+        console.log(`Package ${index}:`, {
+          identifier: pkg.identifier,
+          packageType: pkg.packageType,
+          webBillingProduct: pkg.webBillingProduct,
+          fullPackage: pkg
+        });
+      });
+      
       // Default select weekly package (most popular)
       const weeklyPackage = offerings.current.availablePackages.find(
-        pkg => pkg.packageType === 'WEEKLY' || pkg.identifier.toLowerCase().includes('weekly')
+        pkg => pkg.packageType === '$rc_weekly' || pkg.identifier.toLowerCase().includes('weekly')
       );
       if (weeklyPackage) {
         setSelectedPackage(weeklyPackage.identifier);
@@ -36,13 +49,27 @@ export default function PaywallPage() {
 
   // Calculate savings percentage
   const calculateSavingsPercentage = (weeklyPkg: any, monthlyPkg: any): number => {
-    const weeklyPrice = weeklyPkg.product.price;
-    const monthlyPrice = monthlyPkg.product.price;
-    const fourWeeksPrice = weeklyPrice * 4;
-    
-    if (fourWeeksPrice === 0) return 0;
-    const savings = ((fourWeeksPrice - monthlyPrice) / fourWeeksPrice) * 100;
-    return Math.round(savings);
+    try {
+      // RevenueCat JS SDK uses webBillingProduct.currentPrice.amountMicros for numeric price
+      const weeklyPrice = weeklyPkg?.webBillingProduct?.currentPrice?.amountMicros ? weeklyPkg.webBillingProduct.currentPrice.amountMicros / 1000000 : 0;
+      const monthlyPrice = monthlyPkg?.webBillingProduct?.currentPrice?.amountMicros ? monthlyPkg.webBillingProduct.currentPrice.amountMicros / 1000000 : 0;
+      
+      console.log('Price calculation:', { weeklyPrice, monthlyPrice });
+      
+      if (!weeklyPrice || !monthlyPrice) {
+        console.warn('Price information not available for packages');
+        return 0;
+      }
+      
+      const fourWeeksPrice = weeklyPrice * 4;
+      
+      if (fourWeeksPrice === 0) return 0;
+      const savings = ((fourWeeksPrice - monthlyPrice) / fourWeeksPrice) * 100;
+      return Math.round(savings);
+    } catch (error) {
+      console.error('Error calculating savings:', error);
+      return 0;
+    }
   };
 
   // Get benefits based on source
@@ -70,26 +97,25 @@ export default function PaywallPage() {
     return benefits;
   };
 
-  const handleRestore = async () => {
-    try {
-      setIsRestoring(true);
-      // For web, we'll just refetch customer info to check for active subscriptions
-      await refetchCustomerInfo();
-      // Note: Actual restore functionality would need backend support for web
-      alert('Please contact support to restore purchases on web');
-    } catch (error) {
-      console.error('Restore error:', error);
-      alert('Failed to restore purchases');
-    } finally {
-      setIsRestoring(false);
-    }
-  };
 
   const handlePurchase = async () => {
     if (!selectedPackage) return;
 
     try {
-      await purchaseMutation.mutateAsync(selectedPackage);
+      // Find the actual package object, not just the identifier
+      const packageToPurchase = offerings?.current?.availablePackages.find(
+        pkg => pkg.identifier === selectedPackage
+      );
+      
+      if (!packageToPurchase) {
+        console.error('Package not found:', selectedPackage);
+        return;
+      }
+      
+      console.log('Package to purchase:', packageToPurchase);
+      
+      // Pass the package directly for web billing
+      await purchaseMutation.mutateAsync(packageToPurchase);
       // Redirect to dashboard after successful purchase
       router.push('/dashboard');
     } catch (error) {
@@ -99,10 +125,10 @@ export default function PaywallPage() {
 
   const benefits = getBenefits();
   const weeklyPackage = offerings?.current?.availablePackages.find(
-    pkg => pkg.packageType === 'WEEKLY' || pkg.identifier.toLowerCase().includes('weekly')
+    pkg => pkg.packageType === '$rc_weekly' || pkg.identifier.toLowerCase().includes('weekly')
   );
   const monthlyPackage = offerings?.current?.availablePackages.find(
-    pkg => pkg.packageType === 'MONTHLY' || pkg.identifier.toLowerCase().includes('monthly')
+    pkg => pkg.packageType === '$rc_monthly' || pkg.identifier.toLowerCase().includes('monthly')
   );
   
   const savingsPercentage = weeklyPackage && monthlyPackage 
@@ -204,15 +230,15 @@ export default function PaywallPage() {
                     <h3 className={`font-nunito font-semibold text-xl mb-1 ${
                       selectedPackage === monthlyPackage.identifier ? 'text-brand-primary' : 'text-white'
                     }`}>
-                      {monthlyPackage.product.title}
+                      {monthlyPackage?.webBillingProduct?.title || 'Monthly Plan'}
                     </h3>
-                    <p className="text-white/70">{monthlyPackage.product.description || 'Billed monthly'}</p>
+                    <p className="text-white/70">{monthlyPackage?.webBillingProduct?.description || 'Billed monthly'}</p>
                   </div>
                   <div className="text-right">
                     <p className={`font-nunito font-bold text-2xl ${
                       selectedPackage === monthlyPackage.identifier ? 'text-brand-primary' : 'text-white'
                     }`}>
-                      {monthlyPackage.product.priceString}
+                      {monthlyPackage?.webBillingProduct?.currentPrice?.currency + ' ' + (monthlyPackage?.webBillingProduct?.currentPrice?.amountMicros ? (monthlyPackage.webBillingProduct.currentPrice.amountMicros / 1000000).toFixed(2) : '0') || 'Loading...'}
                     </p>
                     <p className="text-white/70 text-sm">per month</p>
                   </div>
@@ -240,15 +266,15 @@ export default function PaywallPage() {
                     <h3 className={`font-nunito font-semibold text-xl mb-1 ${
                       selectedPackage === weeklyPackage.identifier ? 'text-brand-primary' : 'text-white'
                     }`}>
-                      {weeklyPackage.product.title}
+                      {weeklyPackage?.webBillingProduct?.title || 'Weekly Plan'}
                     </h3>
-                    <p className="text-white/70">{weeklyPackage.product.description || 'Billed weekly'}</p>
+                    <p className="text-white/70">{weeklyPackage?.webBillingProduct?.description || 'Billed weekly'}</p>
                   </div>
                   <div className="text-right">
                     <p className={`font-nunito font-bold text-2xl ${
                       selectedPackage === weeklyPackage.identifier ? 'text-brand-primary' : 'text-white'
                     }`}>
-                      {weeklyPackage.product.priceString}
+                      {weeklyPackage?.webBillingProduct?.currentPrice?.currency + ' ' + (weeklyPackage?.webBillingProduct?.currentPrice?.amountMicros ? (weeklyPackage.webBillingProduct.currentPrice.amountMicros / 1000000).toFixed(2) : '0') || 'Loading...'}
                     </p>
                     <p className="text-white/70 text-sm">per week</p>
                   </div>
@@ -275,31 +301,6 @@ export default function PaywallPage() {
             </button>
           </div>
 
-          {/* Legal Links */}
-          <div className="flex justify-center items-center gap-6 text-sm text-white/50">
-            <a href="https://edio.cc/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">
-              Privacy
-            </a>
-            <div className="w-px h-4 bg-white/30"></div>
-            <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">
-              Terms
-            </a>
-            <div className="w-px h-4 bg-white/30"></div>
-            <button 
-              onClick={handleRestore}
-              disabled={isRestoring || purchaseMutation.isPending}
-              className="hover:text-white/70 transition-colors disabled:opacity-50"
-            >
-              {isRestoring ? (
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 border border-white/50 border-t-transparent rounded-full animate-spin"></div>
-                  Restore
-                </div>
-              ) : (
-                'Restore'
-              )}
-            </button>
-          </div>
 
           <div className="text-center mt-4">
             <p className="text-white/40 text-xs">
