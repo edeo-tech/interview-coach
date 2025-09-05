@@ -20,6 +20,7 @@ ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1"
 # Agent IDs stored securely in environment variables
 AGENT_IDS = {
     InterviewType.GENERAL_INTERVIEW: config('AGENT_ID_NIAMH_MORISSEY', default=''),
+    InterviewType.DEMO_ONBOARDING_INTERVIEW: config('AGENT_ID_DEMO_ONBOARDING_INTERVIEW', default=''),
     InterviewType.PHONE_SCREEN: config('AGENT_ID_PHONE_SCREEN', default=''),
     InterviewType.INITIAL_HR_INTERVIEW: config('AGENT_ID_HR_INTERVIEW', default=''),
     InterviewType.MOCK_SALES_CALL: config('AGENT_ID_SALES_CALL', default=''),
@@ -37,6 +38,10 @@ AGENT_IDS = {
 
 # Agent metadata (names and avatars) - safe to store in code
 AGENT_METADATA = {
+    InterviewType.DEMO_ONBOARDING_INTERVIEW: {
+        "name": "Niamh Morissey",
+        "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756980335/new_niamh_rvj9fn.png"
+    },
     InterviewType.GENERAL_INTERVIEW: {
         "name": "Niamh Morissey",
         "profile_picture": "https://res.cloudinary.com/dphekriyz/image/upload/v1756980335/new_niamh_rvj9fn.png"
@@ -118,7 +123,7 @@ async def get_conversation_token(
     # Check if this is a demo onboarding interview
     if interview_id == "demo_onboarding_interview":
         # For demo, use general interview agent directly
-        interview_type_enum = InterviewType.GENERAL_INTERVIEW
+        interview_type_enum = InterviewType.DEMO_ONBOARDING_INTERVIEW
         agent_id = AGENT_IDS.get(interview_type_enum)
         
         if not agent_id:

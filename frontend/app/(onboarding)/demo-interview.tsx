@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Animated, PanResponder, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Animated, PanResponder, Dimensions, Platform, ActivityIndicator } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -106,6 +106,8 @@ export default function DemoInterview() {
     const router = useRouter();
     const [callState, setCallState] = useState<'incoming' | 'connecting' | 'active' | 'ended'>('incoming');
     const [duration, setDuration] = useState(0);
+    const [hasAnimatedIn, setHasAnimatedIn] = useState(false);
+    const [hasFetchedAgent, setHasFetchedAgent] = useState(false);
     const { posthogScreen, posthogCapture } = usePosthogSafely();
     const { impactAsync } = useHapticsSafely();
     
@@ -124,26 +126,30 @@ export default function DemoInterview() {
             if (Platform.OS === 'web') return;
             posthogScreen('onboarding_demo_interview');
             
-            // Entrance animation
-            const slideInFrom = getNavigationDirection() === 'back' ? -screenWidth : screenWidth;
-            contentTranslateX.setValue(slideInFrom);
-            contentOpacity.setValue(0);
-            
-            setTimeout(() => {
-                Animated.parallel([
-                    Animated.timing(contentTranslateX, {
-                        toValue: 0,
-                        duration: 700,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(contentOpacity, {
-                        toValue: 1,
-                        duration: 600,
-                        useNativeDriver: true,
-                    })
-                ]).start();
-            }, 100);
-        }, [posthogScreen])
+            // Only animate in once when the screen first loads
+            if (!hasAnimatedIn) {
+                const slideInFrom = getNavigationDirection() === 'back' ? -screenWidth : screenWidth;
+                contentTranslateX.setValue(slideInFrom);
+                contentOpacity.setValue(0);
+                
+                setTimeout(() => {
+                    Animated.parallel([
+                        Animated.timing(contentTranslateX, {
+                            toValue: 0,
+                            duration: 700,
+                            useNativeDriver: true,
+                        }),
+                        Animated.timing(contentOpacity, {
+                            toValue: 1,
+                            duration: 600,
+                            useNativeDriver: true,
+                        })
+                    ]).start(() => {
+                        setHasAnimatedIn(true);
+                    });
+                }, 100);
+            }
+        }, [hasAnimatedIn, posthogScreen])
     );
 
     const getAgentInfo = () => {
@@ -182,19 +188,16 @@ export default function DemoInterview() {
 
     const handleCallEnded = useCallback(() => {
         if (callState !== 'ended') {
-            setCallState('ended');
             posthogCapture('onboarding_demo_interview_ended', {
                 duration_seconds: duration
             });
             
-            // Navigate to paywall after a brief pause
-            setTimeout(() => {
-                setNavigationDirection('forward');
-                router.replace({ 
-                    pathname: '/(app)/paywall',
-                    params: { source: 'onboarding' }
-                });
-            }, 1500);
+            // Navigate directly to paywall
+            setNavigationDirection('forward');
+            router.replace({ 
+                pathname: '/(app)/paywall',
+                params: { source: 'onboarding' }
+            });
         }
     }, [callState, duration, router, posthogCapture]);
 
@@ -313,9 +316,10 @@ export default function DemoInterview() {
         };
     }, [callState]);
 
-    // Prefetch agent metadata
+    // Prefetch agent metadata once on component mount
     useEffect(() => {
-        if (callState === 'incoming') {
+        if (!hasFetchedAgent) {
+            setHasFetchedAgent(true);
             const demoInterviewId = 'demo_onboarding_interview';
             
             getConversationToken.mutate({
@@ -330,7 +334,7 @@ export default function DemoInterview() {
                 }
             });
         }
-    }, [callState]);
+    }, [hasFetchedAgent, getConversationToken]);
 
     const formatDuration = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -342,13 +346,6 @@ export default function DemoInterview() {
         <MockInterviewConversation config={conversationConfig}>
             {(conversation) => (
                 <ChatGPTBackground style={styles.container}>
-                    <View style={styles.header}>
-                        <OnboardingProgress 
-                            currentStep={18} 
-                            totalSteps={19}
-                            onBack={handleBack}
-                        />
-                    </View>
 
                     <Animated.View 
                         style={[
@@ -363,7 +360,11 @@ export default function DemoInterview() {
                             contentContainerStyle={styles.contentContainer}
                             showsVerticalScrollIndicator={false}
                         >
-                            {callState === 'incoming' && (
+                            {(getConversationToken.isPending && !agentMetadata) ? (
+                                <View style={styles.loadingContainer}>
+                                    <ActivityIndicator size="large" color={Colors.brand.primary} />
+                                </View>
+                            ) : callState === 'incoming' ? (
                                 <View style={styles.iphoneCallContainer}>
                                     <View style={styles.iphoneHeader}>
                                         <Text style={styles.iphoneCallerName}>{interviewer.name}</Text>
@@ -395,9 +396,7 @@ export default function DemoInterview() {
                                         </View>
                                     </View>
                                 </View>
-                            )}
-
-                            {callState === 'connecting' && (
+                            ) : callState === 'connecting' ? (
                                 <View style={styles.iphoneCallContainer}>
                                     <View style={styles.iphoneHeader}>
                                         <Text style={styles.iphoneCallerName}>{interviewer.name}</Text>
@@ -419,9 +418,7 @@ export default function DemoInterview() {
                                         <Text style={styles.iphoneCallSubtext}>Interview Coach • {auth?.industry ? `${auth.industry} ` : ''}Consultant Role</Text>
                                     </View>
                                 </View>
-                            )}
-
-                            {callState === 'active' && (
+                            ) : callState === 'active' ? (
                                 <View style={styles.activeCallContainer}>
                                     <View style={styles.activeCallHeader}>
                                         <Text style={styles.activeCallDuration}>{formatDuration(duration)}</Text>
@@ -444,21 +441,11 @@ export default function DemoInterview() {
                                         </View>
                                     </View>
                                 </View>
-                            )}
-
-                            {callState === 'ended' && (
-                                <View style={styles.endedContainer}>
-                                    <Ionicons name="checkmark-circle" size={64} color={Colors.semantic.successAlt} />
-                                    <Text style={styles.endedTitle}>Interview Complete</Text>
-                                    <Text style={styles.endedSubtitle}>
-                                        Thank you for completing your interview with {interviewer.name}
-                                    </Text>
-                                </View>
-                            )}
+                            ) : null}
                         </ScrollView>
 
                         <View style={styles.footer}>
-                            {callState === 'incoming' && (
+                            {callState === 'incoming' && agentMetadata && (
                                 <SlideToAnswer
                                     onAnswer={() => acceptCall(conversation)}
                                     onDecline={declineCall}
@@ -496,15 +483,18 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    header: {
-        paddingTop: Platform.OS === 'ios' ? 20 : 20,
-    },
     content: {
         flex: 1,
     },
     contentContainer: {
         flexGrow: 1,
         padding: 20,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: 400,
     },
     iphoneCallContainer: {
         flex: 1,
@@ -667,27 +657,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'Inter_500Medium',
         color: Colors.semantic.error,
-    },
-    endedContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 40,
-    },
-    endedTitle: {
-        fontSize: 24,
-        fontFamily: 'Inter_700Bold',
-        color: GlassTextColors.primary,
-        marginTop: 16,
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    endedSubtitle: {
-        fontSize: 16,
-        fontFamily: 'Inter_400Regular',
-        color: GlassTextColors.muted,
-        textAlign: 'center',
-        paddingHorizontal: 20,
     },
     footer: {
         alignItems: 'center',

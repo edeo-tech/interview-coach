@@ -3,25 +3,33 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCheckAuth } from '@/hooks/use-auth';
+import { usePremiumCheck } from '@/hooks/use-purchases';
 
 export default function HomePage() {
   const router = useRouter();
-  const { data: user, isLoading, error } = useCheckAuth();
+  const { data: user, isLoading: authLoading, error } = useCheckAuth();
+  const { isPremium, loading: premiumLoading } = usePremiumCheck();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (authLoading || premiumLoading) return;
 
     console.log('user', user);
     console.log('error', error);
+    console.log('isPremium', isPremium);
     
     if (user) {
-      console.log('NAVIGATE TO DASHBOARD');
-      router.push('/dashboard');
+      if (isPremium) {
+        console.log('NAVIGATE TO DASHBOARD');
+        router.push('/dashboard');
+      } else {
+        console.log('NAVIGATE TO ONBOARDING - USER NOT PREMIUM');
+        router.push('/onboarding/profile-setup');
+      }
     } else {
       console.log('NAVIGATE TO WELCOME');
       router.push('/welcome');
     }
-  }, [user, isLoading, error, router]);
+  }, [user, authLoading, error, router, isPremium, premiumLoading]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
