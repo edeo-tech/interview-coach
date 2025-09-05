@@ -4,6 +4,28 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useInterviewFeedback, useInterview } from '@/hooks/use-interviews';
 
+// Types
+interface FeedbackData {
+  _id: string;
+  attempt_id: string;
+  interview_type: string;
+  overall_score: number;
+  strengths: string[];
+  improvement_areas: string[];
+  detailed_feedback: string;
+  rubric_scores: Record<string, number>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface InterviewData {
+  id?: string;
+  _id?: string;
+  interview_type: string;
+  job_description?: string;
+  user_id: string;
+}
+
 export default function InterviewGradingPage() {
   const router = useRouter();
   const params = useParams();
@@ -12,8 +34,12 @@ export default function InterviewGradingPage() {
   const attemptId = params?.attemptId as string;
   const isFromInterview = searchParams?.get('from_interview') === 'true';
 
-  const { data: feedbackData, isLoading, refetch } = useInterviewFeedback(id, attemptId);
-  const { data: interviewData } = useInterview(id);
+  const { data: feedbackResponse, isLoading, refetch } = useInterviewFeedback(id, attemptId);
+  const { data: interviewResponse } = useInterview(id);
+  
+  // Extract data from API responses
+  const feedbackData = feedbackResponse?.data as FeedbackData | undefined;
+  const interviewData = interviewResponse?.data as InterviewData | undefined;
 
   const [showAnimation, setShowAnimation] = useState(isFromInterview);
   const [showReveal, setShowReveal] = useState(false);
@@ -54,6 +80,17 @@ export default function InterviewGradingPage() {
     if (score >= 70) return 'Moderate';
     if (score >= 60) return 'Low';
     return 'Very Low';
+  };
+
+  const getInterviewTypeDisplay = (type: string) => {
+    // Convert backend enum to readable format
+    return type || 'General Interview';
+  };
+
+  const formatRubricCategory = (category: string) => {
+    return category
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const handleAnimationComplete = () => {
@@ -132,15 +169,28 @@ export default function InterviewGradingPage() {
   );
 
   const renderFeedback = () => {
-    if (!feedbackData) {
+    if (isLoading || !feedbackData) {
       return (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center glass rounded-2xl p-8 max-w-md">
             <div className="w-12 h-12 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h3 className="text-xl font-nunito font-semibold text-white mb-2">No Feedback Available</h3>
+            <h3 className="text-xl font-nunito font-semibold text-white mb-2">
+              {isLoading ? 'Loading Feedback...' : 'No Feedback Available'}
+            </h3>
             <p className="text-white/70">
-              Your interview feedback will appear here once it's ready.
+              {isLoading 
+                ? 'Please wait while we load your interview feedback.' 
+                : 'Your interview feedback will appear here once it\'s ready.'
+              }
             </p>
+            {!isLoading && (
+              <button
+                onClick={() => refetch()}
+                className="mt-4 px-4 py-2 bg-brand-primary rounded-lg text-white font-medium hover:bg-brand-primary/80 transition-colors"
+              >
+                Refresh
+              </button>
+            )}
           </div>
         </div>
       );
@@ -148,6 +198,19 @@ export default function InterviewGradingPage() {
 
     return (
       <div className="flex-1 overflow-y-auto px-6 pb-6">
+        {/* Interview Type Badge */}
+        {feedbackData.interview_type && (
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full px-4 py-2">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <span className="text-white font-medium">{getInterviewTypeDisplay(feedbackData.interview_type)}</span>
+            </div>
+            <p className="text-white/50 text-sm mt-2">Interview Assessment Complete</p>
+          </div>
+        )}
+
         {/* Likelihood Reminder */}
         <div className="glass rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
@@ -178,13 +241,18 @@ export default function InterviewGradingPage() {
         </div>
 
         {/* Performance Breakdown */}
-        {feedbackData.rubric_scores && (
+        {feedbackData.rubric_scores && Object.keys(feedbackData.rubric_scores).length > 0 && (
           <div className="glass rounded-2xl p-6 mb-6">
-            <h3 className="text-lg font-nunito font-semibold text-white mb-4">Performance Breakdown</h3>
+            <div className="flex items-center gap-3 mb-4">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <h3 className="text-lg font-nunito font-semibold text-white">Performance Breakdown</h3>
+            </div>
             <div className="space-y-4">
               {Object.entries(feedbackData.rubric_scores).map(([category, score]) => {
-                const displayName = category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                const scoreValue = score as number;
+                const displayName = formatRubricCategory(category);
+                const scoreValue = typeof score === 'number' ? score : 0;
                 
                 return (
                   <div key={category}>
