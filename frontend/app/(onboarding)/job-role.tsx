@@ -104,7 +104,7 @@ const OnboardingJobRole = () => {
       ]).start(() => {
         // Navigate after animation completes
         setTimeout(() => {
-          router.push('/(onboarding)/industry-struggle');
+          router.push('/(onboarding)/cv-upload');
         }, 100);
       });
     }, 600);
