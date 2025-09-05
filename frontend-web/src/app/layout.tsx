@@ -18,6 +18,9 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "NextRound - AI Interview Coach",
   description: "Practice interviews with AI and get personalized feedback to land your dream job",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

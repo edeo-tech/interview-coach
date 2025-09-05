@@ -119,7 +119,7 @@ export default function InterviewTranscriptPage() {
       return (
         <div className="p-6 border-t border-white/10">
           <button
-            onClick={() => router.push(`/interviews/${id}/attempts/${attemptId}/grading`)}
+            onClick={() => router.push(`/interviews/${id}/attempts/${attemptId}/grading?from_interview=true`)}
             className="w-full py-3 bg-gradient-to-r from-brand-primary to-pink-500 rounded-lg text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,6 +134,7 @@ export default function InterviewTranscriptPage() {
       );
     }
     
+    // No footer when not coming from interview - user can only use back button
     return null;
   };
 

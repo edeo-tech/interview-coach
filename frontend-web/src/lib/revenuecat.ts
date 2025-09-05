@@ -14,15 +14,16 @@ export const initializeRevenueCat = async (userId?: string) => {
     return;
   }
   
-  // Don't initialize if we don't have a valid user ID
-  if (!userId || userId.trim() === '') {
-    console.log('RevenueCat initialization skipped: no valid user ID');
-    return;
+  // If already initialized, don't re-initialize
+  if (revenueCatInstance) {
+    console.log('RevenueCat already initialized');
+    return revenueCatInstance;
   }
   
   try {
+    // Initialize RevenueCat - userId is optional for web SDK
     revenueCatInstance = Purchases.configure(apiKey, userId);
-    console.log('RevenueCat initialized successfully for user:', userId);
+    console.log('RevenueCat initialized successfully', userId ? `for user: ${userId}` : 'anonymously');
     return revenueCatInstance;
   } catch (error) {
     console.error('Failed to initialize RevenueCat:', error);
@@ -35,7 +36,7 @@ export const getRevenueCat = () => revenueCatInstance;
 export const loginRevenueCat = async (userId: string) => {
   if (!revenueCatInstance) {
     console.error('RevenueCat not initialized');
-    return;
+    throw new Error('RevenueCat not initialized');
   }
   
   try {

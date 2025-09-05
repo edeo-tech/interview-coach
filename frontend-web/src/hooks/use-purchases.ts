@@ -15,8 +15,16 @@ import { useCheckAuth } from './use-auth';
 export const useCustomerInfo = () => {
   return useQuery<CustomerInfo | null>({
     queryKey: ['customer-info'],
-    queryFn: getCustomerInfo,
+    queryFn: async () => {
+      try {
+        return await getCustomerInfo();
+      } catch (error) {
+        console.error('Failed to fetch customer info:', error);
+        return null;
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
   });
 };
 
@@ -37,8 +45,20 @@ export const useIsEntitled = (entitlementId = 'premium') => {
 export const useOfferings = () => {
   return useQuery({
     queryKey: ['offerings'],
-    queryFn: getOfferings,
+    queryFn: async () => {
+      try {
+        const offerings = await getOfferings();
+        if (!offerings) {
+          throw new Error('No offerings available');
+        }
+        return offerings;
+      } catch (error) {
+        console.error('Failed to fetch offerings:', error);
+        throw error;
+      }
+    },
     staleTime: 30 * 60 * 1000, // 30 minutes
+    retry: 2,
   });
 };
 
@@ -61,10 +81,14 @@ export const useRevenueCatLogin = () => {
 
   useEffect(() => {
     if (user?.id) {
+      // RevenueCat is already initialized at root, just login the user
       loginRevenueCat(user.id).then(customerInfo => {
         if (customerInfo) {
           queryClient.setQueryData(['customer-info'], customerInfo);
+          queryClient.invalidateQueries({ queryKey: ['customer-info'] });
         }
+      }).catch(err => {
+        console.error('Failed to login to RevenueCat:', err);
       });
     }
   }, [user, queryClient]);

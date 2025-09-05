@@ -61,7 +61,7 @@ export default function InterviewDetailsPage() {
   };
 
   const handleAttemptPress = (attemptId: string) => {
-    // Navigate to attempt grading page (you'll need to create this)
+    // Navigate to attempt grading page without animations since feedback already exists
     router.push(`/interviews/${id}/attempts/${attemptId}/grading`);
   };
 
