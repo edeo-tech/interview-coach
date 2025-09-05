@@ -41,9 +41,10 @@ export default function InterviewGradingPage() {
   const feedbackData = feedbackResponse?.data as FeedbackData | undefined;
   const interviewData = interviewResponse?.data as InterviewData | undefined;
 
-  const [showAnimation, setShowAnimation] = useState(isFromInterview);
+  const [showAnimation, setShowAnimation] = useState(isFromInterview && !feedbackData);
   const [showReveal, setShowReveal] = useState(false);
   const [pollCount, setPollCount] = useState(0);
+  const [hasSeenAnimation, setHasSeenAnimation] = useState(!isFromInterview || !!feedbackData);
 
   // Polling mechanism - check for feedback every 2 seconds
   useEffect(() => {
@@ -65,6 +66,68 @@ export default function InterviewGradingPage() {
       clearInterval(pollInterval);
     };
   }, [feedbackData, refetch, pollCount]);
+
+  // Auto-progress from loading animation to likelihood reveal when feedback is ready
+  useEffect(() => {
+    if (feedbackData && showAnimation && isFromInterview && !hasSeenAnimation) {
+      console.log('🎊 Auto-progressing from loading to likelihood reveal');
+      
+      // Small delay to let the loading animation complete gracefully
+      const timer = setTimeout(() => {
+        setShowAnimation(false);
+        setShowReveal(true);
+        setHasSeenAnimation(true);
+      }, 1000); // 1 second delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [feedbackData, showAnimation, isFromInterview, hasSeenAnimation]);
+
+  // Auto-progress from likelihood reveal to detailed feedback after delay
+  useEffect(() => {
+    if (showReveal && feedbackData && isFromInterview) {
+      console.log('📊 Auto-progressing from likelihood reveal to detailed feedback');
+      
+      // Show likelihood reveal for 3 seconds, then auto-advance
+      const timer = setTimeout(() => {
+        setShowReveal(false);
+      }, 3000); // 3 seconds delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [showReveal, feedbackData, isFromInterview]);
+
+  // Persist animation state to localStorage
+  useEffect(() => {
+    const animationKey = `animation_seen_${attemptId}`;
+    
+    // Load from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(animationKey);
+      if (savedState && JSON.parse(savedState)) {
+        setHasSeenAnimation(true);
+        console.log('📱 Loading animation state from localStorage - already seen');
+      }
+    }
+  }, [attemptId]);
+
+  // Save animation state when user has seen it
+  useEffect(() => {
+    const animationKey = `animation_seen_${attemptId}`;
+    
+    if (hasSeenAnimation && typeof window !== 'undefined') {
+      localStorage.setItem(animationKey, JSON.stringify(true));
+      console.log('💾 Saved animation state to localStorage');
+    }
+  }, [hasSeenAnimation, attemptId]);
+
+  // Don't show animations if user has already seen them (returning from transcript)
+  useEffect(() => {
+    if (isFromInterview && feedbackData && !showAnimation && !showReveal && hasSeenAnimation) {
+      // User is returning with feedback already loaded, skip animations
+      console.log('🔄 User returning from transcript, skipping animations');
+    }
+  }, [isFromInterview, feedbackData, showAnimation, showReveal, hasSeenAnimation]);
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-green-400';
@@ -94,9 +157,10 @@ export default function InterviewGradingPage() {
   };
 
   const handleAnimationComplete = () => {
-    console.log('🎊 Animation sequence complete - showing likelihood reveal');
+    console.log('🎊 Manual animation complete - showing likelihood reveal');
     setShowAnimation(false);
     setShowReveal(true);
+    setHasSeenAnimation(true);
     
     if (!feedbackData) {
       console.log('⚠️ Animation completed but no data - forcing refetch');
@@ -105,8 +169,15 @@ export default function InterviewGradingPage() {
   };
 
   const handleRevealContinue = () => {
-    console.log('📊 Transitioning from reveal to detailed feedback');
+    console.log('📊 Manual transition from reveal to detailed feedback');
     setShowReveal(false);
+  };
+
+  const skipToDetailedFeedback = () => {
+    console.log('⏭️ User chose to skip animations');
+    setShowAnimation(false);
+    setShowReveal(false);
+    setHasSeenAnimation(true);
   };
 
   // Loading animation component
@@ -114,35 +185,60 @@ export default function InterviewGradingPage() {
     <div className="fixed inset-0 bg-gradient-to-b from-purple-900/50 to-blue-900/50 backdrop-blur-sm flex flex-col items-center justify-center z-50">
       <div className="text-center">
         <div className="w-24 h-24 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
-        <h2 className="text-3xl font-nunito font-light text-white mb-4">Analyzing Your Interview</h2>
-        <p className="text-white/70 text-lg mb-8">Our AI is evaluating your performance...</p>
+        <h2 className="text-3xl font-nunito font-light text-white mb-4">
+          {feedbackData ? 'Analysis Complete!' : 'Analyzing Your Interview'}
+        </h2>
+        <p className="text-white/70 text-lg mb-8">
+          {feedbackData 
+            ? 'Preparing your results...' 
+            : 'Our AI is evaluating your performance...'
+          }
+        </p>
         
         <div className="w-full max-w-md mx-auto">
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-brand-primary to-pink-500 rounded-full animate-pulse" 
-                 style={{ width: feedbackData ? '100%' : '75%' }}></div>
+            <div 
+              className={`h-full bg-gradient-to-r from-brand-primary to-pink-500 rounded-full transition-all duration-1000 ${
+                feedbackData ? '' : 'animate-pulse'
+              }`}
+              style={{ width: feedbackData ? '100%' : '75%' }}
+            ></div>
           </div>
-          <p className="text-white/50 text-sm mt-2">This usually takes 30-60 seconds</p>
+          <p className="text-white/50 text-sm mt-2">
+            {feedbackData 
+              ? 'Redirecting automatically in a moment...' 
+              : 'This usually takes 30-60 seconds'
+            }
+          </p>
         </div>
 
-        {feedbackData && (
-          <button
-            onClick={handleAnimationComplete}
-            className="mt-8 px-8 py-3 bg-brand-primary rounded-lg text-white font-medium hover:bg-brand-primary/80 transition-colors"
-          >
-            View Results
-          </button>
-        )}
+        <div className="mt-8 flex gap-4">
+          {feedbackData ? (
+            <button
+              onClick={handleAnimationComplete}
+              className="px-8 py-3 bg-brand-primary rounded-lg text-white font-medium hover:bg-brand-primary/80 transition-colors"
+            >
+              View Results Now
+            </button>
+          ) : (
+            <button
+              onClick={skipToDetailedFeedback}
+              className="px-6 py-2 bg-white/10 rounded-lg text-white/70 font-medium hover:bg-white/20 transition-colors text-sm"
+            >
+              Skip Animation
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 
-  // Likelihood reveal component
+  // Likelihood reveal component  
   const LikelihoodReveal = () => (
     <div className="fixed inset-0 bg-gradient-to-b from-purple-900/50 to-blue-900/50 backdrop-blur-sm flex flex-col items-center justify-center z-50">
       <div className="text-center">
         <div className="mb-8">
-          <svg className="w-16 h-16 text-yellow-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <h2 className="text-4xl font-nunito font-light text-white mb-2">Interview Complete!</h2>
@@ -150,7 +246,7 @@ export default function InterviewGradingPage() {
         </div>
 
         <div className="mb-8">
-          <div className={`text-8xl font-bold mb-2 ${getScoreColor(feedbackData?.overall_score || 0)}`}>
+          <div className={`text-8xl font-bold mb-2 animate-pulse ${getScoreColor(feedbackData?.overall_score || 0)}`}>
             {feedbackData?.overall_score || 0}%
           </div>
           <div className="text-white/70 text-xl">
@@ -158,12 +254,23 @@ export default function InterviewGradingPage() {
           </div>
         </div>
 
-        <button
-          onClick={handleRevealContinue}
-          className="px-8 py-3 bg-brand-primary rounded-lg text-white font-medium hover:bg-brand-primary/80 transition-colors"
-        >
-          View Detailed Feedback
-        </button>
+        <div className="flex flex-col items-center gap-4">
+          <button
+            onClick={handleRevealContinue}
+            className="px-8 py-3 bg-brand-primary rounded-lg text-white font-medium hover:bg-brand-primary/80 transition-colors"
+          >
+            View Detailed Feedback Now
+          </button>
+          
+          <p className="text-white/50 text-sm">
+            Continuing automatically in a moment...
+          </p>
+          
+          {/* Visual countdown indicator */}
+          <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden">
+            <div className="h-full bg-brand-primary rounded-full animate-[countdown_3s_linear_forwards]"></div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -333,7 +440,11 @@ export default function InterviewGradingPage() {
 
         {/* View Transcript Button */}
         <button
-          onClick={() => router.push(`/interviews/${id}/attempts/${attemptId}/transcript`)}
+          onClick={() => {
+            // Preserve that we've seen the animation when going to transcript
+            setHasSeenAnimation(true);
+            router.push(`/interviews/${id}/attempts/${attemptId}/transcript`);
+          }}
           className="w-full glass rounded-2xl p-4 flex items-center justify-between hover:bg-white/5 transition-colors mb-6"
         >
           <div className="flex items-center gap-3">
@@ -351,9 +462,18 @@ export default function InterviewGradingPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-purple-900/50 to-blue-900/50 backdrop-blur-sm flex flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-4 p-6 border-b border-white/10">
+    <>
+      {/* Add countdown animation */}
+      <style jsx>{`
+        @keyframes countdown {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+      `}</style>
+      
+      <div className="fixed inset-0 bg-gradient-to-b from-purple-900/50 to-blue-900/50 backdrop-blur-sm flex flex-col">
+        {/* Header */}
+        <div className="flex items-center gap-4 p-6 border-b border-white/10">
         {!isFromInterview && (
           <button
             onClick={() => router.back()}
@@ -389,9 +509,10 @@ export default function InterviewGradingPage() {
         </>
       ) : null}
 
-      {/* Overlays */}
-      {showAnimation && isFromInterview && <LoadingAnimation />}
-      {showReveal && feedbackData && isFromInterview && <LikelihoodReveal />}
-    </div>
+        {/* Overlays */}
+        {showAnimation && isFromInterview && <LoadingAnimation />}
+        {showReveal && feedbackData && isFromInterview && <LikelihoodReveal />}
+      </div>
+    </>
   );
 }
