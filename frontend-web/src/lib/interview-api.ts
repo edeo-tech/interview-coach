@@ -58,7 +58,7 @@ export class InterviewApi {
   }
 
   async getInterviewFeedback(interviewId: string, attemptId: string) {
-    return protectedApi.get(`/app/interviews/${interviewId}/attempts/${attemptId}/feedback`);
+    return protectedApi.get(`/app/interviews/feedback/${attemptId}`);
   }
 
   async getUserInterviews(params?: { skip?: number; limit?: number }) {

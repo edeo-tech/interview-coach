@@ -226,6 +226,12 @@ async def create_feedback(
     print(f"   - Improvement Areas: {len(improvement_areas)} items")
     print(f"   - Rubric Categories: {list(rubric_scores.keys())}")
     
+    # Check if feedback already exists for this attempt
+    existing_feedback = await get_attempt_feedback(req, attempt_id)
+    if existing_feedback:
+        print(f"   ⚠️ WARNING: Feedback already exists for attempt {attempt_id}, returning existing feedback")
+        return existing_feedback
+    
     feedback_data = InterviewFeedback(
         attempt_id=attempt_id,
         interview_id=interview_id,
