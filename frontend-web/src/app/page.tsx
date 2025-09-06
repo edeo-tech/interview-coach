@@ -23,7 +23,7 @@ export default function HomePage() {
         router.push('/dashboard');
       } else {
         console.log('NAVIGATE TO ONBOARDING - USER NOT PREMIUM');
-        router.push('/onboarding/profile-setup');
+        router.push('/profile-setup');
       }
     } else {
       console.log('NAVIGATE TO WELCOME');

@@ -35,7 +35,7 @@ export default function IndustrySelection() {
         industry: selectedIndustry
       });
       
-      router.push('/onboarding/cv-upload');
+      router.push('/cv-upload');
     } catch (error) {
       console.error('Failed to update profile:', error);
     }
