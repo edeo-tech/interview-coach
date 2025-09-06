@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anam-ai/js-sdk": "^3.4.1",
     "@elevenlabs/react": "^0.1.7",
     "@revenuecat/purchases-js": "^1.13.1",
     "@tanstack/react-query": "^5.80.10",

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
@@ -54,10 +55,21 @@ export default function InterviewDetailsPage() {
   const { data: attemptsCount } = useInterviewAttemptsCount(id);
   const { data: attemptsData } = useInterviewAttempts(id, 5);
   const startAttempt = useStartAttempt();
+  const [showInterviewOptions, setShowInterviewOptions] = useState(false);
 
   const handleStartInterview = () => {
-    // Navigate directly to session page - the session page handles starting the attempt
+    // Show voice/video options
+    setShowInterviewOptions(true);
+  };
+
+  const handleVoiceInterview = () => {
+    // Navigate to voice interview session page
     router.push(`/interviews/${id}/session`);
+  };
+
+  const handleVideoInterview = () => {
+    // Navigate to video interview session page  
+    router.push(`/interviews/${id}/video-session`);
   };
 
   const handleAttemptPress = (attemptId: string) => {
@@ -160,21 +172,68 @@ export default function InterviewDetailsPage() {
             </div>
           </div>
 
-          {/* Start Interview Button */}
-          <button
-            onClick={handleStartInterview}
-            disabled={startAttempt.isPending}
-            className="w-full glass-purple font-nunito font-semibold px-8 py-4 rounded-full hover:bg-brand-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mb-8"
-          >
-            {startAttempt.isPending ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15M9 10V9a2 2 0 012-2h2a2 2 0 012 2v1m-4 0V8a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h.01M15 14h.01" />
-              </svg>
-            )}
-            <span>{hasAttempts ? 'Retry Interview' : 'Start Interview'}</span>
-          </button>
+          {/* Start Interview Options */}
+          {!showInterviewOptions ? (
+            <button
+              onClick={handleStartInterview}
+              disabled={startAttempt.isPending}
+              className="w-full glass-purple font-nunito font-semibold px-8 py-4 rounded-full hover:bg-brand-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mb-8"
+            >
+              {startAttempt.isPending ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15M9 10V9a2 2 0 012-2h2a2 2 0 012 2v1m-4 0V8a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h.01M15 14h.01" />
+                </svg>
+              )}
+              <span>{hasAttempts ? 'Retry Interview' : 'Start Interview'}</span>
+            </button>
+          ) : (
+            <div className="glass rounded-2xl p-6 mb-8">
+              <h3 className="font-nunito font-semibold text-xl mb-4 text-white text-center">Choose Interview Mode</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {/* Voice Interview Option */}
+                <button
+                  onClick={handleVoiceInterview}
+                  className="glass-subtle rounded-2xl p-6 hover:bg-white/10 transition-colors group"
+                >
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 glass-subtle rounded-full flex items-center justify-center mb-3 group-hover:bg-brand-primary/20 transition-colors">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                    </div>
+                    <h4 className="font-nunito font-semibold text-white mb-1">Voice Interview</h4>
+                    <p className="text-white/60 text-sm text-center">Classic phone interview experience with voice only</p>
+                  </div>
+                </button>
+
+                {/* Video Interview Option */}
+                <button
+                  onClick={handleVideoInterview}
+                  className="glass-subtle rounded-2xl p-6 hover:bg-white/10 transition-colors group"
+                >
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 glass-subtle rounded-full flex items-center justify-center mb-3 group-hover:bg-brand-primary/20 transition-colors">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h4 className="font-nunito font-semibold text-white mb-1">Video Interview</h4>
+                    <p className="text-white/60 text-sm text-center">Face-to-face interview with AI avatar Cara</p>
+                  </div>
+                </button>
+              </div>
+              
+              {/* Back Button */}
+              <button
+                onClick={() => setShowInterviewOptions(false)}
+                className="w-full mt-4 text-white/60 hover:text-white transition-colors text-sm font-medium"
+              >
+                ← Back
+              </button>
+            </div>
+          )}
 
           {/* Performance Stats */}
           {hasAttempts && (
