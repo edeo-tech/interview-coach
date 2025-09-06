@@ -24,7 +24,7 @@ export default function VideoInterviewPage() {
   const [duration, setDuration] = useState(0);
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [anamClient, setAnamClient] = useState<any>(null);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false); // Audio starts muted
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true); // Audio starts unmuted
 
   // Data hooks
   const { data: user } = useCheckAuth();
@@ -89,6 +89,13 @@ export default function VideoInterviewPage() {
         console.log('✅ Anam streaming result:', streamResult);
         console.log('✅ Anam streaming started successfully');
         
+        // Automatically unmute audio once streaming starts
+        const videoEl = document.getElementById('anam-video') as HTMLVideoElement;
+        if (videoEl) {
+          videoEl.muted = false;
+          console.log('✅ Audio automatically unmuted');
+        }
+        
         // Debug: log available methods on the client
         console.log('Available methods on Anam client:', Object.getOwnPropertyNames(client));
         console.log('Available methods on Anam client prototype:', Object.getOwnPropertyNames(Object.getPrototypeOf(client)));
@@ -127,11 +134,6 @@ export default function VideoInterviewPage() {
     }
   }, [id, user, interviewData, cvProfile, startAttempt, getAnamSessionToken]);
 
-  const declineCall = useCallback(() => {
-    console.log('📞 Declining video call');
-    setCallState('ended');
-    router.back();
-  }, [router]);
 
   const endInterview = useCallback(async () => {
     try {
@@ -272,7 +274,7 @@ export default function VideoInterviewPage() {
                 </div>
 
                 {/* Call Status */}
-                <p className="text-white/70 text-lg mb-6">video calling...</p>
+                <p className="text-white/70 text-lg mb-6">Ready to interview</p>
                 
                 {/* Call Info */}
                 <p className="text-white/70 text-center mb-8">
@@ -288,37 +290,29 @@ export default function VideoInterviewPage() {
                       </svg>
                       <h3 className="font-nunito font-semibold text-white">Video Interview</h3>
                     </div>
-                    <p className="text-white/70 text-sm">Face-to-face interview with AI avatar • Camera & mic required</p>
+                    <p className="text-white/70 text-sm">Face-to-face interview with AI avatar • Camera & mic will be enabled</p>
                   </div>
                 </div>
               </div>
 
-              {/* Answer/Decline Buttons */}
+              {/* Accept Button */}
               <div className="pb-12 px-6">
-                <div className="flex items-center justify-center gap-20">
-                  <button
-                    onClick={declineCall}
-                    className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors"
-                  >
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                  
+                <div className="flex items-center justify-center">
                   <button
                     onClick={acceptCall}
                     disabled={startAttempt.isPending}
-                    className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors shadow-lg disabled:opacity-50"
+                    className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors shadow-lg disabled:opacity-50 animate-pulse"
                   >
                     {startAttempt.isPending ? (
-                      <div className="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
                     )}
                   </button>
                 </div>
+                <p className="text-center mt-4 text-white/70">Tap to start your interview</p>
               </div>
             </>
           )}
@@ -370,7 +364,6 @@ export default function VideoInterviewPage() {
                       id="anam-video" 
                       autoPlay 
                       playsInline
-                      muted
                       className="w-full h-full object-cover"
                     />
                     
@@ -406,14 +399,6 @@ export default function VideoInterviewPage() {
                   </div>
                 </div>
 
-                {/* Enable Audio Notice */}
-                {!isAudioEnabled && (
-                  <div className="absolute top-20 left-1/2 transform -translate-x-1/2">
-                    <div className="glass rounded-full px-4 py-2 bg-yellow-500/20 border border-yellow-500/30">
-                      <p className="text-yellow-300 text-sm">Click the microphone button to enable audio</p>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* End Call Button */}
