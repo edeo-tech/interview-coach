@@ -5,8 +5,10 @@ export interface AnamSessionTokenResponse {
 }
 
 export class AnamApi {
-  async getSessionToken() {
-    return protectedApi.post<AnamSessionTokenResponse>('/app/anam/session-token');
+  async getSessionToken(interviewId: string) {
+    return protectedApi.post<AnamSessionTokenResponse>('/app/anam/session-token', null, {
+      params: { interview_id: interviewId }
+    });
   }
 }
 

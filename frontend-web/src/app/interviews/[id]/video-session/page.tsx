@@ -53,7 +53,7 @@ export default function VideoInterviewPage() {
 
       // Get Anam session token
       console.log('🔐 Fetching Anam session token');
-      const tokenResponse = await getAnamSessionToken.mutateAsync();
+      const tokenResponse = await getAnamSessionToken.mutateAsync(id);
       const sessionToken = tokenResponse.data.sessionToken;
       
       console.log('✅ Received Anam session token');

@@ -5,6 +5,6 @@ import { anamApi } from '@/lib/anam-api';
 
 export const useGetAnamSessionToken = () => {
   return useMutation({
-    mutationFn: () => anamApi.getSessionToken(),
+    mutationFn: (interviewId: string) => anamApi.getSessionToken(interviewId),
   });
 };

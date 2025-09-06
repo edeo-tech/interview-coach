@@ -5,6 +5,7 @@ import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useStartAttempt, useFinishAttempt, useAddTranscript } from '../../../../_queries/interviews/interviews';
+import { useGetAnamSessionToken } from '../../../../_queries/interviews/anam-session';
 import usePosthogSafely from '../../../../hooks/posthog/usePosthogSafely';
 import { useToast } from '../../../../components/Toast';
 import { TYPOGRAPHY } from '../../../../constants/Typography';
@@ -22,6 +23,7 @@ const InterviewSession = () => {
   const startAttemptMutation = useStartAttempt();
   const finishAttemptMutation = useFinishAttempt();
   const addTranscriptMutation = useAddTranscript();
+  const getAnamSessionTokenMutation = useGetAnamSessionToken();
   const { posthogScreen } = usePosthogSafely();
   const { showToast } = useToast();
 
@@ -41,15 +43,34 @@ const InterviewSession = () => {
   const startSession = async () => {
     try {
       const response = await startAttemptMutation.mutateAsync(id);
-      // Backend doesn't provide agent_id anymore since ElevenLabs is handled on frontend
-      setAgentId('frontend-managed');
       setAttemptId(response.data.attempt_id);
       setSessionStartTime(new Date());
       setIsSessionActive(true);
       
-      // Here you would initialize the ElevenLabs conversation
-      // For now, we'll simulate the interview process
-      simulateInterview();
+      // Get Anam session token for video call
+      try {
+        const sessionTokenResponse = await getAnamSessionTokenMutation.mutateAsync(id);
+        const { sessionToken } = sessionTokenResponse;
+        
+        // Initialize Anam video call with session token
+        // This would typically involve loading Anam's SDK and starting the video session
+        console.log('Anam Session Token:', sessionToken);
+        
+        setAgentId('anam-agent');
+        setIsConnected(true);
+        
+        // TODO: Replace with actual Anam SDK integration
+        // For now, fallback to simulation
+        simulateInterview();
+        
+      } catch (anamError) {
+        console.error('Failed to get Anam session token:', anamError);
+        showToast('Unable to initialize video interview. Using fallback mode.', 'warning');
+        
+        // Fallback to simulated interview
+        setAgentId('frontend-managed');
+        simulateInterview();
+      }
       
     } catch (error: any) {
       showToast('Unable to start interview session. Please try again.', 'error');
