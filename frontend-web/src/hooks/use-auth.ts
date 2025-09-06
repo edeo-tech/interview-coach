@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/auth-api';
 import { setAccessToken, setRefreshToken, clearTokens } from '@/lib/api';
-import { initializeRevenueCat } from '@/lib/revenuecat';
+import { initializeRevenueCat, checkEntitlement } from '@/lib/revenuecat';
 import type { 
   LoginUser, 
   RegisterUser, 
@@ -39,13 +39,24 @@ const postLoginLogic = async (
   await initializeRevenueCat(response.user.id);
 
   // Navigate based on user status
-  // TODO: Add onboarding flow later
-  // if (isNewUser || (response as ThirdPartyLoginResponse).sign_up) {
-  //   router.push('/onboarding');
-  // } else {
-  //   router.push('/dashboard');
-  // }
-  router.push('/dashboard');
+  if (isNewUser || (response as ThirdPartyLoginResponse).sign_up) {
+    // New users always go to profile setup
+    router.push('/onboarding/profile-setup');
+  } else {
+    // Existing users - check premium status
+    try {
+      const isPremium = await checkEntitlement('premium');
+      if (isPremium) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding/profile-setup');
+      }
+    } catch (error) {
+      console.error('Failed to check premium status:', error);
+      // Default to profile setup if check fails
+      router.push('/onboarding/profile-setup');
+    }
+  }
 };
 
 export const useRegister = () => {

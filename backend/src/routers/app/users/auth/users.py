@@ -37,7 +37,23 @@ async def register(req:Request, body: RegisterBody):
         password=auth.hash_password(body.password),
         sign_up_type=SignUpType.EMAIL
     )
-    return await create_user(req, user)
+    created_user = await create_user(req, user)
+    
+    # Generate tokens and return same format as login
+    authenticated_user_and_tokens = await handle_login(req, created_user)
+    
+    return JSONResponse(
+        status_code=200,
+        content=jsonable_encoder(
+            {
+                'user': authenticated_user_and_tokens['user'],
+                'tokens': {
+                    'access_token': authenticated_user_and_tokens['access_token'],
+                    'refresh_token': authenticated_user_and_tokens['refresh_token']
+                }
+            }
+        )
+    )
 
 
 @router.post('/login')

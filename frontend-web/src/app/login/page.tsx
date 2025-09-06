@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useLogin } from '@/hooks/use-auth';
 import GoogleSignIn from '@/components/auth/GoogleSignIn';
+import { getAuthErrorMessage } from '@/lib/error-handling';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -64,7 +65,7 @@ export default function LoginPage() {
           
           {loginMutation.error && (
             <p className="text-error text-sm">
-              {(loginMutation.error as any)?.response?.data?.detail || 'Login failed. Please try again.'}
+              {getAuthErrorMessage(loginMutation.error, 'Login failed. Please try again.')}
             </p>
           )}
           

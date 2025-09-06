@@ -6,22 +6,28 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useCheckAuth } from '@/hooks/use-auth';
+import { usePremiumCheck } from '@/hooks/use-purchases';
 
 export default function WelcomePage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { data: user } = useCheckAuth();
+  const { isPremium, loading: premiumLoading } = usePremiumCheck();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    console.log('WELCOME');
-    if (user) {
+    if (!user || premiumLoading) return;
+    
+    // If user is logged in, redirect based on premium status
+    if (isPremium) {
       router.push('/dashboard');
+    } else {
+      router.push('/onboarding/profile-setup');
     }
-  }, [user]);
+  }, [user, isPremium, premiumLoading, router]);
 
   if (!mounted) return null;
 

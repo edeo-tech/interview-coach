@@ -4,20 +4,23 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRegister } from '@/hooks/use-auth';
 import GoogleSignIn from '@/components/auth/GoogleSignIn';
+import { getAuthErrorMessage } from '@/lib/error-handling';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   
   const registerMutation = useRegister();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      setPasswordError('Passwords do not match');
       return;
     }
+    setPasswordError('');
     registerMutation.mutate({ email, password });
   };
 
@@ -60,7 +63,10 @@ export default function RegisterPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passwordError) setPasswordError('');
+              }}
               className="w-full px-4 py-3 glass-subtle rounded-xl border-0 focus:ring-2 focus:ring-brand-primary focus:outline-none"
               placeholder="Create a password"
               required
@@ -72,16 +78,22 @@ export default function RegisterPage() {
             <input
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (passwordError) setPasswordError('');
+              }}
               className="w-full px-4 py-3 glass-subtle rounded-xl border-0 focus:ring-2 focus:ring-brand-primary focus:outline-none"
               placeholder="Confirm your password"
               required
             />
+            {passwordError && (
+              <p className="text-error text-sm mt-1">{passwordError}</p>
+            )}
           </div>
           
           {registerMutation.error && (
             <p className="text-error text-sm">
-              {(registerMutation.error as any)?.response?.data?.detail || 'Registration failed. Please try again.'}
+              {getAuthErrorMessage(registerMutation.error, 'Registration failed. Please try again.')}
             </p>
           )}
           
