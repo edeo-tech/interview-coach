@@ -25,7 +25,7 @@ export default function WelcomePage() {
     if (isPremium) {
       router.push('/dashboard');
     } else {
-      router.push('/onboarding/profile-setup');
+      router.push('/profile-setup');
     }
   }, [user, isPremium, premiumLoading, router]);
 

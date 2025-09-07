@@ -35,7 +35,7 @@ export default function Reviews() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleContinue = () => {
-    router.push('/onboarding/demo-interview');
+    router.push('/demo-interview');
   };
 
   const handleBack = () => {

@@ -34,7 +34,7 @@ export default function JobUpload() {
       }
     }
     
-    router.push('/onboarding/reviews');
+    router.push('/reviews');
   };
 
   const handleBack = () => {

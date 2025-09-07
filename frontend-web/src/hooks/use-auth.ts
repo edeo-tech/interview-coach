@@ -41,7 +41,7 @@ const postLoginLogic = async (
   // Navigate based on user status
   if (isNewUser || (response as ThirdPartyLoginResponse).sign_up) {
     // New users always go to profile setup
-    router.push('/onboarding/profile-setup');
+    router.push('/profile-setup');
   } else {
     // Existing users - check premium status
     try {
@@ -49,12 +49,12 @@ const postLoginLogic = async (
       if (isPremium) {
         router.push('/dashboard');
       } else {
-        router.push('/onboarding/profile-setup');
+        router.push('/profile-setup');
       }
     } catch (error) {
       console.error('Failed to check premium status:', error);
       // Default to profile setup if check fails
-      router.push('/onboarding/profile-setup');
+      router.push('/profile-setup');
     }
   }
 };

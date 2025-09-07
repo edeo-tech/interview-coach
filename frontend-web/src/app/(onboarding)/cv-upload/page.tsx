@@ -34,7 +34,7 @@ export default function CVUpload() {
       await uploadCV.mutateAsync(file);
       setUploadStatus('success');
       setTimeout(() => {
-        router.push('/onboarding/job-upload');
+        router.push('/job-upload');
       }, 1500);
     } catch (error) {
       console.error('CV upload failed:', error);
@@ -45,7 +45,7 @@ export default function CVUpload() {
   };
 
   const handleContinue = () => {
-    router.push('/onboarding/job-upload');
+    router.push('/job-upload');
   };
 
   const handleBack = () => {

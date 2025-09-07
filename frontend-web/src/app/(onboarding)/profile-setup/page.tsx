@@ -19,7 +19,7 @@ export default function ProfileSetup() {
         ...(age && { age: parseInt(age) })
       });
       
-      router.push('/onboarding/industry-selection');
+      router.push('/industry-selection');
     } catch (error) {
       console.error('Failed to update profile:', error);
     }
