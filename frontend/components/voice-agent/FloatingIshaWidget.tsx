@@ -30,22 +30,29 @@ export const FloatingIshaWidget = () => {
   // Pulse animation when speaking
   useEffect(() => {
     if (isSpeaking) {
-      scale.value = withRepeat(
-        withSequence(
-          withTiming(PULSE_SCALE, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1,
-        false
-      );
-      pulseOpacity.value = withRepeat(
-        withSequence(
-          withTiming(0.4, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1,
-        false
-      );
+      // First, smoothly fade in from 0
+      scale.value = withTiming(1, { duration: 0 });
+      pulseOpacity.value = withTiming(0, { duration: 400, easing: Easing.bezier(0.4, 0.0, 0.2, 1) });
+
+      // Then start the pulsing loop
+      setTimeout(() => {
+        scale.value = withRepeat(
+          withSequence(
+            withTiming(PULSE_SCALE, { duration: PULSE_DURATION, easing: Easing.bezier(0.4, 0.0, 0.2, 1) }),
+            withTiming(1, { duration: PULSE_DURATION, easing: Easing.bezier(0.4, 0.0, 0.2, 1) })
+          ),
+          -1,
+          false
+        );
+        pulseOpacity.value = withRepeat(
+          withSequence(
+            withTiming(0.4, { duration: PULSE_DURATION, easing: Easing.bezier(0.4, 0.0, 0.2, 1) }),
+            withTiming(0, { duration: PULSE_DURATION, easing: Easing.bezier(0.4, 0.0, 0.2, 1) })
+          ),
+          -1,
+          false
+        );
+      }, 100);
     } else {
       scale.value = withTiming(1, { duration: 300 });
       pulseOpacity.value = withTiming(0, { duration: 300 });
