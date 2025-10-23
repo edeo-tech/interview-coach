@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import InvestHeader from '@/components/ui/InvestHeader';
 import ColorsLight from '@/constants/ColorsLight';
@@ -8,8 +8,44 @@ import SoftCard from '@/components/ui/cards/SoftCard';
 import PillButton from '@/components/ui/buttons/PillButton';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ActionListItem from '@/components/ui/list/ActionListItem';
+import { useScreenContext } from '@/contexts/ScreenContextProvider';
 
 export default function HomeScreen() {
+  const { registerScreen, unregisterScreen } = useScreenContext();
+
+  useEffect(() => {
+    registerScreen({
+      screenName: 'home',
+      title: 'Home',
+      description: 'Dashboard showing overview of user finances, quick actions, insights, and recommendations',
+      keyData: {
+        quickActions: ['Pay', 'Invest', 'Top up'],
+        insights: [
+          'Track your spending - 8% more than last month',
+          'Set a savings goal - People who set goals save 2x more',
+          'Improve credit health - 3 suggestions to raise your score'
+        ],
+        recommendations: [
+          'Automate your investments with monthly SIP',
+          'Build an emergency fund with 3-6 months expenses'
+        ]
+      },
+      availableActions: [
+        'Add money',
+        'View insights',
+        'Pay bills',
+        'Invest',
+        'Top up account',
+        'Track spending',
+        'Set savings goals',
+        'Improve credit health',
+        'Automate investments',
+        'Build emergency fund'
+      ]
+    });
+
+    return () => unregisterScreen();
+  }, [registerScreen, unregisterScreen]);
   return (
     <View style={styles.container}>
       <InvestHeader />

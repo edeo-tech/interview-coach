@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import ColorsLight from '@/constants/ColorsLight';
@@ -11,8 +11,53 @@ import ActionListItem from '@/components/ui/list/ActionListItem';
 import NfoListItem from '@/components/ui/list/NfoListItem';
 import FundListItem from '@/components/ui/list/FundListItem';
 import InvestHeader from '@/components/ui/InvestHeader';
+import { useScreenContext } from '@/contexts/ScreenContextProvider';
 
 export default function InvestScreen() {
+    const { registerScreen, unregisterScreen } = useScreenContext();
+
+    useEffect(() => {
+        registerScreen({
+            screenName: 'invest',
+            title: 'Invest',
+            description: 'Investment hub featuring investment advice from Jio BlackRock, managed funds, NFOs, and active mutual funds',
+            keyData: {
+                provider: 'Jio BlackRock Investment Advisers',
+                sections: [
+                    'Investment Advice',
+                    'Managed Funds',
+                    'NFOs (New Fund Offerings)',
+                    'Active Mutual Funds'
+                ],
+                investmentTools: [
+                    'Wealth checkup - See how delaying affects returns',
+                    'Understand wealth potential - See money growth over time',
+                    'Delay cost calculator - Estimate returns from monthly investing'
+                ],
+                nfos: [
+                    'JioBlackRock Income Plus Arbitrage Active FoF - Closes in 3 days'
+                ],
+                activeFunds: [
+                    'JioBlackRock Liquid Fund - Equity, Very high risk, 10.17% (1Y)',
+                    'JioBlackRock Money Market Fund - Commodities, High risk, 33.37% (1Y)',
+                    'JioBlackRock Overnight Fund - Hybrid, Low risk, 7.67% (1Y)'
+                ]
+            },
+            availableActions: [
+                'Start investing',
+                'View portfolio',
+                'Explore managed funds',
+                'Check wealth potential',
+                'Use delay cost calculator',
+                'Learn about mutual funds',
+                'Browse NFOs',
+                'View active funds',
+                'Invest in specific funds'
+            ]
+        });
+
+        return () => unregisterScreen();
+    }, [registerScreen, unregisterScreen]);
     return (
         <View style={styles.container}>
             <InvestHeader />
@@ -76,6 +121,7 @@ export default function InvestScreen() {
                     title="Mutual Funds"
                     strongTitle
                     showChevron
+                    onPress={() => router.push('/(app)/mutualfunds')}
                     captionPosition="below"
                     caption="By Jio BlackRock Asset Management Pvt. Ltd."
                 />

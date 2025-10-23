@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import InvestHeader from '@/components/ui/InvestHeader';
 import ColorsLight from '@/constants/ColorsLight';
@@ -8,8 +8,45 @@ import SoftCard from '@/components/ui/cards/SoftCard';
 import PillButton from '@/components/ui/buttons/PillButton';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ActionListItem from '@/components/ui/list/ActionListItem';
+import { useScreenContext } from '@/contexts/ScreenContextProvider';
 
 export default function FinancesScreen() {
+  const { registerScreen, unregisterScreen } = useScreenContext();
+
+  useEffect(() => {
+    registerScreen({
+      screenName: 'finances',
+      title: 'Finances',
+      description: 'Financial overview showing balances, bills, budgets, savings goals, and recent transactions',
+      keyData: {
+        monthlySummary: {
+          income: '₹1,20,000',
+          spent: '₹86,400',
+          saved: '₹18,200'
+        },
+        goals: [
+          'Europe trip - ₹42,000 saved of ₹1,50,000 goal',
+          'New bike - ₹12,500 saved of ₹80,000 goal'
+        ],
+        recentActivity: [
+          'Groceries - ₹2,150 · Yesterday',
+          'Electricity bill - ₹1,240 · Tue',
+          'Gym membership - ₹999 · Sun'
+        ]
+      },
+      availableActions: [
+        'Add account',
+        'Create budget',
+        'View financial report',
+        'Export data',
+        'Track spending',
+        'Manage savings goals',
+        'View transaction history'
+      ]
+    });
+
+    return () => unregisterScreen();
+  }, [registerScreen, unregisterScreen]);
   return (
     <View style={styles.container}>
       <InvestHeader />

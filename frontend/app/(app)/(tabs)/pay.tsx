@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import InvestHeader from '@/components/ui/InvestHeader';
 import ColorsLight from '@/constants/ColorsLight';
@@ -8,8 +8,45 @@ import SoftCard from '@/components/ui/cards/SoftCard';
 import PillButton from '@/components/ui/buttons/PillButton';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ActionListItem from '@/components/ui/list/ActionListItem';
+import { useScreenContext } from '@/contexts/ScreenContextProvider';
 
 export default function PayScreen() {
+  const { registerScreen, unregisterScreen } = useScreenContext();
+
+  useEffect(() => {
+    registerScreen({
+      screenName: 'pay',
+      title: 'Pay',
+      description: 'Payment hub for scanning QR codes, sending money via UPI, paying bills, and viewing payment history',
+      keyData: {
+        shortcuts: ['Scan QR', 'UPI ID', 'Contacts'],
+        upcomingBills: [
+          'Electricity - Due in 4 days',
+          'Internet - Due in 8 days',
+          'Water - Due in 12 days'
+        ],
+        recentPayments: [
+          'Paid to Arjun - ₹650 · Yesterday',
+          'Cafe Blue - ₹320 · Tue',
+          'Zomato - ₹480 · Mon'
+        ]
+      },
+      availableActions: [
+        'Make new payment',
+        'Split bill',
+        'Scan QR code',
+        'Send via UPI ID',
+        'Pay from contacts',
+        'Pay electricity bill',
+        'Pay internet bill',
+        'Pay water bill',
+        'View payment history',
+        'Repeat previous payment'
+      ]
+    });
+
+    return () => unregisterScreen();
+  }, [registerScreen, unregisterScreen]);
   return (
     <View style={styles.container}>
       <InvestHeader />

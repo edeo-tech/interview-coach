@@ -14,6 +14,15 @@ import { SplashScreenProvider, useSplashScreen } from '@/context/splash/SplashSc
 import Main from './Main';
 import { ToastProvider } from '@/components/Toast';
 
+// Import ElevenLabs provider
+let ElevenLabsProvider: any = null;
+try {
+  const elevenLabsModule = require('@elevenlabs/react-native');
+  ElevenLabsProvider = elevenLabsModule.ElevenLabsProvider;
+} catch (e) {
+  console.log('ElevenLabs module not available');
+}
+
 export function ErrorBoundary(props: any) {
   const isDevelopment = process.env.EXPO_PUBLIC_MODE === 'development';
   
@@ -83,11 +92,18 @@ function RootLayout() {
         return null;
     }
 
-    return (
+    const content = (
         <ToastProvider>
             <Middleware>
                 <Main />
             </Middleware>
         </ToastProvider>
     );
+
+    // Wrap with ElevenLabsProvider if available
+    if (ElevenLabsProvider) {
+        return <ElevenLabsProvider>{content}</ElevenLabsProvider>;
+    }
+
+    return content;
 }

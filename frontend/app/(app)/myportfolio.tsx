@@ -1,13 +1,45 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import ColorsLight from '@/constants/ColorsLight';
 import { TYPOGRAPHY } from '@/constants/Typography';
+import { useScreenContext } from '@/contexts/ScreenContextProvider';
 
 export default function MyPortfolioScreen() {
     const insets = useSafeAreaInsets();
+    const { registerScreen, unregisterScreen } = useScreenContext();
+
+    useEffect(() => {
+        registerScreen({
+            screenName: 'my_portfolio',
+            title: 'My Portfolio',
+            description: 'Personalized investment portfolio tailored to the Builder investor type, showing wealth potential over 30 years',
+            keyData: {
+                investorType: 'The Builder',
+                wealthPotential: '₹1.38 crore in 30 years',
+                range: '₹19.2 lakh to 2.13 crore',
+                initialInvestment: '₹1,00,000',
+                monthlyContribution: '₹10,000',
+                features: [
+                    'Wealth potential projections',
+                    'Market scenario stress testing',
+                    'Asset allocation breakdown',
+                    'Educational videos about investment advice and asset allocation'
+                ]
+            },
+            availableActions: [
+                'View wealth potential',
+                'See market scenarios',
+                'Check asset allocation',
+                'Subscribe to unlock portfolio',
+                'Watch educational videos'
+            ]
+        });
+
+        return () => unregisterScreen();
+    }, [registerScreen, unregisterScreen]);
 
     return (
         <View style={styles.container}>

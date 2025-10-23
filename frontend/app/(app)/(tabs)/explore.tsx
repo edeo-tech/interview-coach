@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import InvestHeader from '@/components/ui/InvestHeader';
 import ColorsLight from '@/constants/ColorsLight';
@@ -8,8 +8,42 @@ import GradientHeroCard from '@/components/ui/cards/GradientHeroCard';
 import SoftCard from '@/components/ui/cards/SoftCard';
 import PillButton from '@/components/ui/buttons/PillButton';
 import ActionListItem from '@/components/ui/list/ActionListItem';
+import { useScreenContext } from '@/contexts/ScreenContextProvider';
 
 export default function ExploreScreen() {
+  const { registerScreen, unregisterScreen } = useScreenContext();
+
+  useEffect(() => {
+    registerScreen({
+      screenName: 'explore',
+      title: 'Explore',
+      description: 'Financial education hub with topics, guides, and videos to learn about money management',
+      keyData: {
+        popularTopics: ['Tax hacks', 'First SIP', 'Debt-free'],
+        gettingStartedGuides: [
+          'Money basics 101 - Build foundation in under 10 minutes',
+          'Emergency fund planner - Figure out how much you need',
+          'How SIPs work - Investing steadily beats timing the market'
+        ],
+        videos: [
+          'The power of compounding - 3 min video',
+          'Avoid these 5 money mistakes - 4 min video'
+        ]
+      },
+      availableActions: [
+        'Browse topics',
+        'View beginner guides',
+        'Explore tax hacks',
+        'Learn about SIPs',
+        'Watch educational videos',
+        'Read money basics',
+        'Plan emergency fund',
+        'Learn about debt management'
+      ]
+    });
+
+    return () => unregisterScreen();
+  }, [registerScreen, unregisterScreen]);
   return (
     <View style={styles.container}>
       <InvestHeader />
