@@ -14,7 +14,8 @@ import ColorsLight from '@/constants/ColorsLight';
 import { useIshaConversation } from '@/hooks/voice-agent/useIshaConversation';
 
 const WIDGET_SIZE = 56;
-const PULSE_SCALE = 1.15;
+const PULSE_SCALE = 1.08;
+const PULSE_DURATION = 1200; // Slower, calmer pulse
 
 export const FloatingIshaWidget = () => {
   const insets = useSafeAreaInsets();
@@ -31,23 +32,23 @@ export const FloatingIshaWidget = () => {
     if (isSpeaking) {
       scale.value = withRepeat(
         withSequence(
-          withTiming(PULSE_SCALE, { duration: 400, easing: Easing.ease }),
-          withTiming(1, { duration: 400, easing: Easing.ease })
+          withTiming(PULSE_SCALE, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) })
         ),
         -1,
         false
       );
       pulseOpacity.value = withRepeat(
         withSequence(
-          withTiming(0.6, { duration: 400, easing: Easing.ease }),
-          withTiming(0, { duration: 400, easing: Easing.ease })
+          withTiming(0.4, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0, { duration: PULSE_DURATION, easing: Easing.inOut(Easing.ease) })
         ),
         -1,
         false
       );
     } else {
-      scale.value = withTiming(1, { duration: 200 });
-      pulseOpacity.value = withTiming(0, { duration: 200 });
+      scale.value = withTiming(1, { duration: 300 });
+      pulseOpacity.value = withTiming(0, { duration: 300 });
     }
   }, [isSpeaking]);
 
