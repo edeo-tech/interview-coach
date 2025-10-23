@@ -16,6 +16,7 @@
     "@config-plugins/react-native-webrtc": "^12.0.0",
     "@elevenlabs/react-native": "^0.2.1",
     "@expo-google-fonts/dm-sans": "^0.4.1",
+    "@expo-google-fonts/familjen-grotesk": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.1",
     "@expo-google-fonts/nunito": "^0.4.1",
     "@expo-google-fonts/nunito-sans": "^0.4.1",

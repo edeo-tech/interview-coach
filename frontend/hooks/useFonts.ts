@@ -6,6 +6,12 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import {
+  FamiljenGrotesk_400Regular,
+  FamiljenGrotesk_500Medium,
+  FamiljenGrotesk_600SemiBold,
+  FamiljenGrotesk_700Bold,
+} from '@expo-google-fonts/familjen-grotesk';
+import {
   Nunito_400Regular,
   Nunito_600SemiBold,
   Nunito_700Bold,
@@ -19,7 +25,13 @@ export const useAppFonts = () => {
     'Inter-SemiBold': Inter_600SemiBold,
     'Inter-Bold': Inter_700Bold,
     
-    // Nunito variants - for brand & expressive elements
+    // Familjen Grotesk variants - for brand & expressive headings
+    'FamiljenGrotesk-Regular': FamiljenGrotesk_400Regular,
+    'FamiljenGrotesk-Medium': FamiljenGrotesk_500Medium,
+    'FamiljenGrotesk-SemiBold': FamiljenGrotesk_600SemiBold,
+    'FamiljenGrotesk-Bold': FamiljenGrotesk_700Bold,
+
+    // Keep Nunito registered for legacy (optional)
     'Nunito-Regular': Nunito_400Regular,
     'Nunito-SemiBold': Nunito_600SemiBold,
     'Nunito-Bold': Nunito_700Bold,

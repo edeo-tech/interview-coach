@@ -6,10 +6,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Updates from 'expo-updates';
-import Purchases from 'react-native-purchases';
-import { PostHogProvider } from 'posthog-react-native';
 import { ErrorBoundary as ExpoErrorBoundary } from 'expo-router';
-import * as Notifications from 'expo-notifications';
 
 import Middleware from './Middleware';
 import { setBackgroundColorAsync } from 'expo-navigation-bar';
@@ -35,52 +32,16 @@ SplashScreen.setOptions({
 });
 SplashScreen.preventAutoHideAsync();
 
-// Configure notification handler
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
-});
-
 const queryClient = new QueryClient();
 
-const revenueCatAppleApiKey = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY;
-const revenueCatAndroidApiKey = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
-
 export default function RootLayoutWrapper() {
-    const AppTree = (
+    return (
         <QueryClientProvider client={queryClient}>
             <SplashScreenProvider>
                 <RootLayout />
             </SplashScreenProvider>
         </QueryClientProvider>
     );
-
-    if (Platform.OS !== 'web') {
-        return (
-            <PostHogProvider
-                apiKey='phc_HMWfNEsv3dRtaMjS562G6DlsrQnoTHP1TLEEhoV6unw'
-                autocapture={false}
-                options={{
-                    host: "https://eu.i.posthog.com",
-                    enableSessionReplay: true,
-                    captureAppLifecycleEvents: true,
-                    sessionReplayConfig: {
-                        maskAllTextInputs: false,
-                        maskAllImages: false,
-                    },
-                }}
-            >
-                {AppTree}
-            </PostHogProvider>
-        );
-    }
-
-    return AppTree;
 }
 
 function RootLayout() {
@@ -96,30 +57,8 @@ function RootLayout() {
     }, [fontsLoaded, setFontsLoaded]);
 
     useEffect(() => {
-        const initializeRevenueCat = async () => {
-            if (!revenueCatAppleApiKey || !revenueCatAndroidApiKey) {
-                console.error("RevenueCat API keys are not defined");
-                return;
-            }
-
-            if (Platform.OS === 'ios') {
-                await Purchases.configure({ apiKey: revenueCatAppleApiKey });
-            } else if (Platform.OS === 'android') {
-                await Purchases.configure({ apiKey: revenueCatAndroidApiKey });
-            }
-        }
-
-        if (Platform.OS !== 'web') {
-            if (process.env.EXPO_PUBLIC_MODE === 'development') {
-                Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
-            }
-            initializeRevenueCat();
-        }
-    }, []);
-
-    useEffect(() => {
         if(Platform.OS === 'android') {
-            setBackgroundColorAsync('#000000');
+            setBackgroundColorAsync('#FFFFFF');
         }
     }, []);
 

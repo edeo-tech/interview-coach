@@ -45,8 +45,8 @@ export const TYPOGRAPHY = {
   heading2: {
     fontSize: 24,
     lineHeight: 29, // ~120%
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: -0.25,
   },
   
@@ -54,8 +54,8 @@ export const TYPOGRAPHY = {
   heading3: {
     fontSize: 19,
     lineHeight: 23, // ~120%
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: 0,
   },
   
@@ -88,16 +88,16 @@ export const TYPOGRAPHY = {
   navigation: {
     fontSize: 15,
     lineHeight: 19, // ~125%
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: 0.1,
   },
   
   tabLabel: {
     fontSize: 14,
     lineHeight: 18, // ~125%
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: 0.1,
   },
   
@@ -108,7 +108,7 @@ export const TYPOGRAPHY = {
     fontSize: 16,
     lineHeight: 24, // 150%
     fontWeight: '400' as const,
-    fontFamily: FONTS.utilityRegular,
+    fontFamily: FONTS.brandRegular,
     letterSpacing: 0,
   },
   
@@ -116,7 +116,7 @@ export const TYPOGRAPHY = {
     fontSize: 18,
     lineHeight: 27, // 150%
     fontWeight: '400' as const,
-    fontFamily: FONTS.utilityRegular,
+    fontFamily: FONTS.brandRegular,
     letterSpacing: 0,
   },
   
@@ -125,7 +125,7 @@ export const TYPOGRAPHY = {
     fontSize: 14,
     lineHeight: 20, // ~140%
     fontWeight: '400' as const,
-    fontFamily: FONTS.utilityRegular,
+    fontFamily: FONTS.brandRegular,
     letterSpacing: 0.1,
   },
   
@@ -142,7 +142,7 @@ export const TYPOGRAPHY = {
     fontSize: 12,
     lineHeight: 16, // ~135%
     fontWeight: '400' as const,
-    fontFamily: FONTS.utilityRegular,
+    fontFamily: FONTS.brandRegular,
     letterSpacing: 0.2,
   },
   
@@ -150,7 +150,7 @@ export const TYPOGRAPHY = {
     fontSize: 13,
     lineHeight: 18, // ~135%
     fontWeight: '400' as const,
-    fontFamily: FONTS.utilityRegular,
+    fontFamily: FONTS.brandRegular,
     letterSpacing: 0.1,
   },
   
@@ -158,7 +158,7 @@ export const TYPOGRAPHY = {
     fontSize: 13,
     lineHeight: 18, // ~135%
     fontWeight: '400' as const,
-    fontFamily: FONTS.utilityRegular,
+    fontFamily: FONTS.brandRegular,
     letterSpacing: 0.1,
   },
   
@@ -167,7 +167,7 @@ export const TYPOGRAPHY = {
     fontSize: 14,
     lineHeight: 18, // ~130%
     fontWeight: '500' as const,
-    fontFamily: FONTS.utilityMedium,
+    fontFamily: FONTS.brandMedium,
     letterSpacing: 0.1,
   },
   
@@ -175,7 +175,7 @@ export const TYPOGRAPHY = {
     fontSize: 13,
     lineHeight: 17, // ~130%
     fontWeight: '500' as const,
-    fontFamily: FONTS.utilityMedium,
+    fontFamily: FONTS.brandMedium,
     letterSpacing: 0.1,
   },
   
@@ -183,7 +183,7 @@ export const TYPOGRAPHY = {
     fontSize: 12,
     lineHeight: 16, // ~130%
     fontWeight: '500' as const,
-    fontFamily: FONTS.utilityMedium,
+    fontFamily: FONTS.brandMedium,
     letterSpacing: 0.2,
   },
   
@@ -191,7 +191,7 @@ export const TYPOGRAPHY = {
     fontSize: 12,
     lineHeight: 16, // ~130%
     fontWeight: '400' as const,
-    fontFamily: FONTS.utilityRegular,
+    fontFamily: FONTS.brandRegular,
     letterSpacing: 0.2,
   },
   
@@ -199,7 +199,7 @@ export const TYPOGRAPHY = {
     fontSize: 13,
     lineHeight: 17, // ~130%
     fontWeight: '500' as const,
-    fontFamily: FONTS.utilityMedium,
+    fontFamily: FONTS.brandMedium,
     letterSpacing: 0.1,
   },
   
@@ -218,16 +218,16 @@ export const TYPOGRAPHY = {
   sectionHeader: {
     fontSize: 24,
     lineHeight: 29,
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: -0.25,
   },
   
   itemTitle: {
     fontSize: 19,
     lineHeight: 23,
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: 0,
   },
   
@@ -251,8 +251,8 @@ export const TYPOGRAPHY = {
   displaySmall: {
     fontSize: 28, // Increased from 24 for better welcome screen hierarchy
     lineHeight: 34, // ~120%
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: -0.25,
   },
   
@@ -260,8 +260,8 @@ export const TYPOGRAPHY = {
   contentTitle: {
     fontSize: 24,
     lineHeight: 29,
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: -0.25,
   },
   
@@ -269,16 +269,16 @@ export const TYPOGRAPHY = {
   heading4: {
     fontSize: 17,
     lineHeight: 21, // ~125%
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: 0,
   },
   
   heading5: {
     fontSize: 15,
     lineHeight: 19, // ~125%
-    fontWeight: '600' as const,
-    fontFamily: FONTS.brandSemiBold,
+    fontWeight: '700' as const,
+    fontFamily: FONTS.brandBold,
     letterSpacing: 0.1,
   },
   

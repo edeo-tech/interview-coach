@@ -12,7 +12,7 @@ export default function Main() {
 
     return (
         <View style={{ flex: 1 }}>
-            <StatusBar style="light" translucent backgroundColor="transparent" />
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
             <Slot />
         </View>
     );

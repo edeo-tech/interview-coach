@@ -8,11 +8,11 @@
  */
 
 export const fonts = {
-  // Nunito - Primary Brand Font (expressive/actions)
+  // Familjen Grotesk - Brand/Headings (expressive/actions)
   brand: {
-    regular: 'Nunito-Regular',    // 400 - fallback/light brand text
-    semiBold: 'Nunito-SemiBold',  // 600 - H2, H3, buttons, labels, navigation
-    bold: 'Nunito-Bold',          // 700 - H1, strong emphasis
+    regular: 'FamiljenGrotesk-Regular',
+    semiBold: 'FamiljenGrotesk-SemiBold',
+    bold: 'FamiljenGrotesk-Bold',
   },
   
   // Inter - Primary Utility Font (readability/information)
@@ -34,7 +34,7 @@ export const fonts = {
 
 // Font family constants for easy reference
 export const FONT_FAMILIES = {
-  // Brand fonts (Nunito)
+  // Brand fonts (Familjen Grotesk)
   BRAND_REGULAR: fonts.brand.regular,
   BRAND_SEMIBOLD: fonts.brand.semiBold,
   BRAND_BOLD: fonts.brand.bold,
