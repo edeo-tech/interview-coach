@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { router } from 'expo-router';
 import ColorsLight from '@/constants/ColorsLight';
 import { TYPOGRAPHY } from '@/constants/Typography';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -23,7 +24,7 @@ export default function InvestScreen() {
                         title="Investment Advice"
                         subtitle="Jio BlackRock Investment Advisers"
                         primaryAction={{ label: 'Invest', onPress: () => {} }}
-                        secondaryAction={{ label: 'Portfolio', onPress: () => {} }}
+                        secondaryAction={{ label: 'Portfolio', onPress: () => router.push('/(app)/myportfolio') }}
                     />
                 </View>
 

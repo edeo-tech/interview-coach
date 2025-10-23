@@ -9,6 +9,7 @@ const AppLayout = () => {
             }}
         >
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="myportfolio" options={{ headerShown: false, title: 'My Portfolio' }} />
         </Stack>
     )
 }
